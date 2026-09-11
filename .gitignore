@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+*/node_modules/
+package-lock.json.bak
+
+# Production / Build outputs
+dist/
+*/dist/
+dist-ssr/
+*.local
+target/
+*/target/
+build/
+*/build/
+out/
+bin/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Maven & Gradle
+.mvn/wrapper/maven-wrapper.jar
+.gradle/
+
+# IDEs and Editors
+.idea/
+*.iml
+*.iws
+*.ipr
+*.sw?
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache
+.factorypath
+.apt_generated
+.vscode/
+
+# Copilot / Modernize Agent Artifacts
+.github/modernize/
+**/.github/modernize/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+out*.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example

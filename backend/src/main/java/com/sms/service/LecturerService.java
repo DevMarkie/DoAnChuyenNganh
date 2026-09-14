@@ -13,6 +13,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class LecturerService {
 
     private final LecturerRepository lecturerRepository;
@@ -116,6 +117,7 @@ public class LecturerService {
         return lecturerRepository.save(lecturer);
     }
 
+    @Transactional
     public void toggleActive(Long id) {
         Lecturer lecturer = findById(id);
         lecturer.setIsActive(!lecturer.getIsActive());

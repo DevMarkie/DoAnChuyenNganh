@@ -8,10 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SubjectService {
 
     private final SubjectRepository subjectRepository;
@@ -31,6 +33,7 @@ public class SubjectService {
         return subjectRepository.search(keyword);
     }
 
+    @Transactional
     @CacheEvict(value = "subjects", allEntries = true)
     public Subject create(SubjectRequest request) {
         if (subjectRepository.existsBySubjectCode(request.getSubjectCode())) {
@@ -49,6 +52,7 @@ public class SubjectService {
         return subjectRepository.save(subject);
     }
 
+    @Transactional
     @CacheEvict(value = "subjects", allEntries = true)
     public Subject update(Integer id, SubjectRequest request) {
         Subject subject = findById(id);
@@ -62,6 +66,7 @@ public class SubjectService {
         return subjectRepository.save(subject);
     }
 
+    @Transactional
     @CacheEvict(value = "subjects", allEntries = true)
     public void toggleActive(Integer id) {
         Subject subject = findById(id);

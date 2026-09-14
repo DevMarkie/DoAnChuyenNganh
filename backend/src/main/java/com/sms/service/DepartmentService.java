@@ -8,10 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class DepartmentService {
 
     private final DepartmentRepository departmentRepository;
@@ -31,6 +33,7 @@ public class DepartmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khoa với ID: " + id));
     }
 
+    @Transactional
     @CacheEvict(value = "departments", allEntries = true)
     public Department create(DepartmentRequest request) {
         if (departmentRepository.existsByCode(request.getCode())) {
@@ -48,6 +51,7 @@ public class DepartmentService {
         return departmentRepository.save(dept);
     }
 
+    @Transactional
     @CacheEvict(value = "departments", allEntries = true)
     public Department update(Integer id, DepartmentRequest request) {
         Department dept = findById(id);
@@ -56,6 +60,7 @@ public class DepartmentService {
         return departmentRepository.save(dept);
     }
 
+    @Transactional
     @CacheEvict(value = "departments", allEntries = true)
     public void toggleActive(Integer id) {
         Department dept = findById(id);

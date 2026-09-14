@@ -4,8 +4,8 @@
    Dual-Theme Support: Clean Light (Default) & Refined Slate Dark
    ============================================================ */
 
-/* ——— Google Fonts ——— */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+/* Fonts loaded via index.html <link> tags for non-render-blocking performance */
+
 
 /* ——— CSS Custom Properties / Design Tokens ——— */
 :root {
@@ -612,6 +612,15 @@ textarea.form-control {
 }
 
 /* ——— Responsive Utilities ——— */
+@media (max-width: 1024px) {
+  .page-content {
+    padding: 20px 24px 36px;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .page-content {
     padding: 16px;
@@ -623,4 +632,19 @@ textarea.form-control {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ——— Accessibility: Reduced Motion ——— */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ——— Shared Keyframes ——— */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;

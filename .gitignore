@@ -71,3 +71,9 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+
+# DrawIO diagrams
+*.drawio
+*.drawio.*
+*.bkp
+drawio/

@@ -8,10 +8,12 @@ import com.sms.repository.ClassRepository;
 import com.sms.repository.DepartmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ClassService {
 
     private final ClassRepository classRepository;
@@ -30,6 +32,7 @@ public class ClassService {
         return classRepository.findByDepartmentId(departmentId);
     }
 
+    @Transactional
     public ClassEntity create(ClassRequest request) {
         if (classRepository.existsByCode(request.getCode())) {
             throw new BadRequestException("Mã lớp đã tồn tại: " + request.getCode());
@@ -47,6 +50,7 @@ public class ClassService {
         return classRepository.save(cls);
     }
 
+    @Transactional
     public ClassEntity update(Integer id, ClassRequest request) {
         ClassEntity cls = findById(id);
         Department dept = departmentRepository.findById(request.getDepartmentId())
@@ -58,6 +62,7 @@ public class ClassService {
         return classRepository.save(cls);
     }
 
+    @Transactional
     public void toggleActive(Integer id) {
         ClassEntity cls = findById(id);
         cls.setIsActive(!cls.getIsActive());

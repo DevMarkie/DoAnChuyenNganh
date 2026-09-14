@@ -6,10 +6,12 @@ import com.sms.exception.*;
 import com.sms.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CourseSectionService {
 
     private final CourseSectionRepository courseSectionRepository;
@@ -43,6 +45,7 @@ public class CourseSectionService {
         return courseSectionRepository.findByLecturerIdWithDetails(lecturerId);
     }
 
+    @Transactional
     public CourseSection create(CourseSectionRequest request) {
         if (courseSectionRepository.existsBySectionCode(request.getSectionCode())) {
             throw new BadRequestException("Mã học phần đã tồn tại");
@@ -67,6 +70,7 @@ public class CourseSectionService {
         return courseSectionRepository.save(section);
     }
 
+    @Transactional
     public CourseSection update(Long id, CourseSectionRequest request) {
         CourseSection section = findById(id);
 

@@ -77,3 +77,15 @@ Desktop.ini
 *.drawio.*
 *.bkp
 drawio/
+
+# Root diagram generator scripts
+/*.py
+
+# Root document files
+/*.docx
+/*.pdf
+
+# Root duplicate package files
+/package.json
+/package-lock.json
+

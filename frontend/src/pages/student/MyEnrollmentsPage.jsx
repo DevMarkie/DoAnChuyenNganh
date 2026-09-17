@@ -36,7 +36,7 @@ export default function MyEnrollmentsPage() {
     }
   };
 
-  const activeEnrollments = enrollments.filter((e) => e.status === 'ENROLLED');
+  const activeEnrollments = enrollments.filter((e) => e.status === 'ENROLLED' || e.status === 'COMPLETED');
   const totalCredits = activeEnrollments.reduce((sum, e) => sum + (e.courseSection?.subject?.credits || 0), 0);
 
   return (
@@ -127,8 +127,8 @@ export default function MyEnrollmentsPage() {
                       {e.enrolledAt ? e.enrolledAt.substring(0, 10) : '—'}
                     </td>
                     <td>
-                      <span className={`badge ${e.status === 'ENROLLED' ? 'badge-success' : 'badge-danger'}`}>
-                        {e.status === 'ENROLLED' ? 'Đã xác nhận' : 'Đã huỷ'}
+                      <span className={`badge ${e.status === 'ENROLLED' ? 'badge-success' : e.status === 'COMPLETED' ? 'badge-info' : 'badge-danger'}`}>
+                        {e.status === 'ENROLLED' ? 'Đã xác nhận' : e.status === 'COMPLETED' ? 'Đã hoàn thành' : 'Đã huỷ'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>

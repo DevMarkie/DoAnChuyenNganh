@@ -6,7 +6,10 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import LoadingFallback from './components/common/LoadingFallback';
 
 // Auth - Lazy Loaded
-const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const PortalHubPage = lazy(() => import('./pages/auth/PortalHubPage'));
+const StudentLoginPage = lazy(() => import('./pages/auth/StudentLoginPage'));
+const LecturerLoginPage = lazy(() => import('./pages/auth/LecturerLoginPage'));
+const AdminLoginPage = lazy(() => import('./pages/auth/AdminLoginPage'));
 
 // Admin Pages - Lazy Loaded
 const AdminDashboard = lazy(() => import('./pages/admin/DashboardPage'));
@@ -19,6 +22,7 @@ const SemestersPage = lazy(() => import('./pages/admin/SemestersPage'));
 const CourseSectionsPage = lazy(() => import('./pages/admin/CourseSectionsPage'));
 const SchedulesPage = lazy(() => import('./pages/admin/SchedulesPage'));
 const AdminGradesPage = lazy(() => import('./pages/admin/GradesPage'));
+const PasswordResetsPage = lazy(() => import('./pages/admin/PasswordResetsPage'));
 
 // Lecturer Pages - Lazy Loaded
 const LecturerDashboard = lazy(() => import('./pages/lecturer/LecturerDashboard'));
@@ -35,10 +39,18 @@ const MyEnrollmentsPage = lazy(() => import('./pages/student/MyEnrollmentsPage')
 const TranscriptPage = lazy(() => import('./pages/student/TranscriptPage'));
 const StudentProfilePage = lazy(() => import('./pages/student/StudentProfilePage'));
 
-function ProtectedRoute({ children, allowedRoles }) {
+function ProtectedRoute({ children, allowedRoles, fallbackLoginPath }) {
   const { isAuthenticated, user } = useAuthStore();
 
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    const loginPath = fallbackLoginPath || (
+      allowedRoles?.includes('ADMIN') ? '/admin/login' :
+      allowedRoles?.includes('LECTURER') ? '/lecturer/login' :
+      '/student/login'
+    );
+    return <Navigate to={loginPath} replace />;
+  }
+
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
     const defaultPath = user?.role === 'ADMIN' ? '/admin/dashboard'
       : user?.role === 'LECTURER' ? '/lecturer/dashboard'
@@ -62,8 +74,18 @@ export default function App() {
     <ErrorBoundary>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
+          {/* Dedicated Portal Login Routes */}
           <Route path="/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <LoginPage />
+            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalHubPage />
+          } />
+          <Route path="/student/login" element={
+            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <StudentLoginPage />
+          } />
+          <Route path="/lecturer/login" element={
+            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <LecturerLoginPage />
+          } />
+          <Route path="/admin/login" element={
+            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <AdminLoginPage />
           } />
 
           {/* Admin Routes */}
@@ -82,6 +104,7 @@ export default function App() {
             <Route path="/admin/course-sections" element={<CourseSectionsPage />} />
             <Route path="/admin/schedules" element={<SchedulesPage />} />
             <Route path="/admin/grades" element={<AdminGradesPage />} />
+            <Route path="/admin/password-resets" element={<PasswordResetsPage />} />
           </Route>
 
           {/* Lecturer Routes */}

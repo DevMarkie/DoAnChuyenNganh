@@ -252,6 +252,30 @@ CREATE TABLE schedules (
 );
 
 -- ============================================================
+-- BẢNG 13: password_reset_requests – Yêu cầu cấp lại mật khẩu
+-- ============================================================
+
+CREATE TABLE password_reset_requests (
+    id             BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id        BIGINT       NOT NULL,
+    username       VARCHAR(50)  NOT NULL,
+    full_name      VARCHAR(100) NOT NULL,
+    role           VARCHAR(20)  NOT NULL,
+    email          VARCHAR(100) NOT NULL,
+    phone          VARCHAR(20)  NULL,
+    reason         TEXT         NULL,
+    status         VARCHAR(20)  NOT NULL DEFAULT 'PENDING',
+    admin_notes    TEXT         NULL,
+    processed_by   BIGINT       NULL,
+    processed_at   DATETIME     NULL,
+    created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT pk_password_reset_requests PRIMARY KEY (id),
+    CONSTRAINT fk_prr_user FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT fk_prr_admin FOREIGN KEY (processed_by) REFERENCES users (id)
+);
+
+-- ============================================================
 -- INDEXES – Tối ưu hiệu suất truy vấn
 -- ============================================================
 

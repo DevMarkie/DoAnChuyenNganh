@@ -4,11 +4,15 @@ import com.sms.dto.ApiResponse;
 import com.sms.dto.request.GradeRequest;
 import com.sms.entity.Grade;
 import com.sms.security.UserPrincipal;
+import com.sms.service.ExcelExportService;
 import com.sms.service.GradeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -17,10 +21,23 @@ import java.util.List;
 public class GradeController {
 
     private final GradeService gradeService;
+    private final ExcelExportService excelExportService;
 
     @GetMapping("/section/{sectionId}")
     public ResponseEntity<ApiResponse<List<Grade>>> getBySection(@PathVariable Long sectionId) {
         return ResponseEntity.ok(ApiResponse.success(gradeService.findBySection(sectionId)));
+    }
+
+    /**
+     * Xuất bảng điểm lớp học phần ra file Excel (.xlsx)
+     */
+    @GetMapping("/section/{sectionId}/export")
+    public ResponseEntity<byte[]> exportGradeSheet(@PathVariable Long sectionId) throws IOException {
+        byte[] excelData = excelExportService.exportGradeSheet(sectionId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=bang_diem_" + sectionId + ".xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelData);
     }
 
     @PutMapping

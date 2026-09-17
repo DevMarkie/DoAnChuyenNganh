@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Layers, Save, CheckCircle, AlertCircle, Award, CheckCircle2 } from 'lucide-react';
+import { Layers, Save, CheckCircle, AlertCircle, Award, CheckCircle2, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { courseSectionService, gradeService } from '../../services/dataService';
 
@@ -63,6 +63,23 @@ export default function GradeEntryPage() {
     setGrades(updated);
   };
 
+  const handleExportExcel = async () => {
+    try {
+      if (!selectedSection) return;
+      const res = await gradeService.exportExcel(selectedSection);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `BangDiem_LHP_${selectedSection}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Đã xuất bảng điểm ra file Excel thành công!');
+    } catch {
+      toast.error('Lỗi khi tải file Excel');
+    }
+  };
+
   const handleSave = async (finalize = false) => {
     try {
       setSaving(true);
@@ -83,8 +100,15 @@ export default function GradeEntryPage() {
     }
   };
 
+  const isStudentPassed = (g) => {
+    if (g.isPassed !== undefined && g.isPassed !== null) return g.isPassed;
+    if (g.letterGrade) return g.letterGrade !== 'F';
+    if (g.totalScore != null) return parseFloat(g.totalScore) >= 4.0;
+    return null;
+  };
+
   const currentSectionInfo = mySections.find((s) => s.id === parseInt(selectedSection));
-  const passedCount = grades.filter((g) => g.isPassed === true).length;
+  const passedCount = grades.filter((g) => isStudentPassed(g) === true).length;
   const gradedCount = grades.filter((g) => g.totalScore != null).length;
   const passRate = gradedCount > 0 ? Math.round((passedCount / gradedCount) * 100) : 0;
 
@@ -99,6 +123,10 @@ export default function GradeEntryPage() {
         </div>
         {grades.length > 0 && (
           <div className="page-header-actions">
+            <button className="btn btn-outline" onClick={handleExportExcel} title="Xuất bảng điểm ra file Excel">
+              <Download size={16} />
+              <span>Xuất Excel</span>
+            </button>
             <button className="btn btn-secondary" disabled={saving} onClick={() => handleSave(false)}>
               <Save size={16} />
               <span>{saving ? 'Đang lưu...' : 'Lưu bản nháp'}</span>
@@ -264,16 +292,16 @@ export default function GradeEntryPage() {
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <span className="badge badge-info" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                        {g.score4 != null ? Number(g.score4).toFixed(2) : '—'}
+                        {(g.gpaPoint ?? g.score4) != null ? Number(g.gpaPoint ?? g.score4).toFixed(2) : '—'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'center', fontWeight: 800, color: 'var(--primary)' }}>
                       {g.letterGrade || '—'}
                     </td>
                     <td style={{ textAlign: 'center' }}>
-                      {g.isPassed != null ? (
-                        <span className={`badge ${g.isPassed ? 'badge-success' : 'badge-danger'}`}>
-                          {g.isPassed ? 'ĐẠT' : 'HỌC LẠI'}
+                      {isStudentPassed(g) != null ? (
+                        <span className={`badge ${isStudentPassed(g) ? 'badge-success' : 'badge-danger'}`}>
+                          {isStudentPassed(g) ? 'ĐẠT' : 'HỌC LẠI'}
                         </span>
                       ) : (
                         <span style={{ color: 'var(--text-light)', fontSize: '0.8rem' }}>Chưa chốt</span>

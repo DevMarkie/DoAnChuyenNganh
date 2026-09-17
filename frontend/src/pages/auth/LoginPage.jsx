@@ -228,7 +228,7 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleSelectRole('lecturer', 'gv001', '123456')}
+              onClick={() => handleSelectRole('lecturer', '1000001', '123456')}
               style={{
                 padding: '8px 4px',
                 border: 'none',
@@ -246,7 +246,7 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleSelectRole('student', 'sv001', '123456')}
+              onClick={() => handleSelectRole('student', '2500001', '123456')}
               style={{
                 padding: '8px 4px',
                 border: 'none',

@@ -18,11 +18,18 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final com.sms.service.PasswordResetService passwordResetService;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success("Đăng nhập thành công", response));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody com.sms.dto.request.ForgotPasswordRequest request) {
+        passwordResetService.createRequest(request);
+        return ResponseEntity.ok(ApiResponse.success("Yêu cầu cấp lại mật khẩu đã được gửi thành công đến Ban Quản trị. Vui lòng kiểm tra Gmail sau khi yêu cầu được xử lý."));
     }
 
     @PutMapping("/change-password")

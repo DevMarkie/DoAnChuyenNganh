@@ -13,6 +13,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.sms.exception.BadRequestException;
+import com.sms.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,10 +45,10 @@ public class AuthService {
 
     public void changePassword(Long userId, ChangePasswordRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản"));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản"));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new RuntimeException("Mật khẩu cũ không đúng");
+            throw new BadRequestException("Mật khẩu cũ không đúng");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));

@@ -285,7 +285,7 @@ export default function SubjectsPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '540px' }}>
             <div className="modal-header">
               <h3>{editingSubject ? 'Cập Nhật Môn Học' : 'Thêm Môn Học Mới'}</h3>

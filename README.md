@@ -104,8 +104,8 @@ npm run dev
 
 ## 🔐 Tài Khoản Mẫu Đăng Nhập Mặc Định
 
-| Vai trò | Tên đăng nhập | Mật khẩu mặc định |
-|---|---|---|
-| **Admin** | `admin` | `admin123` |
-| **Giảng viên** | `gv001` | `password123` |
-| **Sinh viên** | `sv001` | `password123` |
+| Vai trò | Tên đăng nhập | Mật khẩu mặc định | Ghi chú |
+|---|---|---|---|
+| **Admin** | `admin` | `123456` | Toàn quyền quản trị hệ thống |
+| **Giảng viên** | `1000001` | `123456` | Mã GV từ `1000001` đến `1000015` |
+| **Sinh viên** | `2500001` | `123456` | Mã SV từ `2500001` đến `2500150` |

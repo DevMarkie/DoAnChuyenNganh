@@ -2,7 +2,11 @@ import api from './api';
 
 export const authService = {
   login: (data) => api.post('/auth/login', data),
-  changePassword: (data) => api.put('/auth/change-password', data),
+  changePassword: (data) => api.put('/auth/change-password', {
+    currentPassword: data.currentPassword || data.oldPassword,
+    newPassword: data.newPassword,
+  }),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data),
 };
 
 export const departmentService = {
@@ -27,6 +31,7 @@ export const classService = {
 
 export const studentService = {
   getAll: () => api.get('/students'),
+  getPaged: (params) => api.get('/students/paged', { params }),
   getById: (id) => api.get(`/students/${id}`),
   getMe: () => api.get('/students/me'),
   getByClass: (classId) => api.get(`/students/class/${classId}`),
@@ -85,6 +90,7 @@ export const gradeService = {
   getBySection: (sectionId) => api.get(`/grades/section/${sectionId}`),
   save: (data) => api.put('/grades', data),
   saveBatch: (data) => api.put('/grades/batch', data),
+  exportExcel: (sectionId) => api.get(`/grades/section/${sectionId}/export`, { responseType: 'blob' }),
 };
 
 export const transcriptService = {
@@ -104,4 +110,13 @@ export const scheduleService = {
 
 export const dashboardService = {
   getDashboard: () => api.get('/dashboard'),
+};
+
+export const passwordResetService = {
+  getAll: (status) => api.get('/admin/password-resets', { params: status ? { status } : {} }),
+  getPendingCount: () => api.get('/admin/password-resets/pending-count'),
+  approve: (id, data) => api.post(`/admin/password-resets/${id}/approve`, data),
+  reject: (id, data) => api.post(`/admin/password-resets/${id}/reject`, data),
+  batchApprove: (requestIds) => api.post('/admin/password-resets/batch-approve', requestIds),
+  batchReject: (data) => api.post('/admin/password-resets/batch-reject', data),
 };

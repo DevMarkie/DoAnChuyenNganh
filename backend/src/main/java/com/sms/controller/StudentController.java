@@ -7,6 +7,9 @@ import com.sms.security.UserPrincipal;
 import com.sms.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,23 @@ public class StudentController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<Student>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success(studentService.findAll()));
+    }
+
+    /**
+     * API phân trang với bộ lọc nâng cao (Khoa + Lớp + Trạng thái + Tìm kiếm)
+     */
+    @GetMapping("/paged")
+    public ResponseEntity<ApiResponse<Page<Student>>> getPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer departmentId,
+            @RequestParam(required = false) Integer classId,
+            @RequestParam(required = false) String status
+    ) {
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("studentCode").ascending());
+        Page<Student> result = studentService.findPaged(keyword, departmentId, classId, status, pageable);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/{id}")

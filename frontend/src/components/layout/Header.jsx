@@ -16,8 +16,11 @@ export default function Header() {
     : user?.role === 'LECTURER' ? 'badge-info' : 'badge-success';
 
   const handleLogout = () => {
+    const role = user?.role;
     logout();
-    window.location.href = '/login';
+    if (role === 'ADMIN') window.location.href = '/admin/login';
+    else if (role === 'LECTURER') window.location.href = '/lecturer/login';
+    else window.location.href = '/student/login';
   };
 
   // Build breadcrumb label from pathname

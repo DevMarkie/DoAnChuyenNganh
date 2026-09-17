@@ -440,6 +440,9 @@ p {
   padding: 12px 18px;
   border-bottom: 1px solid var(--border-color);
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .table tbody td {
@@ -545,7 +548,8 @@ textarea.form-control {
 }
 
 /* ——— Modal Dialog ——— */
-.modal-backdrop {
+.modal-backdrop,
+.modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.6);
@@ -558,7 +562,8 @@ textarea.form-control {
   animation: fadeIn 0.15s ease-out;
 }
 
-.modal-content {
+.modal-content,
+.modal {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);

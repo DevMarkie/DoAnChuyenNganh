@@ -5,6 +5,8 @@ import com.sms.entity.*;
 import com.sms.exception.*;
 import com.sms.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,15 @@ public class StudentService {
 
     public List<Student> search(String keyword) {
         return studentRepository.search(keyword);
+    }
+
+    /**
+     * Tìm kiếm sinh viên phân trang với bộ lọc nâng cao
+     */
+    public Page<Student> findPaged(String keyword, Integer departmentId, Integer classId,
+                                    String status, Pageable pageable) {
+        Student.StudentStatus parsedStatus = parseStatusOrNull(status);
+        return studentRepository.findPaged(keyword, departmentId, classId, parsedStatus, pageable);
     }
 
     @Transactional
@@ -154,5 +165,17 @@ public class StudentService {
             return Student.StudentStatus.SUSPENDED;
         }
         return Student.StudentStatus.INACTIVE;
+    }
+
+    /**
+     * Giống parseStatus nhưng trả về null nếu chuỗi rỗng/null (dùng cho filter pagination)
+     */
+    private Student.StudentStatus parseStatusOrNull(String s) {
+        if (s == null || s.isBlank()) return null;
+        try {
+            return Student.StudentStatus.valueOf(s.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return parseStatus(s);
+        }
     }
 }

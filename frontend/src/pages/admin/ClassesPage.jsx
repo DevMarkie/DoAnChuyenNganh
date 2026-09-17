@@ -247,7 +247,7 @@ export default function ClassesPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '520px' }}>
             <div className="modal-header">
               <h3>{editingClass ? 'Cập Nhật Lớp Sinh Hoạt' : 'Thêm Lớp Sinh Hoạt Mới'}</h3>

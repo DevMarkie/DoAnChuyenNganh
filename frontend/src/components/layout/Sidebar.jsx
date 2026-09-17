@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
+import { passwordResetService } from '../../services/dataService';
 import {
   LayoutDashboard, Users, Building2, GraduationCap, BookOpen, UserCog,
   CalendarDays, Calendar, Layers, ClipboardList, BookMarked, School, Award, Menu,
-  ChevronLeft
+  ChevronLeft, KeyRound
 } from 'lucide-react';
 
 const adminNavGroups = [
@@ -31,6 +32,12 @@ const adminNavGroups = [
       { path: '/admin/course-sections', icon: Layers, label: 'Lớp học phần' },
       { path: '/admin/schedules', icon: Calendar, label: 'Lịch học & Xếp lịch' },
       { path: '/admin/grades', icon: ClipboardList, label: 'Sổ điểm toàn trường' },
+    ]
+  },
+  {
+    group: 'Hệ thống & Bảo mật',
+    items: [
+      { path: '/admin/password-resets', icon: KeyRound, label: 'Yêu cầu cấp lại MK', badgeKey: 'resets' },
     ]
   }
 ];
@@ -75,6 +82,29 @@ const studentNavGroups = [
 export default function Sidebar({ collapsed, onToggle }) {
   const { user } = useAuthStore();
   const role = user?.role;
+  const [pendingResets, setPendingResets] = useState(0);
+
+  useEffect(() => {
+    if (role === 'ADMIN') {
+      let isMounted = true;
+      const fetchPending = async () => {
+        try {
+          const res = await passwordResetService.getPendingCount();
+          if (isMounted && res?.data?.count !== undefined) {
+            setPendingResets(res.data.count);
+          }
+        } catch {
+          // ignore error silently
+        }
+      };
+      fetchPending();
+      const interval = setInterval(fetchPending, 15000);
+      return () => {
+        isMounted = false;
+        clearInterval(interval);
+      };
+    }
+  }, [role]);
 
   const groups = role === 'ADMIN' ? adminNavGroups : role === 'LECTURER' ? lecturerNavGroups : studentNavGroups;
 
@@ -113,10 +143,37 @@ export default function Sidebar({ collapsed, onToggle }) {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  title={collapsed ? item.label : ''}
+                  title={collapsed ? (item.badgeKey === 'resets' && pendingResets > 0 ? `${item.label} (${pendingResets} chờ)` : item.label) : ''}
                 >
-                  <item.icon size={18} className="nav-item-icon" />
+                  <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                    <item.icon size={18} className="nav-item-icon" />
+                    {collapsed && item.badgeKey === 'resets' && pendingResets > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: -3,
+                        right: -3,
+                        width: 7,
+                        height: 7,
+                        borderRadius: '50%',
+                        backgroundColor: '#ef4444'
+                      }} />
+                    )}
+                  </div>
                   {!collapsed && <span className="nav-item-text">{item.label}</span>}
+                  {!collapsed && item.badgeKey === 'resets' && pendingResets > 0 && (
+                    <span style={{
+                      marginLeft: 'auto',
+                      backgroundColor: '#ef4444',
+                      color: '#ffffff',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '2px 7px',
+                      borderRadius: '9999px',
+                      lineHeight: 1
+                    }}>
+                      {pendingResets}
+                    </span>
+                  )}
                 </NavLink>
               ))}
             </div>

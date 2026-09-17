@@ -241,7 +241,7 @@ export default function DepartmentsPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '520px' }}>
             <div className="modal-header">
               <h3>{editingDept ? 'Cập Nhật Khoa Viện' : 'Thêm Mới Khoa Viện'}</h3>

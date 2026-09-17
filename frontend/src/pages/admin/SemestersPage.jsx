@@ -222,7 +222,7 @@ export default function SemestersPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '600px' }}>
             <div className="modal-header">
               <h3>{editingSem ? 'Cập Nhật Kỳ Học' : 'Thêm Mới Học Kỳ'}</h3>

@@ -318,7 +318,7 @@ export default function LecturersPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '640px' }}>
             <div className="modal-header">
               <h3>{editingLecturer ? 'Cập Nhật Hồ Sơ Giảng Viên' : 'Thêm Giảng Viên Mới'}</h3>
@@ -337,7 +337,7 @@ export default function LecturersPage() {
                     value={formData.lecturerCode}
                     onChange={(e) => setFormData({ ...formData, lecturerCode: e.target.value })}
                     className="form-control"
-                    placeholder="VD: GV010"
+                    placeholder="VD: 1000010"
                   />
                 </div>
                 <div>
@@ -348,18 +348,18 @@ export default function LecturersPage() {
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     className="form-control"
-                    placeholder="VD: TS. Nguyễn Văn B"
+                    placeholder="VD: Nguyễn Văn A"
                   />
                 </div>
                 <div>
-                  <label className="form-label">Khoa trực thuộc *</label>
+                  <label className="form-label">Khoa / Viện *</label>
                   <select
                     required
                     value={formData.departmentId}
                     onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
                     className="form-select"
                   >
-                    <option value="">-- Chọn khoa --</option>
+                    <option value="">-- Chọn Khoa --</option>
                     {departments.map((d) => (
                       <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
                     ))}
@@ -375,58 +375,78 @@ export default function LecturersPage() {
                     <option value="Cử nhân">Cử nhân</option>
                     <option value="Thạc sĩ">Thạc sĩ</option>
                     <option value="Tiến sĩ">Tiến sĩ</option>
-                    <option value="Phó Giáo sư">Phó Giáo sư</option>
-                    <option value="Giáo sư">Giáo sư</option>
+                    <option value="PGS.TS">PGS.TS</option>
+                    <option value="GS.TS">GS.TS</option>
                   </select>
                 </div>
                 <div>
-                  <label className="form-label">Email học viện *</label>
+                  <label className="form-label">Giới tính</label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                    className="form-select"
+                  >
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="form-label">Ngày sinh</label>
+                  <input
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Email *</label>
                   <input
                     type="email"
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     className="form-control"
-                    placeholder="gv@sms.edu.vn"
+                    placeholder="VD: gv@sms.edu.vn"
                   />
                 </div>
                 <div>
                   <label className="form-label">Số điện thoại</label>
                   <input
-                    type="text"
+                    type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="form-control"
-                    placeholder="0912345678"
+                    placeholder="VD: 0912345678"
                   />
                 </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label className="form-label">
-                    {editingLecturer ? 'Mật khẩu mới (Để trống nếu giữ nguyên)' : 'Mật khẩu đăng nhập (Mặc định: 123456)'}
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="form-control"
-                    placeholder={editingLecturer ? 'Nhập mật khẩu mới nếu muốn đổi' : '123456'}
-                  />
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label className="form-label">Chuyên môn / Lĩnh vực nghiên cứu</label>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label className="form-label">Chuyên môn / Hướng nghiên cứu</label>
                   <input
                     type="text"
                     value={formData.specialization}
                     onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
                     className="form-control"
-                    placeholder="VD: Trí tuệ nhân tạo, Kỹ nghệ phần mềm, An toàn thông tin"
+                    placeholder="VD: Trí tuệ nhân tạo, Kỹ thuật phần mềm"
                   />
                 </div>
                 {!editingLecturer && (
+                  <div>
+                    <label className="form-label">Mật khẩu ban đầu</label>
+                    <input
+                      type="text"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="form-control"
+                      placeholder="Mặc định: 123456"
+                    />
+                  </div>
+                )}
+                {!editingLecturer && (
                   <div
                     style={{
-                      gridColumn: '1 / -1',
-                      padding: '12px 16px',
+                      gridColumn: 'span 2',
+                      padding: '12px 14px',
                       backgroundColor: 'var(--primary-light)',
                       border: '1px solid var(--primary-border)',
                       borderRadius: 'var(--radius-md)',
@@ -435,7 +455,7 @@ export default function LecturersPage() {
                       lineHeight: '1.5',
                     }}
                   >
-                    💡 <strong>Cấp quyền tự động:</strong> Tài khoản giảng viên được tạo tự động với Tên đăng nhập là <strong>Mã GV</strong> (chữ thường, VD: <code>gv010</code>) và Mật khẩu mặc định là <strong>123456</strong>.
+                    💡 <strong>Cấp quyền tự động:</strong> Tài khoản giảng viên được tạo tự động với Tên đăng nhập là <strong>Mã GV</strong> (VD: <code>1000010</code>) và Mật khẩu mặc định là <strong>123456</strong>.
                   </div>
                 )}
               </div>

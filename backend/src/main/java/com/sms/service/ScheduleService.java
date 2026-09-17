@@ -175,9 +175,12 @@ public class ScheduleService {
         );
         if (!conflicts.isEmpty()) {
             Schedule c = conflicts.get(0);
+            String subjectName = (c.getSection() != null && c.getSection().getSubject() != null) 
+                                 ? c.getSection().getSubject().getSubjectName() : "Không xác định";
+            String sectionCode = c.getSection() != null ? c.getSection().getSectionCode() : "Không xác định";
             throw new BadRequestException(String.format(
                     "Trùng phòng học! Phòng %s đã được xếp cho lớp %s (%s) vào %s (Tiết %d - %d).",
-                    room, c.getSection().getSectionCode(), c.getSection().getSubject().getSubjectName(),
+                    room, sectionCode, subjectName,
                     c.getDayOfWeekName(), c.getStartPeriod(), c.getEndPeriod()
             ));
         }
@@ -191,9 +194,12 @@ public class ScheduleService {
         );
         if (!conflicts.isEmpty()) {
             Schedule c = conflicts.get(0);
+            String subjectName = (c.getSection() != null && c.getSection().getSubject() != null) 
+                                 ? c.getSection().getSubject().getSubjectName() : "Không xác định";
+            String sectionCode = c.getSection() != null ? c.getSection().getSectionCode() : "Không xác định";
             throw new BadRequestException(String.format(
                     "Trùng lịch giảng viên! Thầy/Cô %s đã có lịch dạy lớp %s (%s) vào %s (Tiết %d - %d).",
-                    lecturerName, c.getSection().getSectionCode(), c.getSection().getSubject().getSubjectName(),
+                    lecturerName, sectionCode, subjectName,
                     c.getDayOfWeekName(), c.getStartPeriod(), c.getEndPeriod()
             ));
         }

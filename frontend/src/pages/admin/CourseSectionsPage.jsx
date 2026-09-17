@@ -284,7 +284,7 @@ export default function CourseSectionsPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '640px' }}>
             <div className="modal-header">
               <h3>{editingSec ? 'Cập Nhật Lớp Học Phần' : 'Mở Lớp Học Phần Mới'}</h3>

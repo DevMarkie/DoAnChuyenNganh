@@ -1,6 +1,7 @@
 package com.sms.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -102,5 +103,21 @@ public class Grade {
             letterGrade = "F";
             gpaPoint = new BigDecimal("0.0");
         }
+    }
+
+    @JsonProperty("isPassed")
+    public Boolean getIsPassed() {
+        if (letterGrade != null) {
+            return !"F".equalsIgnoreCase(letterGrade);
+        }
+        if (totalScore != null) {
+            return totalScore.doubleValue() >= 4.0;
+        }
+        return null;
+    }
+
+    @JsonProperty("score4")
+    public BigDecimal getScore4() {
+        return gpaPoint;
     }
 }

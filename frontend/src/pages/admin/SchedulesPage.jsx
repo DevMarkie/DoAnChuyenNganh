@@ -647,7 +647,7 @@ export default function SchedulesPage() {
 
       {/* ================= MODAL ADD / EDIT SCHEDULE ================= */}
       {isModalOpen && (
-        <div className="modal-backdrop">
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setIsModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '640px' }}>
             <div className="modal-header">
               <h3>{editingSchedule ? 'Chỉnh Sửa Lịch Học' : 'Xếp Lịch Học Mới Cho Học Kỳ'}</h3>

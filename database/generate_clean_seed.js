@@ -320,41 +320,41 @@ INSERT INTO classes (id, code, name, department_id, academic_year) VALUES
 -- ============================================================
 INSERT INTO users (id, username, password, email, role_id, is_active) VALUES
 (1, 'admin', '${BCRYPT_123456}', 'admin@sms.edu.vn', 1, TRUE),
-(2,  'gv01', '${BCRYPT_123456}', 'gv01@sms.edu.vn', 2, TRUE),
-(3,  'gv02', '${BCRYPT_123456}', 'gv02@sms.edu.vn', 2, TRUE),
-(4,  'gv03', '${BCRYPT_123456}', 'gv03@sms.edu.vn', 2, TRUE),
-(5,  'gv04', '${BCRYPT_123456}', 'gv04@sms.edu.vn', 2, TRUE),
-(6,  'gv05', '${BCRYPT_123456}', 'gv05@sms.edu.vn', 2, TRUE),
-(7,  'gv06', '${BCRYPT_123456}', 'gv06@sms.edu.vn', 2, TRUE),
-(8,  'gv07', '${BCRYPT_123456}', 'gv07@sms.edu.vn', 2, TRUE),
-(9,  'gv08', '${BCRYPT_123456}', 'gv08@sms.edu.vn', 2, TRUE),
-(10, 'gv09', '${BCRYPT_123456}', 'gv09@sms.edu.vn', 2, TRUE),
-(11, 'gv10', '${BCRYPT_123456}', 'gv10@sms.edu.vn', 2, TRUE),
-(12, 'gv11', '${BCRYPT_123456}', 'gv11@sms.edu.vn', 2, TRUE),
-(13, 'gv12', '${BCRYPT_123456}', 'gv12@sms.edu.vn', 2, TRUE),
-(14, 'gv13', '${BCRYPT_123456}', 'gv13@sms.edu.vn', 2, TRUE),
-(15, 'gv14', '${BCRYPT_123456}', 'gv14@sms.edu.vn', 2, TRUE),
-(16, 'gv15', '${BCRYPT_123456}', 'gv15@sms.edu.vn', 2, TRUE);
+(2,  '1000001', '${BCRYPT_123456}', '1000001@sms.edu.vn', 2, TRUE),
+(3,  '1000002', '${BCRYPT_123456}', '1000002@sms.edu.vn', 2, TRUE),
+(4,  '1000003', '${BCRYPT_123456}', '1000003@sms.edu.vn', 2, TRUE),
+(5,  '1000004', '${BCRYPT_123456}', '1000004@sms.edu.vn', 2, TRUE),
+(6,  '1000005', '${BCRYPT_123456}', '1000005@sms.edu.vn', 2, TRUE),
+(7,  '1000006', '${BCRYPT_123456}', '1000006@sms.edu.vn', 2, TRUE),
+(8,  '1000007', '${BCRYPT_123456}', '1000007@sms.edu.vn', 2, TRUE),
+(9,  '1000008', '${BCRYPT_123456}', '1000008@sms.edu.vn', 2, TRUE),
+(10, '1000009', '${BCRYPT_123456}', '1000009@sms.edu.vn', 2, TRUE),
+(11, '1000010', '${BCRYPT_123456}', '1000010@sms.edu.vn', 2, TRUE),
+(12, '1000011', '${BCRYPT_123456}', '1000011@sms.edu.vn', 2, TRUE),
+(13, '1000012', '${BCRYPT_123456}', '1000012@sms.edu.vn', 2, TRUE),
+(14, '1000013', '${BCRYPT_123456}', '1000013@sms.edu.vn', 2, TRUE),
+(15, '1000014', '${BCRYPT_123456}', '1000014@sms.edu.vn', 2, TRUE),
+(16, '1000015', '${BCRYPT_123456}', '1000015@sms.edu.vn', 2, TRUE);
 
 -- ============================================================
 -- 5. LECTURERS (15 giảng viên với tên thật và học hàm, học vị)
 -- ============================================================
 INSERT INTO lecturers (id, user_id, lecturer_code, full_name, date_of_birth, gender, email, phone, department_id, degree, specialization) VALUES
-(1,  2,  'GV001', 'TS. Nguyễn Hoàng Long',   '1980-04-12', 'MALE',   'gv01@sms.edu.vn', '0912345001', 1, 'TS',     'Kỹ thuật phần mềm & Kiến trúc hệ thống'),
-(2,  3,  'GV002', 'ThS. Trần Thị Mai',       '1985-08-23', 'FEMALE', 'gv02@sms.edu.vn', '0912345002', 1, 'ThS',    'Cơ sở dữ liệu & Phân tích dữ liệu'),
-(3,  4,  'GV003', 'PGS.TS. Lê Văn Thắng',    '1975-11-15', 'MALE',   'gv03@sms.edu.vn', '0912345003', 1, 'PGS.TS', 'Trí tuệ nhân tạo & Mạng máy tính'),
-(4,  5,  'GV004', 'TS. Vũ Quốc Cường',       '1982-01-20', 'MALE',   'gv04@sms.edu.vn', '0912345004', 2, 'TS',     'Quản trị chiến lược & Kinh tế số'),
-(5,  6,  'GV005', 'ThS. Đỗ Thị Thu Trang',   '1988-06-14', 'FEMALE', 'gv05@sms.edu.vn', '0912345005', 2, 'ThS',    'Marketing số & Thương mại điện tử'),
-(6,  7,  'GV006', 'TS. Hoàng Minh Tuấn',     '1979-09-30', 'MALE',   'gv06@sms.edu.vn', '0912345006', 2, 'TS',     'Tài chính doanh nghiệp & Kế toán'),
-(7,  8,  'GV007', 'PGS.TS. Phạm Đình Huy',   '1976-03-25', 'MALE',   'gv07@sms.edu.vn', '0912345007', 3, 'PGS.TS', 'Điện tử viễn thông & Xử lý tín hiệu'),
-(8,  9,  'GV008', 'ThS. Bùi Thị Thu Hương',  '1987-12-05', 'FEMALE', 'gv08@sms.edu.vn', '0912345008', 3, 'ThS',    'Hệ thống nhúng & IoT'),
-(9,  10, 'GV009', 'TS. Nguyễn Tuấn Anh',     '1983-07-19', 'MALE',   'gv09@sms.edu.vn', '0912345009', 3, 'TS',     'Điều khiển tự động & Robot học'),
-(10, 11, 'GV010', 'TS. Đặng Việt Hùng',      '1981-05-18', 'MALE',   'gv10@sms.edu.vn', '0912345010', 4, 'TS',     'Cơ khí chính xác & Chế tạo máy'),
-(11, 12, 'GV011', 'ThS. Lê Quang Hải',       '1986-10-09', 'MALE',   'gv11@sms.edu.vn', '0912345011', 4, 'ThS',    'Kỹ thuật ô tô & Động lực học'),
-(12, 13, 'GV012', 'ThS. Nguyễn Đức Thành',   '1989-02-27', 'MALE',   'gv12@sms.edu.vn', '0912345012', 4, 'ThS',    'Cơ điện tử & Thiết kế CAD/CAM'),
-(13, 14, 'GV013', 'TS. Nguyễn Quỳnh Chi',    '1984-04-03', 'FEMALE', 'gv13@sms.edu.vn', '0912345013', 5, 'TS',     'Ngôn ngữ học ứng dụng & Tiếng Anh'),
-(14, 15, 'GV014', 'ThS. Hoàng Ngọc Ánh',     '1990-11-12', 'FEMALE', 'gv14@sms.edu.vn', '0912345014', 5, 'ThS',    'Tiếng Anh thương mại & Biên phiên dịch'),
-(15, 16, 'GV015', 'ThS. Lê Thị Thanh Nga',   '1987-08-16', 'FEMALE', 'gv15@sms.edu.vn', '0912345015', 5, 'ThS',    'Ngôn ngữ & Văn hóa Nhật Bản');
+(1,  2,  '1000001', 'TS. Nguyễn Hoàng Long',   '1980-04-12', 'MALE',   '1000001@sms.edu.vn', '0912345001', 1, 'TS',     'Kỹ thuật phần mềm & Kiến trúc hệ thống'),
+(2,  3,  '1000002', 'ThS. Trần Thị Mai',       '1985-08-23', 'FEMALE', '1000002@sms.edu.vn', '0912345002', 1, 'ThS',    'Cơ sở dữ liệu & Phân tích dữ liệu'),
+(3,  4,  '1000003', 'PGS.TS. Lê Văn Thắng',    '1975-11-15', 'MALE',   '1000003@sms.edu.vn', '0912345003', 1, 'PGS.TS', 'Trí tuệ nhân tạo & Mạng máy tính'),
+(4,  5,  '1000004', 'TS. Vũ Quốc Cường',       '1982-01-20', 'MALE',   '1000004@sms.edu.vn', '0912345004', 2, 'TS',     'Quản trị chiến lược & Kinh tế số'),
+(5,  6,  '1000005', 'ThS. Đỗ Thị Thu Trang',   '1988-06-14', 'FEMALE', '1000005@sms.edu.vn', '0912345005', 2, 'ThS',    'Marketing số & Thương mại điện tử'),
+(6,  7,  '1000006', 'TS. Hoàng Minh Tuấn',     '1979-09-30', 'MALE',   '1000006@sms.edu.vn', '0912345006', 2, 'TS',     'Tài chính doanh nghiệp & Kế toán'),
+(7,  8,  '1000007', 'PGS.TS. Phạm Đình Huy',   '1976-03-25', 'MALE',   '1000007@sms.edu.vn', '0912345007', 3, 'PGS.TS', 'Điện tử viễn thông & Xử lý tín hiệu'),
+(8,  9,  '1000008', 'ThS. Bùi Thị Thu Hương',  '1987-12-05', 'FEMALE', '1000008@sms.edu.vn', '0912345008', 3, 'ThS',    'Hệ thống nhúng & IoT'),
+(9,  10, '1000009', 'TS. Nguyễn Tuấn Anh',     '1983-07-19', 'MALE',   '1000009@sms.edu.vn', '0912345009', 3, 'TS',     'Điều khiển tự động & Robot học'),
+(10, 11, '1000010', 'TS. Đặng Việt Hùng',      '1981-05-18', 'MALE',   '1000010@sms.edu.vn', '0912345010', 4, 'TS',     'Cơ khí chính xác & Chế tạo máy'),
+(11, 12, '1000011', 'ThS. Lê Quang Hải',       '1986-10-09', 'MALE',   '1000011@sms.edu.vn', '0912345011', 4, 'ThS',    'Kỹ thuật ô tô & Động lực học'),
+(12, 13, '1000012', 'ThS. Nguyễn Đức Thành',   '1989-02-27', 'MALE',   '1000012@sms.edu.vn', '0912345012', 4, 'ThS',    'Cơ điện tử & Thiết kế CAD/CAM'),
+(13, 14, '1000013', 'TS. Nguyễn Quỳnh Chi',    '1984-04-03', 'FEMALE', '1000013@sms.edu.vn', '0912345013', 5, 'TS',     'Ngôn ngữ học ứng dụng & Tiếng Anh'),
+(14, 15, '1000014', 'ThS. Hoàng Ngọc Ánh',     '1990-11-12', 'FEMALE', '1000014@sms.edu.vn', '0912345014', 5, 'ThS',    'Tiếng Anh thương mại & Biên phiên dịch'),
+(15, 16, '1000015', 'ThS. Lê Thị Thanh Nga',   '1987-08-16', 'FEMALE', '1000015@sms.edu.vn', '0912345015', 5, 'ThS',    'Ngôn ngữ & Văn hóa Nhật Bản');
 
 -- ============================================================
 -- 6. SUBJECTS (21 môn học)

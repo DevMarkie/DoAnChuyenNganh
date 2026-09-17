@@ -16,6 +16,8 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseSectionRepository courseSectionRepository;
     private final StudentRepository studentRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final GradeRepository gradeRepository;
     private static final int MAX_CREDITS_PER_SEMESTER = 30;
 
     public List<Enrollment> findByStudent(Long studentId) {
@@ -69,6 +71,25 @@ public class EnrollmentService {
             throw new BadRequestException("Vượt quá số tín chỉ tối đa trong học kỳ (" + MAX_CREDITS_PER_SEMESTER + ")");
         }
 
+        // Schedule Conflict Validation
+        Integer classId = student.getClassEntity() != null ? student.getClassEntity().getId() : null;
+        List<Schedule> studentSchedules = scheduleRepository.findSchedulesForStudentAndSemester(student.getId(), classId, semester.getId().longValue());
+        List<Schedule> newSchedules = scheduleRepository.findBySectionId(section.getId());
+
+        for (Schedule newSch : newSchedules) {
+            for (Schedule stuSch : studentSchedules) {
+                if (newSch.getDayOfWeek().equals(stuSch.getDayOfWeek())) {
+                    if (newSch.getStartPeriod() <= stuSch.getEndPeriod() && newSch.getEndPeriod() >= stuSch.getStartPeriod()) {
+                        throw new BadRequestException(String.format(
+                                "Trùng lịch học! Học phần này trùng thời gian với lớp %s (%s) vào %s (Tiết %d - %d).",
+                                stuSch.getSection().getSectionCode(), stuSch.getSection().getSubject().getSubjectName(),
+                                stuSch.getDayOfWeekName(), stuSch.getStartPeriod(), stuSch.getEndPeriod()
+                        ));
+                    }
+                }
+            }
+        }
+
         Enrollment enrollment = existingEnrollment != null ? existingEnrollment : new Enrollment();
         enrollment.setStudent(student);
         enrollment.setSection(section);
@@ -91,6 +112,11 @@ public class EnrollmentService {
 
         if (enrollment.getStatus() != Enrollment.EnrollmentStatus.ENROLLED) {
             throw new BadRequestException("Chỉ có thể hủy đăng ký đang hoạt động");
+        }
+
+        // Check if grade exists
+        if (gradeRepository.findByEnrollmentId(enrollmentId).isPresent()) {
+            throw new BadRequestException("Không thể hủy học phần đã có điểm (dù là điểm thành phần)");
         }
 
         // Lock the same section before releasing a seat, which keeps a

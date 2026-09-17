@@ -1,5 +1,6 @@
 package com.sms.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -13,4 +14,11 @@ public class ChangePasswordRequest {
     @NotBlank(message = "Mật khẩu mới không được để trống")
     @Size(min = 6, message = "Mật khẩu mới phải có ít nhất 6 ký tự")
     private String newPassword;
+
+    @JsonProperty("oldPassword")
+    public void setOldPassword(String oldPassword) {
+        if (this.currentPassword == null || this.currentPassword.isBlank()) {
+            this.currentPassword = oldPassword;
+        }
+    }
 }

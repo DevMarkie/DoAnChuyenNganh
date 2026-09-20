@@ -18,9 +18,9 @@ export default function Header() {
   const handleLogout = () => {
     const role = user?.role;
     logout();
-    if (role === 'ADMIN') window.location.href = '/admin/login';
-    else if (role === 'LECTURER') window.location.href = '/lecturer/login';
-    else window.location.href = '/student/login';
+    if (role === 'ADMIN') navigate('/admin/login');
+    else if (role === 'LECTURER') navigate('/lecturer/login');
+    else navigate('/student/login');
   };
 
   // Build breadcrumb label from pathname

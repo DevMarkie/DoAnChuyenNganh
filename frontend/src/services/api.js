@@ -38,8 +38,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401 || (error.response?.status === 403 && localStorage.getItem('token'))) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      // Use window.location only as last resort (full page reload)
-      window.location.href = '/login';
+      // Use window.location hash to avoid leaving repo path
+      window.location.hash = '#/';
     }
     return Promise.reject(error);
   }

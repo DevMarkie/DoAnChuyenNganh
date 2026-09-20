@@ -69,36 +69,36 @@ DoAnChuyenNganh/
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt & Chạy Dự Án
+## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy Dự Án
 
-### 1. Yêu Cầu Môi Trường
-- **JDK:** Java 21 trở lên
-- **Node.js:** v18 trở lên & npm
-- **Database:** MySQL 8.0+
+### Cách 1: Khởi chạy nhanh 1-Click (Khuyên dùng trên Windows)
+- Nhấp đúp chuột vào file **`start_dev.bat`** tại thư mục gốc. Hệ thống sẽ tự động khởi động Database, Spring Boot Backend và React Frontend.
+- Để tạo đường link Public HTTPS cho mọi người truy cập qua Internet, nhấp đúp vào **`share_internet.bat`**.
 
-### 2. Cài Đặt Cơ Sở Dữ Liệu
-1. Mở MySQL Client hoặc phpMyAdmin / MySQL Workbench.
-2. Chạy file script [schema.sql](database/schema.sql) để tạo cơ sở dữ liệu `student_management` và các bảng.
-3. Chạy file script [seed.sql](database/seed.sql) để nạp dữ liệu mẫu ban đầu (hoặc chạy qua node script trong thư mục `database`).
-
-### 3. Khởi Chạy Backend
+### Cách 2: Chạy trọn gói bằng Docker Compose
+Chỉ cần một câu lệnh duy nhất (đã bao gồm MySQL tự nạp CSDL, Backend và Frontend Nginx):
 ```bash
-cd backend
-# Chạy trực tiếp bằng Maven Wrapper
-./mvnw spring-boot:run
-# Hoặc trên Windows:
-mvnw.cmd spring-boot:run
+docker compose up --build -d
 ```
-- API chạy tại: `http://localhost:8080`
-- Swagger UI tài liệu API: `http://localhost:8080/swagger-ui.html`
+- Giao diện người dùng: `http://localhost:5173` hoặc `http://localhost`
+- Tài liệu API (Swagger UI): `http://localhost:8080/swagger-ui.html`
 
-### 4. Khởi Chạy Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-- Giao diện ứng dụng chạy tại: `http://localhost:5173`
+### Cách 3: Khởi chạy thủ công từng phần
+1. **Yêu cầu môi trường:** Java 21+, Node.js 18+, MySQL 8.0+.
+2. **Khởi động Database:** Chạy file [schema.sql](database/schema.sql) và [seed.sql](database/seed.sql) trong thư mục `database/`.
+3. **Chạy Backend:**
+   ```bash
+   cd backend
+   mvnw.cmd spring-boot:run
+   ```
+4. **Chạy Frontend:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+> 📖 **Xem hướng dẫn chi tiết về chia sẻ qua mạng LAN, Internet Tunnel và Cloud Deployment tại [DEPLOY_GUIDE.md](DEPLOY_GUIDE.md).**
 
 ---
 

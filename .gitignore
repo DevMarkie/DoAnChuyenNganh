@@ -89,3 +89,6 @@ drawio/
 /package.json
 /package-lock.json
 
+# Portable tunnel binaries
+cloudflared.exe
+

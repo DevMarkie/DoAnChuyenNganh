@@ -1,0 +1,174 @@
+{
+  "testDate": "2026-09-19T08:02:51.268Z",
+  "targetUrl": "http://localhost:8080",
+  "phases": [
+    {
+      "name": "Baseline Warmup",
+      "stats": {
+        "total": 5,
+        "successful": 5,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 64,
+        "rps": 77.9,
+        "min": 22,
+        "max": 56,
+        "avg": 38,
+        "p50": 34,
+        "p90": 56,
+        "p95": 56,
+        "p99": 56
+      }
+    },
+    {
+      "name": "Mức 1: Tải Vừa Phải (20 luồng đồng thời, 100 requests)",
+      "concurrency": 20,
+      "stats": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 1330,
+        "rps": 75.2,
+        "min": 15,
+        "max": 398,
+        "avg": 120,
+        "p50": 105,
+        "p90": 264,
+        "p95": 314,
+        "p99": 379
+      }
+    },
+    {
+      "name": "Mức 2: Tải Nặng (50 luồng đồng thời, 250 requests)",
+      "concurrency": 50,
+      "stats": {
+        "total": 250,
+        "successful": 250,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 4963,
+        "rps": 50.4,
+        "min": 38,
+        "max": 1795,
+        "avg": 444,
+        "p50": 413,
+        "p90": 808,
+        "p95": 956,
+        "p99": 1101
+      }
+    },
+    {
+      "name": "Mức 3: Tải Rất Nặng (100 luồng đồng thời, 500 requests)",
+      "concurrency": 100,
+      "stats": {
+        "total": 500,
+        "successful": 500,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 10331,
+        "rps": 48.4,
+        "min": 58,
+        "max": 2937,
+        "avg": 1021,
+        "p50": 984,
+        "p90": 1628,
+        "p95": 1797,
+        "p99": 2347
+      }
+    },
+    {
+      "name": "Mức 4: Tải Cực Đại / Đột Biến (200 luồng đồng thời, 400 requests)",
+      "concurrency": 200,
+      "stats": {
+        "total": 400,
+        "successful": 400,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 9296,
+        "rps": 43,
+        "min": 70,
+        "max": 6678,
+        "avg": 2477,
+        "p50": 2143,
+        "p90": 3920,
+        "p95": 4340,
+        "p99": 5589
+      }
+    },
+    {
+      "name": "BCrypt CPU Login Burst",
+      "stats": {
+        "total": 60,
+        "successful": 60,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 1555,
+        "rps": 38.6,
+        "min": 358,
+        "max": 1540,
+        "avg": 1046,
+        "p50": 1101,
+        "p90": 1484,
+        "p95": 1525,
+        "p99": 1540
+      }
+    },
+    {
+      "name": "HikariCP Pool Saturation",
+      "stats": {
+        "total": 60,
+        "successful": 60,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 477,
+        "rps": 125.9,
+        "min": 111,
+        "max": 460,
+        "avg": 278,
+        "p50": 279,
+        "p90": 431,
+        "p95": 446,
+        "p99": 460
+      },
+      "timedOutRequests": 0
+    },
+    {
+      "name": "Real-World Peak Rush",
+      "stats": {
+        "total": 100,
+        "successful": 100,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 814,
+        "rps": 122.8,
+        "min": 121,
+        "max": 750,
+        "avg": 454,
+        "p50": 419,
+        "p90": 700,
+        "p95": 724,
+        "p99": 750
+      }
+    },
+    {
+      "name": "Post-Stress Recovery",
+      "stats": {
+        "total": 4,
+        "successful": 4,
+        "failed": 0,
+        "successRate": 100,
+        "totalTimeMs": 51,
+        "rps": 79.1,
+        "min": 17,
+        "max": 50,
+        "avg": 35,
+        "p50": 36,
+        "p90": 50,
+        "p95": 50,
+        "p99": 50
+      },
+      "isHealthy": true
+    }
+  ]
+}

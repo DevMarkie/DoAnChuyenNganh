@@ -1,0 +1,1 @@
+import{t as e}from"./vendor-react-B-0WXtmh.js";import{t}from"./PortalLoginPage-o8wukBW7.js";var n=e();function r(){return(0,n.jsx)(t,{portalType:`admin`})}export{r as default};

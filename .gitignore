@@ -60,6 +60,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 out*.txt
+cloudflare.log
 
 # OS generated files
 .DS_Store
@@ -81,7 +82,7 @@ drawio/
 # Root diagram generator scripts
 /*.py
 
-# Root document files
+# Root document files (báo cáo Word/PDF — không commit vào repo)
 /*.docx
 /*.pdf
 
@@ -89,6 +90,18 @@ drawio/
 /package.json
 /package-lock.json
 
-# Portable tunnel binaries
+# Portable tunnel binaries & scripts
 cloudflared.exe
+share_internet.bat
+update_tunnel_and_deploy.js
+deploy_github.bat
+1_click_deploy_public.bat
+
+# Test output result files (auto-generated, không cần track)
+tests/*_result.json
+tests/*.json
+
+# Seed generator scripts (chỉ dùng 1 lần để tạo data)
+database/generate_enriched_seed.js
+database/import_seed.js
 

@@ -45,6 +45,12 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Object[]> countByDepartment();
 
     /**
+     * JOIN Department trong cùng một query — tránh N+1 khi lấy tên khỏa.
+     */
+    @Query("SELECT d.name, COUNT(s) FROM Student s JOIN s.classEntity c JOIN c.department d WHERE s.status = 'ACTIVE' GROUP BY d.id, d.name ORDER BY COUNT(s) DESC")
+    List<Object[]> countByDepartmentWithName();
+
+    /**
      * Tìm kiếm sinh viên phân trang với bộ lọc nâng cao (Keyword + Khoa + Lớp + Trạng thái).
      * Mỗi tham số filter là optional (null = bỏ qua).
      */

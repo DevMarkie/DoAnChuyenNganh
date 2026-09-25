@@ -3,25 +3,46 @@ chcp 65001 >nul
 title Khởi chạy Hệ Thống Quản Lý Sinh Viên
 
 echo ======================================================================
-echo    HỆ THỐNG QUẢN LÝ SINH VIÊN (SMS) - KHỞI CHẠY PHÁT TRIỂN & NỘI BỘ
+echo    HỆ THỐNG QUẢN LÝ SINH VIÊN (SMS) - KHỞI CHẠY PHÁT TRIỂN ^& NỘI BỘ
 echo ======================================================================
 echo.
 
-:: 1. Kiểm tra & khởi động MySQL Database Container
-echo [1/3] Đang kiểm tra Database Container...
-docker inspect student_management_db >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo [MySQL] Container chưa tồn tại, đang tạo và chạy qua docker-compose...
-    docker compose up -d db
-) else (
-    docker ps -q -f name=student_management_db | findstr . >nul
-    if %ERRORLEVEL% NEQ 0 (
-        echo [MySQL] Đang khởi động container student_management_db...
-        docker start student_management_db
-    ) else (
-        echo [MySQL] Database đã sẵn sàng trên cổng 3308.
-    )
+:: 1. Kiểm tra & xác định MySQL Database
+echo [1/3] Đang kiểm tra kết nối Database MySQL...
+netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [MySQL] Phát hiện MySQL Database cục bộ đang chạy trên cổng 3306.
+    set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+    goto :db_ready
 )
+
+netstat -ano | findstr ":3308 " | findstr "LISTENING" >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [MySQL] Phát hiện MySQL Docker Container đang chạy trên cổng 3308.
+    set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3308/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+    goto :db_ready
+)
+
+:: Nếu chưa có port nào mở, thử bật service MySQL80 cục bộ
+echo [MySQL] Đang kiểm tra khởi động dịch vụ MySQL80...
+net start MySQL80 >nul 2>&1
+netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [MySQL] Khởi động MySQL80 thành công trên cổng 3306.
+    set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+    goto :db_ready
+)
+
+:: Nếu không có MySQL cục bộ, thử qua Docker
+echo [MySQL] Thử khởi động qua Docker...
+docker start student_management_db >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    docker compose up -d db >nul 2>&1
+)
+set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3308/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+
+:db_ready
+echo [MySQL] Sẵn sàng kết nối cơ sở dữ liệu.
 
 :: 2. Khởi chạy Backend trong cửa sổ riêng
 echo.

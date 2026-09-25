@@ -27,17 +27,14 @@ public class DashboardService {
         long graduated = studentRepository.countByStatus(Student.StudentStatus.GRADUATED);
         long suspended = studentRepository.countByStatus(Student.StudentStatus.SUSPENDED);
 
-        // Students by department
-        List<Object[]> byDept = studentRepository.countByDepartment();
+        // Students by department — dùng query JOIN để tránh N+1 query
+        List<Object[]> byDept = studentRepository.countByDepartmentWithName();
         List<Map<String, Object>> studentsByDept = new ArrayList<>();
         for (Object[] row : byDept) {
             Map<String, Object> item = new HashMap<>();
-            Integer deptId = (Integer) row[0];
-            departmentRepository.findById(deptId).ifPresent(dept -> {
-                item.put("name", dept.getName());
-                item.put("count", row[1]);
-                studentsByDept.add(item);
-            });
+            item.put("name", row[0]);
+            item.put("count", row[1]);
+            studentsByDept.add(item);
         }
 
         // Students by status

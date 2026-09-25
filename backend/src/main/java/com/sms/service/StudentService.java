@@ -75,6 +75,8 @@ public class StudentService {
         String rawPassword = (request.getPassword() != null && !request.getPassword().isBlank())
                 ? request.getPassword().trim()
                 : "123456";
+        // Nếu dùng mật khẩu mặc định, bắt đổi khi đăng nhập lần đầu
+        boolean needsMustChange = !(request.getPassword() != null && !request.getPassword().isBlank());
 
         User user = new User();
         user.setUsername(username);
@@ -82,6 +84,7 @@ public class StudentService {
         user.setEmail(request.getEmail());
         user.setRole(studentRole);
         user.setIsActive(true);
+        user.setMustChangePassword(needsMustChange);
         user = userRepository.save(user);
 
         // Create student

@@ -20,6 +20,7 @@ public class UserPrincipal implements UserDetails {
     private String email;
     private String role;
     private boolean active;
+    private boolean mustChangePassword;
     private Collection<? extends GrantedAuthority> authorities;
 
     public static UserPrincipal create(User user) {
@@ -34,6 +35,7 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getRole().getName(),
                 user.getIsActive(),
+                Boolean.TRUE.equals(user.getMustChangePassword()),
                 authorities
         );
     }

@@ -5,6 +5,8 @@ import com.sms.entity.*;
 import com.sms.exception.*;
 import com.sms.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -21,6 +23,21 @@ public class CourseSectionService {
 
     public List<CourseSection> findAll() {
         return courseSectionRepository.findAll();
+    }
+
+    /**
+     * Tìm kiếm lớp học phần phân trang với bộ lọc tùy chọn.
+     */
+    public Page<CourseSection> findPaged(String keyword, Integer semesterId, String status, Pageable pageable) {
+        CourseSection.SectionStatus parsedStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                parsedStatus = CourseSection.SectionStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new BadRequestException("Trạng thái không hợp lệ: " + status);
+            }
+        }
+        return courseSectionRepository.findPaged(keyword, semesterId, parsedStatus, pageable);
     }
 
     public CourseSection findById(Long id) {

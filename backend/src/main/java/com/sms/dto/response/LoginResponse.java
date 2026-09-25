@@ -10,4 +10,6 @@ public class LoginResponse {
     private String email;
     private String role;
     private Long userId;
+    /** Nếu true, frontend phải chuyển hướng ngay sang trang đổi mật khẩu */
+    private Boolean mustChangePassword;
 }

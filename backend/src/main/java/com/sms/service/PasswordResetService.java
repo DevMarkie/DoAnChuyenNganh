@@ -152,6 +152,8 @@ public class PasswordResetService {
         // 2. Update user's password in Database
         User targetUser = request.getUser();
         targetUser.setPassword(passwordEncoder.encode(newPassword));
+        // Bắt buộc đổi mật khẩu khi đăng nhập tiếp theo
+        targetUser.setMustChangePassword(true);
         userRepository.save(targetUser);
 
         // 3. Update request status

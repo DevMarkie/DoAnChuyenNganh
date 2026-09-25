@@ -36,9 +36,9 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(fromEmail, "Đại học Phenikaa - Hệ thống SMS");
+            helper.setFrom(fromEmail, "Ban Quản Trị Đào Tạo - Hệ thống SMS");
             helper.setTo(toEmail);
-            helper.setSubject("[Phenikaa SMS] Thông Báo Cấp Lại Mật Khẩu Tài Khoản");
+            helper.setSubject("[SMS Portal] Thông Báo Cấp Lại Mật Khẩu Tài Khoản");
 
             String roleDisplay = "STUDENT".equalsIgnoreCase(role) ? "Sinh viên" : "Cán bộ / Giảng viên";
 
@@ -68,13 +68,13 @@ public class EmailService {
                 <body>
                   <div class="card">
                     <div class="header">
-                      <h1>TRƯỜNG ĐẠI HỌC PHENIKAA</h1>
-                      <p>CỔNG THÔNG TIN ĐÀO TẠO & QUẢN LÝ SINH VIÊN (SMS)</p>
+                      <h1>HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN</h1>
+                      <p>CỔNG THÔNG TIN ĐÀO TẠO & QUẢN LÝ SINH VIÊN (SMS PORTAL)</p>
                     </div>
                     <div class="content">
                       <div class="greeting">Kính gửi: %s (%s)</div>
                       <p style="font-size: 14px; line-height: 1.6; color: #334155;">
-                        Ban Quản trị Đào tạo trường Đại học Phenikaa đã tiếp nhận và xử lý yêu cầu cấp lại mật khẩu của bạn. Dưới đây là thông tin đăng nhập mới:
+                        Ban Quản trị Đào tạo Hệ thống SMS đã tiếp nhận và xử lý yêu cầu cấp lại mật khẩu của bạn. Dưới đây là thông tin đăng nhập mới:
                       </p>
                       
                       <div class="info-box">
@@ -97,7 +97,7 @@ public class EmailService {
                       </div>
                     </div>
                     <div class="footer">
-                      © 2026 Phenikaa University • Email này được gửi tự động từ Hệ thống SMS.
+                      © 2026 SMS University Portal • Email này được gửi tự động từ Hệ thống SMS.
                     </div>
                   </div>
                 </body>
@@ -130,21 +130,21 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(fromEmail, "Đại học Phenikaa - Hệ thống SMS");
+            helper.setFrom(fromEmail, "Ban Quản Trị Đào Tạo - Hệ thống SMS");
             helper.setTo(toEmail);
-            helper.setSubject("[Phenikaa SMS] Thông Báo Về Yêu Cầu Cấp Lại Mật Khẩu");
+            helper.setSubject("[SMS Portal] Thông Báo Về Yêu Cầu Cấp Lại Mật Khẩu");
 
             String htmlContent = """
                 <!DOCTYPE html>
                 <html>
                 <body style="font-family: Arial, sans-serif; padding: 20px; color: #1e293b;">
-                  <h2>TRƯỜNG ĐẠI HỌC PHENIKAA</h2>
+                  <h2>HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN</h2>
                   <p>Kính gửi: <strong>%s</strong> (Tài khoản: %s),</p>
                   <p>Yêu cầu cấp lại mật khẩu của bạn đã <strong>bị từ chối</strong> bởi Ban Quản trị với lý do sau:</p>
                   <blockquote style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 12px; margin: 16px 0; color: #991b1b;">
                     %s
                   </blockquote>
-                  <p>Nếu cần hỗ trợ thêm, vui lòng liên hệ trực tiếp Phòng Đào tạo hoặc Bộ phận Kỹ thuật trường Đại học Phenikaa.</p>
+                  <p>Nếu cần hỗ trợ thêm, vui lòng liên hệ trực tiếp Phòng Đào tạo hoặc Quản trị viên Hệ thống SMS.</p>
                 </body>
                 </html>
                 """.formatted(fullName, username, (reason != null && !reason.isBlank()) ? reason : "Thông tin xác minh không khớp.");

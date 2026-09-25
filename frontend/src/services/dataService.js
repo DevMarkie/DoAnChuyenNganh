@@ -84,6 +84,8 @@ export const enrollmentService = {
   getBySection: (sectionId) => api.get(`/enrollments/section/${sectionId}`),
   enroll: (data) => api.post('/enrollments', data),
   cancel: (id) => api.delete(`/enrollments/${id}`),
+  adminAssign: (studentId, sectionId) => api.post(`/admin/enrollments/assign?studentId=${studentId}&sectionId=${sectionId}`),
+  adminBatchAssignClass: (classId, sectionId) => api.post(`/admin/enrollments/batch-assign-class?classId=${classId}&sectionId=${sectionId}`),
 };
 
 export const gradeService = {

@@ -95,7 +95,7 @@ export default function PortalHubPage() {
           </div>
           <div>
             <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-              PHENIKAA UNIVERSITY
+              SMS UNIVERSITY
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
               Cổng Thông Tin Đào Tạo Trực Tuyến (SMS Portal)
@@ -305,7 +305,7 @@ export default function PortalHubPage() {
         fontSize: '0.8rem',
         color: 'var(--text-muted)'
       }}>
-        <div>© 2026 Phenikaa University — Đồ Án Chuyên Ngành: Hệ Thống Quản Lý Đào Tạo & Sinh Viên Tín Chỉ</div>
+        <div>© 2026 SMS University — Đồ Án Chuyên Ngành: Hệ Thống Quản Lý Đào Tạo & Sinh Viên Tín Chỉ</div>
       </footer>
     </div>
   );

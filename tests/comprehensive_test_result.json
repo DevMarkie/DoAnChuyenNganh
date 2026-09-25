@@ -1,6 +1,6 @@
 {
-  "startTime": "2026-09-20T06:47:54.756Z",
-  "endTime": "2026-09-20T06:48:03.627Z",
+  "startTime": "2026-09-25T07:43:29.324Z",
+  "endTime": "2026-09-25T07:43:48.436Z",
   "total": 56,
   "passed": 56,
   "failed": 0,
@@ -52,7 +52,7 @@
       "code": "SEC-01",
       "name": "Đăng nhập hợp lệ Admin (admin / 123456)",
       "status": "PASS",
-      "durationMs": 361,
+      "durationMs": 1464,
       "error": null
     },
     {
@@ -60,7 +60,7 @@
       "code": "SEC-02",
       "name": "Đăng nhập hợp lệ Giảng viên 1 (1000001 / 123456)",
       "status": "PASS",
-      "durationMs": 147,
+      "durationMs": 191,
       "error": null
     },
     {
@@ -68,7 +68,7 @@
       "code": "SEC-03",
       "name": "Đăng nhập hợp lệ Giảng viên 2 (1000002 / 123456)",
       "status": "PASS",
-      "durationMs": 132,
+      "durationMs": 204,
       "error": null
     },
     {
@@ -76,7 +76,7 @@
       "code": "SEC-04",
       "name": "Đăng nhập hợp lệ Sinh viên 1 (2500001 / 123456)",
       "status": "PASS",
-      "durationMs": 139,
+      "durationMs": 160,
       "error": null
     },
     {
@@ -84,7 +84,7 @@
       "code": "SEC-05",
       "name": "Đăng nhập hợp lệ Sinh viên 2 (2500002 / 123456)",
       "status": "PASS",
-      "durationMs": 122,
+      "durationMs": 194,
       "error": null
     },
     {
@@ -92,7 +92,7 @@
       "code": "SEC-06",
       "name": "Phòng thủ SQL Injection trong Username: admin' OR '1'='1",
       "status": "PASS",
-      "durationMs": 137,
+      "durationMs": 300,
       "error": null
     },
     {
@@ -100,7 +100,7 @@
       "code": "SEC-07",
       "name": "Phòng thủ SQL Injection trong Password: ' OR 1=1 --",
       "status": "PASS",
-      "durationMs": 144,
+      "durationMs": 295,
       "error": null
     },
     {
@@ -108,7 +108,7 @@
       "code": "SEC-08",
       "name": "Phòng thủ XSS Payload: <script>alert(1)</script>",
       "status": "PASS",
-      "durationMs": 119,
+      "durationMs": 242,
       "error": null
     },
     {
@@ -116,7 +116,7 @@
       "code": "SEC-09",
       "name": "Chặn trường hợp Username và Password rỗng",
       "status": "PASS",
-      "durationMs": 15,
+      "durationMs": 44,
       "error": null
     },
     {
@@ -124,7 +124,7 @@
       "code": "SEC-10",
       "name": "Phòng thủ Buffer Overflow / Denial-of-Service: Chuỗi 2000 ký tự",
       "status": "PASS",
-      "durationMs": 129,
+      "durationMs": 807,
       "error": null
     },
     {
@@ -132,7 +132,7 @@
       "code": "SEC-11",
       "name": "Phát hiện & Từ chối JWT Token bị sửa đổi Payload (Tampered Signature)",
       "status": "PASS",
-      "durationMs": 10,
+      "durationMs": 301,
       "error": null
     },
     {
@@ -140,7 +140,7 @@
       "code": "SEC-12",
       "name": "Từ chối Token hoàn toàn rác / sai định dạng",
       "status": "PASS",
-      "durationMs": 7,
+      "durationMs": 29,
       "error": null
     },
     {
@@ -148,7 +148,7 @@
       "code": "RBAC-01",
       "name": "Sinh viên bị chặn khi truy cập Dashboard Admin (/api/dashboard)",
       "status": "PASS",
-      "durationMs": 167,
+      "durationMs": 564,
       "error": null
     },
     {
@@ -156,7 +156,7 @@
       "code": "RBAC-02",
       "name": "Sinh viên bị từ chối khi gọi API tạo Khoa (POST /api/departments)",
       "status": "PASS",
-      "durationMs": 18,
+      "durationMs": 35,
       "error": null
     },
     {
@@ -164,7 +164,7 @@
       "code": "RBAC-03",
       "name": "Sinh viên bị từ chối khi gọi API tạo Môn học (POST /api/subjects)",
       "status": "PASS",
-      "durationMs": 18,
+      "durationMs": 31,
       "error": null
     },
     {
@@ -172,7 +172,7 @@
       "code": "RBAC-04",
       "name": "Sinh viên bị từ chối khi gọi API tạo Lớp sinh hoạt (POST /api/classes)",
       "status": "PASS",
-      "durationMs": 17,
+      "durationMs": 41,
       "error": null
     },
     {
@@ -180,7 +180,7 @@
       "code": "RBAC-05",
       "name": "Sinh viên bị từ chối khi xem danh sách Reset Mật Khẩu Admin",
       "status": "PASS",
-      "durationMs": 15,
+      "durationMs": 35,
       "error": null
     },
     {
@@ -188,7 +188,7 @@
       "code": "RBAC-06",
       "name": "Giảng viên bị từ chối khi gọi API tạo Sinh viên (POST /api/students)",
       "status": "PASS",
-      "durationMs": 14,
+      "durationMs": 35,
       "error": null
     },
     {
@@ -196,7 +196,7 @@
       "code": "RBAC-07",
       "name": "Giảng viên bị từ chối khi tạo Lịch học Admin (POST /api/schedules)",
       "status": "PASS",
-      "durationMs": 18,
+      "durationMs": 36,
       "error": null
     },
     {
@@ -204,7 +204,7 @@
       "code": "RBAC-08",
       "name": "Giảng viên bị từ chối khi tạo Học kỳ mới (POST /api/semesters)",
       "status": "PASS",
-      "durationMs": 18,
+      "durationMs": 35,
       "error": null
     },
     {
@@ -212,7 +212,7 @@
       "code": "RBAC-09",
       "name": "Chặn truy cập ẩn danh (Không có Token) vào /api/students",
       "status": "PASS",
-      "durationMs": 7,
+      "durationMs": 11,
       "error": null
     },
     {
@@ -220,7 +220,7 @@
       "code": "RBAC-10",
       "name": "Chặn truy cập ẩn danh vào /api/lecturers",
       "status": "PASS",
-      "durationMs": 6,
+      "durationMs": 10,
       "error": null
     },
     {
@@ -228,7 +228,7 @@
       "code": "VAL-01",
       "name": "Khoa: Bắt buộc có mã và tên khoa (Not Blank)",
       "status": "PASS",
-      "durationMs": 32,
+      "durationMs": 38,
       "error": null
     },
     {
@@ -236,7 +236,7 @@
       "code": "VAL-02",
       "name": "Khoa: Trùng mã khoa phải bị từ chối (Unique Constraint)",
       "status": "PASS",
-      "durationMs": 34,
+      "durationMs": 70,
       "error": null
     },
     {
@@ -244,7 +244,7 @@
       "code": "VAL-03",
       "name": "Môn học: Tín chỉ = 0 bị từ chối (Min = 1 TC theo BR-07)",
       "status": "PASS",
-      "durationMs": 33,
+      "durationMs": 99,
       "error": null
     },
     {
@@ -252,7 +252,7 @@
       "code": "VAL-04",
       "name": "Môn học: Tín chỉ âm (-3) bị từ chối (Min = 1 TC)",
       "status": "PASS",
-      "durationMs": 13,
+      "durationMs": 29,
       "error": null
     },
     {
@@ -260,7 +260,7 @@
       "code": "VAL-05",
       "name": "Môn học: Tín chỉ vượt quá 10 (12 TC) bị từ chối (Max = 10 TC)",
       "status": "PASS",
-      "durationMs": 16,
+      "durationMs": 35,
       "error": null
     },
     {
@@ -268,7 +268,7 @@
       "code": "VAL-06",
       "name": "Điểm số: Điểm chuyên cần > 10.0 (11.0) bị từ chối",
       "status": "PASS",
-      "durationMs": 74,
+      "durationMs": 444,
       "error": null
     },
     {
@@ -276,7 +276,7 @@
       "code": "VAL-07",
       "name": "Điểm số: Điểm giữa kỳ âm (-1.0) bị từ chối",
       "status": "PASS",
-      "durationMs": 39,
+      "durationMs": 67,
       "error": null
     },
     {
@@ -284,7 +284,7 @@
       "code": "VAL-08",
       "name": "Điểm số: Điểm cuối kỳ chữ (\"chin\") bị từ chối định dạng",
       "status": "PASS",
-      "durationMs": 15,
+      "durationMs": 42,
       "error": null
     },
     {
@@ -292,7 +292,7 @@
       "code": "VAL-09",
       "name": "Lớp sinh hoạt: Bắt buộc chọn Khoa (NotNull departmentId)",
       "status": "PASS",
-      "durationMs": 21,
+      "durationMs": 49,
       "error": null
     },
     {
@@ -300,7 +300,7 @@
       "code": "VAL-10",
       "name": "Lớp sinh hoạt: Trùng mã lớp bị từ chối",
       "status": "PASS",
-      "durationMs": 23,
+      "durationMs": 41,
       "error": null
     },
     {
@@ -308,7 +308,7 @@
       "code": "GRD-01",
       "name": "Lấy danh sách lớp học phần đang mở trong hệ thống",
       "status": "PASS",
-      "durationMs": 111,
+      "durationMs": 314,
       "error": null
     },
     {
@@ -316,7 +316,7 @@
       "code": "GRD-02",
       "name": "Giảng viên xem bảng điểm lớp học phần mình phụ trách",
       "status": "PASS",
-      "durationMs": 123,
+      "durationMs": 350,
       "error": null
     },
     {
@@ -324,7 +324,7 @@
       "code": "GRD-03",
       "name": "BR-07: Giảng viên 2 BỊ CHẶN khi nhập điểm cho lớp của Giảng viên 1",
       "status": "PASS",
-      "durationMs": 167,
+      "durationMs": 309,
       "error": null
     },
     {
@@ -332,7 +332,7 @@
       "code": "GRD-04",
       "name": "Tính toán điểm tổng kết: CC(10%) + GK(30%) + CK(60%) -> 10*0.1 + 8.5*0.3 + 9.0*0.6 = 8.95",
       "status": "PASS",
-      "durationMs": 199,
+      "durationMs": 302,
       "error": null
     },
     {
@@ -340,7 +340,7 @@
       "code": "GRD-05",
       "name": "Xếp loại Điểm chữ: 8.95 điểm -> Quy đổi chữ A và Điểm hệ 4 = 4.0",
       "status": "PASS",
-      "durationMs": 216,
+      "durationMs": 318,
       "error": null
     },
     {
@@ -348,7 +348,7 @@
       "code": "GRD-06",
       "name": "Xếp loại Điểm liệt / Không đạt: CC 10.0, GK 2.0, CK 2.0 -> Tổng 3.4 -> Điểm chữ F, Hệ 4 = 0.0",
       "status": "PASS",
-      "durationMs": 144,
+      "durationMs": 271,
       "error": null
     },
     {
@@ -356,7 +356,7 @@
       "code": "GRD-07",
       "name": "Nhập điểm hàng loạt cho cả lớp (/api/grades/batch)",
       "status": "PASS",
-      "durationMs": 154,
+      "durationMs": 274,
       "error": null
     },
     {
@@ -364,7 +364,7 @@
       "code": "GRD-08",
       "name": "Khóa bảng điểm (finalize = true) -> Giảng viên bị chặn không được sửa tiếp",
       "status": "PASS",
-      "durationMs": 173,
+      "durationMs": 250,
       "error": null
     },
     {
@@ -372,7 +372,7 @@
       "code": "GRD-09",
       "name": "Xuất bảng điểm Excel (.xlsx) có đầy đủ MIME type và content",
       "status": "PASS",
-      "durationMs": 149,
+      "durationMs": 2629,
       "error": null
     },
     {
@@ -380,7 +380,7 @@
       "code": "ENR-01",
       "name": "Sinh viên tra cứu các học phần đã đăng ký (/api/enrollments/my)",
       "status": "PASS",
-      "durationMs": 41,
+      "durationMs": 101,
       "error": null
     },
     {
@@ -388,7 +388,7 @@
       "code": "ENR-02",
       "name": "Sinh viên xem thời khóa biểu cá nhân theo tuần (/api/schedules/my-schedule)",
       "status": "PASS",
-      "durationMs": 48,
+      "durationMs": 163,
       "error": null
     },
     {
@@ -396,7 +396,7 @@
       "code": "ENR-03",
       "name": "Đăng ký trùng học phần: Đăng ký lớp đã có sẵn phải bị chặn",
       "status": "PASS",
-      "durationMs": 94,
+      "durationMs": 165,
       "error": null
     },
     {
@@ -404,7 +404,7 @@
       "code": "ENR-04",
       "name": "ID Tampering: Sinh viên 2 KHÔNG THỂ hủy đăng ký của Sinh viên 1",
       "status": "PASS",
-      "durationMs": 82,
+      "durationMs": 84,
       "error": null
     },
     {
@@ -412,7 +412,7 @@
       "code": "ENR-05",
       "name": "Hủy học phần không tồn tại (ID: 9999999) trả về lỗi thích hợp",
       "status": "PASS",
-      "durationMs": 30,
+      "durationMs": 52,
       "error": null
     },
     {
@@ -420,7 +420,7 @@
       "code": "TRA-01",
       "name": "Sinh viên xem bảng điểm cá nhân (/api/transcript/me)",
       "status": "PASS",
-      "durationMs": 56,
+      "durationMs": 103,
       "error": null
     },
     {
@@ -428,7 +428,7 @@
       "code": "TRA-02",
       "name": "Admin xem bảng điểm của bất kỳ sinh viên nào (/api/transcript/student/{id})",
       "status": "PASS",
-      "durationMs": 31,
+      "durationMs": 42,
       "error": null
     },
     {
@@ -436,7 +436,7 @@
       "code": "TRA-03",
       "name": "Xem bảng điểm của sinh viên không tồn tại (ID: 9999999) trả về 404",
       "status": "PASS",
-      "durationMs": 19,
+      "durationMs": 52,
       "error": null
     },
     {
@@ -444,7 +444,7 @@
       "code": "RST-01",
       "name": "Gửi yêu cầu cấp lại mật khẩu cho tài khoản không tồn tại",
       "status": "PASS",
-      "durationMs": 39,
+      "durationMs": 127,
       "error": null
     },
     {
@@ -452,7 +452,7 @@
       "code": "RST-02",
       "name": "Admin duyệt yêu cầu cấp lại mật khẩu & sinh mật khẩu tạm mới",
       "status": "PASS",
-      "durationMs": 3104,
+      "durationMs": 4353,
       "error": null
     },
     {
@@ -460,7 +460,7 @@
       "code": "STRESS-01",
       "name": "Xử lý đồng thời 10 yêu cầu đăng nhập song song (Concurrent Logins)",
       "status": "PASS",
-      "durationMs": 283,
+      "durationMs": 246,
       "error": null
     },
     {
@@ -468,7 +468,7 @@
       "code": "STRESS-02",
       "name": "Xử lý đồng thời 20 truy vấn dữ liệu song song (Dashboard, Khoa, Môn học)",
       "status": "PASS",
-      "durationMs": 97,
+      "durationMs": 141,
       "error": null
     },
     {
@@ -476,7 +476,7 @@
       "code": "STRESS-03",
       "name": "Kiểm tra OpenAPI Documentation JSON (/api-docs) đầy đủ schemas",
       "status": "PASS",
-      "durationMs": 1366,
+      "durationMs": 2378,
       "error": null
     },
     {
@@ -484,7 +484,7 @@
       "code": "STRESS-04",
       "name": "Kiểm tra Header CORS linh hoạt (Access-Control-Allow-Origin)",
       "status": "PASS",
-      "durationMs": 3,
+      "durationMs": 13,
       "error": null
     },
     {
@@ -492,7 +492,7 @@
       "code": "STRESS-05",
       "name": "Kiểm tra HTTP Compression GZIP cho payload lớn",
       "status": "PASS",
-      "durationMs": 77,
+      "durationMs": 78,
       "error": null
     }
   ]

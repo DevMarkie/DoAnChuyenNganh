@@ -101,7 +101,7 @@ public class TranscriptService {
                 .studentId(student.getId())
                 .studentCode(student.getStudentCode())
                 .studentName(student.getFullName())
-                .className(student.getClassEntity().getName())
+                .className(student.getClassEntity() != null ? student.getClassEntity().getName() : "Chưa xếp lớp")
                 .cumulativeGpa(cumulativeGpa)
                 .totalCredits(totalCredits)
                 .completedCourses(completedCourses)

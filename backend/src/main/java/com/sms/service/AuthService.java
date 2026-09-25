@@ -3,13 +3,14 @@ package com.sms.service;
 import com.sms.dto.request.LoginRequest;
 import com.sms.dto.request.ChangePasswordRequest;
 import com.sms.dto.response.LoginResponse;
-import com.sms.dto.ApiResponse;
 import com.sms.entity.User;
 import com.sms.repository.UserRepository;
 import com.sms.security.JwtUtil;
 import com.sms.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import com.sms.exception.BadRequestException;
 import com.sms.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -25,22 +27,50 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final LoginAttemptService loginAttemptService;
 
     public LoginResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+        String username = request.getUsername().trim();
 
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        String token = jwtUtil.generateToken(userPrincipal);
+        // Kiểm tra tài khoản có đang bị khoá do brute-force không
+        long secondsLocked = loginAttemptService.getSecondsUntilUnlocked(username);
+        if (secondsLocked > 0) {
+            long minutesLeft = (secondsLocked + 59) / 60;
+            throw new BadRequestException(
+                    String.format("Tài khoản tạm thời bị khoá do đăng nhập sai quá nhiều lần. " +
+                                  "Vui lòng thử lại sau %d phút.", minutesLeft));
+        }
 
-        return LoginResponse.builder()
-                .token(token)
-                .username(userPrincipal.getUsername())
-                .email(userPrincipal.getEmail())
-                .role(userPrincipal.getRole())
-                .userId(userPrincipal.getId())
-                .build();
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, request.getPassword())
+            );
+
+            // Đăng nhập thành công — xoá bộ đếm thất bại
+            loginAttemptService.loginSucceeded(username);
+
+            UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+            String token = jwtUtil.generateToken(userPrincipal);
+
+            return LoginResponse.builder()
+                    .token(token)
+                    .username(userPrincipal.getUsername())
+                    .email(userPrincipal.getEmail())
+                    .role(userPrincipal.getRole())
+                    .userId(userPrincipal.getId())
+                    .mustChangePassword(userPrincipal.isMustChangePassword())
+                    .build();
+
+        } catch (BadCredentialsException ex) {
+            // Tăng bộ đếm thất bại
+            loginAttemptService.loginFailed(username);
+            long remaining = loginAttemptService.getSecondsUntilUnlocked(username);
+            if (remaining > 0) {
+                throw new BadRequestException(
+                        "Sai tên đăng nhập hoặc mật khẩu. Tài khoản bị khoá 15 phút do sai quá nhiều lần.");
+            }
+            throw new BadRequestException("Sai tên đăng nhập hoặc mật khẩu.");
+        }
     }
 
     public void changePassword(Long userId, ChangePasswordRequest request) {
@@ -52,6 +82,8 @@ public class AuthService {
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        // Xóa cờ bắt buộc đổi mật khẩu sau khi đổi thành công
+        user.setMustChangePassword(false);
         userRepository.save(user);
     }
 }

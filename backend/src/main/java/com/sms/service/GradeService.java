@@ -5,10 +5,12 @@ import com.sms.entity.*;
 import com.sms.exception.*;
 import com.sms.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -71,9 +73,12 @@ public class GradeService {
                 throw new BadRequestException("Không thể chốt điểm khi chưa nhập đủ điểm thành phần");
             }
             grade.setIsFinalized(true);
+            log.info("AUDIT: userId={} finalized grade for enrollmentId={} (section={})",
+                    userId, enrollment.getId(), enrollment.getSection().getSectionCode());
         } else if (lecturer == null && Boolean.FALSE.equals(request.getFinalize())) {
             // Admin can explicitly unfinalize / unlock
             grade.setIsFinalized(false);
+            log.info("AUDIT: adminUserId={} unlocked grade for enrollmentId={}", userId, enrollment.getId());
         }
 
         return gradeRepository.save(grade);

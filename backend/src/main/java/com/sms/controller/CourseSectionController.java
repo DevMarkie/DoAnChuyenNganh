@@ -8,6 +8,9 @@ import com.sms.service.CourseSectionService;
 import com.sms.service.LecturerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +27,22 @@ public class CourseSectionController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<CourseSection>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success(courseSectionService.findAll()));
+    }
+
+    /**
+     * Endpoint phân trang với filter: ?keyword=&semesterId=&status=&page=0&size=20
+     */
+    @GetMapping("/paged")
+    public ResponseEntity<ApiResponse<Page<CourseSection>>> getPaged(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer semesterId,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<CourseSection> result = courseSectionService.findPaged(
+                keyword, semesterId, status,
+                PageRequest.of(page, size, Sort.by("id").descending()));
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/{id}")

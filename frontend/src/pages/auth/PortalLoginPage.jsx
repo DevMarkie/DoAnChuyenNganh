@@ -229,7 +229,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
             </div>
             <div>
               <div style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-                PHENIKAA UNIVERSITY
+                SMS UNIVERSITY
               </div>
               <div style={{
                 fontSize: '0.78rem',
@@ -364,7 +364,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
             }}>
               <IconComponent size={26} />
             </div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>PHENIKAA UNIVERSITY</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>SMS UNIVERSITY</div>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{config.title}</div>
           </div>
 

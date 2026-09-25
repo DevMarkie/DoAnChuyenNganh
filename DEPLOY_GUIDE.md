@@ -43,7 +43,7 @@ Nhấp đúp chuột vào file:
 
 ## 📶 CÁCH 2: TRUY CẬP TRONG CÙNG MẠNG WI-FI / LAN
 
-Khi bạn và người khác cùng kết nối chung một mạng Wi-Fi (ví dụ Wi-Fi trường Đại học Phenikaa, Wi-Fi phòng lab, hoặc Wi-Fi gia đình):
+Khi bạn và người khác cùng kết nối chung một mạng Wi-Fi (ví dụ Wi-Fi trường đại học, Wi-Fi phòng lab, hoặc Wi-Fi gia đình):
 
 1. Chạy file `start_dev.bat`.
 2. Xem địa chỉ IP máy tính của bạn (được in trực tiếp trên cửa sổ `start_dev.bat`, ví dụ: `192.168.1.130`).

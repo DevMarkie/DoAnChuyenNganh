@@ -16,6 +16,26 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
     @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
     List<CourseSection> findAll();
 
+    /**
+     * Tìm kiếm học phần phân trang với bộ lọc keyword, học kỳ, trạng thái.
+     */
+    @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
+    @Query("""
+        SELECT cs FROM CourseSection cs
+        WHERE (:keyword IS NULL OR :keyword = ''
+               OR LOWER(cs.sectionCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(cs.subject.subjectName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(cs.lecturer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        AND (:semesterId IS NULL OR cs.semester.id = :semesterId)
+        AND (:status IS NULL OR cs.status = :status)
+    """)
+    org.springframework.data.domain.Page<CourseSection> findPaged(
+            @Param("keyword") String keyword,
+            @Param("semesterId") Integer semesterId,
+            @Param("status") CourseSection.SectionStatus status,
+            org.springframework.data.domain.Pageable pageable
+    );
+
     @Override
     @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
     Optional<CourseSection> findById(Long id);

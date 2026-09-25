@@ -126,4 +126,56 @@ public class EnrollmentService {
         enrollment.setStatus(Enrollment.EnrollmentStatus.CANCELLED);
         enrollmentRepository.save(enrollment);
     }
+
+    @Transactional
+    public Enrollment adminAssign(Long studentId, Long sectionId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
+        CourseSection section = courseSectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+
+        Enrollment existingEnrollment = enrollmentRepository
+                .findByStudentIdAndSectionId(student.getId(), sectionId)
+                .orElse(null);
+        if (existingEnrollment != null && existingEnrollment.getStatus() == Enrollment.EnrollmentStatus.ENROLLED) {
+            throw new BadRequestException("Sinh viên đã có trong lớp học phần này");
+        }
+
+        // Kiểm tra sĩ số khi Admin giao trực tiếp
+        if (section.getCurrentStudents() >= section.getMaxStudents()) {
+            throw new BadRequestException(
+                String.format("Học phần đã đầy (%d/%d sinh viên). Vui lòng tăng sĩ số tối đa trước.",
+                        section.getCurrentStudents(), section.getMaxStudents()));
+        }
+
+        Enrollment enrollment = existingEnrollment != null ? existingEnrollment : new Enrollment();
+        enrollment.setStudent(student);
+        enrollment.setSection(section);
+        enrollment.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
+        return enrollmentRepository.save(enrollment);
+    }
+
+    @Transactional
+    public List<Enrollment> adminBatchAssignClass(Integer classId, Long sectionId) {
+        CourseSection section = courseSectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+        List<Student> students = studentRepository.findByClassEntityId(classId);
+        if (students.isEmpty()) {
+            throw new BadRequestException("Lớp sinh hoạt này không có sinh viên nào");
+        }
+        List<Enrollment> results = new java.util.ArrayList<>();
+        for (Student student : students) {
+            Enrollment existingEnrollment = enrollmentRepository
+                    .findByStudentIdAndSectionId(student.getId(), sectionId)
+                    .orElse(null);
+            if (existingEnrollment == null || existingEnrollment.getStatus() != Enrollment.EnrollmentStatus.ENROLLED) {
+                Enrollment enrollment = existingEnrollment != null ? existingEnrollment : new Enrollment();
+                enrollment.setStudent(student);
+                enrollment.setSection(section);
+                enrollment.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
+                results.add(enrollmentRepository.save(enrollment));
+            }
+        }
+        return results;
+    }
 }

@@ -17,9 +17,19 @@ public class JwtUtil {
     private final SecretKey key;
     private final long expiration;
 
-    public JwtUtil(@Value("${app.jwt.secret}") String secret,
+    public JwtUtil(@Value("${app.jwt.secret:}") String secret,
                    @Value("${app.jwt.expiration}") long expiration) {
-        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
+        if (secret == null || secret.isBlank()) {
+            // No secret configured: generate a random ephemeral key so a known
+            // signing key is never shipped. Tokens are invalidated on restart —
+            // set JWT_SECRET (base64, >= 64 bytes) in production for a stable key.
+            this.key = Jwts.SIG.HS512.key().build();
+            log.warn("app.jwt.secret is not set — using a random ephemeral JWT key. "
+                    + "All tokens become invalid after each restart. "
+                    + "Set the JWT_SECRET environment variable (base64-encoded) for production.");
+        } else {
+            this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
+        }
         this.expiration = expiration;
     }
 

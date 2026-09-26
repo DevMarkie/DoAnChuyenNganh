@@ -73,7 +73,6 @@ DoAnChuyenNganh/
 
 ### Cách 1: Khởi chạy nhanh 1-Click (Khuyên dùng trên Windows)
 - Nhấp đúp chuột vào file **`start_dev.bat`** tại thư mục gốc. Hệ thống sẽ tự động khởi động Database, Spring Boot Backend và React Frontend.
-- Để tạo đường link Public HTTPS cho mọi người truy cập qua Internet, nhấp đúp vào **`share_internet.bat`**.
 
 ### Cách 2: Chạy trọn gói bằng Docker Compose
 Chỉ cần một câu lệnh duy nhất (đã bao gồm MySQL tự nạp CSDL, Backend và Frontend Nginx):

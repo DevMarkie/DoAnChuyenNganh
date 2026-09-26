@@ -7,6 +7,7 @@ import com.sms.service.StudentService;
 import com.sms.service.TranscriptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +33,7 @@ public class TranscriptController {
      * Admin xem bảng điểm bất kỳ sinh viên
      */
     @GetMapping("/student/{studentId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<TranscriptResponse>> getStudentTranscript(@PathVariable Long studentId) {
         return ResponseEntity.ok(ApiResponse.success(transcriptService.getTranscript(studentId)));
     }

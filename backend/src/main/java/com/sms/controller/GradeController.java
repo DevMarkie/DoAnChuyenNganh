@@ -6,10 +6,12 @@ import com.sms.entity.Grade;
 import com.sms.security.UserPrincipal;
 import com.sms.service.ExcelExportService;
 import com.sms.service.GradeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
@@ -24,6 +26,7 @@ public class GradeController {
     private final ExcelExportService excelExportService;
 
     @GetMapping("/section/{sectionId}")
+    @PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
     public ResponseEntity<ApiResponse<List<Grade>>> getBySection(@PathVariable Long sectionId) {
         return ResponseEntity.ok(ApiResponse.success(gradeService.findBySection(sectionId)));
     }
@@ -32,6 +35,7 @@ public class GradeController {
      * Xuất bảng điểm lớp học phần ra file Excel (.xlsx)
      */
     @GetMapping("/section/{sectionId}/export")
+    @PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
     public ResponseEntity<byte[]> exportGradeSheet(@PathVariable Long sectionId) throws IOException {
         byte[] excelData = excelExportService.exportGradeSheet(sectionId);
         return ResponseEntity.ok()
@@ -42,14 +46,14 @@ public class GradeController {
 
     @PutMapping
     public ResponseEntity<ApiResponse<Grade>> saveGrade(@AuthenticationPrincipal UserPrincipal user,
-                                                        @RequestBody GradeRequest request) {
+                                                        @Valid @RequestBody GradeRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Lưu điểm thành công",
                 gradeService.saveGrade(user.getId(), request)));
     }
 
     @PutMapping("/batch")
     public ResponseEntity<ApiResponse<Void>> saveGrades(@AuthenticationPrincipal UserPrincipal user,
-                                                        @RequestBody List<GradeRequest> requests) {
+                                                        @Valid @RequestBody List<@Valid GradeRequest> requests) {
         gradeService.saveGrades(user.getId(), requests);
         return ResponseEntity.ok(ApiResponse.success("Lưu điểm hàng loạt thành công"));
     }

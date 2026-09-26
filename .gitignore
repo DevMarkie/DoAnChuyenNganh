@@ -86,6 +86,10 @@ drawio/
 /*.docx
 /*.pdf
 
+# Local docker-compose overrides (chứa secret cục bộ như JWT_SECRET — không commit)
+docker-compose.override.yml
+docker-compose.override.yaml
+
 # Root duplicate package files
 /package.json
 /package-lock.json

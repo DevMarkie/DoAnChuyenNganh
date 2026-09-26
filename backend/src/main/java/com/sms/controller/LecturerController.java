@@ -8,6 +8,7 @@ import com.sms.service.LecturerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -20,11 +21,13 @@ public class LecturerController {
     private final LecturerService lecturerService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<Lecturer>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success(lecturerService.findAll()));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Lecturer>> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(lecturerService.findById(id)));
     }
@@ -35,6 +38,7 @@ public class LecturerController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<Lecturer>>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(ApiResponse.success(lecturerService.search(keyword)));
     }

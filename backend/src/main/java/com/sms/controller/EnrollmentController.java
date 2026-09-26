@@ -9,6 +9,7 @@ import com.sms.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -28,6 +29,7 @@ public class EnrollmentController {
     }
 
     @GetMapping("/section/{sectionId}")
+    @PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
     public ResponseEntity<ApiResponse<List<Enrollment>>> getBySection(@PathVariable Long sectionId) {
         return ResponseEntity.ok(ApiResponse.success(enrollmentService.findBySection(sectionId)));
     }

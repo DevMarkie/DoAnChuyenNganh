@@ -42,14 +42,14 @@ export default function DashboardPage() {
   }
 
   const statCards = [
-    { label: 'Tổng sinh viên', val: data?.totalStudents || 0, icon: Users, color: '#2563eb', bg: '#eff6ff' },
-    { label: 'Sinh viên đang học', val: data?.activeStudents || 0, icon: GraduationCap, color: '#059669', bg: '#ecfdf5' },
-    { label: 'Giảng viên', val: data?.totalLecturers || 0, icon: UserCog, color: '#7c3aed', bg: '#f5f3ff' },
-    { label: 'Khoa đào tạo', val: data?.totalDepartments || 0, icon: School, color: '#d97706', bg: '#fffbeb' },
-    { label: 'Lớp sinh hoạt', val: data?.totalClasses || 0, icon: School, color: '#0284c7', bg: '#f0f9ff' },
-    { label: 'Môn học', val: data?.totalSubjects || 0, icon: BookOpen, color: '#db2777', bg: '#fdf2f8' },
-    { label: 'Lớp học phần', val: data?.totalCourseSections || 0, icon: Layers, color: '#4f46e5', bg: '#eef2ff' },
-    { label: 'Đã tốt nghiệp', val: data?.graduatedStudents || 0, icon: Award, color: '#0d9488', bg: '#f0fdfa' },
+    { label: 'Tổng sinh viên', val: data?.totalStudents || 0, icon: Users },
+    { label: 'Sinh viên đang học', val: data?.activeStudents || 0, icon: GraduationCap },
+    { label: 'Giảng viên', val: data?.totalLecturers || 0, icon: UserCog },
+    { label: 'Khoa đào tạo', val: data?.totalDepartments || 0, icon: School },
+    { label: 'Lớp sinh hoạt', val: data?.totalClasses || 0, icon: School },
+    { label: 'Môn học', val: data?.totalSubjects || 0, icon: BookOpen },
+    { label: 'Lớp học phần', val: data?.totalCourseSections || 0, icon: Layers },
+    { label: 'Đã tốt nghiệp', val: data?.graduatedStudents || 0, icon: Award },
   ];
 
   const deptData = data?.studentsByDepartment?.map(d => ({
@@ -98,7 +98,7 @@ export default function DashboardPage() {
           <div key={i} className="stat-card">
             <div
               className="stat-icon-wrapper"
-              style={{ background: c.bg, color: c.color }}
+              style={{ background: 'var(--bg-subtle)', color: 'var(--text-secondary)' }}
             >
               <c.icon size={22} />
             </div>

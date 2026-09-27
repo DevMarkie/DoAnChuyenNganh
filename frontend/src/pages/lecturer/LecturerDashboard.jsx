@@ -55,8 +55,8 @@ export default function LecturerDashboard() {
           <div
             className="stat-icon-wrapper"
             style={{
-              backgroundColor: 'var(--primary-light)',
-              color: 'var(--primary)',
+              backgroundColor: 'var(--bg-subtle)',
+              color: 'var(--text-secondary)',
             }}
           >
             <Layers size={22} />
@@ -71,8 +71,8 @@ export default function LecturerDashboard() {
           <div
             className="stat-icon-wrapper"
             style={{
-              backgroundColor: 'var(--success-bg)',
-              color: 'var(--success)',
+              backgroundColor: 'var(--bg-subtle)',
+              color: 'var(--text-secondary)',
             }}
           >
             <Users size={22} />
@@ -87,8 +87,8 @@ export default function LecturerDashboard() {
           <div
             className="stat-icon-wrapper"
             style={{
-              backgroundColor: 'var(--info-bg)',
-              color: 'var(--info)',
+              backgroundColor: 'var(--bg-subtle)',
+              color: 'var(--text-secondary)',
             }}
           >
             <GraduationCap size={22} />

@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -5,6 +6,15 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: './',
   plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    // The project path contains a space; the default "forks" pool fails to spawn
+    // workers under that path on Windows, so use the threads pool instead.
+    pool: 'threads',
+    // Reset the DOM/localStorage-backed globals between test files.
+    restoreMocks: true,
+  },
   server: {
     host: '0.0.0.0',
     port: 5173,

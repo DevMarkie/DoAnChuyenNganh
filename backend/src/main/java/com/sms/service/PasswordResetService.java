@@ -63,18 +63,26 @@ public class PasswordResetService {
             }
         }
 
+        // Anti-enumeration: never reveal whether an account exists / is eligible /
+        // already has a pending request. The controller always returns the same
+        // generic "request received" message, so for any non-actionable case we
+        // silently do nothing (log for admins) instead of throwing a distinct error
+        // that an attacker could use to probe which usernames are valid.
         if (user == null) {
-            throw new ResourceNotFoundException("Không tìm thấy tài khoản với mã số hoặc tên đăng nhập: " + inputUser);
+            log.info("Password reset requested for unknown identifier '{}' — ignored (anti-enumeration).", inputUser);
+            return null;
         }
 
         String roleName = user.getRole().getName();
         if (!"STUDENT".equalsIgnoreCase(roleName) && !"LECTURER".equalsIgnoreCase(roleName)) {
-            throw new BadRequestException("Cổng này chỉ hỗ trợ gửi yêu cầu cấp lại mật khẩu cho Sinh viên và Giảng viên.");
+            log.info("Password reset requested for non-eligible role '{}' (user {}) — ignored.", roleName, user.getId());
+            return null;
         }
 
-        // 2. Check for duplicate pending request
+        // 2. Skip silently if a pending request already exists (still generic to caller)
         if (resetRepository.existsByUserIdAndStatus(user.getId(), RequestStatus.PENDING)) {
-            throw new BadRequestException("Bạn đang có một yêu cầu cấp lại mật khẩu chờ xét duyệt. Vui lòng kiên nhẫn chờ Ban Quản trị xử lý.");
+            log.info("Password reset already pending for user {} — new request ignored.", user.getId());
+            return null;
         }
 
         // 3. Resolve Full Name
@@ -163,18 +171,30 @@ public class PasswordResetService {
         request.setProcessedAt(LocalDateTime.now());
         PasswordResetRequest savedRequest = resetRepository.save(request);
 
-        // 4. Send Gmail
-        boolean emailSent = emailService.sendPasswordResetEmail(
-                request.getEmail(),
-                request.getFullName(),
-                request.getUsername(),
-                newPassword,
-                request.getRole()
-        );
+        // 4. Send Gmail to the account's ON-FILE email — never the address typed
+        // into the reset request. Trusting the requester-supplied email would let
+        // anyone take over an account by forging a "forgot password" request with
+        // their own email. The self-entered request.getEmail() is kept only as
+        // contact metadata the admin can eyeball, not as a delivery target.
+        String onFileEmail = resolveOnFileEmail(targetUser, request.getRole());
 
-        String message = emailSent
-                ? "Cấp lại mật khẩu thành công! Thông tin đăng nhập đã được gửi tới Gmail: " + request.getEmail()
-                : "Cấp lại mật khẩu thành công trong CSDL (Gửi Gmail chưa thành công do chưa kết nối SMTP). Mật khẩu mới: " + newPassword;
+        boolean emailSent = onFileEmail != null && !onFileEmail.isBlank()
+                && emailService.sendPasswordResetEmail(
+                        onFileEmail,
+                        request.getFullName(),
+                        request.getUsername(),
+                        newPassword,
+                        request.getRole()
+                );
+
+        String message;
+        if (emailSent) {
+            message = "Cấp lại mật khẩu thành công! Thông tin đăng nhập đã được gửi tới email đã đăng ký của tài khoản: " + maskEmail(onFileEmail);
+        } else if (onFileEmail == null || onFileEmail.isBlank()) {
+            message = "Đã cấp lại mật khẩu trong CSDL. Tài khoản chưa có email đăng ký nên hệ thống chưa gửi được — vui lòng bàn giao mật khẩu mới cho người dùng qua kênh an toàn.";
+        } else {
+            message = "Đã cấp lại mật khẩu trong CSDL (gửi email tới " + maskEmail(onFileEmail) + " chưa thành công). Vui lòng bàn giao mật khẩu mới cho người dùng qua kênh an toàn.";
+        }
 
         return PasswordResetResult.builder()
                 .request(savedRequest)
@@ -255,5 +275,41 @@ public class PasswordResetService {
             sb.append(PASSWORD_CHARS.charAt(RANDOM.nextInt(PASSWORD_CHARS.length())));
         }
         return sb.toString();
+    }
+
+    /**
+     * Resolve the authoritative on-file email for an account: prefer the
+     * Student/Lecturer profile email, fall back to the User account email.
+     * Never uses the requester-supplied email from the reset request.
+     */
+    private String resolveOnFileEmail(User targetUser, String roleName) {
+        String email = null;
+        if ("STUDENT".equalsIgnoreCase(roleName)) {
+            Student s = studentRepository.findByUserId(targetUser.getId()).orElse(null);
+            if (s != null) email = s.getEmail();
+        } else if ("LECTURER".equalsIgnoreCase(roleName)) {
+            Lecturer l = lecturerRepository.findByUserId(targetUser.getId()).orElse(null);
+            if (l != null) email = l.getEmail();
+        }
+        if (email == null || email.isBlank()) {
+            email = targetUser.getEmail();
+        }
+        return email;
+    }
+
+    /**
+     * Mask an email for display (e.g. "student@school.edu" -> "s*****t@school.edu")
+     * so approval messages/logs don't expose the full on-file address.
+     */
+    private String maskEmail(String email) {
+        if (email == null || email.isBlank()) return "(chưa có)";
+        int at = email.indexOf('@');
+        if (at <= 0) return "***";
+        String local = email.substring(0, at);
+        String domain = email.substring(at);
+        if (local.length() <= 2) {
+            return local.charAt(0) + "***" + domain;
+        }
+        return local.charAt(0) + "*****" + local.charAt(local.length() - 1) + domain;
     }
 }

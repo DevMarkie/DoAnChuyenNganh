@@ -140,6 +140,16 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- JDK 23 is not yet an officially-supported Byte Buddy target;
+                         enable experimental support so Mockito can mock concrete
+                         classes (e.g. EmailService in PasswordResetServiceTest). -->
+                    <argLine>-Dnet.bytebuddy.experimental=true -XX:+EnableDynamicAgentLoading</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

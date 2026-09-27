@@ -157,24 +157,44 @@ public class EnrollmentService {
 
     @Transactional
     public List<Enrollment> adminBatchAssignClass(Integer classId, Long sectionId) {
-        CourseSection section = courseSectionRepository.findById(sectionId)
+        // Lock the section so the capacity check below stays consistent even if
+        // another enrollment lands concurrently.
+        CourseSection section = courseSectionRepository.findByIdForEnrollment(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
         List<Student> students = studentRepository.findByClassEntityId(classId);
         if (students.isEmpty()) {
             throw new BadRequestException("Lớp sinh hoạt này không có sinh viên nào");
         }
-        List<Enrollment> results = new java.util.ArrayList<>();
+
+        // Only students not already actively enrolled will consume a seat.
+        // A CANCELLED enrollment is restored (re-uses its row) and does count.
+        List<Enrollment> toEnroll = new java.util.ArrayList<>();
         for (Student student : students) {
-            Enrollment existingEnrollment = enrollmentRepository
+            Enrollment existing = enrollmentRepository
                     .findByStudentIdAndSectionId(student.getId(), sectionId)
                     .orElse(null);
-            if (existingEnrollment == null || existingEnrollment.getStatus() != Enrollment.EnrollmentStatus.ENROLLED) {
-                Enrollment enrollment = existingEnrollment != null ? existingEnrollment : new Enrollment();
+            if (existing == null || existing.getStatus() != Enrollment.EnrollmentStatus.ENROLLED) {
+                Enrollment enrollment = existing != null ? existing : new Enrollment();
                 enrollment.setStudent(student);
                 enrollment.setSection(section);
                 enrollment.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
-                results.add(enrollmentRepository.save(enrollment));
+                toEnroll.add(enrollment);
             }
+        }
+
+        // Capacity guard — the whole batch is rejected if it would overflow the
+        // section, so an admin never lands the class in an over-capacity state
+        // (e.g. 120 students into a 50-seat section).
+        int available = section.getMaxStudents() - section.getCurrentStudents();
+        if (toEnroll.size() > available) {
+            throw new BadRequestException(String.format(
+                    "Không đủ chỗ: cần thêm %d chỗ nhưng học phần chỉ còn trống %d/%d. Vui lòng tăng sĩ số tối đa trước.",
+                    toEnroll.size(), Math.max(available, 0), section.getMaxStudents()));
+        }
+
+        List<Enrollment> results = new java.util.ArrayList<>();
+        for (Enrollment enrollment : toEnroll) {
+            results.add(enrollmentRepository.save(enrollment));
         }
         return results;
     }

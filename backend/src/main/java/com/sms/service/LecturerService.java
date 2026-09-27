@@ -56,9 +56,8 @@ public class LecturerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role LECTURER"));
 
         String username = request.getLecturerCode().trim().toLowerCase();
-        String rawPassword = (request.getPassword() != null && !request.getPassword().isBlank())
-                ? request.getPassword().trim()
-                : "123456";
+        boolean usingDefaultPassword = !(request.getPassword() != null && !request.getPassword().isBlank());
+        String rawPassword = usingDefaultPassword ? "123456" : request.getPassword().trim();
 
         User user = new User();
         user.setUsername(username);
@@ -66,6 +65,8 @@ public class LecturerService {
         user.setEmail(request.getEmail());
         user.setRole(lecturerRole);
         user.setIsActive(true);
+        // BR-06: tài khoản cấp mật khẩu mặc định phải đổi mật khẩu ở lần đăng nhập đầu.
+        user.setMustChangePassword(usingDefaultPassword);
         user = userRepository.save(user);
 
         Lecturer lecturer = new Lecturer();

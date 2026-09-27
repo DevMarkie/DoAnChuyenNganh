@@ -18,6 +18,7 @@ public class CourseSectionRequest {
     @NotNull(message = "Học kỳ không được để trống")
     private Integer semesterId;
 
+    @NotNull(message = "Sĩ số tối đa không được để trống")
     @Min(value = 1, message = "Sĩ số tối đa phải lớn hơn 0")
     private Integer maxStudents;
     private String schedule;

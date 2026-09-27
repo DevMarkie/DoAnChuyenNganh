@@ -103,6 +103,14 @@ public class Grade {
             letterGrade = "F";
             gpaPoint = new BigDecimal("0.0");
         }
+
+        // Quy chế điểm liệt cuối kỳ (BA - Quy trình 5): "Đạt" yêu cầu Điểm TK >= 4.0
+        // VÀ Điểm cuối kỳ (CK) >= 3.0. Nếu CK < 3.0 thì học phần bị trượt (F / phải
+        // học lại) bất kể điểm tổng kết, nên ta ghi đè điểm chữ về F.
+        if (finalScore != null && finalScore.compareTo(new BigDecimal("3.0")) < 0) {
+            letterGrade = "F";
+            gpaPoint = new BigDecimal("0.0");
+        }
     }
 
     @JsonProperty("isPassed")
@@ -111,7 +119,9 @@ public class Grade {
             return !"F".equalsIgnoreCase(letterGrade);
         }
         if (totalScore != null) {
-            return totalScore.doubleValue() >= 4.0;
+            // Cùng quy chế điểm liệt: Đạt = TK >= 4.0 VÀ CK >= 3.0 (nếu có điểm CK).
+            return totalScore.doubleValue() >= 4.0
+                    && (finalScore == null || finalScore.compareTo(new BigDecimal("3.0")) >= 0);
         }
         return null;
     }

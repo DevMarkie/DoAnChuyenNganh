@@ -37,7 +37,6 @@ public class TranscriptService {
                         g.getEnrollment().getSection().getSemester().getId()));
 
         List<TranscriptResponse.SemesterGrade> semesterGrades = new ArrayList<>();
-        BigDecimal totalWeightedGpa = BigDecimal.ZERO;
         int totalCredits = 0;
         int completedCourses = 0;
 
@@ -65,20 +64,18 @@ public class TranscriptService {
                         .gpaPoint(grade.getGpaPoint())
                         .build());
 
+                // Semester GPA includes every graded attempt of that term
+                // (an F counts as 0.0 here — that is a correct semester GPA).
                 if (grade.getGpaPoint() != null) {
                     semWeightedGpa = semWeightedGpa.add(
                             grade.getGpaPoint().multiply(BigDecimal.valueOf(credits)));
                     semCredits += credits;
-                    completedCourses++;
                 }
             }
 
             BigDecimal semesterGpa = semCredits > 0
                     ? semWeightedGpa.divide(BigDecimal.valueOf(semCredits), 2, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
-
-            totalWeightedGpa = totalWeightedGpa.add(semWeightedGpa);
-            totalCredits += semCredits;
 
             semesterGrades.add(TranscriptResponse.SemesterGrade.builder()
                     .semesterId(semester.getId())
@@ -93,8 +90,36 @@ public class TranscriptService {
         // Sort by semester
         semesterGrades.sort(Comparator.comparing(TranscriptResponse.SemesterGrade::getSemesterId));
 
-        BigDecimal cumulativeGpa = totalCredits > 0
-                ? totalWeightedGpa.divide(BigDecimal.valueOf(totalCredits), 2, RoundingMode.HALF_UP)
+        // Cumulative figures dedupe retakes: for each subject only the latest
+        // attempt (by semester) counts, so an earlier F that was later retaken
+        // no longer inflates accumulated credits nor permanently drags the CPA.
+        Map<String, Grade> latestBySubject = new LinkedHashMap<>();
+        for (Grade grade : grades) {
+            if (grade.getGpaPoint() == null) continue;
+            Subject subject = grade.getEnrollment().getSection().getSubject();
+            int semId = grade.getEnrollment().getSection().getSemester().getId();
+            Grade current = latestBySubject.get(subject.getSubjectCode());
+            if (current == null
+                    || semId > current.getEnrollment().getSection().getSemester().getId()) {
+                latestBySubject.put(subject.getSubjectCode(), grade);
+            }
+        }
+
+        BigDecimal cpaWeighted = BigDecimal.ZERO;
+        int gpaCredits = 0; // CPA denominator — a failing latest attempt still counts here
+        for (Grade grade : latestBySubject.values()) {
+            int credits = grade.getEnrollment().getSection().getSubject().getCredits();
+            cpaWeighted = cpaWeighted.add(grade.getGpaPoint().multiply(BigDecimal.valueOf(credits)));
+            gpaCredits += credits;
+            // Accumulated credits count passed courses only (F / 0.0 excluded).
+            if (grade.getGpaPoint().compareTo(BigDecimal.ZERO) > 0) {
+                totalCredits += credits;
+                completedCourses++;
+            }
+        }
+
+        BigDecimal cumulativeGpa = gpaCredits > 0
+                ? cpaWeighted.divide(BigDecimal.valueOf(gpaCredits), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
         return TranscriptResponse.builder()

@@ -9,6 +9,7 @@ import com.sms.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -36,6 +37,7 @@ public class ClassController {
     }
 
     @GetMapping("/{id}/students")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER')")
     public ResponseEntity<ApiResponse<List<Student>>> getStudentsInClass(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.success(studentService.findByClass(id)));
     }

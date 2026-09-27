@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { jwtDecode } from 'jwt-decode';
+import { authService } from '../services/dataService';
 
 /**
  * Check if a JWT token is expired (with 60s buffer to avoid edge-case failures)
@@ -36,6 +37,8 @@ const useAuthStore = create((set, get) => ({
   },
 
   logout: () => {
+    // Notify the server (stateless JWT — best-effort, never blocks local sign-out).
+    authService.logout().catch(() => {});
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     set({ user: null, token: null, isAuthenticated: false });

@@ -4,6 +4,7 @@ import com.sms.entity.Enrollment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,13 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findBySectionId(Long sectionId);
     Optional<Enrollment> findByStudentIdAndSectionId(Long studentId, Long sectionId);
     boolean existsByStudentIdAndSectionId(Long studentId, Long sectionId);
+
+    /** Batch-load enrollments with their section + lecturer initialised (for bulk grade entry BR-07 check). */
+    @Query("SELECT e FROM Enrollment e " +
+           "JOIN FETCH e.section cs " +
+           "LEFT JOIN FETCH cs.lecturer " +
+           "WHERE e.id IN :ids")
+    List<Enrollment> findByIdInWithSection(@Param("ids") Collection<Long> ids);
 
     @Query("SELECT e FROM Enrollment e " +
            "JOIN FETCH e.section cs " +

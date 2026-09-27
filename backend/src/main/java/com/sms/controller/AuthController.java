@@ -39,4 +39,14 @@ public class AuthController {
         authService.changePassword(user.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Đổi mật khẩu thành công"));
     }
+
+    /**
+     * Logout. JWTs are stateless (no server-side blacklist), so the client must
+     * discard its stored token; this endpoint just acknowledges the action and
+     * gives clients a single, explicit call to hit on sign-out.
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        return ResponseEntity.ok(ApiResponse.success("Đăng xuất thành công"));
+    }
 }

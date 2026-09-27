@@ -66,13 +66,10 @@ public class AdminPasswordResetController {
 
     @PostMapping("/batch-reject")
     public ResponseEntity<ApiResponse<List<PasswordResetRequest>>> batchRejectRequests(
-            @RequestBody Map<String, Object> body,
+            @Valid @RequestBody com.sms.dto.request.BatchRejectRequest body,
             @AuthenticationPrincipal UserPrincipal adminUser) {
-        
-        List<Long> requestIds = (List<Long>) body.get("requestIds");
-        String reason = (String) body.get("reason");
-        
-        List<PasswordResetRequest> results = passwordResetService.batchReject(requestIds, reason, adminUser.getId());
+        List<PasswordResetRequest> results = passwordResetService.batchReject(
+                body.getRequestIds(), body.getReason(), adminUser.getId());
         return ResponseEntity.ok(ApiResponse.success("Đã từ chối hàng loạt " + results.size() + " yêu cầu", results));
     }
 }

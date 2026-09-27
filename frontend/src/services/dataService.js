@@ -7,6 +7,7 @@ export const authService = {
     newPassword: data.newPassword,
   }),
   forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  logout: () => api.post('/auth/logout'),
 };
 
 export const departmentService = {

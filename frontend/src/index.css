@@ -22,12 +22,17 @@
   --border-subtle: #cbd5e1;
   --border-focus: #2563eb;
 
-  /* Primary — University Blue / Royal Navy */
-  --primary: #1d4ed8;
-  --primary-hover: #1e40af;
+  /* Primary — used only as a restrained accent (links, focus, active nav) */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
   --primary-light: #eff6ff;
-  --primary-border: #bfdbfe;
-  --primary-gradient: linear-gradient(135deg, #1d4ed8, #2563eb);
+  --primary-border: #dbeafe;
+  --primary-gradient: #18181b;
+
+  /* Neutral action ink — buttons & primary actions (monochrome, no gradient) */
+  --btn-primary-bg: #18181b;
+  --btn-primary-fg: #ffffff;
+  --btn-primary-hover: #000000;
 
   /* Secondary / Slate */
   --secondary: #475569;
@@ -62,12 +67,12 @@
   --text-light: #94a3b8;
   --text-inverse: #ffffff;
 
-  /* Shadows (Multi-layered subtle elevation) */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-  --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  /* Shadows — near-flat; structure comes from 1px borders, not elevation */
+  --shadow-xs: 0 1px 1px 0 rgba(15, 23, 42, 0.03);
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+  --shadow-dropdown: 0 8px 24px -6px rgba(15, 23, 42, 0.12);
 
   /* Layout Dimensions */
   --sidebar-width: 260px;
@@ -75,10 +80,10 @@
   --header-height: 64px;
 
   /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
   --radius-full: 9999px;
 
   /* Transitions */
@@ -103,7 +108,12 @@
   --primary-hover: #60a5fa;
   --primary-light: rgba(59, 130, 246, 0.12);
   --primary-border: rgba(59, 130, 246, 0.3);
-  --primary-gradient: linear-gradient(135deg, #2563eb, #3b82f6);
+  --primary-gradient: #fafafa;
+
+  /* Neutral action ink — inverts in dark so buttons stay high-contrast, flat */
+  --btn-primary-bg: #fafafa;
+  --btn-primary-fg: #18181b;
+  --btn-primary-hover: #e4e4e7;
 
   --secondary: #94a3b8;
   --secondary-hover: #cbd5e1;
@@ -135,11 +145,11 @@
   --text-light: #64748b;
   --text-inverse: #09090b;
 
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-  --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-xs: 0 1px 1px 0 rgba(0, 0, 0, 0.25);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 1px 3px 0 rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 4px 12px -2px rgba(0, 0, 0, 0.45);
+  --shadow-dropdown: 0 8px 24px -6px rgba(0, 0, 0, 0.55);
 }
 
 /* ——— Reset & Core ——— */
@@ -349,14 +359,12 @@ p {
 }
 
 .btn-primary {
-  background-color: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 1px 2px rgba(29, 78, 216, 0.2);
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover);
-  box-shadow: 0 2px 4px rgba(29, 78, 216, 0.3);
+  background-color: var(--btn-primary-hover);
 }
 
 .btn-secondary {
@@ -652,4 +660,29 @@ textarea.form-control {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* ——— Auth / Portal ——— */
+.portal-card:hover {
+  border-color: var(--border-subtle);
+}
+.portal-btn:hover {
+  background-color: var(--btn-primary-hover);
+}
+.portal-link-hover:hover {
+  background-color: var(--bg-subtle);
+}
+
+/* Two-column login: brand panel on the left, mobile brand hidden on wide screens */
+.login-mobile-brand {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .login-brand-panel {
+    display: none !important;
+  }
+  .login-mobile-brand {
+    display: block !important;
+  }
 }

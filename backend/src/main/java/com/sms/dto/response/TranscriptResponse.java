@@ -33,7 +33,8 @@ public class TranscriptResponse {
         private String subjectCode;
         private String subjectName;
         private int credits;
-        private BigDecimal attendanceScore;
+        private BigDecimal cc1Score;
+        private BigDecimal cc2Score;
         private BigDecimal midtermScore;
         private BigDecimal finalScore;
         private BigDecimal totalScore;

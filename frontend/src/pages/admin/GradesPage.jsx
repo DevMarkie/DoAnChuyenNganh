@@ -61,7 +61,8 @@ export default function AdminGradesPage() {
       setSaving(true);
       const payload = grades.map((g) => ({
         enrollmentId: g.enrollment?.id,
-        attendanceScore: g.attendanceScore != null ? g.attendanceScore : null,
+        cc1Score: g.cc1Score != null ? g.cc1Score : null,
+        cc2Score: g.cc2Score != null ? g.cc2Score : null,
         midtermScore: g.midtermScore != null ? g.midtermScore : null,
         finalScore: g.finalScore != null ? g.finalScore : null,
         finalize: false,
@@ -174,7 +175,8 @@ export default function AdminGradesPage() {
               <tr>
                 <th>Mã Sinh Viên</th>
                 <th>Họ và Tên Sinh Viên</th>
-                <th style={{ textAlign: 'center' }}>Chuyên Cần (10%)</th>
+                <th style={{ textAlign: 'center' }}>CC1 (5%)<br/><small style={{fontSize: '0.8em', fontWeight: 'normal'}}>Chuyên cần</small></th>
+                <th style={{ textAlign: 'center' }}>CC2 (5%)<br/><small style={{fontSize: '0.8em', fontWeight: 'normal'}}>Bài tập</small></th>
                 <th style={{ textAlign: 'center' }}>Giữa Kỳ (30%)</th>
                 <th style={{ textAlign: 'center' }}>Cuối Kỳ (60%)</th>
                 <th style={{ textAlign: 'center' }}>Tổng Kết (Hệ 10)</th>
@@ -186,13 +188,13 @@ export default function AdminGradesPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Đang tải bảng điểm học phần...
                   </td>
                 </tr>
               ) : grades.length === 0 ? (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                  <td colSpan="10" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Chưa có sinh viên nào đăng ký lớp học phần này.
                   </td>
                 </tr>
@@ -225,8 +227,26 @@ export default function AdminGradesPage() {
                         min="0"
                         max="10"
                         step="0.1"
-                        value={g.attendanceScore ?? ''}
-                        onChange={(e) => handleScoreChange(idx, 'attendanceScore', e.target.value)}
+                        value={g.cc1Score ?? ''}
+                        onChange={(e) => handleScoreChange(idx, 'cc1Score', e.target.value)}
+                        className="form-control"
+                        style={{
+                          width: '68px',
+                          padding: '6px',
+                          textAlign: 'center',
+                          margin: '0 auto',
+                          fontWeight: 600,
+                        }}
+                      />
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="0.1"
+                        value={g.cc2Score ?? ''}
+                        onChange={(e) => handleScoreChange(idx, 'cc2Score', e.target.value)}
                         className="form-control"
                         style={{
                           width: '68px',

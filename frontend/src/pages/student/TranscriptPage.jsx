@@ -131,7 +131,8 @@ export default function TranscriptPage() {
                     <th>Mã Môn</th>
                     <th>Tên Môn Học</th>
                     <th>Số TC</th>
-                    <th style={{ textAlign: 'center' }}>Chuyên Cần (10%)</th>
+                    <th style={{ textAlign: 'center' }}>CC1 (5%)<br/><small style={{fontSize: '0.8em', fontWeight: 'normal'}}>Chuyên cần</small></th>
+                    <th style={{ textAlign: 'center' }}>CC2 (5%)<br/><small style={{fontSize: '0.8em', fontWeight: 'normal'}}>Bài tập</small></th>
                     <th style={{ textAlign: 'center' }}>Giữa Kỳ (30%)</th>
                     <th style={{ textAlign: 'center' }}>Cuối Kỳ (60%)</th>
                     <th style={{ textAlign: 'center' }}>Tổng Kết</th>
@@ -162,7 +163,10 @@ export default function TranscriptPage() {
                       <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.subjectName}</td>
                       <td><span className="badge badge-info">{c.credits} TC</span></td>
                       <td style={{ textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
-                        {c.attendanceScore != null ? Number(c.attendanceScore).toFixed(1) : '—'}
+                        {c.cc1Score != null ? Number(c.cc1Score).toFixed(1) : '—'}
+                      </td>
+                      <td style={{ textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
+                        {c.cc2Score != null ? Number(c.cc2Score).toFixed(1) : '—'}
                       </td>
                       <td style={{ textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
                         {c.midtermScore != null ? Number(c.midtermScore).toFixed(1) : '—'}

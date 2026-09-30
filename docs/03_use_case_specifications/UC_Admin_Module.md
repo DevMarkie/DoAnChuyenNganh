@@ -22,11 +22,12 @@
   - *Trùng phòng:* Hệ thống cảnh báo "Phòng A01 đã có lớp XYZ học vào ca này".
   - *Trùng GV:* Hệ thống cảnh báo "Giảng viên A đang dạy lớp ABC cùng thời gian".
 
-## 3. UC-A09: Kiểm duyệt & Phê duyệt bảng điểm
+## 3. UC-A09: Sửa điểm & Mở khóa bảng điểm
 - **Actor:** Admin (Phòng Đào tạo)
-- **Brief Description:** Admin xem lại điểm do GV nộp và chính thức công bố.
+- **Brief Description:** Admin sửa điểm không giới hạn thời gian và mở khóa bảng điểm đã hết hạn chỉnh sửa của giảng viên (ví dụ khi có phúc khảo hoặc sai sót sau 7 ngày).
 - **Main Flow:**
-  1. Admin mở danh sách các bảng điểm "Pending Approval".
-  2. Xem chi tiết điểm, bấm "Approve".
-  3. Hệ thống đổi trạng thái thành "Locked".
-  4. Cập nhật điểm công khai trên hệ thống sinh viên. Trang tự động tính lại GPA.
+  1. Admin mở bảng điểm của lớp học phần cần xử lý.
+  2. Admin sửa điểm thành phần nếu cần (không bị giới hạn cửa sổ 7 ngày như giảng viên).
+  3. Với bảng điểm đã khóa cứng, Admin gửi thao tác mở khóa (`finalize = false`) → xóa mốc `finalizedAt`, cho phép nhập/sửa lại.
+  4. Hệ thống ghi log audit cho mọi thao tác khóa/mở khóa.
+- **Ghi chú:** Điểm được công bố cho sinh viên **ngay khi giảng viên chốt** (UC-L05); không có bước Admin phê duyệt bắt buộc.

@@ -210,22 +210,25 @@ CREATE TABLE enrollments (
 
 -- ============================================================
 -- BẢNG 11: grades – Điểm số
--- Công thức: Chuyên cần 10% + Giữa kỳ 30% + Cuối kỳ 60%
+-- Công thức: Chuyên cần (CC1 5% + CC2 5%) + Giữa kỳ 30% + Cuối kỳ 60%
 -- ============================================================
 CREATE TABLE grades (
     id               BIGINT        NOT NULL AUTO_INCREMENT,
     enrollment_id    BIGINT        NOT NULL,
-    attendance_score DECIMAL(4,2)  NULL     COMMENT 'Điểm chuyên cần (0-10), trọng số 10%',
+    cc1_score        DECIMAL(4,2)  NULL     COMMENT 'Điểm chuyên cần (0-10), trọng số 5%',
+    cc2_score        DECIMAL(4,2)  NULL     COMMENT 'Điểm bài tập/phát biểu (0-10), trọng số 5%',
     midterm_score    DECIMAL(4,2)  NULL     COMMENT 'Điểm giữa kỳ (0-10), trọng số 30%',
     final_score      DECIMAL(4,2)  NULL     COMMENT 'Điểm cuối kỳ (0-10), trọng số 60%',
-    total_score      DECIMAL(4,2)  NULL     COMMENT 'Điểm tổng kết = CC*0.1 + GK*0.3 + CK*0.6',
+    total_score      DECIMAL(4,2)  NULL     COMMENT 'Điểm tổng kết = CC1*0.05 + CC2*0.05 + GK*0.3 + CK*0.6',
     letter_grade     VARCHAR(2)    NULL     COMMENT 'A, B+, B, C+, C, D+, D, F',
     gpa_point        DECIMAL(3,2)  NULL     COMMENT 'Điểm GPA theo thang 4.0',
     is_finalized     BOOLEAN       NOT NULL DEFAULT FALSE COMMENT 'Đã chốt điểm chưa',
+    finalized_at     DATETIME      NULL     COMMENT 'Thời điểm chốt; GV được sửa trong 7 ngày kể từ mốc này',
     updated_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_grades PRIMARY KEY (id),
     CONSTRAINT uq_grades_enrollment UNIQUE (enrollment_id),
-    CONSTRAINT ck_grades_attendance CHECK (attendance_score IS NULL OR (attendance_score >= 0 AND attendance_score <= 10)),
+    CONSTRAINT ck_grades_cc1 CHECK (cc1_score IS NULL OR (cc1_score >= 0 AND cc1_score <= 10)),
+    CONSTRAINT ck_grades_cc2 CHECK (cc2_score IS NULL OR (cc2_score >= 0 AND cc2_score <= 10)),
     CONSTRAINT ck_grades_midterm CHECK (midterm_score IS NULL OR (midterm_score >= 0 AND midterm_score <= 10)),
     CONSTRAINT ck_grades_final CHECK (final_score IS NULL OR (final_score >= 0 AND final_score <= 10)),
     CONSTRAINT fk_grades_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments (id) ON DELETE CASCADE
@@ -352,7 +355,8 @@ SELECT
     sub.subject_code,
     sub.subject_name,
     sub.credits,
-    g.attendance_score,
+    g.cc1_score,
+    g.cc2_score,
     g.midterm_score,
     g.final_score,
     g.total_score,

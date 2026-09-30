@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Layers, Save, CheckCircle, AlertCircle, Award, CheckCircle2, Download } from 'lucide-react';
+import { Layers, Save, CheckCircle, AlertCircle, Award, CheckCircle2, Download, Lock } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { courseSectionService, gradeService } from '../../services/dataService';
 
@@ -85,7 +85,8 @@ export default function GradeEntryPage() {
       setSaving(true);
       const payload = grades.map((g) => ({
         enrollmentId: g.enrollment?.id,
-        attendanceScore: g.attendanceScore != null && g.attendanceScore !== '' ? parseFloat(g.attendanceScore) : null,
+        cc1Score: g.cc1Score != null && g.cc1Score !== '' ? parseFloat(g.cc1Score) : null,
+        cc2Score: g.cc2Score != null && g.cc2Score !== '' ? parseFloat(g.cc2Score) : null,
         midtermScore: g.midtermScore != null && g.midtermScore !== '' ? parseFloat(g.midtermScore) : null,
         finalScore: g.finalScore != null && g.finalScore !== '' ? parseFloat(g.finalScore) : null,
         finalize: finalize,
@@ -112,9 +113,17 @@ export default function GradeEntryPage() {
   const passedCount = grades.filter((g) => isStudentPassed(g) === true).length;
   const gradedCount = grades.filter((g) => g.totalScore != null).length;
   const passRate = gradedCount > 0 ? Math.round((passedCount / gradedCount) * 100) : 0;
-  // Activity #14: bảng điểm đã chốt thì khoá toàn bộ ô nhập; chỉ được chốt khi 100% SV có điểm.
-  const isLocked = grades.length > 0 && grades.every((g) => g.isFinalized);
   const allGraded = grades.length > 0 && gradedCount === grades.length;
+  // Activity #14 — cửa sổ ân hạn: sau khi chốt, GV còn 7 ngày để sửa; hết hạn mới khoá cứng.
+  const isFinalized = grades.length > 0 && grades.every((g) => g.isFinalized);
+  const isLocked = grades.length > 0 && grades.every((g) => g.editWindowExpired);
+  // Cả lớp chốt cùng lúc nên finalizedAt gần như bằng nhau — lấy dòng đầu để tính số ngày còn lại.
+  const editDaysLeft = (() => {
+    const g = grades.find((x) => x.isFinalized && x.finalizedAt);
+    if (!g) return null;
+    const expireAt = new Date(g.finalizedAt).getTime() + 7 * 24 * 60 * 60 * 1000;
+    return Math.max(0, Math.ceil((expireAt - Date.now()) / (24 * 60 * 60 * 1000)));
+  })();
 
   return (
     <div>
@@ -122,25 +131,35 @@ export default function GradeEntryPage() {
         <div>
           <h1>Sổ Điểm & Đánh Giá Học Phần</h1>
           <p>
-            Quy chế tính điểm: Điểm tổng kết = CC (10%) + GK (30%) + CK (60%)
+            Quy chế tính điểm: Điểm tổng kết = (CC1 5% + CC2 5%) + GK 30% + CK 60%
           </p>
         </div>
         {grades.length > 0 && (
           <div className="page-header-actions" style={{ alignItems: 'center' }}>
-            {isLocked && (
+            {isLocked ? (
+              <span
+                className="badge badge-neutral"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.85rem' }}
+                title="Đã quá 7 ngày kể từ khi chốt. Liên hệ Quản trị viên để mở lại."
+              >
+                <Lock size={15} />
+                ĐÃ KHOÁ · HẾT HẠN SỬA
+              </span>
+            ) : isFinalized ? (
               <span
                 className="badge badge-success"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.85rem' }}
+                title="Điểm đã công bố cho sinh viên. Bạn còn thời gian để chỉnh sửa trước khi khoá cứng."
               >
                 <CheckCircle2 size={15} />
-                ĐÃ CHỐT ĐIỂM
+                ĐÃ CHỐT{editDaysLeft != null ? ` · còn ${editDaysLeft} ngày để sửa` : ''}
               </span>
-            )}
+            ) : null}
             <button className="btn btn-outline" onClick={handleExportExcel} title="Xuất bảng điểm ra file Excel">
               <Download size={16} />
               <span>Xuất Excel</span>
             </button>
-            {!isLocked && (
+            {!isLocked && !isFinalized && (
               <>
                 <button className="btn btn-secondary" disabled={saving} onClick={() => handleSave(false)}>
                   <Save size={16} />
@@ -156,6 +175,12 @@ export default function GradeEntryPage() {
                   <span>Chốt & Công bố điểm</span>
                 </button>
               </>
+            )}
+            {!isLocked && isFinalized && (
+              <button className="btn btn-primary" disabled={saving} onClick={() => handleSave(false)}>
+                <Save size={16} />
+                <span>{saving ? 'Đang lưu...' : 'Lưu chỉnh sửa'}</span>
+              </button>
             )}
           </div>
         )}
@@ -203,7 +228,8 @@ export default function GradeEntryPage() {
                 <th>Mã SV</th>
                 <th>Họ và Tên Sinh Viên</th>
                 <th>Lớp SH</th>
-                <th style={{ textAlign: 'center' }}>CC (10%)</th>
+                <th style={{ textAlign: 'center' }}>CC1 (5%)<br/><small style={{fontSize: '0.8em', fontWeight: 'normal'}}>Chuyên cần</small></th>
+                <th style={{ textAlign: 'center' }}>CC2 (5%)<br/><small style={{fontSize: '0.8em', fontWeight: 'normal'}}>Bài tập</small></th>
                 <th style={{ textAlign: 'center' }}>GK (30%)</th>
                 <th style={{ textAlign: 'center' }}>CK (60%)</th>
                 <th style={{ textAlign: 'center' }}>Tổng Kết</th>
@@ -215,13 +241,13 @@ export default function GradeEntryPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="11" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                  <td colSpan="12" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Đang tải danh sách điểm sinh viên...
                   </td>
                 </tr>
               ) : grades.length === 0 ? (
                 <tr>
-                  <td colSpan="11" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                  <td colSpan="12" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Lớp học phần này hiện chưa có sinh viên nào đăng ký.
                   </td>
                 </tr>
@@ -259,8 +285,28 @@ export default function GradeEntryPage() {
                         max="10"
                         step="0.1"
                         placeholder="0.0"
-                        value={g.attendanceScore ?? ''}
-                        onChange={(e) => handleScoreChange(idx, 'attendanceScore', e.target.value)}
+                        value={g.cc1Score ?? ''}
+                        onChange={(e) => handleScoreChange(idx, 'cc1Score', e.target.value)}
+                        disabled={isLocked}
+                        className="form-control"
+                        style={{
+                          width: '68px',
+                          padding: '6px',
+                          textAlign: 'center',
+                          margin: '0 auto',
+                          fontWeight: 600,
+                        }}
+                      />
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="0.1"
+                        placeholder="0.0"
+                        value={g.cc2Score ?? ''}
+                        onChange={(e) => handleScoreChange(idx, 'cc2Score', e.target.value)}
                         disabled={isLocked}
                         className="form-control"
                         style={{

@@ -18,4 +18,4 @@
   - `5.5 - 6.9` -> C (2.0)
   - `4.0 - 5.4` -> D (1.0)
   - `< 4.0` -> F (0.0 - Trượt)
-- **BR-Grade03 (Chốt sổ điểm):** Giảng viên tuyệt đối không thể chỉnh sửa điểm sau khi Phòng Đào tạo đã chuyển bảng điểm sang trạng thái `Locked`. Mọi sai sót phải lập biên bản mở khóa trên giấy tờ.
+- **BR-Grade03 (Chốt & cửa sổ chỉnh sửa):** Khi giảng viên chốt bảng điểm, điểm được **công bố cho sinh viên ngay**. Giảng viên còn **7 ngày** kể từ thời điểm chốt (`finalizedAt`) để chỉnh sửa; mốc này không gia hạn khi sửa trong hạn. Quá 7 ngày, hệ thống **khóa cứng** — chỉ **Quản trị viên (Phòng Đào tạo)** mới mở khóa để sửa lại (có ghi log audit).

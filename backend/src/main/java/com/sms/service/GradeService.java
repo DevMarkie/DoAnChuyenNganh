@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,10 @@ public class GradeService {
             verifyAllStudentsGraded(enrollment.getSection().getId(),
                     Map.of(enrollment.getId(), grade));
             grade.setIsFinalized(true);
+            // Đặt mốc ân hạn ở lần chốt đầu tiên; sửa trong cửa sổ không được gia hạn thêm.
+            if (grade.getFinalizedAt() == null) {
+                grade.setFinalizedAt(LocalDateTime.now());
+            }
             log.info("AUDIT: userId={} finalized grade for enrollmentId={} (section={})",
                     userId, enrollment.getId(), enrollment.getSection().getSectionCode());
         }
@@ -137,9 +142,16 @@ public class GradeService {
             for (Long sectionId : finalizeSectionIds) {
                 verifyAllStudentsGraded(sectionId, gradesByEnrollmentId);
             }
+            LocalDateTime now = LocalDateTime.now();
             toSave.stream()
                     .filter(g -> finalizeSectionIds.contains(g.getEnrollment().getSection().getId()))
-                    .forEach(g -> g.setIsFinalized(true));
+                    .forEach(g -> {
+                        g.setIsFinalized(true);
+                        // Mốc ân hạn chỉ đặt ở lần chốt đầu; chốt lại không gia hạn.
+                        if (g.getFinalizedAt() == null) {
+                            g.setFinalizedAt(now);
+                        }
+                    });
             log.info("AUDIT: userId={} finalized grade sheet for sectionIds={}", userId, finalizeSectionIds);
         }
 
@@ -163,13 +175,19 @@ public class GradeService {
             }
         }
 
-        // Only block Lecturer from editing finalized grades. Admin can always edit or reopen/unlock.
-        if (Boolean.TRUE.equals(grade.getIsFinalized()) && lecturer != null) {
-            throw new BadRequestException("Điểm đã được chốt, không thể sửa. Vui lòng liên hệ Quản trị viên để mở lại.");
+        // Sau khi chốt, giảng viên VẪN sửa được trong cửa sổ ân hạn (EDIT_GRACE_DAYS
+        // ngày). Hết hạn thì khoá cứng — chỉ Quản trị viên mở lại được. Admin không bị chặn.
+        if (lecturer != null && grade.isEditWindowExpired()) {
+            throw new BadRequestException("Đã quá " + Grade.EDIT_GRACE_DAYS
+                    + " ngày kể từ khi chốt nên bảng điểm đã khoá, không thể sửa. "
+                    + "Vui lòng liên hệ Quản trị viên để mở lại.");
         }
 
-        if (request.getAttendanceScore() != null) {
-            grade.setAttendanceScore(request.getAttendanceScore());
+        if (request.getCc1Score() != null) {
+            grade.setCc1Score(request.getCc1Score());
+        }
+        if (request.getCc2Score() != null) {
+            grade.setCc2Score(request.getCc2Score());
         }
         if (request.getMidtermScore() != null) {
             grade.setMidtermScore(request.getMidtermScore());
@@ -181,9 +199,11 @@ public class GradeService {
         // Auto-calculate total score
         grade.calculateTotalScore();
 
-        // Admin can explicitly unfinalize / unlock a grade.
+        // Admin can explicitly unfinalize / unlock a grade. Xoá luôn mốc ân hạn để
+        // lần chốt sau bắt đầu một cửa sổ 7 ngày mới.
         if (lecturer == null && Boolean.FALSE.equals(request.getFinalize())) {
             grade.setIsFinalized(false);
+            grade.setFinalizedAt(null);
             log.info("AUDIT: adminUserId={} unlocked grade for enrollmentId={}", userId, enrollment.getId());
         }
     }

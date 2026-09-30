@@ -15,7 +15,11 @@ public class GradeRequest {
 
     @DecimalMin(value = "0.0", message = "Điểm chuyên cần phải >= 0")
     @DecimalMax(value = "10.0", message = "Điểm chuyên cần phải <= 10")
-    private BigDecimal attendanceScore;
+    private BigDecimal cc1Score;
+
+    @DecimalMin(value = "0.0", message = "Điểm bài tập/phát biểu phải >= 0")
+    @DecimalMax(value = "10.0", message = "Điểm bài tập/phát biểu phải <= 10")
+    private BigDecimal cc2Score;
 
     @DecimalMin(value = "0.0", message = "Điểm giữa kỳ phải >= 0")
     @DecimalMax(value = "10.0", message = "Điểm giữa kỳ phải <= 10")

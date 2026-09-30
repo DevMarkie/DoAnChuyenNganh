@@ -41,29 +41,23 @@ stateDiagram-v2
     HienThiThanhCong --> [*]
 ```
 
-### Luồng 2: Quy trình Nhập, Duyệt và Khóa sổ điểm
+### Luồng 2: Quy trình Nhập, Chốt & Khóa sổ điểm
 ```mermaid
 stateDiagram-v2
     [*] --> GiangVien_ChonLop
     GiangVien_ChonLop --> NhapDiem : Điền form hoặc Import Excel
     NhapDiem --> TinhDiemTongKet : Tự động tính hệ 10 & GPA
-    TinhDiemTongKet --> LuuNhap : Lưu tạm thời (Draft)
-    
+    TinhDiemTongKet --> LuuNhap : Lưu bản nháp (Draft)
+
     LuuNhap --> NhapDiem : Quay lại chỉnh sửa
-    LuuNhap --> GuiPheDuyet : Nhấn "Submit for Approval"
-    
-    GuiPheDuyet --> Admin_KiemDuyet : Trạng thái "Chờ duyệt"
-    
-    state KiemDuyet <<choice>>
-    Admin_KiemDuyet --> KiemDuyet
-    KiemDuyet --> TuChoi : Phát hiện sai sót
-    KiemDuyet --> PheDuyet : Hợp lệ
-    
-    TuChoi --> NhapDiem : Trả về cho GV (kèm lý do)
-    
-    PheDuyet --> KhoaSoDiem : Trạng thái "Locked" (Read-only)
-    KhoaSoDiem --> TinhToanGPARoots : Cập nhật GPA SV
-    TinhToanGPARoots --> [*]
+    LuuNhap --> ChotDiem : Nhấn "Chốt & Công bố" (đủ 100% SV có điểm)
+
+    ChotDiem --> DaCongBo : isFinalized=true, ghi finalizedAt, SV thấy điểm + tính GPA
+    DaCongBo --> SuaTrongHan : GV sửa trong 7 ngày (mốc không gia hạn)
+    SuaTrongHan --> DaCongBo
+    DaCongBo --> KhoaCung : Quá 7 ngày → khóa GV (Read-only)
+    KhoaCung --> DaCongBo : Admin mở khóa (finalize=false)
+    KhoaCung --> [*]
 ```
 
 ### Luồng 3: Quy trình Admin Mở lớp và Gán lịch học
@@ -100,7 +94,7 @@ stateDiagram-v2
     DangMoDangKy --> DaChotDanhSach : Đóng cổng
     DaChotDanhSach --> DangHoc : Bắt đầu học kỳ
     DangHoc --> DangNhapDiem : Kết thúc môn
-    DangNhapDiem --> HoanThanh_DaKhoa : Admin duyệt điểm
+    DangNhapDiem --> HoanThanh_DaKhoa : GV chốt & công bố điểm
     HoanThanh_DaKhoa --> [*]
 ```
 
@@ -111,7 +105,7 @@ stateDiagram-v2
     DangKyTam --> DaGhiNhan : Validations Pass
     DangKyTam --> [*] : Thất bại
     DaGhiNhan --> DaHuy : SV hủy môn (Trong hạn)
-    DaGhiNhan --> DaHoanThanh : Khóa điểm (Graded)
+    DaGhiNhan --> DaHoanThanh : GV chốt điểm (Graded)
     DaHuy --> [*]
     DaHoanThanh --> [*]
 ```

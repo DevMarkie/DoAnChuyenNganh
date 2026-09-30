@@ -14,6 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor @AllArgsConstructor
 public class Grade {
 
+    /**
+     * Activity #14 — cửa sổ ân hạn sau khi chốt: giảng viên vẫn được sửa điểm
+     * trong ngần này ngày kể từ lúc chốt. Hết hạn thì bảng điểm khoá cứng, chỉ
+     * Quản trị viên mới mở lại được.
+     */
+    public static final int EDIT_GRACE_DAYS = 7;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,8 +30,11 @@ public class Grade {
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
     private Enrollment enrollment;
 
-    @Column(name = "attendance_score", precision = 4, scale = 2)
-    private BigDecimal attendanceScore;
+    @Column(name = "cc1_score", precision = 4, scale = 2)
+    private BigDecimal cc1Score;
+
+    @Column(name = "cc2_score", precision = 4, scale = 2)
+    private BigDecimal cc2Score;
 
     @Column(name = "midterm_score", precision = 4, scale = 2)
     private BigDecimal midtermScore;
@@ -44,6 +54,10 @@ public class Grade {
     @Column(name = "is_finalized", nullable = false)
     private Boolean isFinalized = false;
 
+    /** Thời điểm giảng viên chốt điểm; mốc bắt đầu đếm cửa sổ ân hạn {@link #EDIT_GRACE_DAYS} ngày. */
+    @Column(name = "finalized_at")
+    private LocalDateTime finalizedAt;
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -62,8 +76,9 @@ public class Grade {
      * Chuyên cần × 10% + Giữa kỳ × 30% + Cuối kỳ × 60%
      */
     public void calculateTotalScore() {
-        if (attendanceScore != null && midtermScore != null && finalScore != null) {
-            this.totalScore = attendanceScore.multiply(new BigDecimal("0.1"))
+        if (cc1Score != null && cc2Score != null && midtermScore != null && finalScore != null) {
+            this.totalScore = cc1Score.multiply(new BigDecimal("0.05"))
+                    .add(cc2Score.multiply(new BigDecimal("0.05")))
                     .add(midtermScore.multiply(new BigDecimal("0.3")))
                     .add(finalScore.multiply(new BigDecimal("0.6")));
             this.totalScore = totalScore.setScale(2, java.math.RoundingMode.HALF_UP);
@@ -131,5 +146,21 @@ public class Grade {
     @JsonProperty("score4")
     public BigDecimal getScore4() {
         return gpaPoint;
+    }
+
+    /**
+     * true = đã quá {@link #EDIT_GRACE_DAYS} ngày kể từ khi chốt nên giảng viên
+     * không còn sửa được (bảng điểm khoá cứng). Điểm đã chốt nhưng thiếu mốc
+     * {@code finalizedAt} (dữ liệu cũ) cũng coi như đã khoá.
+     */
+    @JsonProperty("editWindowExpired")
+    public boolean isEditWindowExpired() {
+        if (!Boolean.TRUE.equals(isFinalized)) {
+            return false;
+        }
+        if (finalizedAt == null) {
+            return true;
+        }
+        return finalizedAt.plusDays(EDIT_GRACE_DAYS).isBefore(LocalDateTime.now());
     }
 }

@@ -4,6 +4,8 @@ import com.sms.dto.request.GradeRequest;
 import com.sms.entity.CourseSection;
 import com.sms.entity.Enrollment;
 import com.sms.entity.Grade;
+import com.sms.entity.Lecturer;
+import com.sms.exception.BadRequestException;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
 import com.sms.repository.GradeRepository;
@@ -17,10 +19,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -56,7 +60,8 @@ class GradeServiceTest {
     private static GradeRequest req(long enrollmentId) {
         GradeRequest r = new GradeRequest();
         r.setEnrollmentId(enrollmentId);
-        r.setAttendanceScore(new BigDecimal("9.0"));
+        r.setCc1Score(new BigDecimal("9.0"));
+        r.setCc2Score(new BigDecimal("9.0"));
         r.setMidtermScore(new BigDecimal("8.0"));
         r.setFinalScore(new BigDecimal("7.5"));
         return r;
@@ -97,5 +102,64 @@ class GradeServiceTest {
 
         verify(lecturerRepository, never()).findByUserId(anyLong());
         verify(gradeRepository, never()).saveAll(anyList());
+    }
+
+    private static final long LECT_USER = 42L;
+
+    private static Enrollment lecturerEnrollment(long id, Lecturer lecturer) {
+        CourseSection section = new CourseSection();
+        section.setId(100 + id);
+        section.setSectionCode("SEC" + id);
+        section.setLecturer(lecturer);
+        Enrollment e = new Enrollment();
+        e.setId(id);
+        e.setSection(section);
+        return e;
+    }
+
+    private static Grade finalizedGrade(Enrollment e, LocalDateTime finalizedAt) {
+        Grade g = new Grade();
+        g.setEnrollment(e);
+        g.setIsFinalized(true);
+        g.setFinalizedAt(finalizedAt);
+        return g;
+    }
+
+    /** Activity #14: trong 7 ngày kể từ khi chốt, giảng viên vẫn sửa được điểm đã chốt. */
+    @Test
+    void lecturer_canEditFinalizedGrade_withinGraceWindow() {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(7L);
+        Enrollment e = lecturerEnrollment(1L, lecturer);
+        Grade existing = finalizedGrade(e, LocalDateTime.now().minusDays(2));
+
+        when(lecturerRepository.findByUserId(LECT_USER)).thenReturn(Optional.of(lecturer));
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(e));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.of(existing));
+        when(gradeRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        Grade saved = gradeService.saveGrade(LECT_USER, req(1L));
+
+        assertThat(saved.getMidtermScore()).isEqualByComparingTo("8.0");
+        verify(gradeRepository, times(1)).save(any());
+    }
+
+    /** Quá 7 ngày kể từ khi chốt thì bảng điểm khoá cứng — giảng viên không sửa được nữa. */
+    @Test
+    void lecturer_cannotEditFinalizedGrade_afterGraceWindow() {
+        Lecturer lecturer = new Lecturer();
+        lecturer.setId(7L);
+        Enrollment e = lecturerEnrollment(1L, lecturer);
+        Grade existing = finalizedGrade(e, LocalDateTime.now().minusDays(8));
+
+        when(lecturerRepository.findByUserId(LECT_USER)).thenReturn(Optional.of(lecturer));
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(e));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> gradeService.saveGrade(LECT_USER, req(1L)))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("khoá");
+
+        verify(gradeRepository, never()).save(any());
     }
 }

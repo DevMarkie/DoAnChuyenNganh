@@ -143,7 +143,7 @@ DoAnChuyenNganh/
 | 8 | **Semester** | `semesters` | semesterCode(uniq), academicYear, semesterNumber, start/end, **registrationStart/End**, isCurrent, status {UPCOMING, ACTIVE, COMPLETED}; `isRegistrationOpen()` |
 | 9 | **CourseSection** | `course_sections` | sectionCode(uniq), maxStudents, **enrolledCount**, room, status(OPEN…); `@ManyToOne` Subject/Lecturer/Semester |
 | 10 | **Enrollment** | `enrollments` | enrolledAt, status {ENROLLED, CANCELLED, …}; `@ManyToOne` Student/CourseSection |
-| 11 | **Grade** | `grades` | attendanceScore, midtermScore, finalScore, totalScore, letterGrade, gpaPoint, **isFinalized**; `@OneToOne` Enrollment; `calculateTotalScore()`, `calculateLetterGrade()` |
+| 11 | **Grade** | `grades` | cc1Score, cc2Score, midtermScore, finalScore, totalScore, letterGrade, gpaPoint, **isFinalized**, **finalizedAt**; `@OneToOne` Enrollment; `calculateTotalScore()`, `calculateLetterGrade()`, `isEditWindowExpired()` |
 | 12 | **Schedule** | `schedules` | dayOfWeek, startPeriod, endPeriod, room, start/end date; `@ManyToOne` CourseSection, `@ManyToOne` ClassEntity(nullable) |
 | 13 | **PasswordResetRequest** | `password_reset_requests` | username, fullName, role, email, phone, reason, status {PENDING, APPROVED, REJECTED}, adminNotes, processedBy/At; `@ManyToOne` User |
 
@@ -325,11 +325,11 @@ Base URL: `http://localhost:8080/api`. Quyền: **Public** = không cần token;
 - **Điểm liệt**: nếu **điểm cuối kỳ < 3.0** → ép xếp loại **F / 0.0** bất kể tổng điểm.
 - **Đạt**: tổng ≥ 4.0 **và** cuối kỳ ≥ 3.0.
 
-### 9.3 Khóa / mở khóa điểm (`GradeService.applyGradeChanges`)
+### 9.3 Chốt / cửa sổ sửa / mở khóa điểm (`GradeService`)
 - **BR-07**: giảng viên chỉ nhập điểm cho **lớp mình phụ trách**; nếu không → 403.
-- Nếu `isFinalized = true` và người thao tác là **giảng viên** → không sửa được ("liên hệ Quản trị viên").
-- Khóa điểm (`finalize = true`): đặt `isFinalized = true` (sinh viên mới thấy điểm); yêu cầu đã có điểm tổng kết.
-- **Admin** có thể **mở khóa** (gửi `finalize = false`) để sửa lại; có ghi log audit khi khóa/mở khóa.
+- Chốt điểm (`finalize = true`): yêu cầu **đủ 100% SV có điểm tổng kết**; đặt `isFinalized = true`, ghi `finalizedAt`, **sinh viên thấy điểm ngay**.
+- **Cửa sổ ân hạn 7 ngày** (`Grade.EDIT_GRACE_DAYS`): sau khi chốt, giảng viên vẫn sửa được trong 7 ngày kể từ `finalizedAt` (mốc không gia hạn). Quá hạn (`isEditWindowExpired()`) → giảng viên bị khóa cứng.
+- **Admin** không bị giới hạn cửa sổ; có thể **mở khóa** (gửi `finalize = false`) → xóa `finalizedAt`, mở lại việc sửa. Ghi log audit khi chốt/mở khóa.
 
 ### 9.4 Bảng điểm & GPA/CPA (`TranscriptService`)
 - **GPA học kỳ**: trung bình có trọng số theo tín chỉ của mọi môn đã có điểm (F = 0).
@@ -426,7 +426,7 @@ Mở bằng [draw.io](https://app.diagrams.net) (hoặc extension draw.io trong 
 |---|---|---|
 | `01_UseCase.drawio` | Use Case | 3 actor (Sinh viên/Giảng viên/Quản trị) + toàn bộ use case, quan hệ «extend» |
 | `02_Sequence.drawio` | Tuần tự | 3 trang: Đăng nhập, Đăng ký học phần, Nhập & khóa điểm (có lifeline Boundary→Control→Service→Repository→Entity) |
-| `03_Activity.drawio` | Hoạt động | 2 trang: Đăng ký học phần (6 điều kiện), Nhập & khóa điểm (điểm liệt + finalize) |
+| `03_Activity.drawio` | Hoạt động | 2 trang: Đăng ký học phần (6 điều kiện), Nhập & chốt điểm (điểm liệt + finalize + cửa sổ sửa 7 ngày) |
 | `04_ClassBCE.drawio` | Lớp phân tích BCE | Boundary–Control–Entity + 13 thực thể và quan hệ (bội số) |
 
 > **Lưu ý hiển thị:** nếu nền vẫn tối, chuyển giao diện draw.io sang **Light theme** (Extras → Theme), hoặc khi xuất ảnh chọn **Background: White**.

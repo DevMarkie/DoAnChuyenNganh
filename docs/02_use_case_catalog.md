@@ -12,14 +12,14 @@
 | 6 | UC-A06 | Mở Lớp học phần mới | Quản lý Lớp học phần | P. Đào tạo | High |
 | 7 | UC-A07 | Phân công Giảng viên | Quản lý Lớp học phần | P. Đào tạo | High |
 | 8 | UC-A08 | Phân bổ TKB & Xếp phòng học | Quản lý TKB | P. Đào tạo | High |
-| 9 | UC-A09 | Kiểm duyệt bảng điểm Lớp học phần | Quản lý Điểm số | P. Đào tạo | High |
+| 9 | UC-A09 | Sửa điểm & Mở khóa bảng điểm | Quản lý Điểm số | P. Đào tạo | High |
 | 10 | UC-A10 | Khóa sổ điểm & Xét học lực | Quản lý Điểm số | P. Đào tạo | Medium |
 | **II**| **PHÂN HỆ GIẢNG VIÊN (LECTURERS)** | | | | |
 | 11 | UC-L01 | Tra cứu danh sách Lớp học phần | Quản lý Lớp giảng dạy | Giảng viên | Medium |
 | 12 | UC-L02 | Xem & Xuất danh sách Sinh viên | Quản lý Lớp giảng dạy | Giảng viên | Medium |
 | 13 | UC-L03 | Tra cứu Lịch giảng dạy cá nhân | Quản lý TKB | Giảng viên | High |
 | 14 | UC-L04 | Nhập, Chỉnh sửa & Import điểm | Quản lý Điểm số | Giảng viên | High |
-| 15 | UC-L05 | Chốt điểm & Gửi phê duyệt | Quản lý Điểm số | Giảng viên | High |
+| 15 | UC-L05 | Chốt & Công bố điểm | Quản lý Điểm số | Giảng viên | High |
 | **III**| **PHÂN HỆ SINH VIÊN (STUDENTS)** | | | | |
 | 16 | UC-S01 | Xem danh mục Môn học cá nhân | Quản lý Chương trình | Sinh viên | Low |
 | 17 | UC-S02 | Tìm kiếm & Đăng ký Lớp học phần | Đăng ký Tín chỉ | Sinh viên | High |

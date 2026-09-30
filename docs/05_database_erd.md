@@ -41,4 +41,7 @@ erDiagram
 
 - **GRADES (Bảng điểm):**
   - `EnrollmentID (FK)`: Unique relation 1-1 với Enrollment.
-  - `FinalTotal`: Tính toán bằng Trigger/Service Layer.
+  - Điểm thành phần: `cc1_score`, `cc2_score`, `midterm_score`, `final_score`.
+  - `total_score`, `letter_grade`, `gpa_point`: tính bằng Service Layer.
+  - `is_finalized`: đã chốt & công bố cho sinh viên chưa.
+  - `finalized_at`: mốc chốt; giảng viên được sửa trong 7 ngày kể từ mốc này, quá hạn thì khóa cứng.

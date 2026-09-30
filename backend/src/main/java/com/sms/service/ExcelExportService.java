@@ -147,7 +147,7 @@ public class ExcelExportService {
 
             // ========== HEADER ROW ==========
             Row headerRow = sheet.createRow(rowIdx++);
-            String[] headers = {"STT", "Mã Sinh Viên", "Họ và Tên", "Chuyên Cần (10%)",
+            String[] headers = {"STT", "Mã Sinh Viên", "Họ và Tên", "CC1 (5%)", "CC2 (5%)",
                     "Giữa Kỳ (30%)", "Cuối Kỳ (60%)", "Tổng Kết (Hệ 10)", "Hệ 4", "Điểm Chữ", "Kết Quả"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -177,48 +177,55 @@ public class ExcelExportService {
                         ? grade.getEnrollment().getStudent().getFullName() : "");
                 nameCell.setCellStyle(dataLeftStyle);
 
-                // Điểm chuyên cần
+                // Điểm CC1
                 Cell attCell = dataRow.createCell(3);
-                if (grade.getAttendanceScore() != null) {
-                    attCell.setCellValue(grade.getAttendanceScore().doubleValue());
+                if (grade.getCc1Score() != null) {
+                    attCell.setCellValue(grade.getCc1Score().doubleValue());
                 }
                 attCell.setCellStyle(numberStyle);
 
+                // Điểm CC2
+                Cell attCell2 = dataRow.createCell(4);
+                if (grade.getCc2Score() != null) {
+                    attCell2.setCellValue(grade.getCc2Score().doubleValue());
+                }
+                attCell2.setCellStyle(numberStyle);
+
                 // Điểm giữa kỳ
-                Cell midCell = dataRow.createCell(4);
+                Cell midCell = dataRow.createCell(5);
                 if (grade.getMidtermScore() != null) {
                     midCell.setCellValue(grade.getMidtermScore().doubleValue());
                 }
                 midCell.setCellStyle(numberStyle);
 
                 // Điểm cuối kỳ
-                Cell finCell = dataRow.createCell(5);
+                Cell finCell = dataRow.createCell(6);
                 if (grade.getFinalScore() != null) {
                     finCell.setCellValue(grade.getFinalScore().doubleValue());
                 }
                 finCell.setCellStyle(numberStyle);
 
                 // Tổng kết
-                Cell totalCell = dataRow.createCell(6);
+                Cell totalCell = dataRow.createCell(7);
                 if (grade.getTotalScore() != null) {
                     totalCell.setCellValue(grade.getTotalScore().doubleValue());
                 }
                 totalCell.setCellStyle(numberStyle);
 
                 // Hệ 4
-                Cell gpaCell = dataRow.createCell(7);
+                Cell gpaCell = dataRow.createCell(8);
                 if (grade.getGpaPoint() != null) {
                     gpaCell.setCellValue(grade.getGpaPoint().doubleValue());
                 }
                 gpaCell.setCellStyle(numberStyle);
 
                 // Điểm chữ
-                Cell letterCell = dataRow.createCell(8);
+                Cell letterCell = dataRow.createCell(9);
                 letterCell.setCellValue(grade.getLetterGrade() != null ? grade.getLetterGrade() : "");
                 letterCell.setCellStyle(dataCenterStyle);
 
                 // Kết quả
-                Cell resultCell = dataRow.createCell(9);
+                Cell resultCell = dataRow.createCell(10);
                 Boolean passed = grade.getIsPassed();
                 if (passed != null) {
                     resultCell.setCellValue(passed ? "ĐẠT" : "HỌC LẠI");
@@ -247,13 +254,14 @@ public class ExcelExportService {
             sheet.setColumnWidth(0, 1800);  // STT
             sheet.setColumnWidth(1, 4500);  // Mã SV
             sheet.setColumnWidth(2, 8000);  // Họ tên
-            sheet.setColumnWidth(3, 4500);  // CC
-            sheet.setColumnWidth(4, 4500);  // GK
-            sheet.setColumnWidth(5, 4500);  // CK
-            sheet.setColumnWidth(6, 5000);  // Tổng kết
-            sheet.setColumnWidth(7, 2800);  // Hệ 4
-            sheet.setColumnWidth(8, 3200);  // Điểm chữ
-            sheet.setColumnWidth(9, 3800);  // Kết quả
+            sheet.setColumnWidth(3, 4000);  // CC1
+            sheet.setColumnWidth(4, 4000);  // CC2
+            sheet.setColumnWidth(5, 4500);  // GK
+            sheet.setColumnWidth(6, 4500);  // CK
+            sheet.setColumnWidth(7, 5000);  // Tổng kết
+            sheet.setColumnWidth(8, 2800);  // Hệ 4
+            sheet.setColumnWidth(9, 3200);  // Điểm chữ
+            sheet.setColumnWidth(10, 3800);  // Kết quả
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);

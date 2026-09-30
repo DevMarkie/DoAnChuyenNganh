@@ -13,6 +13,28 @@ Hệ thống bao gồm 3 phân hệ người dùng chính:
 2. **Giảng viên (Lecturer):** Xem lịch giảng dạy, danh sách sinh viên theo lớp học phần, nhập và khóa điểm (chuyên cần, giữa kỳ, cuối kỳ) theo thang điểm quy chuẩn.
 3. **Sinh viên (Student):** Tra cứu chương trình đào tạo, đăng ký môn học/học phần trực tuyến, xem thời khóa biểu, tra cứu điểm số và bảng điểm tích lũy theo chuẩn tín chỉ (thang điểm 10, thang điểm 4, thang điểm chữ A-B-C-D-F).
 
+### 🗺️ Sơ đồ Use Case Tổng Quan
+```mermaid
+flowchart LR
+    Admin(["🧑‍💼 Admin / Phòng Đào tạo"])
+    Lecturer(["👨‍🏫 Giảng viên"])
+    Student(["🎓 Sinh viên"])
+
+    subgraph Quản_Lý_Hệ_Thống ["Hệ thống Quản lý Đào tạo (UAMS)"]
+        UC1(["Quản lý Môn học & Mở lớp"])
+        UC2(["Xếp Thời khóa biểu & Phòng học"])
+        UC3(["Đăng ký Tín chỉ & Hủy môn"])
+        UC4(["Quản lý & Cập nhật Điểm số"])
+    end
+
+    Admin --> UC1
+    Admin --> UC2
+    Admin --> UC4
+    Lecturer --> UC4
+    Student --> UC3
+    Student --> UC4
+```
+
 ---
 
 ## 🛠️ Công Nghệ Sử Dụng
@@ -59,9 +81,16 @@ DoAnChuyenNganh/
 │   ├── seed.sql              # Dữ liệu khởi tạo mẫu
 │   ├── generate_clean_seed.js
 │   └── import_seed.js
-├── docs/                     # Tài liệu nghiệp vụ & biểu đồ thiết kế UML
-│   ├── BA_BUSINESS_PROCESS_SPECIFICATION.md
-│   └── *.drawio              # Các sơ đồ UseCase, Sequence, Activity, BCE
+├── docs/                     # Tài liệu nghiệp vụ (BA Portfolio) & UML thiết kế
+│   ├── 01_system_architecture_and_diagrams.md
+│   ├── 02_use_case_catalog.md
+│   ├── 03_use_case_specifications/
+│   │   ├── UC_Student_Module.md
+│   │   ├── UC_Lecturer_Module.md
+│   │   └── UC_Admin_Module.md
+│   ├── 04_business_rules.md
+│   ├── 05_database_erd.md
+│   └── *.drawio              # Các sơ đồ gốc (BCE, Sequence, Activity)
 ├── docker-compose.yml        # Cấu hình container dịch vụ
 ├── .gitignore                # Cấu hình bỏ qua file rác, build & dependencies
 └── README.md

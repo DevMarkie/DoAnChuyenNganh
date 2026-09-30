@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, User, X, Mail, Phone, CheckCircle } from 'lucide-react';
+import { Lock, User, X, Mail, Phone, CheckCircle, GraduationCap, BookOpen, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
@@ -8,6 +8,15 @@ import useAuthStore from '../../store/authStore';
 const PORTAL_CONFIG = {
   student: {
     role: 'STUDENT',
+    accent: '#2563eb',
+    accentHover: '#1d4ed8',
+    accentSoft: '#eff6ff',
+    accentBorder: '#bfdbfe',
+    gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+    panelGradient: 'linear-gradient(180deg, #2563eb, #3b82f6, #60a5fa)',
+    panelBg: 'linear-gradient(160deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%)',
+    Icon: GraduationCap,
+    roleLabel: 'Sinh viên',
     title: 'Cổng thông tin sinh viên',
     heading: 'Đăng nhập Cổng Sinh viên',
     subheading: 'Tra cứu thời khóa biểu, điểm tích lũy và đăng ký tín chỉ trực tuyến',
@@ -22,13 +31,23 @@ const PORTAL_CONFIG = {
       'Xem bảng điểm quá trình, GPA/CPA và lịch sử học tập',
     ],
     redirectPath: '/student/dashboard',
+    profilePath: '/student/profile',
     otherLinks: [
-      { label: 'Cổng Cán bộ & Giảng viên', path: '/lecturer/login' },
-      { label: 'Cổng Quản trị hệ thống', path: '/admin/login' },
+      { label: 'Cổng Cán bộ & Giảng viên', path: '/lecturer/login', color: '#0d9488' },
+      { label: 'Cổng Quản trị hệ thống', path: '/admin/login', color: '#d97706' },
     ],
   },
   lecturer: {
     role: 'LECTURER',
+    accent: '#0d9488',
+    accentHover: '#0f766e',
+    accentSoft: '#f0fdfa',
+    accentBorder: '#99f6e4',
+    gradient: 'linear-gradient(135deg, #0d9488, #14b8a6)',
+    panelGradient: 'linear-gradient(180deg, #0d9488, #14b8a6, #2dd4bf)',
+    panelBg: 'linear-gradient(160deg, #f0fdfa 0%, #ccfbf1 50%, #d1fae5 100%)',
+    Icon: BookOpen,
+    roleLabel: 'Giảng viên',
     title: 'Cổng cán bộ & giảng viên',
     heading: 'Đăng nhập Cổng Giảng viên',
     subheading: 'Quản lý lịch giảng dạy, theo dõi sinh viên & vào sổ điểm học phần',
@@ -43,13 +62,23 @@ const PORTAL_CONFIG = {
       'Báo cáo kết quả đánh giá học phần theo thang điểm chuẩn tín chỉ',
     ],
     redirectPath: '/lecturer/dashboard',
+    profilePath: '/lecturer/profile',
     otherLinks: [
-      { label: 'Cổng Thông tin Sinh viên', path: '/student/login' },
-      { label: 'Cổng Quản trị hệ thống', path: '/admin/login' },
+      { label: 'Cổng Thông tin Sinh viên', path: '/student/login', color: '#2563eb' },
+      { label: 'Cổng Quản trị hệ thống', path: '/admin/login', color: '#d97706' },
     ],
   },
   admin: {
     role: 'ADMIN',
+    accent: '#d97706',
+    accentHover: '#b45309',
+    accentSoft: '#fffbeb',
+    accentBorder: '#fde68a',
+    gradient: 'linear-gradient(135deg, #d97706, #f59e0b)',
+    panelGradient: 'linear-gradient(180deg, #d97706, #f59e0b, #fbbf24)',
+    panelBg: 'linear-gradient(160deg, #fffbeb 0%, #fef3c7 50%, #fef9c3 100%)',
+    Icon: ShieldCheck,
+    roleLabel: 'Quản trị viên',
     title: 'Cổng quản trị viên hệ thống',
     heading: 'Đăng nhập Quản trị Trung tâm',
     subheading: 'Phân hệ quản trị đào tạo, người dùng & cấu hình hệ thống cấp cao',
@@ -65,8 +94,8 @@ const PORTAL_CONFIG = {
     ],
     redirectPath: '/admin/dashboard',
     otherLinks: [
-      { label: 'Cổng Thông tin Sinh viên', path: '/student/login' },
-      { label: 'Cổng Cán bộ & Giảng viên', path: '/lecturer/login' },
+      { label: 'Cổng Thông tin Sinh viên', path: '/student/login', color: '#2563eb' },
+      { label: 'Cổng Cán bộ & Giảng viên', path: '/lecturer/login', color: '#0d9488' },
     ],
   },
 };
@@ -75,6 +104,10 @@ export default function PortalLoginPage({ portalType = 'student' }) {
   const navigate = useNavigate();
   const { login } = useAuthStore();
   const config = PORTAL_CONFIG[portalType] || PORTAL_CONFIG.student;
+
+  const accent = config.accent;
+  const accentSoft = config.accentSoft;
+  const IconComp = config.Icon;
 
   const [username, setUsername] = useState(config.defaultUser);
   const [password, setPassword] = useState(config.defaultPass);
@@ -149,7 +182,14 @@ export default function PortalLoginPage({ portalType = 'student' }) {
       });
 
       toast.success(`Đăng nhập thành công! Xin chào ${data.username}`);
-      navigate(config.redirectPath);
+      // BUG-07 / BA-05: tài khoản dùng mật khẩu mặc định hoặc vừa được Admin cấp
+      // lại buộc phải đổi mật khẩu — điều hướng thẳng tới trang hồ sơ để đổi.
+      if (data.mustChangePassword && config.profilePath) {
+        toast.warning('Bạn đang dùng mật khẩu tạm/được cấp lại. Vui lòng đổi mật khẩu ngay để bảo mật tài khoản.');
+        navigate(config.profilePath);
+      } else {
+        navigate(config.redirectPath);
+      }
     } catch (err) {
       const msg = err.response?.data?.message || 'Đăng nhập thất bại. Kiểm tra lại thông tin tài khoản, mật khẩu!';
       toast.error(msg);
@@ -166,34 +206,37 @@ export default function PortalLoginPage({ portalType = 'student' }) {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--bg-app)' }}>
-      {/* Left Column: Brand & Feature Panel — neutral, typography-led */}
+      {/* Left Column: Brand & Feature Panel — themed with portal color */}
       <div
         className="login-brand-panel"
         style={{
+          '--login-accent-gradient': config.panelGradient,
           flex: '1 1 46%',
           padding: '56px 60px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          backgroundColor: 'var(--bg-subtle)',
+          background: config.panelBg,
           borderRight: '1px solid var(--border-color)',
         }}
       >
         {/* Top: University Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
-            width: '38px', height: '38px', borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)',
+            width: '42px', height: '42px', borderRadius: 'var(--radius-md)',
+            background: config.gradient,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 700, fontSize: '0.98rem', color: 'var(--text-main)', letterSpacing: '-0.03em',
-          }}>SM</div>
+            boxShadow: `0 4px 14px -3px ${accent}44`,
+          }}>
+            <IconComp size={22} style={{ color: '#fff' }} />
+          </div>
           <div>
             <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
               SMS University
             </div>
             <div style={{
-              fontSize: '0.72rem', color: 'var(--text-light)', textTransform: 'uppercase',
-              letterSpacing: '0.06em', fontWeight: 600,
+              fontSize: '0.72rem', color: accent, textTransform: 'uppercase',
+              letterSpacing: '0.06em', fontWeight: 700,
             }}>
               {config.title}
             </div>
@@ -216,11 +259,14 @@ export default function PortalLoginPage({ portalType = 'student' }) {
 
           <ul style={{
             listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '11px',
-            marginTop: '32px', paddingTop: '28px', borderTop: '1px solid var(--border-color)',
+            marginTop: '32px', paddingTop: '28px', borderTop: `1px solid ${accent}22`,
           }}>
             {config.features.map((feature, idx) => (
               <li key={idx} style={{ display: 'flex', gap: '10px', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                <span style={{ color: 'var(--text-light)', flexShrink: 0 }}>—</span>
+                <span style={{
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  backgroundColor: accent, flexShrink: 0, marginTop: '7px',
+                }} />
                 <span>{feature}</span>
               </li>
             ))}
@@ -229,13 +275,13 @@ export default function PortalLoginPage({ portalType = 'student' }) {
 
         {/* Bottom: Meta & Gateway link */}
         <div style={{
-          paddingTop: '20px', borderTop: '1px solid var(--border-color)',
+          paddingTop: '20px', borderTop: `1px solid ${accent}22`,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           fontSize: '0.8rem', color: 'var(--text-light)',
         }}>
           <span>Phiên bản 2.0 • Chuẩn đào tạo tín chỉ</span>
-          <Link to="/login" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
-            Tất cả các cổng
+          <Link to="/login" style={{ color: accent, textDecoration: 'none', fontWeight: 600 }}>
+            ← Tất cả các cổng
           </Link>
         </div>
       </div>
@@ -245,31 +291,40 @@ export default function PortalLoginPage({ portalType = 'student' }) {
         flex: '1 1 54%', display: 'flex', flexDirection: 'column',
         justifyContent: 'center', alignItems: 'center', padding: '40px 24px',
         backgroundColor: 'var(--bg-app)',
+        borderTop: `4px solid ${accent}`,
       }}>
         <div style={{ width: '100%', maxWidth: '400px' }}>
           {/* Mobile Brand (hidden on desktop via .login-mobile-brand) */}
           <div className="login-mobile-brand" style={{ marginBottom: '28px', textAlign: 'center' }}>
             <div style={{
-              width: '40px', height: '40px', borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)',
+              width: '44px', height: '44px', borderRadius: 'var(--radius-md)',
+              background: config.gradient,
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 700, color: 'var(--text-main)', marginBottom: '10px',
-            }}>SM</div>
+              marginBottom: '10px', boxShadow: `0 4px 14px -3px ${accent}44`,
+            }}>
+              <IconComp size={22} style={{ color: '#fff' }} />
+            </div>
             <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>SMS University</div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{config.title}</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: accent }}>{config.title}</div>
           </div>
 
           {/* Form Header */}
           <div style={{ marginBottom: '24px' }}>
-            <div style={{
-              fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase',
-              letterSpacing: '0.06em', color: 'var(--text-light)', marginBottom: '10px',
-            }}>
-              {config.title}
-            </div>
+            <span
+              className="portal-role-tag"
+              style={{
+                color: accent,
+                backgroundColor: accentSoft,
+                border: `1px solid ${config.accentBorder}`,
+                marginBottom: '12px',
+              }}
+            >
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: accent }} />
+              Cổng {config.roleLabel}
+            </span>
             <h2 style={{
               fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)',
-              letterSpacing: '-0.025em', marginBottom: '6px',
+              letterSpacing: '-0.025em', marginBottom: '6px', marginTop: '12px',
             }}>
               {config.heading}
             </h2>
@@ -281,8 +336,8 @@ export default function PortalLoginPage({ portalType = 'student' }) {
           {/* Sample Account Helper */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 14px', backgroundColor: 'var(--bg-subtle)',
-            borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)',
+            padding: '10px 14px', backgroundColor: accentSoft,
+            borderRadius: 'var(--radius-md)', border: `1px solid ${config.accentBorder}`,
             marginBottom: '20px', fontSize: '0.8rem',
           }}>
             <span style={{ color: 'var(--text-muted)' }}>
@@ -292,7 +347,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
               type="button"
               onClick={handleQuickFill}
               style={{
-                background: 'none', border: 'none', color: 'var(--primary)',
+                background: 'none', border: 'none', color: accent,
                 fontWeight: 600, cursor: 'pointer', padding: '2px 6px', borderRadius: '4px',
               }}
             >
@@ -326,7 +381,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                 <label className="form-label" style={{ marginBottom: 0 }}>Mật khẩu truy cập *</label>
                 <span
                   onClick={handleOpenForgotModal}
-                  style={{ fontSize: '0.78rem', color: 'var(--primary)', cursor: 'pointer', fontWeight: 600 }}
+                  style={{ fontSize: '0.78rem', color: accent, cursor: 'pointer', fontWeight: 600 }}
                 >
                   Quên mật khẩu?
                 </span>
@@ -352,9 +407,13 @@ export default function PortalLoginPage({ portalType = 'student' }) {
               type="submit"
               disabled={loading}
               className="btn btn-primary"
-              style={{ width: '100%', padding: '12px', fontSize: '0.9rem' }}
+              style={{
+                width: '100%', padding: '12px', fontSize: '0.9rem',
+                background: config.gradient, borderColor: accent,
+                color: '#fff',
+              }}
             >
-              {loading ? 'Đang kiểm tra quyền truy cập...' : 'Đăng nhập'}
+              {loading ? 'Đang kiểm tra quyền truy cập...' : `Đăng nhập — ${config.roleLabel}`}
             </button>
           </form>
 
@@ -386,7 +445,13 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                     color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 500,
                   }}
                 >
-                  <span>{link.label}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      width: '8px', height: '8px', borderRadius: '50%',
+                      backgroundColor: link.color, flexShrink: 0,
+                    }} />
+                    {link.label}
+                  </span>
                   <span style={{ color: 'var(--text-light)' }}>→</span>
                 </Link>
               ))}

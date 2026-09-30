@@ -662,15 +662,113 @@ textarea.form-control {
   to { transform: rotate(360deg); }
 }
 
-/* ——— Auth / Portal ——— */
+/* ——— Auth / Portal Hub — Themed Cards ——— */
+
+/* Each portal card gets a colored top-border gradient via ::before */
+.portal-card {
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.portal-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--portal-gradient);
+  opacity: 0.85;
+  transition: height var(--transition-normal), opacity var(--transition-normal);
+}
 .portal-card:hover {
-  border-color: var(--border-subtle);
+  border-color: var(--portal-accent, var(--border-subtle));
+  box-shadow: 0 8px 32px -8px var(--portal-shadow, rgba(0,0,0,0.08));
+  transform: translateY(-3px);
+}
+.portal-card:hover::before {
+  height: 5px;
+  opacity: 1;
+}
+
+/* Portal color themes — applied via inline style / data-portal attribute */
+.portal-card[data-portal="student"] {
+  --portal-accent: #2563eb;
+  --portal-gradient: linear-gradient(135deg, #2563eb, #3b82f6, #60a5fa);
+  --portal-shadow: rgba(37, 99, 235, 0.18);
+}
+.portal-card[data-portal="lecturer"] {
+  --portal-accent: #0d9488;
+  --portal-gradient: linear-gradient(135deg, #0d9488, #14b8a6, #2dd4bf);
+  --portal-shadow: rgba(13, 148, 136, 0.18);
+}
+.portal-card[data-portal="admin"] {
+  --portal-accent: #d97706;
+  --portal-gradient: linear-gradient(135deg, #d97706, #f59e0b, #fbbf24);
+  --portal-shadow: rgba(217, 119, 6, 0.18);
+}
+
+/* Portal icon container in hub cards */
+.portal-icon-container {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+.portal-card:hover .portal-icon-container {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px -3px var(--portal-shadow, rgba(0,0,0,0.12));
+}
+
+/* Portal role tag pill — small colored badge */
+.portal-role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  line-height: 1;
+}
+
+/* Portal feature bullet */
+.portal-feature-bullet {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+/* Portal action button — colored per-portal */
+.portal-btn {
+  transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 .portal-btn:hover {
-  background-color: var(--btn-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -3px var(--portal-shadow, rgba(0,0,0,0.15));
+}
+
+/* Switch-links hover */
+.portal-link-hover {
+  transition: background-color var(--transition-fast);
 }
 .portal-link-hover:hover {
   background-color: var(--bg-subtle);
+}
+
+/* ——— Login Page — Brand Panel Stripe ——— */
+.login-brand-panel {
+  position: relative;
+}
+.login-brand-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 5px;
+  background: var(--login-accent-gradient, linear-gradient(180deg, #2563eb, #60a5fa));
 }
 
 /* Two-column login: brand panel on the left, mobile brand hidden on wide screens */

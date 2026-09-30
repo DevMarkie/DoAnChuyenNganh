@@ -98,8 +98,9 @@ export default function AdminGradesPage() {
 
   const isStudentPassed = (g) => {
     if (g.isPassed !== undefined && g.isPassed !== null) return g.isPassed;
-    if (g.letterGrade) return g.letterGrade !== 'F';
-    if (g.totalScore != null) return parseFloat(g.totalScore) >= 4.0;
+    // Quy chế học lại: D (4.0/10) và F đều trượt; đạt tối thiểu D+ (>= 5.0).
+    if (g.letterGrade) return g.letterGrade !== 'F' && g.letterGrade !== 'D';
+    if (g.totalScore != null) return parseFloat(g.totalScore) >= 5.0;
     return null;
   };
 

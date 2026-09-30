@@ -153,6 +153,10 @@ public class PasswordResetService {
         String newPassword;
         if (approveRequest != null && approveRequest.getNewPassword() != null && !approveRequest.getNewPassword().isBlank()) {
             newPassword = approveRequest.getNewPassword().trim();
+            // BA-06: mật khẩu do Admin đặt tay vẫn phải đạt độ dài tối thiểu.
+            if (newPassword.length() < 6) {
+                throw new BadRequestException("Mật khẩu mới phải có ít nhất 6 ký tự");
+            }
         } else {
             newPassword = generateRandomPassword();
         }

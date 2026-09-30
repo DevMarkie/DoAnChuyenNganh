@@ -115,12 +115,14 @@ public class Grade {
 
     @JsonProperty("isPassed")
     public Boolean getIsPassed() {
+        // Quy chế học lại (BA): điểm D (4.0/10 = 1.0/4.0) và F đều KHÔNG đạt, phải
+        // học lại. Đạt học phần yêu cầu tối thiểu D+ (5.0/10 = 1.5/4.0).
         if (letterGrade != null) {
-            return !"F".equalsIgnoreCase(letterGrade);
+            return !"F".equalsIgnoreCase(letterGrade) && !"D".equalsIgnoreCase(letterGrade);
         }
         if (totalScore != null) {
-            // Cùng quy chế điểm liệt: Đạt = TK >= 4.0 VÀ CK >= 3.0 (nếu có điểm CK).
-            return totalScore.doubleValue() >= 4.0
+            // Cùng quy chế điểm liệt: Đạt = TK >= 5.0 VÀ CK >= 3.0 (nếu có điểm CK).
+            return totalScore.doubleValue() >= 5.0
                     && (finalScore == null || finalScore.compareTo(new BigDecimal("3.0")) >= 0);
         }
         return null;

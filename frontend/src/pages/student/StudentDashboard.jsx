@@ -113,7 +113,7 @@ export default function StudentDashboard() {
           <h3>Học phần đăng ký trong học kỳ hiện tại</h3>
           <button
             className="btn btn-outline btn-sm"
-            onClick={() => navigate('/student/my-enrollments')}
+            onClick={() => navigate('/student/enrollments')}
           >
             Chi tiết học vụ
           </button>
@@ -170,8 +170,14 @@ export default function StudentDashboard() {
                     <td style={{ color: 'var(--text-secondary)' }}>{e.courseSection?.schedule || '—'}</td>
                     <td><span className="badge badge-neutral">{e.courseSection?.room || '—'}</span></td>
                     <td>
-                      <span className={`badge ${e.status === 'ENROLLED' ? 'badge-success' : 'badge-danger'}`}>
-                        {e.status === 'ENROLLED' ? 'Đã xác nhận ĐK' : 'Đã hủy'}
+                      <span className={`badge ${
+                        e.status === 'ENROLLED' ? 'badge-success'
+                        : e.status === 'COMPLETED' ? 'badge-info'
+                        : 'badge-danger'
+                      }`}>
+                        {e.status === 'ENROLLED' ? 'Đã xác nhận ĐK'
+                          : e.status === 'COMPLETED' ? 'Đã hoàn thành'
+                          : 'Đã hủy'}
                       </span>
                     </td>
                   </tr>

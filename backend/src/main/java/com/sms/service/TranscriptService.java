@@ -90,29 +90,30 @@ public class TranscriptService {
         // Sort by semester
         semesterGrades.sort(Comparator.comparing(TranscriptResponse.SemesterGrade::getSemesterId));
 
-        // Cumulative figures dedupe retakes: for each subject only the latest
-        // attempt (by semester) counts, so an earlier F that was later retaken
-        // no longer inflates accumulated credits nor permanently drags the CPA.
-        Map<String, Grade> latestBySubject = new LinkedHashMap<>();
+        // BA-03 — Quy chế học lại: bảng điểm tích luỹ lấy LẦN THI CÓ ĐIỂM CAO NHẤT
+        // cho mỗi môn (không phải lần mới nhất), nên học lại luôn có lợi và một lần
+        // rớt về sau không làm mất tín chỉ đã đạt. Nếu quy chế trường khác (ví dụ
+        // "lấy lần mới nhất"), chỉ cần đổi điều kiện so sánh bên dưới.
+        Map<String, Grade> bestBySubject = new LinkedHashMap<>();
         for (Grade grade : grades) {
             if (grade.getGpaPoint() == null) continue;
             Subject subject = grade.getEnrollment().getSection().getSubject();
-            int semId = grade.getEnrollment().getSection().getSemester().getId();
-            Grade current = latestBySubject.get(subject.getSubjectCode());
+            Grade current = bestBySubject.get(subject.getSubjectCode());
             if (current == null
-                    || semId > current.getEnrollment().getSection().getSemester().getId()) {
-                latestBySubject.put(subject.getSubjectCode(), grade);
+                    || grade.getGpaPoint().compareTo(current.getGpaPoint()) > 0) {
+                bestBySubject.put(subject.getSubjectCode(), grade);
             }
         }
 
         BigDecimal cpaWeighted = BigDecimal.ZERO;
-        int gpaCredits = 0; // CPA denominator — a failing latest attempt still counts here
-        for (Grade grade : latestBySubject.values()) {
+        int gpaCredits = 0; // Mẫu số CPA — lần thi tốt nhất; nếu vẫn F thì tính 0.0
+        for (Grade grade : bestBySubject.values()) {
             int credits = grade.getEnrollment().getSection().getSubject().getCredits();
             cpaWeighted = cpaWeighted.add(grade.getGpaPoint().multiply(BigDecimal.valueOf(credits)));
             gpaCredits += credits;
-            // Accumulated credits count passed courses only (F / 0.0 excluded).
-            if (grade.getGpaPoint().compareTo(BigDecimal.ZERO) > 0) {
+            // Tín chỉ tích luỹ chỉ tính học phần ĐẠT. Theo quy chế học lại, D (1.0) và
+            // F (0.0) đều trượt, nên chỉ cộng khi đạt tối thiểu D+ (gpaPoint >= 1.5).
+            if (grade.getGpaPoint().compareTo(new BigDecimal("1.5")) >= 0) {
                 totalCredits += credits;
                 completedCourses++;
             }

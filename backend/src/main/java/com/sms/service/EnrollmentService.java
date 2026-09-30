@@ -18,6 +18,7 @@ public class EnrollmentService {
     private final StudentRepository studentRepository;
     private final ScheduleRepository scheduleRepository;
     private final GradeRepository gradeRepository;
+    private final LecturerRepository lecturerRepository;
     private static final int MAX_CREDITS_PER_SEMESTER = 30;
 
     public List<Enrollment> findByStudent(Long studentId) {
@@ -26,6 +27,22 @@ public class EnrollmentService {
 
     public List<Enrollment> findBySection(Long sectionId) {
         return enrollmentRepository.findActiveBySectionId(sectionId);
+    }
+
+    /**
+     * BR-07 (đọc): giảng viên chỉ được xem danh sách sinh viên của lớp mình phụ
+     * trách. Admin (không có bản ghi Lecturer) xem được mọi lớp.
+     */
+    public void assertCanViewSection(Long userId, Long sectionId) {
+        Lecturer lecturer = lecturerRepository.findByUserId(userId).orElse(null);
+        if (lecturer == null) {
+            return;
+        }
+        CourseSection section = courseSectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+        if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
+            throw new BadRequestException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
+        }
     }
 
     @Transactional
@@ -79,7 +96,14 @@ public class EnrollmentService {
         for (Schedule newSch : newSchedules) {
             for (Schedule stuSch : studentSchedules) {
                 if (newSch.getDayOfWeek().equals(stuSch.getDayOfWeek())) {
-                    if (newSch.getStartPeriod() <= stuSch.getEndPeriod() && newSch.getEndPeriod() >= stuSch.getStartPeriod()) {
+                    boolean periodOverlap = newSch.getStartPeriod() <= stuSch.getEndPeriod()
+                            && newSch.getEndPeriod() >= stuSch.getStartPeriod();
+                    // BA-08: chỉ trùng lịch khi khoảng NGÀY học cũng giao nhau — hai
+                    // lớp cùng thứ/tiết nhưng khác nửa kỳ thì KHÔNG bị coi là trùng.
+                    boolean dateOverlap = newSch.getStartDate() == null || stuSch.getStartDate() == null
+                            || (!newSch.getStartDate().isAfter(stuSch.getEndDate())
+                                && !newSch.getEndDate().isBefore(stuSch.getStartDate()));
+                    if (periodOverlap && dateOverlap) {
                         throw new BadRequestException(String.format(
                                 "Trùng lịch học! Học phần này trùng thời gian với lớp %s (%s) vào %s (Tiết %d - %d).",
                                 stuSch.getSection().getSectionCode(), stuSch.getSection().getSubject().getSubjectName(),
@@ -131,7 +155,9 @@ public class EnrollmentService {
     public Enrollment adminAssign(Long studentId, Long sectionId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
-        CourseSection section = courseSectionRepository.findById(sectionId)
+        // Khoá bi quan để kiểm tra sĩ số an toàn dưới truy cập đồng thời (BUG-03),
+        // đồng bộ với enroll() / adminBatchAssignClass().
+        CourseSection section = courseSectionRepository.findByIdForEnrollment(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
 
         Enrollment existingEnrollment = enrollmentRepository

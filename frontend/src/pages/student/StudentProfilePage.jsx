@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, School, KeyRound, ShieldCheck, GraduationCap } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { studentService, authService } from '../../services/dataService';
+import { genderLabel, studentStatusLabel, studentStatusBadgeClass } from '../../utils/labels';
 
 export default function StudentProfilePage() {
   const [profile, setProfile] = useState(null);
@@ -30,6 +31,10 @@ export default function StudentProfilePage() {
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    if ((passData.newPassword || '').length < 6) {
+      toast.warning('Mật khẩu mới phải có ít nhất 6 ký tự!');
+      return;
+    }
     if (passData.newPassword !== passData.confirmPassword) {
       toast.warning('Mật khẩu mới không trùng khớp!');
       return;
@@ -117,8 +122,8 @@ export default function StudentProfilePage() {
                   >
                     {profile?.studentCode}
                   </span>
-                  <span className="badge badge-success">
-                    {profile?.status === 'STUDYING' || profile?.status === 'ACTIVE' ? 'Đang học' : profile?.status}
+                  <span className={`badge ${studentStatusBadgeClass(profile?.status)}`}>
+                    {studentStatusLabel(profile?.status)}
                   </span>
                 </div>
               </div>
@@ -148,7 +153,7 @@ export default function StudentProfilePage() {
               <div>
                 <label className="form-label">Giới tính</label>
                 <div>
-                  <span className="badge badge-neutral">{profile?.gender || 'Nam'}</span>
+                  <span className="badge badge-neutral">{genderLabel(profile?.gender)}</span>
                 </div>
               </div>
               <div>

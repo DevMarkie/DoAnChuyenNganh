@@ -27,7 +27,9 @@ public class GradeController {
 
     @GetMapping("/section/{sectionId}")
     @PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
-    public ResponseEntity<ApiResponse<List<Grade>>> getBySection(@PathVariable Long sectionId) {
+    public ResponseEntity<ApiResponse<List<Grade>>> getBySection(@AuthenticationPrincipal UserPrincipal user,
+                                                                 @PathVariable Long sectionId) {
+        gradeService.assertCanViewSection(user.getId(), sectionId);
         return ResponseEntity.ok(ApiResponse.success(gradeService.findBySection(sectionId)));
     }
 
@@ -36,7 +38,9 @@ public class GradeController {
      */
     @GetMapping("/section/{sectionId}/export")
     @PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
-    public ResponseEntity<byte[]> exportGradeSheet(@PathVariable Long sectionId) throws IOException {
+    public ResponseEntity<byte[]> exportGradeSheet(@AuthenticationPrincipal UserPrincipal user,
+                                                   @PathVariable Long sectionId) throws IOException {
+        gradeService.assertCanViewSection(user.getId(), sectionId);
         byte[] excelData = excelExportService.exportGradeSheet(sectionId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=bang_diem_" + sectionId + ".xlsx")

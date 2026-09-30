@@ -30,7 +30,9 @@ public class EnrollmentController {
 
     @GetMapping("/section/{sectionId}")
     @PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
-    public ResponseEntity<ApiResponse<List<Enrollment>>> getBySection(@PathVariable Long sectionId) {
+    public ResponseEntity<ApiResponse<List<Enrollment>>> getBySection(@AuthenticationPrincipal UserPrincipal user,
+                                                                      @PathVariable Long sectionId) {
+        enrollmentService.assertCanViewSection(user.getId(), sectionId);
         return ResponseEntity.ok(ApiResponse.success(enrollmentService.findBySection(sectionId)));
     }
 

@@ -174,7 +174,7 @@ export default function SchedulesPage() {
     const matchDay = selectedDayFilter ? s.dayOfWeek === parseInt(selectedDayFilter) : true;
     const subjectName = s.courseSection?.subject?.subjectName || '';
     const sectionCode = s.courseSection?.sectionCode || '';
-    const className = s.administrativeClass?.classCode || '';
+    const className = s.administrativeClass?.code || '';
     const lecturerName = s.courseSection?.lecturer?.fullName || '';
     const roomName = s.room || '';
     const q = search.toLowerCase();
@@ -468,7 +468,7 @@ export default function SchedulesPage() {
                         const subj = s.courseSection?.subject;
                         const lect = s.courseSection?.lecturer;
                         const secCode = s.courseSection?.sectionCode;
-                        const clsCode = s.administrativeClass?.classCode;
+                        const clsCode = s.administrativeClass?.code;
 
                         return (
                           <div
@@ -592,7 +592,7 @@ export default function SchedulesPage() {
                     <td>
                       {s.administrativeClass ? (
                         <span className="badge badge-neutral">
-                          <School size={12} /> {s.administrativeClass.classCode}
+                          <School size={12} /> {s.administrativeClass.code}
                         </span>
                       ) : (
                         <span style={{ color: 'var(--text-light)' }}>-</span>
@@ -717,7 +717,7 @@ export default function SchedulesPage() {
                     <option value="">-- Không chọn (hoặc theo từng sinh viên ĐK) --</option>
                     {classes.map((cls) => (
                       <option key={cls.id} value={cls.id}>
-                        {cls.classCode} - {cls.className} ({cls.department?.departmentName})
+                        {cls.code} - {cls.name} ({cls.department?.name})
                       </option>
                     ))}
                   </select>

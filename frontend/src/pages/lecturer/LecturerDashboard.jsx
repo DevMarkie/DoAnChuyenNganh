@@ -94,7 +94,7 @@ export default function LecturerDashboard() {
             <GraduationCap size={22} />
           </div>
           <div>
-            <div className="stat-value">{profile?.department?.code || 'CNTT'}</div>
+            <div className="stat-value">{profile?.department?.code || '—'}</div>
             <div className="stat-label">Bộ môn chuyên trách</div>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function LecturerDashboard() {
           <h3>Lớp học phần đang phụ trách giảng dạy kỳ này</h3>
           <button
             className="btn btn-outline btn-sm"
-            onClick={() => navigate('/lecturer/sections')}
+            onClick={() => navigate('/lecturer/my-sections')}
           >
             Xem tất cả
           </button>

@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -61,6 +63,12 @@ public class AuthService {
                     .mustChangePassword(userPrincipal.isMustChangePassword())
                     .build();
 
+        } catch (DisabledException | LockedException ex) {
+            // BUG-04: tài khoản bị vô hiệu hoá/khoá — trả về lỗi rõ ràng, KHÔNG để
+            // rơi xuống handler chung (tránh HTTP 500 + lộ message nội bộ). Không
+            // tính vào bộ đếm brute-force vì mật khẩu chưa chắc sai.
+            throw new BadRequestException(
+                    "Tài khoản đã bị vô hiệu hoá hoặc tạm khoá. Vui lòng liên hệ quản trị viên.");
         } catch (BadCredentialsException ex) {
             // Tăng bộ đếm thất bại
             loginAttemptService.loginFailed(username);

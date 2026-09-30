@@ -262,10 +262,10 @@ export default function CourseSectionsPage() {
                           className={`badge ${
                             s.status === 'OPEN' ? 'badge-success'
                             : s.status === 'CLOSED' ? 'badge-warning'
-                            : 'badge-info'
+                            : 'badge-danger'
                           }`}
                         >
-                          {s.status === 'OPEN' ? 'Mở đăng ký' : s.status === 'CLOSED' ? 'Đã khóa' : 'Đang học'}
+                          {s.status === 'OPEN' ? 'Mở đăng ký' : s.status === 'CLOSED' ? 'Đã khóa' : 'Đã hủy'}
                         </span>
                       </td>
                       <td style={{ textAlign: 'right' }}>
@@ -388,8 +388,7 @@ export default function CourseSectionsPage() {
                   >
                     <option value="OPEN">Mở đăng ký (OPEN)</option>
                     <option value="CLOSED">Khóa đăng ký (CLOSED)</option>
-                    <option value="IN_PROGRESS">Đang học (IN_PROGRESS)</option>
-                    <option value="COMPLETED">Đã hoàn thành (COMPLETED)</option>
+                    <option value="CANCELLED">Đã hủy lớp (CANCELLED)</option>
                   </select>
                 </div>
               </div>

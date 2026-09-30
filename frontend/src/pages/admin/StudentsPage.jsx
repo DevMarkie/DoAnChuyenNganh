@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit2, UserX, UserCheck, X, Filter, RotateCcw, Building2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { studentService, classService, departmentService } from '../../services/dataService';
+import { genderLabel } from '../../utils/labels';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tất cả trạng thái' },
@@ -438,7 +439,7 @@ export default function StudentsPage() {
 
                       {/* Gender */}
                       <td>
-                        <span className="badge badge-neutral">{s.gender || 'Khác'}</span>
+                        <span className="badge badge-neutral">{genderLabel(s.gender)}</span>
                       </td>
 
                       {/* Phone */}

@@ -102,8 +102,9 @@ export default function GradeEntryPage() {
 
   const isStudentPassed = (g) => {
     if (g.isPassed !== undefined && g.isPassed !== null) return g.isPassed;
-    if (g.letterGrade) return g.letterGrade !== 'F';
-    if (g.totalScore != null) return parseFloat(g.totalScore) >= 4.0;
+    // Quy chế học lại: D (4.0/10) và F đều trượt; đạt tối thiểu D+ (>= 5.0).
+    if (g.letterGrade) return g.letterGrade !== 'F' && g.letterGrade !== 'D';
+    if (g.totalScore != null) return parseFloat(g.totalScore) >= 5.0;
     return null;
   };
 
@@ -111,6 +112,9 @@ export default function GradeEntryPage() {
   const passedCount = grades.filter((g) => isStudentPassed(g) === true).length;
   const gradedCount = grades.filter((g) => g.totalScore != null).length;
   const passRate = gradedCount > 0 ? Math.round((passedCount / gradedCount) * 100) : 0;
+  // Activity #14: bảng điểm đã chốt thì khoá toàn bộ ô nhập; chỉ được chốt khi 100% SV có điểm.
+  const isLocked = grades.length > 0 && grades.every((g) => g.isFinalized);
+  const allGraded = grades.length > 0 && gradedCount === grades.length;
 
   return (
     <div>
@@ -122,19 +126,37 @@ export default function GradeEntryPage() {
           </p>
         </div>
         {grades.length > 0 && (
-          <div className="page-header-actions">
+          <div className="page-header-actions" style={{ alignItems: 'center' }}>
+            {isLocked && (
+              <span
+                className="badge badge-success"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.85rem' }}
+              >
+                <CheckCircle2 size={15} />
+                ĐÃ CHỐT ĐIỂM
+              </span>
+            )}
             <button className="btn btn-outline" onClick={handleExportExcel} title="Xuất bảng điểm ra file Excel">
               <Download size={16} />
               <span>Xuất Excel</span>
             </button>
-            <button className="btn btn-secondary" disabled={saving} onClick={() => handleSave(false)}>
-              <Save size={16} />
-              <span>{saving ? 'Đang lưu...' : 'Lưu bản nháp'}</span>
-            </button>
-            <button className="btn btn-primary" disabled={saving} onClick={() => handleSave(true)}>
-              <CheckCircle size={16} />
-              <span>Chốt & Công bố điểm</span>
-            </button>
+            {!isLocked && (
+              <>
+                <button className="btn btn-secondary" disabled={saving} onClick={() => handleSave(false)}>
+                  <Save size={16} />
+                  <span>{saving ? 'Đang lưu...' : 'Lưu bản nháp'}</span>
+                </button>
+                <button
+                  className="btn btn-primary"
+                  disabled={saving || !allGraded}
+                  title={allGraded ? 'Chốt & công bố điểm học phần' : 'Phải nhập đủ điểm cho tất cả sinh viên trước khi chốt'}
+                  onClick={() => handleSave(true)}
+                >
+                  <CheckCircle size={16} />
+                  <span>Chốt & Công bố điểm</span>
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -239,6 +261,7 @@ export default function GradeEntryPage() {
                         placeholder="0.0"
                         value={g.attendanceScore ?? ''}
                         onChange={(e) => handleScoreChange(idx, 'attendanceScore', e.target.value)}
+                        disabled={isLocked}
                         className="form-control"
                         style={{
                           width: '68px',
@@ -258,6 +281,7 @@ export default function GradeEntryPage() {
                         placeholder="0.0"
                         value={g.midtermScore ?? ''}
                         onChange={(e) => handleScoreChange(idx, 'midtermScore', e.target.value)}
+                        disabled={isLocked}
                         className="form-control"
                         style={{
                           width: '68px',
@@ -277,6 +301,7 @@ export default function GradeEntryPage() {
                         placeholder="0.0"
                         value={g.finalScore ?? ''}
                         onChange={(e) => handleScoreChange(idx, 'finalScore', e.target.value)}
+                        disabled={isLocked}
                         className="form-control"
                         style={{
                           width: '68px',

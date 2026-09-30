@@ -90,8 +90,10 @@ export default function Sidebar({ collapsed, onToggle }) {
       const fetchPending = async () => {
         try {
           const res = await passwordResetService.getPendingCount();
-          if (isMounted && res?.data?.count !== undefined) {
-            setPendingResets(res.data.count);
+          // BUG-11: dữ liệu nằm trong ApiResponse.data (res.data.data), không phải res.data
+          const count = res?.data?.data?.count ?? res?.data?.count;
+          if (isMounted && count !== undefined) {
+            setPendingResets(count);
           }
         } catch {
           // ignore error silently

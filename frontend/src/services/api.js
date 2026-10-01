@@ -1,16 +1,16 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
+  headers: { "Content-Type": "application/json" },
   timeout: 15000, // 15-second timeout prevents hanging requests
 });
 
 // Request interceptor — attach JWT token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -22,11 +22,15 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const method = originalRequest?.method?.toUpperCase();
+    const isSafeToRetry = method === "GET" || method === "HEAD";
 
-    // Retry once on network errors or 502/503 (not on auth or client errors)
+    // Retry reads only. Retrying a timed-out POST could duplicate a write that
+    // already reached the server.
     if (
       !originalRequest._retry &&
-      (error.code === 'ECONNABORTED' ||
+      isSafeToRetry &&
+      (error.code === "ECONNABORTED" ||
         error.response?.status === 502 ||
         error.response?.status === 503)
     ) {
@@ -34,15 +38,17 @@ api.interceptors.response.use(
       return api(originalRequest);
     }
 
-    // Handle auth errors — clear token and redirect
-    if (error.response?.status === 401 || (error.response?.status === 403 && localStorage.getItem('token'))) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+    // A 403 means the session is valid but lacks permission. Only 401 means
+    // the token is missing or expired.
+    if (error.response?.status === 401 && localStorage.getItem("token")) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.dispatchEvent(new CustomEvent("auth:session-expired"));
       // Use window.location hash to avoid leaving repo path
-      window.location.hash = '#/';
+      window.location.hash = "#/";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

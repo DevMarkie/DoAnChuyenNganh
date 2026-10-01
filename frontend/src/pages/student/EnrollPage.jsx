@@ -1,23 +1,40 @@
-import { useState, useEffect } from 'react';
-import { BookMarked, Check, Plus, AlertCircle, Search, Calendar, Users } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { semesterService, courseSectionService, enrollmentService } from '../../services/dataService';
+import { useState, useEffect, useRef } from "react";
+import {
+  BookMarked,
+  Check,
+  Plus,
+  AlertCircle,
+  Search,
+  Calendar,
+  Users,
+} from "lucide-react";
+import { toast } from "react-toastify";
+import {
+  semesterService,
+  courseSectionService,
+  enrollmentService,
+} from "../../services/dataService";
 
 export default function EnrollPage() {
   const [currentSemester, setCurrentSemester] = useState(null);
   const [availableSections, setAvailableSections] = useState([]);
   const [myEnrollments, setMyEnrollments] = useState([]);
-  const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [enrollingId, setEnrollingId] = useState(null);
+  const enrollmentInFlight = useRef(false);
 
   useEffect(() => {
-    loadData();
+    loadData({ initial: true });
   }, []);
 
-  const loadData = async () => {
+  const loadData = async ({ initial = false } = {}) => {
     try {
-      setLoading(true);
+      if (initial) setInitialLoading(true);
+      else setRefreshing(true);
+      setLoadError(false);
       const [resSem, resEnr] = await Promise.all([
         semesterService.getCurrent(),
         enrollmentService.getMyEnrollments(),
@@ -34,28 +51,39 @@ export default function EnrollPage() {
         setAvailableSections([]);
       }
     } catch {
-      toast.error('Lỗi khi tải thông tin đăng ký học phần');
+      setLoadError(true);
+      toast.error("Không thể tải dữ liệu đăng ký. Vui lòng thử lại.");
     } finally {
-      setLoading(false);
+      if (initial) setInitialLoading(false);
+      else setRefreshing(false);
     }
   };
 
   const handleEnroll = async (sectionId) => {
+    if (enrollmentInFlight.current) return;
+    enrollmentInFlight.current = true;
     try {
       setEnrollingId(sectionId);
       await enrollmentService.enroll({ sectionId });
-      toast.success('Đăng ký học phần thành công!');
-      loadData();
+      toast.success("Đăng ký học phần thành công!");
+      await loadData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Đăng ký thất bại');
+      const status = err.response?.status;
+      const message = err.response?.data?.message;
+      toast.error(
+        status === 409
+          ? "Lớp học phần vừa thay đổi. Vui lòng tải lại danh sách."
+          : message || "Đăng ký thất bại. Vui lòng thử lại.",
+      );
     } finally {
       setEnrollingId(null);
+      enrollmentInFlight.current = false;
     }
   };
 
   const isEnrolled = (sectionId) => {
     return myEnrollments.some(
-      (e) => e.courseSection?.id === sectionId && e.status === 'ENROLLED'
+      (e) => e.courseSection?.id === sectionId && e.status === "ENROLLED",
     );
   };
 
@@ -75,7 +103,10 @@ export default function EnrollPage() {
         <div>
           <h1>Đăng Ký Học Phần Trực Tuyến</h1>
           <p>
-            Học kỳ hiện tại: <strong>{currentSemester ? currentSemester.semesterName : 'Đang cập nhật'}</strong>
+            Học kỳ hiện tại:{" "}
+            <strong>
+              {currentSemester ? currentSemester.semesterName : "Đang cập nhật"}
+            </strong>
           </p>
         </div>
       </div>
@@ -84,31 +115,57 @@ export default function EnrollPage() {
         <div
           className="card"
           style={{
-            marginBottom: '20px',
-            padding: '16px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            borderLeft: '4px solid var(--warning)',
+            marginBottom: "20px",
+            padding: "16px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            borderLeft: "4px solid var(--warning)",
           }}
         >
-          <AlertCircle size={20} style={{ color: 'var(--warning)' }} />
+          <AlertCircle size={20} style={{ color: "var(--warning)" }} />
           <div>
             <strong>Đợt đăng ký học phần hiện chưa mở.</strong>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '3px' }}>
-              {currentSemester.registrationStart && currentSemester.registrationEnd
+            <div
+              style={{
+                color: "var(--text-muted)",
+                fontSize: "0.875rem",
+                marginTop: "3px",
+              }}
+            >
+              {currentSemester.registrationStart &&
+              currentSemester.registrationEnd
                 ? `Thời gian đăng ký: ${currentSemester.registrationStart} đến ${currentSemester.registrationEnd}.`
-                : 'Phòng Đào tạo chưa cấu hình thời gian đăng ký cho học kỳ này.'}
+                : "Phòng Đào tạo chưa cấu hình thời gian đăng ký cho học kỳ này."}
             </div>
           </div>
         </div>
       )}
 
       {/* Search Toolbar */}
-      <div className="card" style={{ marginBottom: '20px' }}>
-        <div className="card-body" style={{ padding: '16px 20px', display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: 1, maxWidth: '420px' }}>
-            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+      <div className="card" style={{ marginBottom: "20px" }}>
+        <div
+          className="card-body"
+          style={{
+            padding: "16px 20px",
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ position: "relative", flex: 1, maxWidth: "420px" }}>
+            <Search
+              size={16}
+              style={{
+                position: "absolute",
+                left: "12px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "var(--text-light)",
+              }}
+            />
             <input
               type="text"
               placeholder="Tìm theo mã HP, tên môn, giảng viên..."
@@ -116,12 +173,13 @@ export default function EnrollPage() {
               onChange={(e) => setSearch(e.target.value)}
               disabled={!currentSemester?.registrationOpen}
               className="form-control"
-              style={{ paddingLeft: '36px' }}
+              style={{ paddingLeft: "36px" }}
             />
           </div>
 
-          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Có <strong>{filtered.length}</strong> lớp học phần đang mở tiếp nhận đăng ký
+          <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            Có <strong>{filtered.length}</strong> lớp học phần đang mở tiếp nhận
+            đăng ký
           </div>
         </div>
       </div>
@@ -138,22 +196,135 @@ export default function EnrollPage() {
                 <th>Lịch Học</th>
                 <th>Phòng Học</th>
                 <th>Sĩ Số ĐK</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th style={{ textAlign: "right" }}>Thao Tác</th>
               </tr>
             </thead>
             <tbody>
-              {loading ? (
+              {initialLoading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr
+                    key={`skeleton-${index}`}
+                    style={{
+                      opacity: 0.6,
+                      animation: "pulse 1.5s infinite ease-in-out",
+                    }}
+                  >
+                    <td>
+                      <div
+                        style={{
+                          height: "22px",
+                          width: "60px",
+                          backgroundColor: "var(--border-color, #e2e8f0)",
+                          borderRadius: "4px",
+                        }}
+                      ></div>
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          height: "22px",
+                          width: "200px",
+                          backgroundColor: "var(--border-color, #e2e8f0)",
+                          borderRadius: "4px",
+                        }}
+                      ></div>
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          height: "22px",
+                          width: "40px",
+                          backgroundColor: "var(--border-color, #e2e8f0)",
+                          borderRadius: "4px",
+                        }}
+                      ></div>
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          height: "22px",
+                          width: "120px",
+                          backgroundColor: "var(--border-color, #e2e8f0)",
+                          borderRadius: "4px",
+                        }}
+                      ></div>
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          height: "22px",
+                          width: "80px",
+                          backgroundColor: "var(--border-color, #e2e8f0)",
+                          borderRadius: "4px",
+                        }}
+                      ></div>
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          height: "22px",
+                          width: "50px",
+                          backgroundColor: "var(--border-color, #e2e8f0)",
+                          borderRadius: "4px",
+                        }}
+                      ></div>
+                    </td>
+                    <td>
+                      <div
+                        style={{
+                          height: "22px",
+                          width: "40px",
+                          backgroundColor: "var(--border-color, #e2e8f0)",
+                          borderRadius: "4px",
+                        }}
+                      ></div>
+                    </td>
+                    <td style={{ textAlign: "right" }}>
+                      <div
+                        style={{
+                          height: "28px",
+                          width: "100px",
+                          backgroundColor: "var(--border-color, #e2e8f0)",
+                          borderRadius: "4px",
+                          display: "inline-block",
+                        }}
+                      ></div>
+                    </td>
+                  </tr>
+                ))
+              ) : loadError ? (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
-                    Đang tải danh sách môn học mở đăng ký...
+                  <td
+                    colSpan="8"
+                    style={{ textAlign: "center", padding: "48px 20px" }}
+                  >
+                    <div
+                      style={{ color: "var(--danger)", marginBottom: "12px" }}
+                    >
+                      Không thể tải danh sách học phần.
+                    </div>
+                    <button
+                      className="btn btn-outline"
+                      type="button"
+                      onClick={loadData}
+                    >
+                      Thử lại
+                    </button>
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                  <td
+                    colSpan="8"
+                    style={{
+                      textAlign: "center",
+                      padding: "48px 20px",
+                      color: "var(--text-muted)",
+                    }}
+                  >
                     {currentSemester && !currentSemester.registrationOpen
-                      ? 'Danh sách môn học sẽ hiển thị khi đợt đăng ký của học kỳ được mở.'
-                      : 'Không có lớp học phần nào đang mở hoặc phù hợp với từ khóa tìm kiếm.'}
+                      ? "Danh sách môn học sẽ hiển thị khi đợt đăng ký của học kỳ được mở."
+                      : "Không có lớp học phần nào đang mở hoặc phù hợp với từ khóa tìm kiếm."}
                   </td>
                 </tr>
               ) : (
@@ -166,43 +337,74 @@ export default function EnrollPage() {
                       <td>
                         <span
                           style={{
-                            display: 'inline-block',
-                            fontFamily: 'monospace',
+                            display: "inline-block",
+                            fontFamily: "monospace",
                             fontWeight: 700,
-                            fontSize: '0.85rem',
-                            color: 'var(--primary)',
-                            backgroundColor: 'var(--primary-light)',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            border: '1px solid var(--primary-border)'
+                            fontSize: "0.85rem",
+                            color: "var(--primary)",
+                            backgroundColor: "var(--primary-light)",
+                            padding: "3px 8px",
+                            borderRadius: "4px",
+                            border: "1px solid var(--primary-border)",
                           }}
                         >
                           {s.sectionCode}
                         </span>
                       </td>
-                      <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{s.subject?.subjectName}</td>
-                      <td><span className="badge badge-info">{s.subject?.credits} TC</span></td>
-                      <td style={{ color: 'var(--text-secondary)' }}>{s.lecturer?.fullName || '—'}</td>
-                      <td style={{ color: 'var(--text-secondary)' }}>{s.schedule || '—'}</td>
-                      <td><span className="badge badge-neutral">{s.room || '—'}</span></td>
+                      <td
+                        style={{ fontWeight: 600, color: "var(--text-main)" }}
+                      >
+                        {s.subject?.subjectName}
+                      </td>
+                      <td>
+                        <span className="badge badge-info">
+                          {s.subject?.credits} TC
+                        </span>
+                      </td>
+                      <td style={{ color: "var(--text-secondary)" }}>
+                        {s.lecturer?.fullName || "—"}
+                      </td>
+                      <td style={{ color: "var(--text-secondary)" }}>
+                        {s.schedule || "—"}
+                      </td>
+                      <td>
+                        <span className="badge badge-neutral">
+                          {s.room || "—"}
+                        </span>
+                      </td>
                       <td>
                         <span
                           style={{
                             fontWeight: 700,
-                            fontVariantNumeric: 'tabular-nums',
-                            color: isFull ? 'var(--danger)' : 'var(--text-main)'
+                            fontVariantNumeric: "tabular-nums",
+                            color: isFull
+                              ? "var(--danger)"
+                              : "var(--text-main)",
                           }}
                         >
                           {s.currentStudents || 0} / {s.maxStudents}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td style={{ textAlign: "right" }}>
                         {enrolled ? (
-                          <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px' }}>
+                          <span
+                            className="badge badge-success"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              padding: "4px 10px",
+                            }}
+                          >
                             <Check size={14} /> Đã đăng ký
                           </span>
                         ) : isFull ? (
-                          <span className="badge badge-danger" style={{ padding: '4px 10px' }}>Hết chỗ</span>
+                          <span
+                            className="badge badge-danger"
+                            style={{ padding: "4px 10px" }}
+                          >
+                            Hết chỗ
+                          </span>
                         ) : (
                           <button
                             className="btn btn-primary btn-sm"
@@ -210,7 +412,11 @@ export default function EnrollPage() {
                             onClick={() => handleEnroll(s.id)}
                           >
                             <Plus size={14} />
-                            <span>{enrollingId === s.id ? 'Đang ghi nhận...' : 'Đăng ký môn'}</span>
+                            <span>
+                              {enrollingId === s.id
+                                ? "Đang ghi nhận..."
+                                : "Đăng ký môn"}
+                            </span>
                           </button>
                         )}
                       </td>
@@ -220,6 +426,15 @@ export default function EnrollPage() {
               )}
             </tbody>
           </table>
+          {refreshing && (
+            <div
+              className="table-refresh-indicator"
+              role="status"
+              aria-live="polite"
+            >
+              Đang cập nhật danh sách...
+            </div>
+          )}
         </div>
       </div>
     </div>

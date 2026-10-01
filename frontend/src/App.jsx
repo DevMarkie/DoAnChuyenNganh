@@ -7,9 +7,7 @@ import LoadingFallback from './components/common/LoadingFallback';
 
 // Auth - Lazy Loaded
 const PortalHubPage = lazy(() => import('./pages/auth/PortalHubPage'));
-const StudentLoginPage = lazy(() => import('./pages/auth/StudentLoginPage'));
-const LecturerLoginPage = lazy(() => import('./pages/auth/LecturerLoginPage'));
-const AdminLoginPage = lazy(() => import('./pages/auth/AdminLoginPage'));
+const PortalLoginPage = lazy(() => import('./pages/auth/PortalLoginPage'));
 
 // Admin Pages - Lazy Loaded
 const AdminDashboard = lazy(() => import('./pages/admin/DashboardPage'));
@@ -79,13 +77,13 @@ export default function App() {
             isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalHubPage />
           } />
           <Route path="/student/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <StudentLoginPage />
+            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalLoginPage portalType="student" />
           } />
           <Route path="/lecturer/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <LecturerLoginPage />
+            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalLoginPage portalType="lecturer" />
           } />
           <Route path="/admin/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <AdminLoginPage />
+            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalLoginPage portalType="admin" />
           } />
 
           {/* Admin Routes */}

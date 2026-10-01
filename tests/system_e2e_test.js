@@ -449,14 +449,15 @@ async function runAllTests() {
         token: lecturerToken,
         body: {
           enrollmentId: enrollmentId,
-          attendanceScore: 15.0, // INVALID: > 10.0
+          cc1Score: 15.0, // INVALID: > 10.0
+          cc2Score: 10.0,
           midtermScore: 8.0,
           finalScore: 8.0,
         },
       });
       // Should reject invalid scores outside [0.0, 10.0]
       if (res.status === 200 && res.data.success) {
-        throw new Error('System allowed attendance score 15.0 > 10.0!');
+        throw new Error('System allowed cc1 score 15.0 > 10.0!');
       }
     }
   });
@@ -487,7 +488,8 @@ async function runAllTests() {
         token: adminToken,
         body: {
           enrollmentId: enrollmentId,
-          attendanceScore: 9.0,
+          cc1Score: 9.0,
+          cc2Score: 9.0,
           midtermScore: 8.0,
           finalScore: 8.5,
           finalize: false,
@@ -500,7 +502,8 @@ async function runAllTests() {
         token: lecturerToken,
         body: {
           enrollmentId: enrollmentId,
-          attendanceScore: 10.0,
+          cc1Score: 10.0,
+          cc2Score: 10.0,
           midtermScore: 8.5,
           finalScore: 9.0,
           finalize: false,
@@ -521,7 +524,8 @@ async function runAllTests() {
         token: adminToken,
         body: {
           enrollmentId: enrollmentId,
-          attendanceScore: 10.0,
+          cc1Score: 10.0,
+          cc2Score: 10.0,
           midtermScore: 8.5,
           finalScore: 9.0,
           finalize: true, // LOCK GRADE
@@ -533,7 +537,8 @@ async function runAllTests() {
         token: lecturerToken,
         body: {
           enrollmentId: enrollmentId,
-          attendanceScore: 7.0,
+          cc1Score: 7.0,
+          cc2Score: 7.0,
           midtermScore: 7.0,
           finalScore: 7.0,
         },
@@ -614,8 +619,12 @@ async function runAllTests() {
       throw new Error(`Password reset request failed: ${JSON.stringify(res.data)}`);
     }
 
-    // 3. Duplicate request must be rejected
-    const dupRes = await apiRequest('/auth/forgot-password', {
+    // 3. Duplicate request must be ignored (anti-enumeration: still returns generic 200, but no duplicate record created)
+    const countBefore = (await apiRequest('/admin/password-resets?status=PENDING', { token: adminToken })).data.data?.filter(
+      r => r.user?.username === '2500001' || r.username === '2500001'
+    ).length || 0;
+
+    await apiRequest('/auth/forgot-password', {
       method: 'POST',
       body: {
         username: '2500001',
@@ -623,8 +632,13 @@ async function runAllTests() {
         reason: 'Yêu cầu trùng lặp',
       },
     });
-    if (dupRes.status === 200 && dupRes.data.success) {
-      throw new Error('System allowed duplicate pending password reset request!');
+
+    const countAfter = (await apiRequest('/admin/password-resets?status=PENDING', { token: adminToken })).data.data?.filter(
+      r => r.user?.username === '2500001' || r.username === '2500001'
+    ).length || 0;
+
+    if (countAfter > countBefore) {
+      throw new Error('System created duplicate pending password reset record in database!');
     }
   });
 

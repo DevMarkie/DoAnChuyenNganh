@@ -784,3 +784,5 @@ textarea.form-control {
     display: block !important;
   }
 }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }

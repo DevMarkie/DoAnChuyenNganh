@@ -64,35 +64,54 @@ flowchart LR
 
 ---
 
-## 📂 Cấu Trúc Thư Mục
+## 📂 Cấu Trúc Thư Mục Dự Án Chuẩn Hóa
 
 ```text
 DoAnChuyenNganh/
-├── backend/                  # Mã nguồn Spring Boot Backend
+├── backend/                  # Mã nguồn Spring Boot 3 Backend (Java 21)
 │   ├── src/main/java/com/sms/...
 │   ├── src/main/resources/application.properties
 │   └── pom.xml
-├── frontend/                 # Mã nguồn React Frontend (Vite)
+├── frontend/                 # Mã nguồn React 19 Frontend (Vite)
 │   ├── src/
+│   │   ├── components/       # Layout, Header, Sidebar, ErrorBoundary
+│   │   ├── pages/            # Admin, Lecturer, Student, Auth (với barrel exports index.js)
+│   │   ├── services/         # Axios API & Data Services
+│   │   ├── store/            # Zustand State Stores (Auth, Theme)
+│   │   └── utils/            # Nhãn quy chuẩn điểm & học phần
 │   ├── package.json
 │   └── vite.config.js
-├── database/                 # Script khởi tạo và dữ liệu mẫu CSDL
-│   ├── schema.sql            # Cấu trúc bảng, khóa ngoại, ràng buộc
-│   ├── seed.sql              # Dữ liệu khởi tạo mẫu
-│   ├── generate_clean_seed.js
-│   └── import_seed.js
-├── docs/                     # Tài liệu nghiệp vụ (BA Portfolio) & UML thiết kế
+├── database/                 # Cơ sở dữ liệu MySQL chuẩn hóa
+│   ├── schema.sql            # Master DDL (18 bảng, Khóa ngoại, Trigger, View, Index)
+│   ├── seed.sql              # Dữ liệu khởi tạo chuẩn cho người dùng & kiểm thử
+│   ├── redesign_market_data.sql # Dữ liệu chuẩn hóa 7 khoa & 22 ngành thị trường
+│   ├── migrations/           # Lịch sử các migration gia số
+│   └── scripts/              # Công cụ sinh dữ liệu thử nghiệm tải cao
+├── docs/                     # Bộ tài liệu phân tích nghiệp vụ & thiết kế chuẩn BA
+│   ├── README.md             # Mục lục tra cứu tài liệu hệ thống
 │   ├── 01_system_architecture_and_diagrams.md
 │   ├── 02_use_case_catalog.md
 │   ├── 03_use_case_specifications/
-│   │   ├── UC_Student_Module.md
-│   │   ├── UC_Lecturer_Module.md
-│   │   └── UC_Admin_Module.md
 │   ├── 04_business_rules.md
 │   ├── 05_database_erd.md
-│   └── *.drawio              # Các sơ đồ gốc (BCE, Sequence, Activity)
-├── docker-compose.yml        # Cấu hình container dịch vụ
-├── .gitignore                # Cấu hình bỏ qua file rác, build & dependencies
+│   ├── 06_academic_curriculum_catalog.md
+│   ├── 07_academic_curriculum_migration_plan.md
+│   └── TAI_LIEU_TONG_QUAN_DU_AN.md
+├── drawio/                   # Các sơ đồ thiết kế UML nguyên bản
+│   ├── UseCase_Diagrams.drawio
+│   ├── Sequence_Diagrams.drawio
+│   ├── Activity_Diagrams.drawio
+│   ├── AnalysisClass_BCE_Diagrams.drawio
+│   └── scripts/              # Bộ script Python tự động hóa sinh sơ đồ
+├── reports/                  # Báo cáo tiến độ & mẫu báo cáo đồ án (.docx)
+├── tests/                    # Bộ kịch bản & báo cáo kiểm thử tự động (E2E, Stress, Security)
+│   ├── system_e2e_test.js
+│   ├── comprehensive_system_test.js
+│   ├── overload_stress_test.js
+│   └── *.md                  # Báo cáo kiểm thử chi tiết
+├── docker-compose.yml        # Cấu hình cụm dịch vụ Docker
+├── start_dev.bat             # 1-Click khởi động toàn bộ môi trường phát triển
+├── run_tests.bat             # Menu 1-Click thực thi các bộ kiểm thử
 └── README.md
 ```
 

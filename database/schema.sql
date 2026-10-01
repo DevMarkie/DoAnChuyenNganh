@@ -59,20 +59,96 @@ CREATE TABLE departments (
 );
 
 -- ============================================================
--- BẢNG 4: classes – Lớp
+-- BẢNG 3.1: majors – Chuyên ngành đào tạo
+-- ============================================================
+CREATE TABLE majors (
+    id            INT          NOT NULL AUTO_INCREMENT,
+    department_id INT          NOT NULL,
+    code          VARCHAR(30)  NOT NULL,
+    name          VARCHAR(150) NOT NULL,
+    description   TEXT         NULL,
+    is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT pk_majors PRIMARY KEY (id),
+    CONSTRAINT uq_majors_code UNIQUE (code),
+    CONSTRAINT fk_majors_department FOREIGN KEY (department_id) REFERENCES departments (id)
+);
+
+-- ============================================================
+-- BẢNG 3.2: cohorts – Khóa học (K16, K17, K18, K19...)
+-- ============================================================
+CREATE TABLE cohorts (
+    id              INT          NOT NULL AUTO_INCREMENT,
+    code            VARCHAR(20)  NOT NULL,
+    name            VARCHAR(100) NOT NULL,
+    admission_year  INT          NOT NULL,
+    graduation_year INT          NOT NULL,
+    is_active       BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT pk_cohorts PRIMARY KEY (id),
+    CONSTRAINT uq_cohorts_code UNIQUE (code)
+);
+
+-- ============================================================
+-- BẢNG 3.3: curriculum_programs – Khung chương trình đào tạo
+-- ============================================================
+CREATE TABLE curriculum_programs (
+    id            BIGINT       NOT NULL AUTO_INCREMENT,
+    major_id      INT          NOT NULL,
+    cohort_id     INT          NOT NULL,
+    code          VARCHAR(50)  NOT NULL,
+    name          VARCHAR(200) NOT NULL,
+    total_credits INT          NOT NULL DEFAULT 140,
+    is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT pk_curriculum_programs PRIMARY KEY (id),
+    CONSTRAINT uq_curriculum_program_major_cohort UNIQUE (major_id, cohort_id),
+    CONSTRAINT uq_curriculum_program_code UNIQUE (code),
+    CONSTRAINT fk_curriculum_program_major FOREIGN KEY (major_id) REFERENCES majors (id),
+    CONSTRAINT fk_curriculum_program_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts (id)
+);
+
+-- ============================================================
+-- BẢNG 3.4: curriculum_blocks – Khối kiến thức (5 khối chuẩn tín chỉ)
+-- ============================================================
+CREATE TABLE curriculum_blocks (
+    id                     BIGINT       NOT NULL AUTO_INCREMENT,
+    program_id             BIGINT       NOT NULL,
+    code                   VARCHAR(30)  NOT NULL,
+    name                   VARCHAR(200) NOT NULL,
+    block_type             ENUM('COMPULSORY', 'ELECTIVE') NOT NULL,
+    required_subject_count INT          NOT NULL DEFAULT 0,
+    required_credits       INT          NOT NULL DEFAULT 0,
+    elective_subject_count INT          NOT NULL DEFAULT 0,
+    elective_credits       INT          NOT NULL DEFAULT 0,
+    display_order          INT          NOT NULL DEFAULT 0,
+    CONSTRAINT pk_curriculum_blocks PRIMARY KEY (id),
+    CONSTRAINT uq_curriculum_block_code UNIQUE (program_id, code),
+    CONSTRAINT fk_curriculum_block_program FOREIGN KEY (program_id) REFERENCES curriculum_programs (id) ON DELETE CASCADE
+);
+
+-- ============================================================
+-- BẢNG 4: classes – Lớp sinh hoạt / Hành chính
 -- ============================================================
 CREATE TABLE classes (
     id            INT          NOT NULL AUTO_INCREMENT,
     code          VARCHAR(20)  NOT NULL,
     name          VARCHAR(100) NOT NULL,
     department_id INT          NOT NULL,
+    major_id      INT          NULL,
+    cohort_id     INT          NULL,
     academic_year VARCHAR(10)  NOT NULL  COMMENT 'VD: K18, K19, K20',
     is_active     BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_classes PRIMARY KEY (id),
     CONSTRAINT uq_classes_code UNIQUE (code),
-    CONSTRAINT fk_classes_department FOREIGN KEY (department_id) REFERENCES departments (id)
+    CONSTRAINT fk_classes_department FOREIGN KEY (department_id) REFERENCES departments (id),
+    CONSTRAINT fk_classes_major FOREIGN KEY (major_id) REFERENCES majors (id),
+    CONSTRAINT fk_classes_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts (id)
 );
 
 -- ============================================================
@@ -143,6 +219,18 @@ CREATE TABLE subjects (
     CONSTRAINT uq_subjects_code UNIQUE (subject_code),
     CONSTRAINT ck_subjects_credits CHECK (credits > 0 AND credits <= 10),
     CONSTRAINT fk_subjects_department FOREIGN KEY (department_id) REFERENCES departments (id)
+);
+
+-- ============================================================
+-- BẢNG 7.1: curriculum_block_subjects – Môn học trong khối kiến thức
+-- ============================================================
+CREATE TABLE curriculum_block_subjects (
+    block_id    BIGINT  NOT NULL,
+    subject_id  INT     NOT NULL,
+    is_required BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT pk_curriculum_block_subjects PRIMARY KEY (block_id, subject_id),
+    CONSTRAINT fk_block_subject_block FOREIGN KEY (block_id) REFERENCES curriculum_blocks (id) ON DELETE CASCADE,
+    CONSTRAINT fk_block_subject_subject FOREIGN KEY (subject_id) REFERENCES subjects (id)
 );
 
 -- ============================================================
@@ -300,8 +388,21 @@ CREATE INDEX idx_sections_status ON course_sections (status);
 CREATE INDEX idx_enrollments_student ON enrollments (student_id);
 CREATE INDEX idx_enrollments_section ON enrollments (section_id);
 CREATE INDEX idx_enrollments_status ON enrollments (status);
+-- Composite indexes for the high-volume registration and transcript queries.
+CREATE INDEX idx_enrollments_student_status ON enrollments (student_id, status);
+CREATE INDEX idx_enrollments_section_status ON enrollments (section_id, status);
 
 CREATE INDEX idx_grades_enrollment ON grades (enrollment_id);
+
+CREATE INDEX idx_sections_semester_status ON course_sections (semester_id, status);
+CREATE INDEX idx_schedules_section_dates ON schedules (section_id, day_of_week, start_date, end_date);
+
+-- Academic Curriculum Indexes
+CREATE INDEX idx_majors_department ON majors (department_id);
+CREATE INDEX idx_curriculum_program_major_cohort ON curriculum_programs (major_id, cohort_id);
+CREATE INDEX idx_curriculum_blocks_program ON curriculum_blocks (program_id);
+CREATE INDEX idx_block_subjects_subject ON curriculum_block_subjects (subject_id);
+CREATE INDEX idx_classes_major_cohort ON classes (major_id, cohort_id);
 
 -- ============================================================
 -- TRIGGERS – Tự động cập nhật enrolled_count

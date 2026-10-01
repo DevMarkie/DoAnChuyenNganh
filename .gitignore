@@ -109,3 +109,11 @@ tests/*.json
 database/generate_enriched_seed.js
 database/import_seed.js
 
+# Database data dump/seed files (không commit data theo yêu cầu)
+database/scale_seed.sql
+database/target_scale_seed.sql
+database/redesign_market_data.sql
+
+# Agent configs
+.claude/
+

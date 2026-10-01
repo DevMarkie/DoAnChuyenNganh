@@ -1,0 +1,11 @@
+export { default as AdminDashboard } from './DashboardPage';
+export { default as StudentsPage } from './StudentsPage';
+export { default as DepartmentsPage } from './DepartmentsPage';
+export { default as ClassesPage } from './ClassesPage';
+export { default as SubjectsPage } from './SubjectsPage';
+export { default as LecturersPage } from './LecturersPage';
+export { default as SemestersPage } from './SemestersPage';
+export { default as CourseSectionsPage } from './CourseSectionsPage';
+export { default as SchedulesPage } from './SchedulesPage';
+export { default as GradesPage } from './GradesPage';
+export { default as PasswordResetsPage } from './PasswordResetsPage';

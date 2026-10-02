@@ -58,7 +58,7 @@ Khi bạn và người khác cùng kết nối chung một mạng Wi-Fi (ví d�
 ## 🐳 CÁCH 3: CHẠY TRỌN GÓI BẰNG DOCKER COMPOSE (1-CLICK RUN)
 
 Dự án đã được đóng gói toàn bộ với Docker:
-- **`backend/Dockerfile`**: Đóng gói Spring Boot Java 21 gọn nhẹ.
+- **`backend/Dockerfile`**: Đóng gói Spring Boot Java 25 gọn nhẹ.
 - **`frontend/Dockerfile`**: Đóng gói React Vite + máy chủ Nginx reverse proxy.
 - **`docker-compose.yml`**: Tự động liên kết MySQL, nạp sẵn CSDL và seed mẫu.
 

@@ -40,8 +40,8 @@ Kiến trúc **client–server tách rời**: frontend SPA (React) gọi REST AP
 ### 2.1 Backend
 | Thành phần | Phiên bản / lựa chọn |
 |---|---|
-| Ngôn ngữ | **Java 21** |
-| Framework | **Spring Boot 3.2.0** (`spring-boot-starter-web`, `data-jpa`, `security`, `validation`, `mail`) |
+| Ngôn ngữ | **Java 25** |
+| Framework | **Spring Boot 3.5.6** (`spring-boot-starter-web`, `data-jpa`, `security`, `validation`, `mail`) |
 | Bảo mật | Spring Security + **JWT `io.jsonwebtoken` (jjwt) 0.12.6** |
 | CSDL | **MySQL 8** (connector `mysql-connector-j`), JPA/Hibernate |
 | Connection pool | **HikariCP** (max pool = 15) |
@@ -71,7 +71,7 @@ Kiến trúc **client–server tách rời**: frontend SPA (React) gọi REST AP
 
 ### 2.3 Hạ tầng
 - **Docker Compose**: 3 service — `db` (MySQL 8.0), `backend`, `frontend` (Nginx).
-- Dockerfile đa tầng (multi-stage) cho cả backend (Temurin 21) và frontend (Node 20 build → Nginx serve).
+- Dockerfile đa tầng (multi-stage) cho cả backend (Temurin 25) và frontend (Node 20 build → Nginx serve).
 
 ## 3. Kiến trúc hệ thống
 
@@ -400,7 +400,7 @@ Báo cáo lưu tại `tests/COMPREHENSIVE_TEST_REPORT.md`, `OVERLOAD_TEST_REPORT
 | `frontend` | build `./frontend` | 80:80 (và 5173 khi dev) | Nginx phục vụ bản build tĩnh |
 
 ### 12.2 Dockerfile
-- **backend**: multi-stage — build bằng Maven + Temurin **JDK 21**, chạy trên JRE Temurin 21.
+- **backend**: multi-stage — build bằng Maven + Temurin **JDK 25**, chạy trên JRE Temurin 25.
 - **frontend**: build bằng **Node 20** (`npm run build`) → phục vụ bằng **Nginx** (`nginx.conf` proxy `/api` sang backend).
 
 ### 12.3 Chạy nhanh trên Windows

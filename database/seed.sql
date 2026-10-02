@@ -169,7 +169,7 @@ INSERT INTO semesters (id, semester_code, semester_name, academic_year, semester
 (1, 'HK1-2024', 'Học kỳ 1 (2024-2025)', '2024-2025', 1, '2024-09-01', '2025-01-15', '2024-08-15', '2024-08-30', FALSE, 'COMPLETED'),
 (2, 'HK2-2024', 'Học kỳ 2 (2024-2025)', '2024-2025', 2, '2025-02-01', '2025-06-30', '2025-01-15', '2025-01-28', FALSE, 'COMPLETED'),
 (3, 'HK1-2025', 'Học kỳ 1 (2025-2026)', '2025-2026', 1, '2025-09-01', '2026-01-15', '2025-08-15', '2025-08-30', FALSE, 'COMPLETED'),
-(4, 'HK1-2026', 'Học kỳ 1 (2026-2027)', '2026-2027', 1, '2026-09-01', '2027-01-15', '2026-08-15', '2026-08-31', TRUE,  'ACTIVE');
+(4, 'HK1-2026', 'Học kỳ 1 (2026-2027)', '2026-2027', 1, '2026-09-01', '2027-01-15', '2026-08-15', '2026-10-31', TRUE,  'ACTIVE');
 
 -- 8. COURSE SECTIONS (50 lớp học phần phân bổ 4 học kỳ)
 INSERT INTO course_sections (id, section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status) VALUES
@@ -222,7 +222,8 @@ INSERT INTO course_sections (id, section_code, subject_id, lecturer_id, semester
 (47, 'ME302-01-HK1-26', 32, 16, 4, 45, 0, 'Thứ Năm (13:20-15:50)', 'D102', 'OPEN'),
 (48, 'IT101-01-HK1-26', 6, 5, 4, 50, 0, 'Thứ Hai (09:35-12:05)', 'A104', 'OPEN'),
 (49, 'BA101-01-HK1-26', 16, 6, 4, 55, 0, 'Thứ Tư (07:00-09:30)', 'B103', 'OPEN'),
-(50, 'EN101-01-HK1-26', 33, 21, 4, 45, 0, 'Thứ Sáu (09:35-11:15)', 'C201', 'OPEN');
+(50, 'EN101-01-HK1-26', 33, 21, 4, 45, 0, 'Thứ Sáu (09:35-11:15)', 'C201', 'OPEN'),
+(51, 'IT101-02-HK1-26', 6, 2, 4, 50, 0, 'Thứ Tư (13:20-15:50)', 'A203', 'OPEN');
 
 -- 9. USERS CHO 600 SINH VIÊN
 INSERT INTO users (id, username, password, email, role_id, is_active) VALUES
@@ -8927,7 +8928,8 @@ INSERT INTO schedules (section_id, class_id, day_of_week, start_period, end_peri
 (47, 8, 5, 7, 9, 'D102', '2026-09-01', '2027-01-15', 'Gia công CNC & CAD/CAM'),
 (48, 14, 2, 4, 6, 'A104', '2026-09-01', '2027-01-15', 'Nhập môn lập trình cho tân sinh viên K19'),
 (49, 11, 4, 1, 3, 'B103', '2026-09-01', '2027-01-15', 'Nguyên lý quản trị doanh nghiệp K18'),
-(50, 15, 6, 4, 6, 'C201', '2026-09-01', '2027-01-15', 'Tiếng Anh giao tiếp đại cương K19');
+(50, 15, 6, 4, 6, 'C201', '2026-09-01', '2027-01-15', 'Tiếng Anh giao tiếp đại cương K19'),
+(51, 14, 4, 4, 6, 'A203', '2026-09-01', '2027-01-15', 'Nhập môn lập trình - Lớp 02');
 
 -- 14. UPDATE ENROLLED_COUNT
 UPDATE course_sections cs
@@ -8935,5 +8937,12 @@ SET enrolled_count = (
     SELECT COUNT(*) FROM enrollments e
     WHERE e.section_id = cs.id AND e.status != 'CANCELLED'
 );
+
+-- Synthetic seed data contains historical enrollments that may exceed the
+-- original classroom default. Keep the seeded capacity consistent with the
+-- existing registrations so the UI never shows an impossible N/max value.
+UPDATE course_sections
+SET max_students = enrolled_count
+WHERE enrolled_count > max_students;
 
 SET FOREIGN_KEY_CHECKS = 1;

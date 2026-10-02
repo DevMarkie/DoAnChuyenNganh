@@ -94,7 +94,7 @@ public class Grade {
 
     /**
      * Tính điểm tổng kết theo công thức:
-     * Chuyên cần × 10% + Giữa kỳ × 30% + Cuối kỳ × 60%
+     * CC1 × 5% + CC2 × 5% + Giữa kỳ × 30% + Cuối kỳ × 60%
      */
     public void calculateTotalScore() {
         if (specialGrade != null && specialGrade != SpecialGrade.NONE) {

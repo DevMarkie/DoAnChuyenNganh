@@ -2,7 +2,7 @@
 ## (COMPREHENSIVE DEEP-SYSTEM TEST REPORT)
 ### Dự án: DevMarkie/DoAnChuyenNganh - Hệ Thống Quản Lý Đào Tạo & Sinh Viên
 * **Thời gian kiểm thử:** 19/09/2026
-* **Môi trường thực thi:** Local Live Integration (Spring Boot 3.2.0 + MySQL 8.0 + React 19 + Node.js v24.14.1)
+* **Môi trường thực thi:** Local Live Integration (Spring Boot 3.5.6 + MySQL 8.0 + React 19 + Node.js v24.14.1)
 * **Tổng số kịch bản kiểm thử (Test Cases):** **56 kịch bản**
 * **Kết quả chung:** **56 / 56 ĐẠT (100.0% Pass Rate)**
 

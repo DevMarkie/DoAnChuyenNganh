@@ -37,7 +37,25 @@ public class GradeService {
     private final LecturerRepository lecturerRepository;
 
     public List<Grade> findBySection(Long sectionId) {
-        return gradeRepository.findBySectionId(sectionId);
+        List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(sectionId);
+        if (enrollments.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> enrollmentIds = enrollments.stream()
+                .map(Enrollment::getId)
+                .toList();
+        Map<Long, Grade> gradesByEnrollmentId = gradeRepository.findByEnrollmentIdIn(enrollmentIds)
+                .stream()
+                .collect(Collectors.toMap(g -> g.getEnrollment().getId(), Function.identity()));
+
+        return enrollments.stream()
+                .map(enrollment -> gradesByEnrollmentId.computeIfAbsent(enrollment.getId(), id -> {
+                    Grade grade = new Grade();
+                    grade.setEnrollment(enrollment);
+                    return grade;
+                }))
+                .toList();
     }
 
     /**
@@ -166,6 +184,34 @@ public class GradeService {
         }
 
         gradeRepository.saveAll(toSave);
+    }
+
+    /**
+     * Lưu các dòng điểm đã được preview từ file Excel cho đúng một lớp học phần.
+     * Việc kiểm tra sectionId ở đây ngăn client tráo enrollmentId của lớp khác
+     * giữa bước preview và bước commit.
+     */
+    @Transactional
+    public void saveImportedGrades(Long userId, Long sectionId, List<GradeRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return;
+        }
+
+        courseSectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+
+        List<Long> enrollmentIds = requests.stream()
+                .map(GradeRequest::getEnrollmentId)
+                .distinct()
+                .toList();
+        List<Enrollment> enrollments = enrollmentRepository.findByIdInWithSection(enrollmentIds);
+
+        if (enrollments.size() != enrollmentIds.size()
+                || enrollments.stream().anyMatch(e -> !sectionId.equals(e.getSection().getId()))) {
+            throw new BadRequestException("Có dòng điểm không thuộc lớp học phần đang nhập");
+        }
+
+        saveGrades(userId, requests);
     }
 
     /**

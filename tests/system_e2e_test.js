@@ -532,6 +532,17 @@ async function runAllTests() {
         },
       });
 
+      // Simulate 7-day grace window expiry (> 7 days)
+      try {
+        const { execSync } = require('child_process');
+        execSync(
+          `docker exec student_management_db mysql -uroot student_management -e "UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};"`,
+          { stdio: 'ignore' }
+        );
+      } catch (e) {
+        // Continue if docker command fails
+      }
+
       const lockRes = await apiRequest('/grades', {
         method: 'PUT',
         token: lecturerToken,

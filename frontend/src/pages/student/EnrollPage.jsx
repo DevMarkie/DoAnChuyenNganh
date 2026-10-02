@@ -87,6 +87,14 @@ export default function EnrollPage() {
     );
   };
 
+  const isSubjectAlreadyEnrolled = (subjectId) => {
+    return myEnrollments.some(
+      (enrollment) =>
+        enrollment.courseSection?.subject?.id === subjectId &&
+        enrollment.status === "ENROLLED",
+    );
+  };
+
   const filtered = availableSections.filter((s) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -330,6 +338,8 @@ export default function EnrollPage() {
               ) : (
                 filtered.map((s) => {
                   const enrolled = isEnrolled(s.id);
+                  const subjectAlreadyEnrolled =
+                    !enrolled && isSubjectAlreadyEnrolled(s.subject?.id);
                   const isFull = (s.currentStudents || 0) >= s.maxStudents;
 
                   return (
@@ -398,6 +408,15 @@ export default function EnrollPage() {
                           >
                             <Check size={14} /> Đã đăng ký
                           </span>
+                        ) : subjectAlreadyEnrolled ? (
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            disabled
+                            title="Đã chọn lớp khác của môn này"
+                          >
+                            Đã chọn lớp khác
+                          </button>
                         ) : isFull ? (
                           <span
                             className="badge badge-danger"

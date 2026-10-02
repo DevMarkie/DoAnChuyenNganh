@@ -345,7 +345,7 @@ function generateMarkdownReport(data, totalReqs, totalSuccess, overallRate) {
 * **Tổng số requests thử tải:** **${totalReqs} requests**
 * **Số requests thành công:** **${totalSuccess} / ${totalReqs}**
 * **Tỷ lệ thành công tổng thể:** **${overallRate}%**
-* **Môi trường:** Spring Boot 3.2.0, Tomcat 200 Threads, HikariCP 15 Conns, MySQL 8.0
+* **Môi trường:** Spring Boot 3.5.6, Tomcat 200 Threads, HikariCP 15 Conns, MySQL 8.0
 
 ---
 

@@ -92,7 +92,7 @@ export const enrollmentService = {
     if (overrideReason) params.set('overrideReason', overrideReason);
     return api.post(`/admin/enrollments/assign?${params.toString()}`);
   },
-  adminBatchAssignClass: (classId, sectionId) => api.post(`/admin/enrollments/batch-assign-class?classId=${classId}&sectionId=${sectionId}`),
+  adminBatchAssignClass: (classId, sectionId, autoExpandCapacity = false) => api.post(`/admin/enrollments/batch-assign-class?classId=${classId}&sectionId=${sectionId}&autoExpandCapacity=${autoExpandCapacity}`),
 };
 
 export const gradeService = {
@@ -100,6 +100,16 @@ export const gradeService = {
   save: (data) => api.put('/grades', data),
   saveBatch: (data) => api.put('/grades/batch', data),
   exportExcel: (sectionId) => api.get(`/grades/section/${sectionId}/export`, { responseType: 'blob' }),
+  // Task 4: tải file mẫu nhập điểm (đã điền sẵn roster) + xem trước file GV upload.
+  downloadImportTemplate: (sectionId) => api.get(`/grades/section/${sectionId}/import-template`, { responseType: 'blob' }),
+  importPreview: (sectionId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/grades/section/${sectionId}/import-preview`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  importCommit: (sectionId, data) => api.put(`/grades/section/${sectionId}/import-commit`, data),
 };
 
 export const transcriptService = {

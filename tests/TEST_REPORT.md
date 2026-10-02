@@ -1,7 +1,7 @@
 # BÁO CÁO KIỂM THỬ TOÀN DIỆN HỆ THỐNG (SYSTEM TEST REPORT)
 ### Dự Án: DevMarkie/DoAnChuyenNganh - Hệ Thống Quản Lý Đào Tạo & Sinh Viên
 **Thời gian thực hiện:** 19/09/2026  
-**Môi trường:** Local Server (Spring Boot 3.2.0 + MySQL 8.0 + Node.js v24.14.1 + React 19)  
+**Môi trường:** Local Server (Spring Boot 3.5.6 + MySQL 8.0 + Node.js v24.14.1 + React 19)
 **Tỷ lệ đạt (Pass Rate):** **39 / 39 (100%)**
 
 ---

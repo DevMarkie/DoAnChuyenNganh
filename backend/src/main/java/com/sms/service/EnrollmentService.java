@@ -1,6 +1,7 @@
 package com.sms.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,6 +100,17 @@ public class EnrollmentService {
             throw new BadRequestException("Sinh viên đã đăng ký học phần này");
         }
 
+        // BR-NEW: one student may select only one section of a subject per semester.
+        Optional<Enrollment> existingSubjectEnrollment = enrollmentRepository
+            .findActiveEnrollmentBySubject(student.getId(), semester.getId(), section.getSubject().getId());
+        if (existingSubjectEnrollment.isPresent()
+            && !existingSubjectEnrollment.get().getSection().getId().equals(section.getId())) {
+            CourseSection enrolledSection = existingSubjectEnrollment.get().getSection();
+            throw new BadRequestException(String.format(
+                "Bạn đã đăng ký môn học '%s' tại lớp học phần %s. Không thể đăng ký thêm lớp khác của cùng một môn trong học kỳ này!",
+                section.getSubject().getSubjectName(), enrolledSection.getSectionCode()));
+        }
+
         // The database trigger updates enrolled_count after this enrollment is
         // persisted. The pessimistic lock above makes this capacity check safe.
         if (section.getCurrentStudents() >= section.getMaxStudents()) {
@@ -161,6 +173,12 @@ public class EnrollmentService {
 
         if (enrollment.getStatus() != Enrollment.EnrollmentStatus.ENROLLED) {
             throw new BadRequestException("Chỉ có thể hủy đăng ký đang hoạt động");
+        }
+
+        // BR-ENR-02: sinh viên chỉ được tự hủy học phần trong thời gian đăng ký
+        // của học kỳ. Ngoài cửa sổ này, mọi thay đổi phải qua Phòng Đào tạo.
+        if (!enrollment.getSection().getSemester().isRegistrationOpen()) {
+            throw new BadRequestException("Thời gian đăng ký/hủy học phần của học kỳ này đã kết thúc.");
         }
 
         // Check if grade exists
@@ -226,6 +244,11 @@ public class EnrollmentService {
 
     @Transactional
     public List<Enrollment> adminBatchAssignClass(Integer classId, Long sectionId) {
+        return adminBatchAssignClass(classId, sectionId, false);
+    }
+
+    @Transactional
+    public List<Enrollment> adminBatchAssignClass(Integer classId, Long sectionId, boolean autoExpandCapacity) {
         // Lock the section so the capacity check below stays consistent even if
         // another enrollment lands concurrently.
         CourseSection section = courseSectionRepository.findByIdForEnrollment(sectionId)
@@ -256,9 +279,13 @@ public class EnrollmentService {
         // (e.g. 120 students into a 50-seat section).
         int available = section.getMaxStudents() - section.getCurrentStudents();
         if (toEnroll.size() > available) {
-            throw new BadRequestException(String.format(
-                    "Không đủ chỗ: cần thêm %d chỗ nhưng học phần chỉ còn trống %d/%d. Vui lòng tăng sĩ số tối đa trước.",
-                    toEnroll.size(), Math.max(available, 0), section.getMaxStudents()));
+            if (!autoExpandCapacity) {
+                throw new BadRequestException(String.format(
+                        "Không đủ chỗ: cần thêm %d chỗ nhưng học phần chỉ còn trống %d/%d. Vui lòng tăng sĩ số tối đa trước.",
+                        toEnroll.size(), Math.max(available, 0), section.getMaxStudents()));
+            }
+            section.setMaxStudents(section.getCurrentStudents() + toEnroll.size());
+            courseSectionRepository.save(section);
         }
 
         List<Enrollment> results = new java.util.ArrayList<>();

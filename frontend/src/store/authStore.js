@@ -36,6 +36,16 @@ const useAuthStore = create((set, get) => ({
     set({ user: userData, token, isAuthenticated: true });
   },
 
+  // BR-SEC-01: sau khi đổi mật khẩu tạm thành công, gỡ cờ bắt buộc đổi để mở
+  // khoá điều hướng (modal buộc đổi mật khẩu trong Layout sẽ tự ẩn).
+  clearMustChangePassword: () => {
+    const { user } = get();
+    if (!user) return;
+    const updated = { ...user, mustChangePassword: false };
+    localStorage.setItem('user', JSON.stringify(updated));
+    set({ user: updated });
+  },
+
   logout: () => {
     // Notify the server (stateless JWT — best-effort, never blocks local sign-out).
     authService.logout().catch(() => {});

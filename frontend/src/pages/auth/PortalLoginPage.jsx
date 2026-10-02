@@ -179,17 +179,18 @@ export default function PortalLoginPage({ portalType = 'student' }) {
         username: data.username,
         email: data.email,
         role: data.role,
+        mustChangePassword: data.mustChangePassword,
       });
 
       toast.success(`Đăng nhập thành công! Xin chào ${data.username}`);
-      // BUG-07 / BA-05: tài khoản dùng mật khẩu mặc định hoặc vừa được Admin cấp
-      // lại buộc phải đổi mật khẩu — điều hướng thẳng tới trang hồ sơ để đổi.
-      if (data.mustChangePassword && config.profilePath) {
-        toast.warning('Bạn đang dùng mật khẩu tạm/được cấp lại. Vui lòng đổi mật khẩu ngay để bảo mật tài khoản.');
-        navigate(config.profilePath);
-      } else {
-        navigate(config.redirectPath);
+      // BR-SEC-01: tài khoản dùng mật khẩu tạm/được Admin cấp lại buộc phải đổi
+      // mật khẩu. Không điều hướng riêng nữa — modal buộc đổi mật khẩu (mount ở
+      // Layout) sẽ tự bật và khoá điều hướng cho đến khi đổi xong, áp dụng cho
+      // mọi phân hệ (kể cả Admin, vốn không có trang hồ sơ).
+      if (data.mustChangePassword) {
+        toast.warning('Bạn đang dùng mật khẩu tạm/được cấp lại. Vui lòng đổi mật khẩu ngay để tiếp tục.');
       }
+      navigate(config.redirectPath);
     } catch (err) {
       const msg = err.response?.data?.message || 'Đăng nhập thất bại. Kiểm tra lại thông tin tài khoản, mật khẩu!';
       toast.error(msg);

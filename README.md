@@ -40,8 +40,8 @@ flowchart LR
 ## 🛠️ Công Nghệ Sử Dụng
 
 ### Backend
-- **Ngôn ngữ:** Java 21
-- **Framework:** Spring Boot 3.2.0 (Spring Data JPA, Spring Security, Spring Validation, Spring Web)
+- **Ngôn ngữ:** Java 25
+- **Framework:** Spring Boot 3.5.6 (Spring Data JPA, Spring Security, Spring Validation, Spring Web)
 - **Authentication & Authorization:** JWT (JSON Web Token - `io.jsonwebtoken 0.12.6`), Role-based access control (RBAC)
 - **Database:** MySQL 8.x
 - **Connection Pool:** HikariCP
@@ -68,7 +68,7 @@ flowchart LR
 
 ```text
 DoAnChuyenNganh/
-├── backend/                  # Mã nguồn Spring Boot 3 Backend (Java 21)
+├── backend/                  # Mã nguồn Spring Boot 3 Backend (Java 25)
 │   ├── src/main/java/com/sms/...
 │   ├── src/main/resources/application.properties
 │   └── pom.xml
@@ -131,7 +131,7 @@ docker compose up --build -d
 - Tài liệu API (Swagger UI): `http://localhost:8080/swagger-ui.html`
 
 ### Cách 3: Khởi chạy thủ công từng phần
-1. **Yêu cầu môi trường:** Java 21+, Node.js 18+, MySQL 8.0+.
+1. **Yêu cầu môi trường:** Java 25+, Node.js 18+, MySQL 8.0+.
 2. **Khởi động Database:** Chạy file [schema.sql](database/schema.sql) và [seed.sql](database/seed.sql) trong thư mục `database/`.
 3. **Chạy Backend:**
    ```bash

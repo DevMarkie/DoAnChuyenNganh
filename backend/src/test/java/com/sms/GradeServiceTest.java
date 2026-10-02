@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -102,6 +103,54 @@ class GradeServiceTest {
 
         verify(lecturerRepository, never()).findByUserId(anyLong());
         verify(gradeRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void calculateTotalScore_usesFiveFiveThirtySixtyWeights() {
+        Grade grade = new Grade();
+        grade.setCc1Score(new BigDecimal("8.0"));
+        grade.setCc2Score(new BigDecimal("6.0"));
+        grade.setMidtermScore(new BigDecimal("7.0"));
+        grade.setFinalScore(new BigDecimal("9.0"));
+
+        grade.calculateTotalScore();
+
+        // 8 * 5% + 6 * 5% + 7 * 30% + 9 * 60% = 8.20
+        assertThat(grade.getTotalScore()).isEqualByComparingTo("8.20");
+    }
+
+    @Test
+    void saveImportedGrades_rejectsEnrollmentFromAnotherSection() {
+        CourseSection selectedSection = new CourseSection();
+        selectedSection.setId(999L);
+        when(courseSectionRepository.findById(999L)).thenReturn(Optional.of(selectedSection));
+        when(enrollmentRepository.findByIdInWithSection(anyList()))
+                .thenReturn(List.of(enrollment(1L))); // enrollment belongs to section 101
+
+        assertThatThrownBy(() -> gradeService.saveImportedGrades(500L, 999L, List.of(req(1L))))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("không thuộc lớp học phần");
+
+        verify(lecturerRepository, never()).findByUserId(anyLong());
+        verify(gradeRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void findBySection_includesEnrollmentsWithoutExistingGrades() {
+        Enrollment first = enrollment(1L);
+        Enrollment second = enrollment(2L);
+        Grade existing = new Grade();
+        existing.setEnrollment(first);
+
+        when(enrollmentRepository.findActiveBySectionId(101L)).thenReturn(List.of(first, second));
+        when(gradeRepository.findByEnrollmentIdIn(List.of(1L, 2L))).thenReturn(List.of(existing));
+
+        List<Grade> result = gradeService.findBySection(101L);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0)).isSameAs(existing);
+        assertThat(result.get(1).getEnrollment()).isSameAs(second);
+        assertThat(result.get(1).getCc1Score()).isNull();
     }
 
     private static final long LECT_USER = 42L;

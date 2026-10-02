@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   KeyRound, Search, CheckCircle2, XCircle, Clock,
-  RefreshCw, Copy, Check, Send, AlertTriangle, ShieldCheck, User, Mail, Phone
+  RefreshCw, Copy, Check, Send, AlertTriangle, ShieldCheck, User, Mail, Phone, ClipboardList
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { passwordResetService } from '../../services/dataService';
@@ -21,6 +21,7 @@ export default function PasswordResetsPage() {
   const [approveLoading, setApproveLoading] = useState(false);
   const [approveResult, setApproveResult] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [copiedHandover, setCopiedHandover] = useState(false);
 
   // Reject Modal State
   const [rejectingItem, setRejectingItem] = useState(null);
@@ -55,6 +56,7 @@ export default function PasswordResetsPage() {
     setAdminNotes('Ban Quản trị đã xác minh và cấp lại mật khẩu.');
     setApproveResult(null);
     setCopied(false);
+    setCopiedHandover(false);
   };
 
   const handleApproveSubmit = async (e) => {
@@ -160,6 +162,31 @@ export default function PasswordResetsPage() {
     setCopied(true);
     toast.success('Đã sao chép mật khẩu vào Clipboard');
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // BR-SEC-02: gộp toàn bộ thông tin bàn giao (mã TK + mật khẩu tạm + cổng đăng
+  // nhập đúng phân hệ + lưu ý đổi mật khẩu) để Admin gửi cho người dùng qua kênh
+  // ngoài (Zalo/điện thoại...) khi email chưa tới.
+  const handleCopyHandover = () => {
+    if (!approvingItem || !approveResult) return;
+    const roleSlug = approvingItem.role === 'STUDENT' ? 'student' : 'lecturer';
+    const roleLabel = approvingItem.role === 'STUDENT' ? 'Sinh viên' : 'Giảng viên';
+    const loginUrl = `${window.location.origin}/${roleSlug}/login`;
+    const text = [
+      'THÔNG TIN ĐĂNG NHẬP HỆ THỐNG SMS',
+      '--------------------------------',
+      `Phân hệ:         ${roleLabel}`,
+      `Họ và tên:       ${approvingItem.fullName}`,
+      `Mã tài khoản:    ${approvingItem.username}`,
+      `Mật khẩu tạm:    ${approveResult.generatedPassword}`,
+      `Trang đăng nhập: ${loginUrl}`,
+      '',
+      'Lưu ý: Đây là mật khẩu tạm thời. Hệ thống sẽ yêu cầu đổi mật khẩu mới ngay trong lần đăng nhập đầu tiên.',
+    ].join('\n');
+    navigator.clipboard.writeText(text);
+    setCopiedHandover(true);
+    toast.success('Đã sao chép thông tin bàn giao vào Clipboard');
+    setTimeout(() => setCopiedHandover(false), 2000);
   };
 
   const filteredRequests = requests.filter((r) => {
@@ -683,6 +710,24 @@ export default function PasswordResetsPage() {
                       <span>{copied ? 'Đã chép' : 'Sao chép'}</span>
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyHandover}
+                    className="btn btn-outline"
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      marginBottom: '12px',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    {copiedHandover ? <Check size={15} color="green" /> : <ClipboardList size={15} />}
+                    <span>{copiedHandover ? 'Đã sao chép thông tin bàn giao' : 'Sao chép thông tin bàn giao'}</span>
+                  </button>
 
                   <button
                     type="button"

@@ -2,6 +2,7 @@ package com.sms.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.time.LocalDate;
 
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
@@ -24,4 +25,9 @@ public class CourseSectionRequest {
     private String schedule;
     private String room;
     private String status;
+    private Integer dayOfWeek;
+    private Integer startPeriod;
+    private Integer endPeriod;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

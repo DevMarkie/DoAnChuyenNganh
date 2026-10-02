@@ -29,6 +29,7 @@ export default function AssignEnrollmentsPage() {
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [assigning, setAssigning] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState('');
+  const [autoExpandCapacity, setAutoExpandCapacity] = useState(false);
   const [batchAssigning, setBatchAssigning] = useState(false);
   const [override, setOverride] = useState(null);
 
@@ -172,7 +173,7 @@ export default function AssignEnrollmentsPage() {
     if (!ok) return;
     setBatchAssigning(true);
     try {
-      const res = await enrollmentService.adminBatchAssignClass(selectedClassId, selectedSectionId);
+      const res = await enrollmentService.adminBatchAssignClass(selectedClassId, selectedSectionId, autoExpandCapacity);
       const count = res.data?.data?.length ?? 0;
       toast.success(`Đã xếp ${count} sinh viên của lớp ${cls?.name || ''} vào lớp học phần`);
       setSelectedClassId('');
@@ -345,7 +346,7 @@ export default function AssignEnrollmentsPage() {
                 </h3>
                 <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                   Xếp toàn bộ sinh viên của một lớp sinh hoạt vào lớp học phần. SV đã có sẽ được bỏ qua;
-                  nếu không đủ chỗ, cả lô sẽ bị hủy (không hỗ trợ cưỡng chế theo lô).
+                  nếu không đủ chỗ, cả lô sẽ bị hủy trừ khi bật tự mở rộng sĩ số.
                 </p>
                 <label className="form-label">Lớp sinh hoạt</label>
                 <select
@@ -361,6 +362,14 @@ export default function AssignEnrollmentsPage() {
                     </option>
                   ))}
                 </select>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '12px 0', fontSize: '0.85rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={autoExpandCapacity}
+                    onChange={(e) => setAutoExpandCapacity(e.target.checked)}
+                  />
+                  Tự động mở rộng sĩ số nếu không đủ chỗ
+                </label>
                 <button
                   className="btn btn-outline"
                   onClick={handleBatchAssign}

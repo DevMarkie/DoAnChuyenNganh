@@ -5,6 +5,7 @@ import {
   Calendar,
   BookOpen,
   CheckCircle,
+  Lock,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { enrollmentService } from "../../services/dataService";
@@ -224,21 +225,33 @@ export default function MyEnrollmentsPage() {
                       </span>
                     </td>
                     <td style={{ textAlign: "right" }}>
-                      {e.status === "ENROLLED" && (
-                        <button
-                          className="btn-icon"
-                          title="Huỷ đăng ký môn này"
-                          style={{ color: "var(--danger)" }}
-                          onClick={() =>
-                            handleCancel(
-                              e.id,
-                              e.courseSection?.subject?.subjectName,
-                            )
-                          }
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      )}
+                      {e.status === "ENROLLED" &&
+                        (e.courseSection?.semester?.registrationOpen ? (
+                          <button
+                            className="btn-icon"
+                            title="Huỷ đăng ký môn này"
+                            style={{ color: "var(--danger)" }}
+                            onClick={() =>
+                              handleCancel(
+                                e.id,
+                                e.courseSection?.subject?.subjectName,
+                              )
+                            }
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        ) : (
+                          <span
+                            className="btn-icon"
+                            title="Đợt đăng ký đã kết thúc. Mọi thay đổi vui lòng liên hệ Phòng Đào tạo"
+                            style={{
+                              color: "var(--text-light)",
+                              cursor: "not-allowed",
+                            }}
+                          >
+                            <Lock size={15} />
+                          </span>
+                        ))}
                     </td>
                   </tr>
                 ))

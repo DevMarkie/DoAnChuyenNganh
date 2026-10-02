@@ -35,9 +35,10 @@ public class AdminEnrollmentController {
     @PostMapping("/batch-assign-class")
     public ResponseEntity<ApiResponse<List<Enrollment>>> batchAssignClass(
             @RequestParam Integer classId,
-            @RequestParam Long sectionId
+            @RequestParam Long sectionId,
+            @RequestParam(defaultValue = "false") boolean autoExpandCapacity
     ) {
-        List<Enrollment> list = enrollmentService.adminBatchAssignClass(classId, sectionId);
+        List<Enrollment> list = enrollmentService.adminBatchAssignClass(classId, sectionId, autoExpandCapacity);
         return ResponseEntity.ok(ApiResponse.success("Đã xếp lớp học phần thành công cho " + list.size() + " sinh viên của lớp", list));
     }
 }

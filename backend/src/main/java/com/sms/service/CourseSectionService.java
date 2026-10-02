@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -20,6 +21,7 @@ public class CourseSectionService {
     private final SubjectRepository subjectRepository;
     private final LecturerRepository lecturerRepository;
     private final SemesterRepository semesterRepository;
+    private final ScheduleRepository scheduleRepository;
 
     public List<CourseSection> findAll() {
         return courseSectionRepository.findAll();
@@ -84,7 +86,9 @@ public class CourseSectionService {
         section.setSchedule(request.getSchedule());
         section.setRoom(request.getRoom());
         section.setStatus(parseStatus(request.getStatus(), CourseSection.SectionStatus.OPEN));
-        return courseSectionRepository.save(section);
+        CourseSection saved = courseSectionRepository.save(section);
+        saveStructuredSchedule(saved, request, null);
+        return saved;
     }
 
     @Transactional
@@ -108,7 +112,62 @@ public class CourseSectionService {
         if (request.getStatus() != null) {
             section.setStatus(parseStatus(request.getStatus(), section.getStatus()));
         }
-        return courseSectionRepository.save(section);
+        CourseSection saved = courseSectionRepository.save(section);
+        Long existingScheduleId = scheduleRepository.findBySectionId(id).stream()
+                .findFirst()
+                .map(Schedule::getId)
+                .orElse(null);
+        saveStructuredSchedule(saved, request, existingScheduleId);
+        return saved;
+    }
+
+    private void saveStructuredSchedule(CourseSection section, CourseSectionRequest request, Long existingScheduleId) {
+        boolean hasSchedule = request.getDayOfWeek() != null
+                || request.getStartPeriod() != null
+                || request.getEndPeriod() != null
+                || request.getStartDate() != null
+                || request.getEndDate() != null;
+        if (!hasSchedule) {
+            return;
+        }
+        if (request.getDayOfWeek() == null || request.getStartPeriod() == null || request.getEndPeriod() == null) {
+            throw new BadRequestException("Phải nhập đủ thứ học, tiết bắt đầu và tiết kết thúc");
+        }
+        if (request.getDayOfWeek() < 2 || request.getDayOfWeek() > 8
+                || request.getStartPeriod() < 1 || request.getStartPeriod() > 12
+                || request.getEndPeriod() < request.getStartPeriod() || request.getEndPeriod() > 12) {
+            throw new BadRequestException("Thứ hoặc tiết học không hợp lệ");
+        }
+
+        LocalDate startDate = request.getStartDate() != null ? request.getStartDate() : section.getSemester().getStartDate();
+        LocalDate endDate = request.getEndDate() != null ? request.getEndDate() : section.getSemester().getEndDate();
+        if (endDate.isBefore(startDate)) {
+            throw new BadRequestException("Ngày kết thúc lịch học phải sau ngày bắt đầu");
+        }
+        String room = request.getRoom() != null && !request.getRoom().isBlank() ? request.getRoom() : section.getRoom();
+        if (room == null || room.isBlank()) {
+            throw new BadRequestException("Phải nhập phòng học khi tạo lịch cấu trúc");
+        }
+
+        if (!scheduleRepository.findRoomConflicts(room, request.getDayOfWeek(), request.getStartPeriod(),
+                request.getEndPeriod(), startDate, endDate, existingScheduleId).isEmpty()) {
+            throw new BadRequestException("Phòng học bị trùng lịch trong khoảng thời gian đã chọn");
+        }
+        if (!scheduleRepository.findLecturerConflicts(section.getLecturer().getId(), request.getDayOfWeek(),
+                request.getStartPeriod(), request.getEndPeriod(), startDate, endDate, existingScheduleId).isEmpty()) {
+            throw new BadRequestException("Giảng viên bị trùng lịch trong khoảng thời gian đã chọn");
+        }
+
+        Schedule schedule = existingScheduleId == null ? new Schedule() : scheduleRepository.findById(existingScheduleId)
+                .orElseGet(Schedule::new);
+        schedule.setSection(section);
+        schedule.setDayOfWeek(request.getDayOfWeek());
+        schedule.setStartPeriod(request.getStartPeriod());
+        schedule.setEndPeriod(request.getEndPeriod());
+        schedule.setRoom(room);
+        schedule.setStartDate(startDate);
+        schedule.setEndDate(endDate);
+        scheduleRepository.save(schedule);
     }
 
     private CourseSection.SectionStatus parseStatus(String status, CourseSection.SectionStatus defaultStatus) {

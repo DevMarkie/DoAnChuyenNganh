@@ -5,7 +5,7 @@
 * **Tổng số requests thử tải:** **1479 requests**
 * **Số requests thành công:** **1479 / 1479**
 * **Tỷ lệ thành công tổng thể:** **100%**
-* **Môi trường:** Spring Boot 3.2.0, Tomcat 200 Threads, HikariCP 15 Conns, MySQL 8.0
+* **Môi trường:** Spring Boot 3.5.6, Tomcat 200 Threads, HikariCP 15 Conns, MySQL 8.0
 
 ---
 

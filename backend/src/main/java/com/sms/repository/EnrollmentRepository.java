@@ -1,18 +1,30 @@
 package com.sms.repository;
 
-import com.sms.entity.Enrollment;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.sms.entity.Enrollment;
 
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByStudentId(Long studentId);
     List<Enrollment> findBySectionId(Long sectionId);
     Optional<Enrollment> findByStudentIdAndSectionId(Long studentId, Long sectionId);
     boolean existsByStudentIdAndSectionId(Long studentId, Long sectionId);
+
+    @Query("SELECT e FROM Enrollment e " +
+          "WHERE e.student.id = :studentId " +
+          "AND e.section.semester.id = :semesterId " +
+          "AND e.section.subject.id = :subjectId " +
+          "AND e.status = 'ENROLLED'")
+    Optional<Enrollment> findActiveEnrollmentBySubject(
+           @Param("studentId") Long studentId,
+           @Param("semesterId") Integer semesterId,
+           @Param("subjectId") Integer subjectId);
 
     /** Batch-load enrollments with their section + lecturer initialised (for bulk grade entry BR-07 check). */
     @Query("SELECT e FROM Enrollment e " +

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import ForcePasswordChangeModal from '../common/ForcePasswordChangeModal';
 import './Layout.css';
 
 export default function Layout() {
@@ -16,6 +17,8 @@ export default function Layout() {
           <Outlet />
         </div>
       </div>
+      {/* BR-SEC-01: khoá toàn ứng dụng cho tới khi đổi mật khẩu tạm thành công. */}
+      <ForcePasswordChangeModal />
     </div>
   );
 }

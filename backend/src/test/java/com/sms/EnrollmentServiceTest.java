@@ -216,6 +216,46 @@ class EnrollmentServiceTest {
     }
 
     @Test
+    @DisplayName("TC-ENR-SUBJECT: Không cho đăng ký lớp thứ hai của cùng môn trong cùng học kỳ")
+    void enroll_fails_whenAlreadyEnrolledInAnotherSectionOfSameSubject() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+        Long enrolledSectionId = 101L;
+
+        Subject subject = new Subject();
+        subject.setId(5);
+        subject.setSubjectCode("MATH101");
+        subject.setSubjectName("Giải tích 1");
+        subject.setCredits(3);
+        subject.setPrerequisites(Collections.emptySet());
+
+        Student student = createStudent(studentId, userId);
+        CourseSection targetSection = createSection(sectionId, subject, 40, 10);
+        CourseSection enrolledSection = createSection(enrolledSectionId, subject, 40, 10);
+        enrolledSection.setSectionCode("MATH101-01");
+
+        Enrollment existing = new Enrollment();
+        existing.setId(200L);
+        existing.setStudent(student);
+        existing.setSection(enrolledSection);
+        existing.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(targetSection));
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.findActiveEnrollmentBySubject(studentId, 1, subject.getId()))
+                .thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("MATH101-01")
+                .hasMessageContaining("cùng một môn");
+
+        verify(enrollmentRepository, never()).save(any(Enrollment.class));
+    }
+
+    @Test
     @DisplayName("TC-05.1: Admin assign thất bại khi lớp đầy và không dùng forceOverride")
     void adminAssign_fails_whenCapacityFullAndNoOverride() {
         Long studentId = 1L;

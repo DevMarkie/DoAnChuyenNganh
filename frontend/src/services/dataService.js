@@ -85,7 +85,13 @@ export const enrollmentService = {
   getBySection: (sectionId) => api.get(`/enrollments/section/${sectionId}`),
   enroll: (data) => api.post('/enrollments', data),
   cancel: (id) => api.delete(`/enrollments/${id}`),
-  adminAssign: (studentId, sectionId) => api.post(`/admin/enrollments/assign?studentId=${studentId}&sectionId=${sectionId}`),
+  // forceOverride + overrideReason: Admin cưỡng chế xếp lớp vượt sĩ số (BR-05),
+  // bắt buộc kèm lý do. URLSearchParams tự mã hoá lý do có dấu/khoảng trắng.
+  adminAssign: (studentId, sectionId, { forceOverride = false, overrideReason } = {}) => {
+    const params = new URLSearchParams({ studentId, sectionId, forceOverride });
+    if (overrideReason) params.set('overrideReason', overrideReason);
+    return api.post(`/admin/enrollments/assign?${params.toString()}`);
+  },
   adminBatchAssignClass: (classId, sectionId) => api.post(`/admin/enrollments/batch-assign-class?classId=${classId}&sectionId=${sectionId}`),
 };
 

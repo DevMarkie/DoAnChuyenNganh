@@ -5,7 +5,7 @@ import { passwordResetService } from '../../services/dataService';
 import {
   LayoutDashboard, Users, Building2, GraduationCap, BookOpen, UserCog,
   CalendarDays, Calendar, Layers, ClipboardList, BookMarked, School, Award, Menu,
-  ChevronLeft, KeyRound
+  ChevronLeft, KeyRound, UserPlus
 } from 'lucide-react';
 
 const adminNavGroups = [
@@ -30,6 +30,7 @@ const adminNavGroups = [
     items: [
       { path: '/admin/semesters', icon: CalendarDays, label: 'Học kỳ & Đợt ĐK' },
       { path: '/admin/course-sections', icon: Layers, label: 'Lớp học phần' },
+      { path: '/admin/assign-enrollments', icon: UserPlus, label: 'Xếp lớp cho SV' },
       { path: '/admin/schedules', icon: Calendar, label: 'Lịch học & Xếp lịch' },
       { path: '/admin/grades', icon: ClipboardList, label: 'Sổ điểm toàn trường' },
     ]

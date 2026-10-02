@@ -18,6 +18,7 @@ const SubjectsPage = lazy(() => import('./pages/admin/SubjectsPage'));
 const LecturersPage = lazy(() => import('./pages/admin/LecturersPage'));
 const SemestersPage = lazy(() => import('./pages/admin/SemestersPage'));
 const CourseSectionsPage = lazy(() => import('./pages/admin/CourseSectionsPage'));
+const AssignEnrollmentsPage = lazy(() => import('./pages/admin/AssignEnrollmentsPage'));
 const SchedulesPage = lazy(() => import('./pages/admin/SchedulesPage'));
 const AdminGradesPage = lazy(() => import('./pages/admin/GradesPage'));
 const PasswordResetsPage = lazy(() => import('./pages/admin/PasswordResetsPage'));
@@ -100,6 +101,7 @@ export default function App() {
             <Route path="/admin/lecturers" element={<LecturersPage />} />
             <Route path="/admin/semesters" element={<SemestersPage />} />
             <Route path="/admin/course-sections" element={<CourseSectionsPage />} />
+            <Route path="/admin/assign-enrollments" element={<AssignEnrollmentsPage />} />
             <Route path="/admin/schedules" element={<SchedulesPage />} />
             <Route path="/admin/grades" element={<AdminGradesPage />} />
             <Route path="/admin/password-resets" element={<PasswordResetsPage />} />

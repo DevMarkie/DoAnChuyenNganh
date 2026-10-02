@@ -75,6 +75,17 @@ export default function GradeEntryPage() {
     setGrades(updated);
   };
 
+  // Điểm đặc biệt (V = vắng thi, I = hoãn thi/chưa hoàn thành, M = miễn học phần).
+  // Khi chọn V/I/M, điểm thành phần không còn ý nghĩa nên khoá các ô nhập số.
+  const handleSpecialChange = (index, value) => {
+    const updated = [...grades];
+    updated[index] = {
+      ...updated[index],
+      specialGrade: value,
+    };
+    setGrades(updated);
+  };
+
   const handleExportExcel = async () => {
     try {
       if (!selectedSection) return;
@@ -115,6 +126,7 @@ export default function GradeEntryPage() {
           g.finalScore != null && g.finalScore !== ""
             ? parseFloat(g.finalScore)
             : null,
+        specialGrade: g.specialGrade || "NONE",
         finalize: finalize,
       }));
       await gradeService.saveBatch(payload);
@@ -140,11 +152,16 @@ export default function GradeEntryPage() {
     return null;
   };
 
+  // V/I/M được coi là "đã có kết quả" khi xét điều kiện chốt (khớp với backend
+  // verifyAllStudentsGraded), kể cả khi chưa có điểm tổng kết dạng số.
+  const hasSpecial = (g) => g.specialGrade && g.specialGrade !== "NONE";
+  const isGraded = (g) => g.totalScore != null || hasSpecial(g);
+
   const currentSectionInfo = mySections.find(
     (s) => s.id === parseInt(selectedSection),
   );
   const passedCount = grades.filter((g) => isStudentPassed(g) === true).length;
-  const gradedCount = grades.filter((g) => g.totalScore != null).length;
+  const gradedCount = grades.filter(isGraded).length;
   const passRate =
     gradedCount > 0 ? Math.round((passedCount / gradedCount) * 100) : 0;
   const allGraded = grades.length > 0 && gradedCount === grades.length;
@@ -357,6 +374,13 @@ export default function GradeEntryPage() {
                 </th>
                 <th style={{ textAlign: "center" }}>GK (30%)</th>
                 <th style={{ textAlign: "center" }}>CK (60%)</th>
+                <th style={{ textAlign: "center" }}>
+                  Đặc biệt
+                  <br />
+                  <small style={{ fontSize: "0.8em", fontWeight: "normal" }}>
+                    V / I / M
+                  </small>
+                </th>
                 <th style={{ textAlign: "center" }}>Tổng Kết</th>
                 <th style={{ textAlign: "center" }}>Hệ 4</th>
                 <th style={{ textAlign: "center" }}>Điểm Chữ</th>
@@ -367,7 +391,7 @@ export default function GradeEntryPage() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan="12"
+                    colSpan="13"
                     style={{
                       textAlign: "center",
                       padding: "48px 20px",
@@ -380,7 +404,7 @@ export default function GradeEntryPage() {
               ) : grades.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="12"
+                    colSpan="13"
                     style={{
                       textAlign: "center",
                       padding: "48px 20px",
@@ -435,7 +459,7 @@ export default function GradeEntryPage() {
                         onChange={(e) =>
                           handleScoreChange(idx, "cc1Score", e.target.value)
                         }
-                        disabled={isLocked}
+                        disabled={isLocked || hasSpecial(g)}
                         className="form-control"
                         style={{
                           width: "68px",
@@ -457,7 +481,7 @@ export default function GradeEntryPage() {
                         onChange={(e) =>
                           handleScoreChange(idx, "cc2Score", e.target.value)
                         }
-                        disabled={isLocked}
+                        disabled={isLocked || hasSpecial(g)}
                         className="form-control"
                         style={{
                           width: "68px",
@@ -479,7 +503,7 @@ export default function GradeEntryPage() {
                         onChange={(e) =>
                           handleScoreChange(idx, "midtermScore", e.target.value)
                         }
-                        disabled={isLocked}
+                        disabled={isLocked || hasSpecial(g)}
                         className="form-control"
                         style={{
                           width: "68px",
@@ -501,7 +525,7 @@ export default function GradeEntryPage() {
                         onChange={(e) =>
                           handleScoreChange(idx, "finalScore", e.target.value)
                         }
-                        disabled={isLocked}
+                        disabled={isLocked || hasSpecial(g)}
                         className="form-control"
                         style={{
                           width: "68px",
@@ -511,6 +535,28 @@ export default function GradeEntryPage() {
                           fontWeight: 600,
                         }}
                       />
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      <select
+                        value={g.specialGrade || "NONE"}
+                        onChange={(e) =>
+                          handleSpecialChange(idx, e.target.value)
+                        }
+                        disabled={isLocked}
+                        className="form-select"
+                        style={{
+                          width: "92px",
+                          padding: "6px",
+                          margin: "0 auto",
+                          fontWeight: 600,
+                        }}
+                        title="V: vắng thi (tính 0 điểm) · I: hoãn thi / chưa hoàn thành · M: miễn học phần (đạt)"
+                      >
+                        <option value="NONE">—</option>
+                        <option value="V">V · Vắng thi</option>
+                        <option value="I">I · Hoãn thi</option>
+                        <option value="M">M · Miễn</option>
+                      </select>
                     </td>
                     <td
                       style={{

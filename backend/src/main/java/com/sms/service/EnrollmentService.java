@@ -1,12 +1,28 @@
 package com.sms.service;
 
-import com.sms.entity.*;
-import com.sms.exception.*;
-import com.sms.repository.*;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
+
+import com.sms.entity.CourseSection;
+import com.sms.entity.Enrollment;
+import com.sms.entity.Grade;
+import com.sms.entity.Lecturer;
+import com.sms.entity.Schedule;
+import com.sms.entity.Semester;
+import com.sms.entity.Student;
+import com.sms.entity.Subject;
+import com.sms.exception.BadRequestException;
+import com.sms.exception.ResourceNotFoundException;
+import com.sms.repository.CourseSectionRepository;
+import com.sms.repository.EnrollmentRepository;
+import com.sms.repository.GradeRepository;
+import com.sms.repository.LecturerRepository;
+import com.sms.repository.ScheduleRepository;
+import com.sms.repository.StudentRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +61,7 @@ public class EnrollmentService {
         }
     }
 
-    @Transactional
+    @Transactional(timeout = 5)
     public Enrollment enroll(Long userId, Long sectionId) {
         Student student = studentRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
@@ -58,6 +74,14 @@ public class EnrollmentService {
         // BR-05: Section must be OPEN
         if (section.getStatus() != CourseSection.SectionStatus.OPEN) {
             throw new BadRequestException("Học phần đã đóng đăng ký");
+        }
+
+        for (Subject prerequisite : section.getSubject().getPrerequisites()) {
+            if (!gradeRepository.existsPassedFinalizedByStudentAndSubject(student.getId(), prerequisite.getId())) {
+                throw new BadRequestException("Không thể đăng ký: học phần "
+                        + section.getSubject().getSubjectCode() + " yêu cầu hoàn thành môn tiên quyết "
+                        + prerequisite.getSubjectCode() + " - " + prerequisite.getSubjectName());
+            }
         }
 
         // BR-04: Check registration period
@@ -118,6 +142,7 @@ public class EnrollmentService {
         enrollment.setStudent(student);
         enrollment.setSection(section);
         enrollment.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
+        enrollment.setEnrollmentType(resolveEnrollmentType(student.getId(), section.getSubject().getId()));
 
         return enrollmentRepository.save(enrollment);
     }
@@ -152,7 +177,7 @@ public class EnrollmentService {
     }
 
     @Transactional
-    public Enrollment adminAssign(Long studentId, Long sectionId) {
+    public Enrollment adminAssign(Long studentId, Long sectionId, boolean forceOverride, String overrideReason) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
         // Khoá bi quan để kiểm tra sĩ số an toàn dưới truy cập đồng thời (BUG-03),
@@ -169,16 +194,34 @@ public class EnrollmentService {
 
         // Kiểm tra sĩ số khi Admin giao trực tiếp
         if (section.getCurrentStudents() >= section.getMaxStudents()) {
-            throw new BadRequestException(
-                String.format("Học phần đã đầy (%d/%d sinh viên). Vui lòng tăng sĩ số tối đa trước.",
-                        section.getCurrentStudents(), section.getMaxStudents()));
+            if (!forceOverride) {
+                throw new BadRequestException(
+                    String.format("Học phần đã đầy (%d/%d sinh viên). Vui lòng tăng sĩ số tối đa trước.",
+                            section.getCurrentStudents(), section.getMaxStudents()));
+            }
+            if (overrideReason == null || overrideReason.isBlank()) {
+                throw new BadRequestException("Phải nhập lý do khi cưỡng chế vượt sĩ số");
+            }
+            org.slf4j.LoggerFactory.getLogger(EnrollmentService.class).warn(
+                    "ADMIN_OVERRIDE: studentId={} sectionId={} reason={}", studentId, sectionId, overrideReason);
         }
 
         Enrollment enrollment = existingEnrollment != null ? existingEnrollment : new Enrollment();
         enrollment.setStudent(student);
         enrollment.setSection(section);
         enrollment.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
+        enrollment.setEnrollmentType(resolveEnrollmentType(student.getId(), section.getSubject().getId()));
         return enrollmentRepository.save(enrollment);
+    }
+
+    private Enrollment.EnrollmentType resolveEnrollmentType(Long studentId, Integer subjectId) {
+        List<Grade> previousGrades = gradeRepository.findFinalizedByStudentAndSubject(studentId, subjectId);
+        if (previousGrades.isEmpty()) {
+            return Enrollment.EnrollmentType.FIRST_TIME;
+        }
+        return previousGrades.stream().anyMatch(g -> Boolean.TRUE.equals(g.getIsPassed()))
+            ? Enrollment.EnrollmentType.IMPROVE
+            : Enrollment.EnrollmentType.RETAKE;
     }
 
     @Transactional

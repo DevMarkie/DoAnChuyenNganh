@@ -1,12 +1,18 @@
 package com.sms.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.sms.dto.ApiResponse;
 import com.sms.entity.Enrollment;
 import com.sms.service.EnrollmentService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/enrollments")
@@ -18,9 +24,11 @@ public class AdminEnrollmentController {
     @PostMapping("/assign")
     public ResponseEntity<ApiResponse<Enrollment>> assignStudent(
             @RequestParam Long studentId,
-            @RequestParam Long sectionId
+            @RequestParam Long sectionId,
+            @RequestParam(defaultValue = "false") boolean forceOverride,
+            @RequestParam(required = false) String overrideReason
     ) {
-        Enrollment res = enrollmentService.adminAssign(studentId, sectionId);
+        Enrollment res = enrollmentService.adminAssign(studentId, sectionId, forceOverride, overrideReason);
         return ResponseEntity.ok(ApiResponse.success("Xếp lớp học phần cho sinh viên thành công", res));
     }
 

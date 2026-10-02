@@ -1,10 +1,16 @@
 package com.sms.dto.request;
 
+import java.math.BigDecimal;
+
+import com.sms.entity.Grade;
+
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
@@ -30,4 +36,6 @@ public class GradeRequest {
     private BigDecimal finalScore;
 
     private Boolean finalize;
+
+    private Grade.SpecialGrade specialGrade;
 }

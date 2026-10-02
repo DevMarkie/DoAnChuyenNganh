@@ -221,6 +221,18 @@ CREATE TABLE subjects (
     CONSTRAINT fk_subjects_department FOREIGN KEY (department_id) REFERENCES departments (id)
 );
 
+-- BẢNG 7A: subject_prerequisites - Quan hệ học phần tiên quyết
+CREATE TABLE subject_prerequisites (
+    subject_id       INT NOT NULL,
+    prerequisite_id  INT NOT NULL,
+    CONSTRAINT pk_subject_prerequisites PRIMARY KEY (subject_id, prerequisite_id),
+    CONSTRAINT fk_subject_prereq_subject FOREIGN KEY (subject_id) REFERENCES subjects (id),
+    CONSTRAINT fk_subject_prereq_required FOREIGN KEY (prerequisite_id) REFERENCES subjects (id),
+    CONSTRAINT ck_subject_prereq_not_self CHECK (subject_id <> prerequisite_id)
+);
+
+CREATE INDEX idx_subject_prerequisites_required ON subject_prerequisites (prerequisite_id);
+
 -- ============================================================
 -- BẢNG 7.1: curriculum_block_subjects – Môn học trong khối kiến thức
 -- ============================================================
@@ -290,6 +302,7 @@ CREATE TABLE enrollments (
     section_id  BIGINT   NOT NULL,
     enrolled_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status      ENUM('ENROLLED', 'CANCELLED', 'COMPLETED') NOT NULL DEFAULT 'ENROLLED',
+    enrollment_type ENUM('FIRST_TIME', 'RETAKE', 'IMPROVE') NOT NULL DEFAULT 'FIRST_TIME',
     CONSTRAINT pk_enrollments PRIMARY KEY (id),
     CONSTRAINT uq_enrollments_student_section UNIQUE (student_id, section_id),
     CONSTRAINT fk_enrollments_student FOREIGN KEY (student_id) REFERENCES students (id),
@@ -312,6 +325,7 @@ CREATE TABLE grades (
     gpa_point        DECIMAL(3,2)  NULL     COMMENT 'Điểm GPA theo thang 4.0',
     is_finalized     BOOLEAN       NOT NULL DEFAULT FALSE COMMENT 'Đã chốt điểm chưa',
     finalized_at     DATETIME      NULL     COMMENT 'Thời điểm chốt; GV được sửa trong 7 ngày kể từ mốc này',
+    special_grade    ENUM('NONE', 'V', 'I', 'M') NOT NULL DEFAULT 'NONE' COMMENT 'Mã điểm đặc biệt',
     updated_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_grades PRIMARY KEY (id),
     CONSTRAINT uq_grades_enrollment UNIQUE (enrollment_id),

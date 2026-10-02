@@ -1,17 +1,27 @@
 package com.sms.service;
 
-import com.sms.dto.response.TranscriptResponse;
-import com.sms.entity.*;
-import com.sms.exception.ResourceNotFoundException;
-import com.sms.repository.*;
-import lombok.RequiredArgsConstructor;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.sms.dto.response.TranscriptResponse;
+import com.sms.entity.Grade;
+import com.sms.entity.Semester;
+import com.sms.entity.Student;
+import com.sms.entity.Subject;
+import com.sms.exception.ResourceNotFoundException;
+import com.sms.repository.GradeRepository;
+import com.sms.repository.StudentRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -112,9 +122,8 @@ public class TranscriptService {
             int credits = grade.getEnrollment().getSection().getSubject().getCredits();
             cpaWeighted = cpaWeighted.add(grade.getGpaPoint().multiply(BigDecimal.valueOf(credits)));
             gpaCredits += credits;
-            // Tín chỉ tích luỹ chỉ tính học phần ĐẠT. Theo quy chế học lại, D (1.0) và
-            // F (0.0) đều trượt, nên chỉ cộng khi đạt tối thiểu D+ (gpaPoint >= 1.5).
-            if (grade.getGpaPoint().compareTo(new BigDecimal("1.5")) >= 0) {
+            // Tín chỉ tích luỹ tính từ D (1.0/4.0) trở lên; F vẫn không đạt.
+            if (grade.getGpaPoint().compareTo(new BigDecimal("1.0")) >= 0) {
                 totalCredits += credits;
                 completedCourses++;
             }

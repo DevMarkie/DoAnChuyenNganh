@@ -1,11 +1,28 @@
 package com.sms.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
-import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -58,6 +75,10 @@ public class Grade {
     @Column(name = "finalized_at")
     private LocalDateTime finalizedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "special_grade", nullable = false)
+    private SpecialGrade specialGrade = SpecialGrade.NONE;
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -76,6 +97,9 @@ public class Grade {
      * Chuyên cần × 10% + Giữa kỳ × 30% + Cuối kỳ × 60%
      */
     public void calculateTotalScore() {
+        if (specialGrade != null && specialGrade != SpecialGrade.NONE) {
+            return;
+        }
         if (cc1Score != null && cc2Score != null && midtermScore != null && finalScore != null) {
             this.totalScore = cc1Score.multiply(new BigDecimal("0.05"))
                     .add(cc2Score.multiply(new BigDecimal("0.05")))
@@ -130,14 +154,19 @@ public class Grade {
 
     @JsonProperty("isPassed")
     public Boolean getIsPassed() {
-        // Quy chế học lại (BA): điểm D (4.0/10 = 1.0/4.0) và F đều KHÔNG đạt, phải
-        // học lại. Đạt học phần yêu cầu tối thiểu D+ (5.0/10 = 1.5/4.0).
+        if (specialGrade == SpecialGrade.M) {
+            return true;
+        }
+        if (specialGrade == SpecialGrade.V || specialGrade == SpecialGrade.I) {
+            return false;
+        }
         if (letterGrade != null) {
-            return !"F".equalsIgnoreCase(letterGrade) && !"D".equalsIgnoreCase(letterGrade);
+            return !"F".equalsIgnoreCase(letterGrade)
+                    && (finalScore == null || finalScore.compareTo(new BigDecimal("3.0")) >= 0);
         }
         if (totalScore != null) {
-            // Cùng quy chế điểm liệt: Đạt = TK >= 5.0 VÀ CK >= 3.0 (nếu có điểm CK).
-            return totalScore.doubleValue() >= 5.0
+            // Điểm D (>= 4.0) là đạt nếu điểm cuối kỳ không dưới 3.0.
+            return totalScore.doubleValue() >= 4.0
                     && (finalScore == null || finalScore.compareTo(new BigDecimal("3.0")) >= 0);
         }
         return null;
@@ -162,5 +191,9 @@ public class Grade {
             return true;
         }
         return finalizedAt.plusDays(EDIT_GRACE_DAYS).isBefore(LocalDateTime.now());
+    }
+
+    public enum SpecialGrade {
+        NONE, V, I, M
     }
 }

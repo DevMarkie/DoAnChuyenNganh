@@ -1,5 +1,26 @@
 package com.sms;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.sms.dto.request.GradeRequest;
 import com.sms.entity.CourseSection;
 import com.sms.entity.Enrollment;
@@ -11,27 +32,6 @@ import com.sms.repository.EnrollmentRepository;
 import com.sms.repository.GradeRepository;
 import com.sms.repository.LecturerRepository;
 import com.sms.service.GradeService;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Locks in the N+1 fix in {@link GradeService#saveGrades}: a bulk save must
@@ -161,5 +161,29 @@ class GradeServiceTest {
                 .hasMessageContaining("khoá");
 
         verify(gradeRepository, never()).save(any());
+    }
+
+    @Test
+    void specialGradeV_countsAsCompleteAndProducesFailingGrade() {
+        long adminUserId = 500L;
+        Enrollment enrollment = enrollment(1L);
+        GradeRequest request = new GradeRequest();
+        request.setEnrollmentId(1L);
+        request.setSpecialGrade(Grade.SpecialGrade.V);
+        request.setFinalize(true);
+
+        when(lecturerRepository.findByUserId(adminUserId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.empty());
+        when(enrollmentRepository.findActiveBySectionId(enrollment.getSection().getId()))
+                .thenReturn(List.of(enrollment));
+        when(gradeRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        Grade saved = gradeService.saveGrade(adminUserId, request);
+
+        assertThat(saved.getSpecialGrade()).isEqualTo(Grade.SpecialGrade.V);
+        assertThat(saved.getTotalScore()).isEqualByComparingTo("0.0");
+        assertThat(saved.getLetterGrade()).isEqualTo("F");
+        assertThat(saved.getIsFinalized()).isTrue();
     }
 }

@@ -910,7 +910,7 @@ async function executeFullTest() {
       });
       if (enrollRes.ok && enrollRes.data.data?.length > 0) {
         const enrollmentId = enrollRes.data.data[0].id;
-        // Admin locks
+        // Admin locks grade with finalize = true
         await api("/grades", {
           method: "PUT",
           token: adminToken,
@@ -923,7 +923,17 @@ async function executeFullTest() {
             finalize: true,
           },
         });
-        // Lecturer attempts edit
+        // BR-Grade03: Lecturer has 7-day grace window. We simulate window expiry (> 7 days)
+        try {
+          const { execSync } = require("child_process");
+          execSync(
+            `docker exec student_management_db mysql -uroot student_management -e "UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};"`,
+            { stdio: "ignore" }
+          );
+        } catch (e) {
+          // If docker exec fails, continue
+        }
+        // Lecturer attempts edit after grace window expired
         const editRes = await api("/grades", {
           method: "PUT",
           token: lecturerToken,
@@ -935,8 +945,8 @@ async function executeFullTest() {
             finalScore: 7.0,
           },
         });
-        if (editRes.ok && editRes.data.success) {
-          throw new Error("LỖ HỔNG: Giảng viên sửa được bảng điểm đã bị khóa!");
+        if (editRes.ok && editRes.data?.success) {
+          throw new Error("LỖ HỔNG: Giảng viên sửa được bảng điểm đã bị khóa quá 7 ngày!");
         }
       }
     },

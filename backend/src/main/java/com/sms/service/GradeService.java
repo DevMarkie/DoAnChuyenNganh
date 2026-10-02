@@ -1,19 +1,29 @@
 package com.sms.service;
 
-import com.sms.dto.request.GradeRequest;
-import com.sms.entity.*;
-import com.sms.exception.*;
-import com.sms.repository.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sms.dto.request.GradeRequest;
+import com.sms.entity.CourseSection;
+import com.sms.entity.Enrollment;
+import com.sms.entity.Grade;
+import com.sms.entity.Lecturer;
+import com.sms.exception.BadRequestException;
+import com.sms.exception.ResourceNotFoundException;
+import com.sms.repository.CourseSectionRepository;
+import com.sms.repository.EnrollmentRepository;
+import com.sms.repository.GradeRepository;
+import com.sms.repository.LecturerRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -68,7 +78,7 @@ public class GradeService {
 
         // Activity #14: chỉ được chốt khi cả lớp học phần đã có điểm đầy đủ (100%).
         if (Boolean.TRUE.equals(request.getFinalize())) {
-            if (grade.getTotalScore() == null) {
+            if (grade.getTotalScore() == null && grade.getSpecialGrade() == Grade.SpecialGrade.NONE) {
                 throw new BadRequestException("Không thể chốt điểm khi chưa nhập đủ điểm thành phần");
             }
             verifyAllStudentsGraded(enrollment.getSection().getId(),
@@ -196,8 +206,35 @@ public class GradeService {
             grade.setFinalScore(request.getFinalScore());
         }
 
+        if (request.getSpecialGrade() != null) {
+            grade.setSpecialGrade(request.getSpecialGrade());
+        }
+
         // Auto-calculate total score
         grade.calculateTotalScore();
+
+        if (grade.getSpecialGrade() != null) {
+            switch (grade.getSpecialGrade()) {
+                case V -> {
+                    grade.setTotalScore(java.math.BigDecimal.ZERO);
+                    grade.setLetterGrade("F");
+                    grade.setGpaPoint(java.math.BigDecimal.ZERO);
+                }
+                case I -> {
+                    grade.setTotalScore(null);
+                    grade.setLetterGrade(null);
+                    grade.setGpaPoint(null);
+                }
+                case M -> {
+                    grade.setTotalScore(null);
+                    grade.setLetterGrade("M");
+                    grade.setGpaPoint(null);
+                }
+                case NONE -> {
+                    // Numeric component scores remain authoritative.
+                }
+            }
+        }
 
         // Admin can explicitly unfinalize / unlock a grade. Xoá luôn mốc ân hạn để
         // lần chốt sau bắt đầu một cửa sổ 7 ngày mới.
@@ -222,7 +259,7 @@ public class GradeService {
             if (g == null) {
                 g = gradeRepository.findByEnrollmentId(e.getId()).orElse(null);
             }
-            if (g == null || g.getTotalScore() == null) {
+            if (g == null || (g.getTotalScore() == null && g.getSpecialGrade() == Grade.SpecialGrade.NONE)) {
                 ungraded.add(e.getStudent().getStudentCode());
             }
         }

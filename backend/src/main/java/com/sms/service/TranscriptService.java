@@ -28,6 +28,16 @@ import lombok.RequiredArgsConstructor;
 @Transactional(readOnly = true)
 public class TranscriptService {
 
+    public static String classifyAcademicStanding(BigDecimal gpa) {
+        if (gpa == null) return "Chưa xếp loại";
+        if (gpa.compareTo(new BigDecimal("3.60")) >= 0) return "Xuất sắc";
+        if (gpa.compareTo(new BigDecimal("3.20")) >= 0) return "Giỏi";
+        if (gpa.compareTo(new BigDecimal("2.50")) >= 0) return "Khá";
+        if (gpa.compareTo(new BigDecimal("2.00")) >= 0) return "Trung bình";
+        if (gpa.compareTo(new BigDecimal("1.00")) >= 0) return "Yếu";
+        return "Kém";
+    }
+
     private final StudentRepository studentRepository;
     private final GradeRepository gradeRepository;
 
@@ -63,6 +73,8 @@ public class TranscriptService {
                 int credits = subject.getCredits();
 
                 courseGrades.add(TranscriptResponse.CourseGrade.builder()
+                        .enrollmentId(grade.getEnrollment().getId())
+                        .finalizedAt(grade.getFinalizedAt())
                         .subjectCode(subject.getSubjectCode())
                         .subjectName(subject.getSubjectName())
                         .credits(credits)
@@ -93,6 +105,8 @@ public class TranscriptService {
                     .semesterName(semester.getSemesterName())
                     .academicYear(semester.getAcademicYear())
                     .semesterGpa(semesterGpa)
+                    .semesterClassification(classifyAcademicStanding(semesterGpa))
+                    .isSemesterWarning(isSemesterWarning(semesterGpa))
                     .semesterCredits(semCredits)
                     .courses(courseGrades)
                     .build());
@@ -133,15 +147,57 @@ public class TranscriptService {
                 ? cpaWeighted.divide(BigDecimal.valueOf(gpaCredits), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
+        int warningLevel = calculateWarningLevel(semesterGrades, cumulativeGpa);
+        String warningNotice = warningLevel > 0
+                ? buildWarningNotice(semesterGrades.get(semesterGrades.size() - 1), warningLevel, cumulativeGpa)
+                : null;
+
         return TranscriptResponse.builder()
                 .studentId(student.getId())
                 .studentCode(student.getStudentCode())
                 .studentName(student.getFullName())
                 .className(student.getClassEntity() != null ? student.getClassEntity().getName() : "Chưa xếp lớp")
                 .cumulativeGpa(cumulativeGpa)
+                .academicStanding(classifyAcademicStanding(cumulativeGpa))
+                .warningLevel(warningLevel)
+                .warningNotice(warningNotice)
                 .totalCredits(totalCredits)
                 .completedCourses(completedCourses)
                 .semesters(semesterGrades)
                 .build();
+    }
+
+    private static boolean isSemesterWarning(BigDecimal semesterGpa) {
+        return semesterGpa != null && semesterGpa.compareTo(BigDecimal.ONE) < 0;
+    }
+
+    private static int calculateWarningLevel(List<TranscriptResponse.SemesterGrade> semesters,
+                                             BigDecimal cumulativeGpa) {
+        if (semesters.isEmpty()) return 0;
+        int consecutiveWarnings = 0;
+        for (int index = semesters.size() - 1; index >= 0; index--) {
+            TranscriptResponse.SemesterGrade semester = semesters.get(index);
+            if (!Boolean.TRUE.equals(semester.isSemesterWarning())) break;
+            consecutiveWarnings++;
+        }
+        // CPA < 2.0 is applicable from the second recorded semester onward.
+        boolean cpaWarning = semesters.size() >= 2
+                && cumulativeGpa != null
+                && cumulativeGpa.compareTo(new BigDecimal("2.00")) < 0;
+        if (cpaWarning) {
+            consecutiveWarnings = Math.max(consecutiveWarnings, 1);
+        }
+        return Math.min(consecutiveWarnings, 3);
+    }
+
+    private static String buildWarningNotice(TranscriptResponse.SemesterGrade semester,
+                                             int level, BigDecimal cumulativeGpa) {
+        boolean lowSemesterGpa = semester.getSemesterGpa() != null
+                && semester.getSemesterGpa().compareTo(BigDecimal.ONE) < 0;
+        boolean lowCpa = cumulativeGpa != null && cumulativeGpa.compareTo(new BigDecimal("2.00")) < 0;
+        String reason = lowSemesterGpa && lowCpa
+                ? "GPA học kỳ < 1.0 và CPA tích lũy < 2.0"
+                : lowSemesterGpa ? "GPA học kỳ < 1.0" : "CPA tích lũy < 2.0 từ học kỳ thứ 2";
+        return "Cảnh báo học vụ mức " + level + " do " + reason;
     }
 }

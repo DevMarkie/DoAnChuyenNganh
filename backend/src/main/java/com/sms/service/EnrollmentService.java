@@ -22,6 +22,8 @@ import com.sms.repository.GradeRepository;
 import com.sms.repository.LecturerRepository;
 import com.sms.repository.ScheduleRepository;
 import com.sms.repository.StudentRepository;
+import com.sms.repository.CurriculumBlockSubjectRepository;
+import com.sms.repository.CurriculumProgramRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +38,8 @@ public class EnrollmentService {
     private final ScheduleRepository scheduleRepository;
     private final GradeRepository gradeRepository;
     private final LecturerRepository lecturerRepository;
+    private final CurriculumProgramRepository curriculumProgramRepository;
+    private final CurriculumBlockSubjectRepository curriculumBlockSubjectRepository;
     private static final int MAX_CREDITS_PER_SEMESTER = 30;
 
     public List<Enrollment> findByStudent(Long studentId) {
@@ -76,6 +80,8 @@ public class EnrollmentService {
         if (section.getStatus() != CourseSection.SectionStatus.OPEN) {
             throw new BadRequestException("Học phần đã đóng đăng ký");
         }
+
+        assertInStudentCurriculum(student, section.getSubject().getId());
 
         for (Subject prerequisite : section.getSubject().getPrerequisites()) {
             if (!gradeRepository.existsPassedFinalizedByStudentAndSubject(student.getId(), prerequisite.getId())) {
@@ -157,6 +163,20 @@ public class EnrollmentService {
         enrollment.setEnrollmentType(resolveEnrollmentType(student.getId(), section.getSubject().getId()));
 
         return enrollmentRepository.save(enrollment);
+    }
+
+    private void assertInStudentCurriculum(Student student, Integer subjectId) {
+        if (curriculumProgramRepository == null || curriculumBlockSubjectRepository == null
+                || student.getClassEntity() == null || student.getClassEntity().getMajor() == null
+                || student.getClassEntity().getCohort() == null) {
+            return;
+        }
+        var program = curriculumProgramRepository.findActiveByMajorAndCohort(
+                student.getClassEntity().getMajor().getId(), student.getClassEntity().getCohort().getId())
+                .orElseThrow(() -> new BadRequestException("Bạn chưa được gán chương trình đào tạo hợp lệ"));
+        if (!curriculumBlockSubjectRepository.existsByProgramIdAndSubjectId(program.getId(), subjectId)) {
+            throw new BadRequestException("Học phần không nằm trong chương trình đào tạo của bạn");
+        }
     }
 
     @Transactional

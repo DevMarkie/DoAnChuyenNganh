@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.0</version>
+        <version>3.5.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.sms</groupId>
@@ -14,7 +14,8 @@
     <name>student-management</name>
     <description>He Thong Quan Ly Sinh Vien - Do An Chuyen Nganh</description>
     <properties>
-        <java.version>21</java.version>
+        <!-- Keep the project compatible with the JDK used by the local Maven wrapper. -->
+        <java.version>23</java.version>
         <jjwt.version>0.12.6</jjwt.version>
         <lombok.version>1.18.42</lombok.version>
         <mysql.version>8.2.0</mysql.version>
@@ -144,9 +145,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <!-- JDK 23 is not yet an officially-supported Byte Buddy target;
-                         enable experimental support so Mockito can mock concrete
-                         classes (e.g. EmailService in PasswordResetServiceTest). -->
+                    <!-- Keep Byte Buddy's compatibility fallback enabled for newer JDKs;
+                    enable experimental support so Mockito can mock concrete
+                    classes (e.g. EmailService in PasswordResetServiceTest). -->
                     <argLine>-Dnet.bytebuddy.experimental=true -XX:+EnableDynamicAgentLoading</argLine>
                 </configuration>
             </plugin>

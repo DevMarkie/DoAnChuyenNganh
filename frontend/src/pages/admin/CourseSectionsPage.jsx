@@ -316,7 +316,8 @@ export default function CourseSectionsPage() {
                 filtered.map((s) => {
                   const currentCount = s.currentStudents || 0;
                   const maxCount = s.maxStudents || 50;
-                  const isFull = currentCount >= maxCount;
+                  const isOverCapacity = currentCount > maxCount;
+                  const isFull = currentCount === maxCount;
 
                   return (
                     <tr key={s.id}>
@@ -370,15 +371,17 @@ export default function CourseSectionsPage() {
                             style={{
                               fontWeight: 700,
                               fontVariantNumeric: "tabular-nums",
-                              color: isFull
+                              color: isFull || isOverCapacity
                                 ? "var(--danger)"
                                 : "var(--text-main)",
                             }}
                           >
                             {currentCount} / {maxCount}
                           </span>
-                          {isFull && (
-                            <span className="badge badge-danger">Đầy</span>
+                          {(isFull || isOverCapacity) && (
+                            <span className="badge badge-danger">
+                              {isOverCapacity ? "Vượt sĩ số" : "Đầy"}
+                            </span>
                           )}
                         </div>
                       </td>

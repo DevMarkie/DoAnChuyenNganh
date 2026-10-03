@@ -8,6 +8,7 @@ SET CHARACTER SET utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 TRUNCATE TABLE password_reset_requests;
+TRUNCATE TABLE grade_appeals;
 TRUNCATE TABLE grades;
 TRUNCATE TABLE schedules;
 TRUNCATE TABLE enrollments;
@@ -171,7 +172,7 @@ INSERT INTO semesters (id, semester_code, semester_name, academic_year, semester
 (3, 'HK1-2025', 'Học kỳ 1 (2025-2026)', '2025-2026', 1, '2025-09-01', '2026-01-15', '2025-08-15', '2025-08-30', FALSE, 'COMPLETED'),
 (4, 'HK1-2026', 'Học kỳ 1 (2026-2027)', '2026-2027', 1, '2026-09-01', '2027-01-15', '2026-08-15', '2026-10-31', TRUE,  'ACTIVE');
 
--- 8. COURSE SECTIONS (50 lớp học phần phân bổ 4 học kỳ)
+-- 8. COURSE SECTIONS (53 lớp học phần phân bổ 4 học kỳ)
 INSERT INTO course_sections (id, section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status) VALUES
 (1, 'BS101-01-HK1-24', 1, 1, 1, 60, 0, 'Thứ Hai (07:00-09:30)', 'A101', 'CLOSED'),
 (2, 'BS102-01-HK1-24', 2, 2, 1, 60, 0, 'Thứ Tư (09:35-12:05)', 'A102', 'CLOSED'),
@@ -210,6 +211,9 @@ INSERT INTO course_sections (id, section_code, subject_id, lecturer_id, semester
 (35, 'EE101-02-HK1-25', 23, 14, 3, 50, 0, 'Thứ Hai (09:35-12:05)', 'C103', 'CLOSED'),
 (36, 'EN101-02-HK1-25', 33, 24, 3, 45, 0, 'Thứ Bảy (07:00-08:35)', 'C201', 'CLOSED'),
 (37, 'IT301-01-HK1-26', 10, 1, 4, 50, 0, 'Thứ Hai (07:00-09:30)', 'A101', 'OPEN'),
+(52, 'IT301-02-HK1-26', 10, 2, 4, 50, 0, 'Thứ Tư (07:00-09:30)', 'A104', 'OPEN'),
+(53, 'IT301-03-HK1-26', 10, 3, 4, 50, 0, 'Thứ Sáu (07:00-09:30)', 'A205', 'OPEN'),
+(54, 'IT301-04-HK1-26', 10, 4, 4, 50, 0, 'Thứ Năm (07:00-09:30)', 'A206', 'OPEN'),
 (38, 'IT304-01-HK1-26', 13, 1, 4, 50, 0, 'Thứ Tư (09:35-12:05)', 'A102', 'OPEN'),
 (39, 'IT305-01-HK1-26', 14, 2, 4, 50, 0, 'Thứ Sáu (07:00-09:30)', 'A103', 'OPEN'),
 (40, 'IT401-01-HK1-26', 15, 4, 4, 50, 0, 'Thứ Ba (07:00-09:30)', 'A201', 'OPEN'),
@@ -8929,7 +8933,38 @@ INSERT INTO schedules (section_id, class_id, day_of_week, start_period, end_peri
 (48, 14, 2, 4, 6, 'A104', '2026-09-01', '2027-01-15', 'Nhập môn lập trình cho tân sinh viên K19'),
 (49, 11, 4, 1, 3, 'B103', '2026-09-01', '2027-01-15', 'Nguyên lý quản trị doanh nghiệp K18'),
 (50, 15, 6, 4, 6, 'C201', '2026-09-01', '2027-01-15', 'Tiếng Anh giao tiếp đại cương K19'),
-(51, 14, 4, 4, 6, 'A203', '2026-09-01', '2027-01-15', 'Nhập môn lập trình - Lớp 02');
+(51, 14, 4, 4, 6, 'A203', '2026-09-01', '2027-01-15', 'Nhập môn lập trình - Lớp 02'),
+(52, 4, 2, 1, 3, 'A104', '2026-09-01', '2027-01-15', 'Phát triển ứng dụng Web - Lớp 02'),
+(53, 4, 6, 1, 3, 'A205', '2026-09-01', '2027-01-15', 'Phát triển ứng dụng Web - Lớp 03'),
+(54, 4, 5, 1, 3, 'A206', '2026-09-01', '2027-01-15', 'Phát triển ứng dụng Web - Lớp 04');
+
+-- Phân bổ 160 sinh viên IT301 thành 4 lớp, mỗi lớp tối đa 50 chỗ.
+DROP TEMPORARY TABLE IF EXISTS tmp_it301_split;
+CREATE TEMPORARY TABLE tmp_it301_split (
+    enrollment_id BIGINT PRIMARY KEY,
+    target_section_id BIGINT NOT NULL
+);
+
+INSERT INTO tmp_it301_split (enrollment_id, target_section_id)
+SELECT id,
+       CASE
+           WHEN row_num <= 40 THEN 37
+           WHEN row_num <= 80 THEN 52
+           WHEN row_num <= 120 THEN 53
+           ELSE 54
+       END
+FROM (
+    SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS row_num
+    FROM enrollments
+    WHERE section_id = 37
+) ranked;
+
+UPDATE enrollments e
+JOIN tmp_it301_split split ON split.enrollment_id = e.id
+SET e.section_id = split.target_section_id
+WHERE e.section_id = 37;
+
+DROP TEMPORARY TABLE tmp_it301_split;
 
 -- 14. UPDATE ENROLLED_COUNT
 UPDATE course_sections cs
@@ -8939,10 +8974,13 @@ SET enrolled_count = (
 );
 
 -- Synthetic seed data contains historical enrollments that may exceed the
--- original classroom default. Keep the seeded capacity consistent with the
--- existing registrations so the UI never shows an impossible N/max value.
+-- original classroom default. For CLOSED/CANCELLED (finalized) sections,
+-- keep the seeded capacity consistent with existing registrations.
+-- OPEN sections must NOT be inflated — those rely on the enrollment
+-- capacity check to block over-registration.
 UPDATE course_sections
 SET max_students = enrolled_count
-WHERE enrolled_count > max_students;
+WHERE enrolled_count > max_students
+  AND status IN ('CLOSED', 'CANCELLED');
 
 SET FOREIGN_KEY_CHECKS = 1;

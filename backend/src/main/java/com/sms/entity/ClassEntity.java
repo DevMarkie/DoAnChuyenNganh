@@ -27,6 +27,16 @@ public class ClassEntity {
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
     private Department department;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "major_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer"})
+    private Major major;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cohort_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer"})
+    private Cohort cohort;
+
     @Column(name = "academic_year", nullable = false, length = 10)
     private String academicYear;
 

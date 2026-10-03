@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Award, BookOpen, Layers, CheckCircle2, FileText, Printer } from 'lucide-react';
+import { Award, BookOpen, CheckCircle2, FileText, Printer, AlertTriangle, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { transcriptService } from '../../services/dataService';
+import { gradeAppealService, transcriptService } from '../../services/dataService';
 
 export default function TranscriptPage() {
   const [transcript, setTranscript] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [appeals, setAppeals] = useState([]);
+  const [appealCourse, setAppealCourse] = useState(null);
+  const [appealForm, setAppealForm] = useState({ scoreComponent: 'FINAL', desiredScore: '', reason: '' });
+  const [appealSubmitting, setAppealSubmitting] = useState(false);
 
   useEffect(() => {
     loadTranscript();
+    loadAppeals();
   }, []);
 
   const loadTranscript = async () => {
@@ -23,7 +28,59 @@ export default function TranscriptPage() {
     }
   };
 
+  const loadAppeals = async () => {
+    try {
+      const res = await gradeAppealService.getMine();
+      setAppeals(res.data.data || []);
+    } catch {
+      // Appeal history is supplementary; do not block the transcript if unavailable.
+    }
+  };
+
+  const canAppeal = (course) => {
+    if (!course?.finalizedAt) return false;
+    return new Date(course.finalizedAt).getTime() + (7 * 24 * 60 * 60 * 1000) >= Date.now();
+  };
+
+  const openAppeal = (course) => {
+    setAppealCourse(course);
+    setAppealForm({ scoreComponent: 'FINAL', desiredScore: '', reason: '' });
+  };
+
+  const appealScoreFields = { CC2: 'cc2Score', MIDTERM: 'midtermScore', FINAL: 'finalScore', ALL: 'totalScore' };
+  const appealScoreLabels = { CC2: 'Bài tập / Tiểu luận', MIDTERM: 'Giữa kỳ', FINAL: 'Cuối kỳ', ALL: 'Toàn bộ' };
+  const currentAppealScore = appealCourse?.[appealScoreFields[appealForm.scoreComponent]];
+
+  const submitAppeal = async (event) => {
+    event.preventDefault();
+    if (!appealCourse || appealForm.reason.trim().length < 20) return;
+    try {
+      setAppealSubmitting(true);
+      await gradeAppealService.create({
+        enrollmentId: appealCourse.enrollmentId,
+        scoreComponent: appealForm.scoreComponent,
+        desiredScore: appealForm.desiredScore === '' ? null : Number(appealForm.desiredScore),
+        reason: appealForm.reason.trim(),
+      });
+      toast.success('Đã gửi đơn phúc khảo');
+      setAppealCourse(null);
+      loadAppeals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Không thể gửi đơn phúc khảo');
+    } finally {
+      setAppealSubmitting(false);
+    }
+  };
+
   const gpa = transcript?.cumulativeGpa ? Number(transcript.cumulativeGpa).toFixed(2) : '0.00';
+  const standingBadge = {
+    'Xuất sắc': 'badge-purple',
+    'Giỏi': 'badge-success',
+    'Khá': 'badge-info',
+    'Trung bình': 'badge-warning',
+    'Yếu': 'badge-secondary',
+    'Kém': 'badge-danger',
+  }[transcript?.academicStanding] || 'badge-neutral';
 
   return (
     <div>
@@ -41,6 +98,20 @@ export default function TranscriptPage() {
           </button>
         </div>
       </div>
+
+      {transcript?.warningLevel > 0 && (
+        <div className="card" style={{ marginTop: '20px', border: `1px solid ${transcript.warningLevel >= 3 ? 'var(--danger)' : 'var(--warning)'}`, background: transcript.warningLevel >= 3 ? 'var(--danger-bg)' : 'var(--warning-bg)' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <AlertTriangle size={22} style={{ color: transcript.warningLevel >= 3 ? 'var(--danger)' : 'var(--warning)', flexShrink: 0 }} />
+            <div>
+              <strong style={{ color: 'var(--text-main)' }}>CẢNH BÁO KẾT QUẢ HỌC TẬP (MỨC {transcript.warningLevel})</strong>
+              <p style={{ margin: '6px 0 0', color: 'var(--text-secondary)' }}>
+                Điểm học tập của bạn đang dưới ngưỡng chuẩn ({transcript.warningNotice}). Vui lòng liên hệ Cố vấn học tập để lên kế hoạch cải thiện điểm số.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div className="stats-grid">
@@ -91,6 +162,18 @@ export default function TranscriptPage() {
             <div className="stat-label">Học phần đã hoàn thành</div>
           </div>
         </div>
+
+        <div className="stat-card">
+          <div className="stat-icon-wrapper" style={{ backgroundColor: 'var(--warning-bg)', color: 'var(--warning)' }}>
+            <Award size={22} />
+          </div>
+          <div>
+            <div className="stat-value" style={{ fontSize: '1.2rem' }}>
+              <span className={`badge ${standingBadge}`}>{transcript?.academicStanding || 'Chưa xếp loại'}</span>
+            </div>
+            <div className="stat-label">Xếp loại học lực tích lũy</div>
+          </div>
+        </div>
       </div>
 
       {/* Semester Breakdown */}
@@ -118,6 +201,10 @@ export default function TranscriptPage() {
                     {sem.semesterGpa != null ? Number(sem.semesterGpa).toFixed(2) : '—'}
                   </strong>
                 </span>
+                <span className={`badge ${sem.semesterClassification === 'Kém' ? 'badge-danger' : sem.semesterClassification === 'Yếu' ? 'badge-warning' : 'badge-info'}`}>
+                  Xếp loại: {sem.semesterClassification || 'Chưa xếp loại'}
+                </span>
+                {sem.isSemesterWarning && <span className="badge badge-danger">Cảnh báo GPA</span>}
                 <span className="badge badge-success">
                   Đạt: {sem.semesterCredits || 0} Tín chỉ
                 </span>
@@ -138,6 +225,7 @@ export default function TranscriptPage() {
                     <th style={{ textAlign: 'center' }}>Tổng Kết</th>
                     <th style={{ textAlign: 'center' }}>Hệ 4</th>
                     <th style={{ textAlign: 'center' }}>Điểm Chữ</th>
+                    <th style={{ textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -192,6 +280,15 @@ export default function TranscriptPage() {
                           {c.letterGrade || '—'}
                         </span>
                       </td>
+                      <td style={{ textAlign: 'center' }}>
+                        {appeals.some((appeal) => appeal.enrollmentId === c.enrollmentId && ['PENDING', 'IN_REVIEW'].includes(appeal.status)) ? (
+                          <span className="badge badge-warning">Đang phúc khảo</span>
+                        ) : canAppeal(c) ? (
+                          <button type="button" className="btn btn-outline" style={{ padding: '5px 8px', fontSize: '0.75rem' }} onClick={() => openAppeal(c)}>
+                            Phúc khảo
+                          </button>
+                        ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -199,6 +296,45 @@ export default function TranscriptPage() {
             </div>
           </div>
         ))
+      )}
+
+      {appealCourse && (
+        <div className="modal-backdrop" onClick={(event) => { if (event.target === event.currentTarget) setAppealCourse(null); }}>
+          <div className="modal-content" style={{ maxWidth: '560px' }}>
+            <div className="modal-header">
+              <div>
+                <h3>Gửi đơn phúc khảo</h3>
+                <small style={{ color: 'var(--text-secondary)' }}>{appealCourse.subjectCode} — {appealCourse.subjectName} · {appealScoreLabels[appealForm.scoreComponent]}: {currentAppealScore ?? '—'}</small>
+              </div>
+              <button className="btn-icon" onClick={() => setAppealCourse(null)}><X size={18} /></button>
+            </div>
+            <form onSubmit={submitAppeal}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label className="form-label">Cột điểm muốn phúc khảo *</label>
+                  <select className="form-select" value={appealForm.scoreComponent} onChange={(event) => setAppealForm({ ...appealForm, scoreComponent: event.target.value })}>
+                    <option value="CC2">Bài tập / Tiểu luận</option>
+                    <option value="MIDTERM">Giữa kỳ</option>
+                    <option value="FINAL">Cuối kỳ</option>
+                    <option value="ALL">Toàn bộ</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="form-label">Điểm mong muốn (không bắt buộc)</label>
+                  <input className="form-control" type="number" min="0" max="10" step="0.01" value={appealForm.desiredScore} onChange={(event) => setAppealForm({ ...appealForm, desiredScore: event.target.value })} />
+                </div>
+                <div>
+                  <label className="form-label">Lý do phúc khảo * (tối thiểu 20 ký tự)</label>
+                  <textarea className="form-control" rows="5" required minLength="20" value={appealForm.reason} onChange={(event) => setAppealForm({ ...appealForm, reason: event.target.value })} placeholder="Nêu rõ nội dung cần được kiểm tra lại..." />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-outline" onClick={() => setAppealCourse(null)}>Hủy</button>
+                <button type="submit" className="btn btn-primary" disabled={appealSubmitting || appealForm.reason.trim().length < 20}>{appealSubmitting ? 'Đang gửi...' : 'Gửi đơn'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

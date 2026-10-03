@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for Spring Boot Backend
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:23-jdk-alpine AS builder
 WORKDIR /app
 
 # Copy maven files first for caching dependencies
@@ -12,7 +12,7 @@ COPY src src/
 RUN ./mvnw clean package -DskipTests -B
 
 # Runtime stage
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:23-jre-alpine
 WORKDIR /app
 
 # Add non-root user for security

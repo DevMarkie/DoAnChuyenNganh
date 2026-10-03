@@ -3,6 +3,8 @@ package com.sms.dto.request;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.util.List;
+
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 public class SubjectRequest {
@@ -21,4 +23,6 @@ public class SubjectRequest {
 
     @NotNull(message = "Khoa không được để trống")
     private Integer departmentId;
+
+    private List<Integer> prerequisiteIds;
 }

@@ -117,6 +117,21 @@ export const transcriptService = {
   getStudentTranscript: (studentId) => api.get(`/transcript/student/${studentId}`),
 };
 
+export const gradeAppealService = {
+  create: (data) => api.post('/grade-appeals', data),
+  getMine: () => api.get('/grade-appeals/my'),
+  getAll: (params = {}) => api.get('/grade-appeals', { params }),
+  review: (id, data) => api.put(`/grade-appeals/${id}/review`, data),
+};
+
+export const curriculumService = {
+  getMine: () => api.get('/curriculum/me'),
+};
+
+export const academicWarningService = {
+  getAll: (params = {}) => api.get('/academic-warnings', { params }),
+};
+
 export const scheduleService = {
   getAll: (params) => api.get('/schedules', { params }),
   getById: (id) => api.get(`/schedules/${id}`),

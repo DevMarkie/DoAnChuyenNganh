@@ -3,7 +3,7 @@ import {
   Users, GraduationCap, School, BookOpen, UserCog, Layers, Award,
   TrendingUp, ArrowUpRight, CheckCircle2, Clock, Calendar
 } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, CartesianGrid, Legend } from 'recharts';
 import { dashboardService } from '../../services/dataService';
 
 const CHART_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'];
@@ -180,12 +180,12 @@ export default function DashboardPage() {
                   <Pie
                     data={statusData}
                     cx="50%"
-                    cy="50%"
-                    innerRadius={65}
-                    outerRadius={105}
+                    cy="45%"
+                    innerRadius={55}
+                    outerRadius={95}
                     paddingAngle={3}
                     dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ percent }) => (percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : '')}
                     labelLine={false}
                   >
                     {statusData.map((entry, index) => (
@@ -201,6 +201,12 @@ export default function DashboardPage() {
                       color: 'var(--text-main)',
                       fontSize: '0.85rem'
                     }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    iconType="circle"
+                    wrapperStyle={{ paddingTop: '10px' }}
+                    formatter={(value) => <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{value}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>

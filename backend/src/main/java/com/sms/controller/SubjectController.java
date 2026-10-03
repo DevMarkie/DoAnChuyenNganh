@@ -2,7 +2,7 @@ package com.sms.controller;
 
 import com.sms.dto.ApiResponse;
 import com.sms.dto.request.SubjectRequest;
-import com.sms.entity.Subject;
+import com.sms.dto.response.SubjectResponse;
 import com.sms.service.SubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,29 +18,33 @@ public class SubjectController {
     private final SubjectService subjectService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Subject>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success(subjectService.findAll()));
+    public ResponseEntity<ApiResponse<List<SubjectResponse>>> getAll() {
+        return ResponseEntity.ok(ApiResponse.success(subjectService.findAll().stream()
+                .map(SubjectResponse::from).toList()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Subject>> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(ApiResponse.success(subjectService.findById(id)));
+    public ResponseEntity<ApiResponse<SubjectResponse>> getById(@PathVariable Integer id) {
+        return ResponseEntity.ok(ApiResponse.success(SubjectResponse.from(subjectService.findById(id))));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<Subject>>> search(@RequestParam String keyword) {
-        return ResponseEntity.ok(ApiResponse.success(subjectService.search(keyword)));
+    public ResponseEntity<ApiResponse<List<SubjectResponse>>> search(@RequestParam String keyword) {
+        return ResponseEntity.ok(ApiResponse.success(subjectService.search(keyword).stream()
+                .map(SubjectResponse::from).toList()));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Subject>> create(@Valid @RequestBody SubjectRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Tạo môn học thành công", subjectService.create(request)));
+    public ResponseEntity<ApiResponse<SubjectResponse>> create(@Valid @RequestBody SubjectRequest request) {
+        return ResponseEntity.ok(ApiResponse.success("Tạo môn học thành công",
+                SubjectResponse.from(subjectService.create(request))));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Subject>> update(@PathVariable Integer id,
+    public ResponseEntity<ApiResponse<SubjectResponse>> update(@PathVariable Integer id,
                                                        @Valid @RequestBody SubjectRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật môn học thành công", subjectService.update(id, request)));
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật môn học thành công",
+                SubjectResponse.from(subjectService.update(id, request))));
     }
 
     @PutMapping("/{id}/toggle")

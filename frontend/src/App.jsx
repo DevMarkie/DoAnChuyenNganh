@@ -22,6 +22,8 @@ const AssignEnrollmentsPage = lazy(() => import('./pages/admin/AssignEnrollments
 const SchedulesPage = lazy(() => import('./pages/admin/SchedulesPage'));
 const AdminGradesPage = lazy(() => import('./pages/admin/GradesPage'));
 const PasswordResetsPage = lazy(() => import('./pages/admin/PasswordResetsPage'));
+const AcademicWarningsPage = lazy(() => import('./pages/admin/AcademicWarningsPage'));
+const AdminGradeAppealsPage = lazy(() => import('./pages/shared/GradeAppealsPage'));
 
 // Lecturer Pages - Lazy Loaded
 const LecturerDashboard = lazy(() => import('./pages/lecturer/LecturerDashboard'));
@@ -29,6 +31,7 @@ const MySectionsPage = lazy(() => import('./pages/lecturer/MySectionsPage'));
 const LecturerSchedulePage = lazy(() => import('./pages/lecturer/LecturerSchedulePage'));
 const GradeEntryPage = lazy(() => import('./pages/lecturer/GradeEntryPage'));
 const LecturerProfilePage = lazy(() => import('./pages/lecturer/LecturerProfilePage'));
+const LecturerGradeAppealsPage = lazy(() => import('./pages/shared/GradeAppealsPage'));
 
 // Student Pages - Lazy Loaded
 const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
@@ -37,6 +40,7 @@ const EnrollPage = lazy(() => import('./pages/student/EnrollPage'));
 const MyEnrollmentsPage = lazy(() => import('./pages/student/MyEnrollmentsPage'));
 const TranscriptPage = lazy(() => import('./pages/student/TranscriptPage'));
 const StudentProfilePage = lazy(() => import('./pages/student/StudentProfilePage'));
+const CurriculumRoadmapPage = lazy(() => import('./pages/student/CurriculumRoadmapPage'));
 
 function ProtectedRoute({ children, allowedRoles, fallbackLoginPath }) {
   const { isAuthenticated, user } = useAuthStore();
@@ -105,6 +109,8 @@ export default function App() {
             <Route path="/admin/schedules" element={<SchedulesPage />} />
             <Route path="/admin/grades" element={<AdminGradesPage />} />
             <Route path="/admin/password-resets" element={<PasswordResetsPage />} />
+            <Route path="/admin/academic-warnings" element={<AcademicWarningsPage />} />
+            <Route path="/admin/grade-appeals" element={<AdminGradeAppealsPage />} />
           </Route>
 
           {/* Lecturer Routes */}
@@ -118,6 +124,7 @@ export default function App() {
             <Route path="/lecturer/schedule" element={<LecturerSchedulePage />} />
             <Route path="/lecturer/grades" element={<GradeEntryPage />} />
             <Route path="/lecturer/profile" element={<LecturerProfilePage />} />
+            <Route path="/lecturer/grade-appeals" element={<LecturerGradeAppealsPage />} />
           </Route>
 
           {/* Student Routes */}
@@ -132,6 +139,7 @@ export default function App() {
             <Route path="/student/enrollments" element={<MyEnrollmentsPage />} />
             <Route path="/student/transcript" element={<TranscriptPage />} />
             <Route path="/student/profile" element={<StudentProfilePage />} />
+            <Route path="/student/curriculum" element={<CurriculumRoadmapPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to={getDefaultRedirect()} replace />} />

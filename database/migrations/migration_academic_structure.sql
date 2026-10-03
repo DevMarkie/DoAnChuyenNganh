@@ -117,18 +117,18 @@ INSERT IGNORE INTO curriculum_blocks (program_id, code, name, block_type, requir
 SELECT p.id, b.code, b.name, b.block_type, b.required_subject_count, b.required_credits, b.elective_subject_count, b.elective_credits, b.display_order
 FROM curriculum_programs p
 CROSS JOIN (
-    SELECT 'GDDC' code, 'Khoi kien thuc giao duc dai cuong' name, 'COMPULSORY' block_type, 18 required_subject_count, 47 required_credits, 0 elective_subject_count, 0 elective_credits, 1 display_order
-    UNION ALL SELECT 'CSNG', 'Khoi kien thuc co so nganh', 'COMPULSORY', 11, 30, 0, 0, 2
-    UNION ALL SELECT 'CN', 'Khoi kien thuc chuyen nganh', 'COMPULSORY', 11, 30, 0, 0, 3
-    UNION ALL SELECT 'TN', 'Thuc tap', 'COMPULSORY', 1, 4, 0, 0, 4
-    UNION ALL SELECT 'TNK', 'Khoa luan tot nghiep', 'COMPULSORY', 1, 10, 0, 0, 5
-    UNION ALL SELECT 'TC01', 'Giao duc the chat', 'ELECTIVE', 0, 0, 3, 3, 6
-    UNION ALL SELECT 'TC02', 'Giao duc quoc phong - an ninh', 'ELECTIVE', 0, 0, 4, 8, 7
-    UNION ALL SELECT 'TC03', 'Khoi kien thuc bo tro', 'ELECTIVE', 0, 0, 8, 16, 8
-    UNION ALL SELECT 'TC04', 'Khoi kien thuc dieu kien', 'ELECTIVE', 0, 0, 8, 16, 9
-    UNION ALL SELECT 'TC05', 'Khoi kien thuc chuyen nganh tu chon 1', 'ELECTIVE', 0, 0, 8, 16, 10
-    UNION ALL SELECT 'TC06', 'Khoi kien thuc chuyen nganh tu chon 2', 'ELECTIVE', 0, 0, 8, 16, 11
-    UNION ALL SELECT 'TC07', 'Do an/Khoa luan tot nghiep tu chon', 'ELECTIVE', 0, 0, 1, 10, 12
+    SELECT 'GDDC' code, 'Khối kiến thức giáo dục đại cương' name, 'COMPULSORY' block_type, 18 required_subject_count, 47 required_credits, 0 elective_subject_count, 0 elective_credits, 1 display_order
+    UNION ALL SELECT 'CSNG', 'Khối kiến thức cơ sở ngành', 'COMPULSORY', 11, 30, 0, 0, 2
+    UNION ALL SELECT 'CN', 'Khối kiến thức chuyên ngành', 'COMPULSORY', 11, 30, 0, 0, 3
+    UNION ALL SELECT 'TN', 'Thực tập', 'COMPULSORY', 1, 4, 0, 0, 4
+    UNION ALL SELECT 'TNK', 'Khóa luận tốt nghiệp', 'COMPULSORY', 1, 10, 0, 0, 5
+    UNION ALL SELECT 'TC01', 'Giáo dục thể chất', 'ELECTIVE', 0, 0, 3, 3, 6
+    UNION ALL SELECT 'TC02', 'Giáo dục quốc phòng - an ninh', 'ELECTIVE', 0, 0, 4, 8, 7
+    UNION ALL SELECT 'TC03', 'Khối kiến thức bổ trợ', 'ELECTIVE', 0, 0, 8, 16, 8
+    UNION ALL SELECT 'TC04', 'Khối kiến thức điều kiện', 'ELECTIVE', 0, 0, 8, 16, 9
+    UNION ALL SELECT 'TC05', 'Khối kiến thức chuyên ngành tự chọn 1', 'ELECTIVE', 0, 0, 8, 16, 10
+    UNION ALL SELECT 'TC06', 'Khối kiến thức chuyên ngành tự chọn 2', 'ELECTIVE', 0, 0, 8, 16, 11
+    UNION ALL SELECT 'TC07', 'Đồ án/Khóa luận tốt nghiệp tự chọn', 'ELECTIVE', 0, 0, 1, 10, 12
 ) b;
 
 -- Link existing classes to their major and cohort using the class code/year.

@@ -4,7 +4,7 @@ import useAuthStore from '../../store/authStore';
 import { passwordResetService } from '../../services/dataService';
 import {
   LayoutDashboard, Users, Building2, GraduationCap, BookOpen, UserCog,
-  CalendarDays, Calendar, Layers, ClipboardList, BookMarked, School, Award, Menu,
+  CalendarDays, Calendar, Layers, ClipboardList, BookMarked, School, Award, AlertTriangle, Menu,
   ChevronLeft, KeyRound, UserPlus
 } from 'lucide-react';
 
@@ -33,6 +33,8 @@ const adminNavGroups = [
       { path: '/admin/assign-enrollments', icon: UserPlus, label: 'Xếp lớp cho SV' },
       { path: '/admin/schedules', icon: Calendar, label: 'Lịch học & Xếp lịch' },
       { path: '/admin/grades', icon: ClipboardList, label: 'Sổ điểm toàn trường' },
+      { path: '/admin/academic-warnings', icon: AlertTriangle, label: 'Cảnh báo học vụ' },
+      { path: '/admin/grade-appeals', icon: ClipboardList, label: 'Duyệt phúc khảo' },
     ]
   },
   {
@@ -51,6 +53,7 @@ const lecturerNavGroups = [
       { path: '/lecturer/my-sections', icon: Layers, label: 'Học phần phụ trách' },
       { path: '/lecturer/schedule', icon: Calendar, label: 'Lịch giảng dạy' },
       { path: '/lecturer/grades', icon: ClipboardList, label: 'Vào sổ điểm' },
+      { path: '/lecturer/grade-appeals', icon: ClipboardList, label: 'Duyệt phúc khảo' },
     ]
   },
   {
@@ -70,6 +73,7 @@ const studentNavGroups = [
       { path: '/student/enroll', icon: BookMarked, label: 'Đăng ký học phần' },
       { path: '/student/enrollments', icon: Layers, label: 'HP đã đăng ký' },
       { path: '/student/transcript', icon: Award, label: 'Kết quả học tập (CPA)' },
+      { path: '/student/curriculum', icon: Layers, label: 'Chương trình đào tạo' },
     ]
   },
   {

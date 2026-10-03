@@ -433,7 +433,7 @@ export default function LecturerSchedulePage() {
                     </td>
                     <td>
                       <div style={{ fontWeight: 600, color: 'var(--primary)' }}>
-                        {s.dayOfWeekName || `Thứ ${s.dayOfWeek}`}
+                        {DAYS.find(d => d.value === s.dayOfWeek)?.label || (s.dayOfWeek === 8 ? 'Chủ Nhật' : `Thứ ${s.dayOfWeek}`)}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                         Tiết {s.startPeriod} - {s.endPeriod} ({s.periodTimeString || ''})

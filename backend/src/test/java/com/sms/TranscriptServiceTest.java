@@ -115,4 +115,30 @@ class TranscriptServiceTest {
         // CPA denominator still includes the F: (0*3 + 3*2) / (3+2) = 1.20
         assertThat(t.getCumulativeGpa()).isEqualByComparingTo("1.20");
     }
+
+    @Test
+    void classifiesAcademicStandingAtConfiguredBoundaries() {
+        assertThat(TranscriptService.classifyAcademicStanding(new BigDecimal("3.60"))).isEqualTo("Xuất sắc");
+        assertThat(TranscriptService.classifyAcademicStanding(new BigDecimal("3.20"))).isEqualTo("Giỏi");
+        assertThat(TranscriptService.classifyAcademicStanding(new BigDecimal("2.50"))).isEqualTo("Khá");
+        assertThat(TranscriptService.classifyAcademicStanding(new BigDecimal("2.00"))).isEqualTo("Trung bình");
+        assertThat(TranscriptService.classifyAcademicStanding(new BigDecimal("1.00"))).isEqualTo("Yếu");
+        assertThat(TranscriptService.classifyAcademicStanding(new BigDecimal("0.99"))).isEqualTo("Kém");
+    }
+
+    @Test
+    void marksLowSemesterAndAcademicWarning() {
+        stubStudent(4L, List.of(
+                grade("CS101", 3, 0.0, 1),
+                grade("CS102", 3, 1.5, 2)));
+
+        TranscriptResponse t = transcriptService.getTranscript(4L);
+
+        assertThat(t.getAcademicStanding()).isEqualTo("Kém");
+        assertThat(t.getWarningLevel()).isEqualTo(1);
+        assertThat(t.getWarningNotice()).contains("CPA tích lũy < 2.0");
+        assertThat(t.getSemesters().get(0).isSemesterWarning()).isTrue();
+        assertThat(t.getSemesters().get(1).isSemesterWarning()).isFalse();
+        assertThat(t.getSemesters().get(1).getSemesterClassification()).isEqualTo("Yếu");
+    }
 }

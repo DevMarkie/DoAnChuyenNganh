@@ -316,6 +316,52 @@ p {
   flex-shrink: 0;
 }
 
+/* Curriculum roadmap stat icons use the same soft status tints as the rest of the app. */
+.curriculum-stat-icon--total {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.curriculum-stat-icon--completed {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+
+.curriculum-stat-icon--in-progress {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+}
+
+.curriculum-stat-icon--remaining {
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.curriculum-block-toggle {
+  width: calc(100% + 16px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: -8px;
+  padding: 8px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.curriculum-block-toggle:hover {
+  background-color: var(--bg-hover);
+}
+
+.curriculum-block-toggle:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
 .stat-value {
   font-size: 1.65rem;
   font-weight: 800;
@@ -507,6 +553,18 @@ p {
   background-color: var(--info-bg);
   color: var(--info-text);
   border: 1px solid var(--info-border);
+}
+
+.badge-purple {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #d8b4fe;
+}
+
+.badge-secondary {
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .badge-neutral {

@@ -2,6 +2,7 @@ package com.sms.dto.response;
 
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter @Setter @Builder
@@ -12,6 +13,9 @@ public class TranscriptResponse {
     private String studentName;
     private String className;
     private BigDecimal cumulativeGpa;
+    private String academicStanding;
+    private int warningLevel;
+    private String warningNotice;
     private int totalCredits;
     private int completedCourses;
     private List<SemesterGrade> semesters;
@@ -23,6 +27,8 @@ public class TranscriptResponse {
         private String semesterName;
         private String academicYear;
         private BigDecimal semesterGpa;
+        private String semesterClassification;
+        private boolean isSemesterWarning;
         private int semesterCredits;
         private List<CourseGrade> courses;
     }
@@ -30,6 +36,8 @@ public class TranscriptResponse {
     @Getter @Setter @Builder
     @NoArgsConstructor @AllArgsConstructor
     public static class CourseGrade {
+        private Long enrollmentId;
+        private LocalDateTime finalizedAt;
         private String subjectCode;
         private String subjectName;
         private int credits;

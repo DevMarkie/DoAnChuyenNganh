@@ -11,6 +11,7 @@ export default function SubjectsPage() {
   const [selectedDept, setSelectedDept] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState(null);
+  const [prerequisiteSearch, setPrerequisiteSearch] = useState('');
 
   const [formData, setFormData] = useState({
     subjectCode: '',
@@ -18,6 +19,7 @@ export default function SubjectsPage() {
     credits: 3,
     description: '',
     departmentId: '',
+    prerequisiteIds: [],
   });
 
   useEffect(() => {
@@ -49,6 +51,7 @@ export default function SubjectsPage() {
         credits: sub.credits || 3,
         description: sub.description || '',
         departmentId: sub.department?.id || '',
+        prerequisiteIds: (sub.prerequisites || []).map((item) => item.id),
       });
     } else {
       setEditingSubject(null);
@@ -58,9 +61,34 @@ export default function SubjectsPage() {
         credits: 3,
         description: '',
         departmentId: departments[0]?.id || '',
+        prerequisiteIds: [],
       });
     }
+    setPrerequisiteSearch('');
     setIsModalOpen(true);
+  };
+
+  const availablePrerequisites = subjects.filter((subject) => {
+    const isCurrentSubject = editingSubject && subject.id === editingSubject.id;
+    const isSelected = formData.prerequisiteIds?.includes(subject.id);
+    const query = prerequisiteSearch.trim().toLowerCase();
+    const matchesSearch = !query || `${subject.subjectCode} ${subject.subjectName}`.toLowerCase().includes(query);
+    return !isCurrentSubject && !isSelected && matchesSearch;
+  });
+
+  const addPrerequisite = (id) => {
+    setFormData((current) => ({
+      ...current,
+      prerequisiteIds: [...(current.prerequisiteIds || []), Number(id)],
+    }));
+    setPrerequisiteSearch('');
+  };
+
+  const removePrerequisite = (id) => {
+    setFormData((current) => ({
+      ...current,
+      prerequisiteIds: (current.prerequisiteIds || []).filter((item) => item !== id),
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -177,6 +205,7 @@ export default function SubjectsPage() {
                 <th>Tên Môn Học</th>
                 <th>Số Tín Chỉ</th>
                 <th>Khoa Phụ Trách</th>
+                <th>Môn Tiên Quyết</th>
                 <th>Mô Tả Học Phần</th>
                 <th>Trạng Thái</th>
                 <th style={{ textAlign: 'right' }}>Thao Tác</th>
@@ -185,13 +214,13 @@ export default function SubjectsPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Đang tải danh sách môn học...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Không tìm thấy môn học nào phù hợp.
                   </td>
                 </tr>
@@ -252,6 +281,21 @@ export default function SubjectsPage() {
                       </span>
                     </td>
                     <td style={{ color: 'var(--text-secondary)' }}>{s.department?.name || '—'}</td>
+                    <td style={{ minWidth: '150px' }}>
+                      {s.prerequisites?.length ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {s.prerequisites.map((prerequisite) => (
+                            <span
+                              key={prerequisite.id}
+                              className="badge badge-neutral"
+                              title={`${prerequisite.subjectName} (${prerequisite.credits} TC)`}
+                            >
+                              {prerequisite.subjectCode}
+                            </span>
+                          ))}
+                        </div>
+                      ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                    </td>
                     <td style={{ color: 'var(--text-secondary)', maxWidth: '280px', lineHeight: '1.4' }}>
                       {s.description || '—'}
                     </td>
@@ -354,6 +398,51 @@ export default function SubjectsPage() {
                     className="form-control"
                     placeholder="Mô tả mục tiêu, đề cương và chuẩn đầu ra của môn học..."
                   />
+                </div>
+                <div>
+                  <label className="form-label">Môn học tiên quyết</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                    {(formData.prerequisiteIds || []).map((id) => {
+                      const prerequisite = subjects.find((subject) => subject.id === id);
+                      return prerequisite ? (
+                        <span key={id} className="badge badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          {prerequisite.subjectCode}
+                          <button
+                            type="button"
+                            onClick={() => removePrerequisite(id)}
+                            aria-label={`Xóa ${prerequisite.subjectCode}`}
+                            style={{ border: 0, background: 'transparent', padding: 0, cursor: 'pointer', color: 'inherit', lineHeight: 1 }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                  <input
+                    type="search"
+                    value={prerequisiteSearch}
+                    onChange={(e) => setPrerequisiteSearch(e.target.value)}
+                    className="form-control"
+                    placeholder="Tìm theo mã hoặc tên môn học..."
+                  />
+                  {prerequisiteSearch && availablePrerequisites.length > 0 && (
+                    <div style={{ border: '1px solid var(--border-color)', borderRadius: '6px', marginTop: '4px', maxHeight: '150px', overflowY: 'auto', background: 'var(--bg-card)' }}>
+                      {availablePrerequisites.map((subject) => (
+                        <button
+                          type="button"
+                          key={subject.id}
+                          onClick={() => addPrerequisite(subject.id)}
+                          style={{ display: 'block', width: '100%', padding: '8px 10px', textAlign: 'left', border: 0, background: 'transparent', cursor: 'pointer', color: 'var(--text-main)' }}
+                        >
+                          <strong>{subject.subjectCode}</strong> — {subject.subjectName} ({subject.credits} TC)
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {prerequisiteSearch && availablePrerequisites.length === 0 && (
+                    <small style={{ display: 'block', marginTop: '6px', color: 'var(--text-muted)' }}>Không có môn phù hợp.</small>
+                  )}
                 </div>
               </div>
               <div className="modal-footer">

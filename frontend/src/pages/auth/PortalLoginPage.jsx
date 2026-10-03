@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, User, X, Mail, Phone, CheckCircle, GraduationCap, BookOpen, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -112,6 +112,11 @@ export default function PortalLoginPage({ portalType = 'student' }) {
   const [username, setUsername] = useState(config.defaultUser);
   const [password, setPassword] = useState(config.defaultPass);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setUsername(config.defaultUser);
+    setPassword(config.defaultPass);
+  }, [portalType, config.defaultUser, config.defaultPass]);
 
   // Forgot password modal states
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);

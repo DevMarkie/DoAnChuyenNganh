@@ -565,7 +565,7 @@ export default function SchedulesPage() {
                   <tr key={s.id}>
                     <td>
                       <div style={{ fontWeight: 700, color: 'var(--primary)' }}>
-                        {s.dayOfWeekName || `Thứ ${s.dayOfWeek}`}
+                        {DAYS.find(d => d.value === s.dayOfWeek)?.label || (s.dayOfWeek === 8 ? 'Chủ Nhật' : `Thứ ${s.dayOfWeek}`)}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Clock size={12} />

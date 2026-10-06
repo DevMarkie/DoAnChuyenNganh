@@ -22,7 +22,7 @@ flowchart LR
     Lecturer(["👨‍🏫 Giảng viên"])
     Student(["🎓 Sinh viên"])
 
-    subgraph Quản_Lý_Hệ_Thống ["Hệ thống Quản lý Đào tạo (UAMS)"]
+    subgraph Quản_Lý_Hệ_Thống ["Hệ thống Quản lý Sinh viên (SMS)"]
         UC1(["Quản lý Môn học & Mở lớp"])
         UC2(["Xếp Thời khóa biểu & Phòng học"])
         UC3(["Đăng ký Tín chỉ & Hủy môn"])
@@ -56,7 +56,7 @@ flowchart LR
 - **Framework:** React 19 (Vite)
 - **Routing:** React Router v7
 - **State Management:** Zustand
-- **Styling & UI:** Modern Vanilla CSS + Bootstrap 5 / React Bootstrap, Lucide Icons
+- **Styling & UI:** Modern Vanilla CSS (Glassmorphism, Dark/Light Theme), Lucide Icons
 - **HTTP Client:** Axios (Interceptors, Token refresh/handling)
 - **Charts:** Recharts
 - **Notifications:** React-Toastify
@@ -87,11 +87,9 @@ DoAnChuyenNganh/
 │   ├── package.json
 │   └── vite.config.js
 ├── database/                 # Cơ sở dữ liệu MySQL chuẩn hóa
-│   ├── schema.sql            # Master DDL (18 bảng, Khóa ngoại, Trigger, View, Index)
-│   ├── seed.sql              # Dữ liệu khởi tạo chuẩn cho người dùng & kiểm thử
-│   ├── redesign_market_data.sql # Dữ liệu chuẩn hóa 7 khoa & 22 ngành thị trường
-│   ├── migrations/           # Lịch sử các migration gia số
-│   └── scripts/              # Công cụ sinh dữ liệu thử nghiệm tải cao
+│   ├── schema.sql            # Master DDL (20 bảng, Khóa ngoại, Trigger, View, Index)
+│   ├── seed.sql              # Dữ liệu khởi tạo chuẩn (600 SV, 25 GV, 35 Môn, 50 LHP, 4 Học kỳ)
+│   └── migrations/           # Lịch sử các migration gia số
 ├── docs/                     # Bộ tài liệu phân tích nghiệp vụ & thiết kế chuẩn BA
 │   ├── README.md             # Mục lục tra cứu tài liệu hệ thống
 │   ├── 01_system_architecture_and_diagrams.md
@@ -164,5 +162,5 @@ docker compose up --build -d
 | Vai trò        | Tên đăng nhập | Mật khẩu mặc định | Ghi chú                          |
 | -------------- | ------------- | ----------------- | -------------------------------- |
 | **Admin**      | `admin`       | `123456`          | Toàn quyền quản trị hệ thống     |
-| **Giảng viên** | `1000001`     | `123456`          | Mã GV từ `1000001` đến `1000015` |
-| **Sinh viên**  | `2500001`     | `123456`          | Mã SV từ `2500001` đến `2500150` |
+| **Giảng viên** | `1000001`     | `123456`          | 25 Giảng viên từ `1000001` đến `1000025`         |
+| **Sinh viên**  | `2300001`     | `123456`          | Khóa K17 đầy đủ điểm & GPA (hoặc K19 `2500001`)   |

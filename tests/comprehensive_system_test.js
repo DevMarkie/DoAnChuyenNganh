@@ -926,12 +926,21 @@ async function executeFullTest() {
         // BR-Grade03: Lecturer has 7-day grace window. We simulate window expiry (> 7 days)
         try {
           const { execSync } = require("child_process");
-          execSync(
-            `docker exec student_management_db mysql -uroot student_management -e "UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};"`,
-            { stdio: "ignore" }
-          );
+          try {
+            execSync(
+              `docker exec student_management_db mysql -uroot student_management -e "UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};"`,
+              { stdio: "ignore" }
+            );
+          } catch (e) {
+            // Fallback to local mysql (if running native)
+            execSync(
+              `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};"`,
+              { stdio: "ignore" }
+            );
+          }
         } catch (e) {
-          // If docker exec fails, continue
+          // If both fail, we might not be able to simulate it properly, but we log it.
+          console.warn("Could not mutate DB to simulate grace window expiry.", e);
         }
         // Lecturer attempts edit after grace window expired
         const editRes = await api("/grades", {

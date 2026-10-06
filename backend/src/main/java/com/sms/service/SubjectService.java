@@ -26,7 +26,9 @@ public class SubjectService {
 
     @Cacheable(value = "subjects", key = "'all'")
     public List<Subject> findAll() {
-        return subjectRepository.findAll();
+        List<Subject> subjects = subjectRepository.findAll();
+        subjects.forEach(s -> org.hibernate.Hibernate.initialize(s.getPrerequisites()));
+        return subjects;
     }
 
     public Subject findById(Integer id) {

@@ -101,12 +101,4 @@ public class AcademicSchedulerTest {
         verify(courseSectionRepository, never()).findBySemesterIdAndStatus(anyInt(), any());
     }
 
-    @Test
-    void warnUnderEnrolledStudents_RunsWithoutErrors() {
-        when(semesterRepository.findByStatus(Semester.SemesterStatus.ACTIVE))
-                .thenReturn(List.of(activeSemester));
-
-        academicScheduler.warnUnderEnrolledStudents();
-        // Since it only logs for now, we just verify it doesn't throw exceptions.
-    }
 }

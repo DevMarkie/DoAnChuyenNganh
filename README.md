@@ -1,8 +1,8 @@
 <div align="center">
-  <img src="https://img.icons8.com/color/120/graduation-cap.png" alt="Logo" />
+  <img src="https://img.icons8.com/color/120/graduation-cap.png" alt="Logo" width="120" />
   <h1>Hệ Thống Quản Lý Đào Tạo & Sinh Viên</h1>
   <p><strong>Student Management System (SMS)</strong></p>
-  <p><em>Đồ án chuyên ngành - Mang đến giải pháp quản lý trường học toàn diện</em></p>
+  <p><em>Một giải pháp phần mềm toàn diện giúp các trường Đại học số hóa mọi hoạt động giảng dạy và học tập.</em></p>
 
   ![Java](https://img.shields.io/badge/Java-23-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
   ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.6-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
@@ -12,75 +12,109 @@
 
 ---
 
-## 📌 Dự án này là gì?
+## 📖 1. Dự án này giải quyết vấn đề gì?
 
-Hãy tưởng tượng một trường Đại học với hàng ngàn sinh viên, hàng trăm giảng viên và vô số lớp học mỗi kỳ. Việc quản lý bằng giấy tờ hay Excel là "bất khả thi". 
+Ở các trường Đại học, số lượng sinh viên và môn học là vô cùng lớn. Nếu không có phần mềm, việc sắp xếp lịch học, đăng ký tín chỉ hay chấm điểm sẽ cực kỳ hỗn loạn. 
 
-Dự án này là một **website quản lý trường học trọn gói**, giúp số hóa toàn bộ quy trình: từ lúc sinh viên chọn môn đăng ký học, giảng viên xem lịch đi dạy và chấm điểm, cho đến khi Phòng đào tạo tổng kết kết quả học tập.
-
----
-
-## 🎭 Hệ thống có những ai tham gia?
-
-Website được thiết kế riêng biệt cho 3 nhóm người dùng, mỗi nhóm sẽ thấy một giao diện khác nhau phù hợp với công việc của họ:
-
-1. 🧑‍💼 **Phòng Đào Tạo (Admin):** 
-   - Là "người nắm quyền lực cao nhất".
-   - Có thể mở lớp mới, thêm sinh viên, xếp thời khóa biểu và phòng học.
-   - Quản lý cảnh báo học vụ (những sinh viên điểm quá thấp).
-
-2. 👨‍🏫 **Giảng viên:** 
-   - Lên web để xem **Hôm nay mình dạy lớp nào? Phòng bao nhiêu?**.
-   - Cuối kỳ, giảng viên nhập điểm (điểm chuyên cần, giữa kỳ, cuối kỳ) cho sinh viên trên web và khóa bảng điểm lại.
-
-3. 🎓 **Sinh viên:** 
-   - Đăng nhập vào để **Đăng ký tín chỉ** (như trò chơi "săn" lớp học vào đầu mỗi kỳ).
-   - Xem thời khóa biểu hàng tuần để biết lịch đi học.
-   - Xem bảng điểm cá nhân và xem mình đã tích lũy được bao nhiêu tín chỉ.
+**Dự án này là một trang web trọn gói giúp:**
+- **Nhà trường:** Dễ dàng tạo lớp, xếp phòng học và theo dõi tình hình học tập của toàn bộ sinh viên.
+- **Giảng viên:** Thoát khỏi đống sổ sách chấm điểm bằng tay. Mọi thứ được nhập thẳng lên web và tính toán tự động.
+- **Sinh viên:** Có một cổng thông tin duy nhất để đăng ký môn học, xem lịch lên lớp và tra cứu điểm số.
 
 ---
 
-## 🚀 Hướng dẫn chạy thử dự án (Dành cho người mới)
+## ✨ 2. Chi tiết các tính năng (Ai cũng có thể hiểu)
 
-Bạn không cần biết quá nhiều về code để chạy thử dự án này. Hãy làm theo 2 bước đơn giản:
+Trang web sẽ tự động nhận diện người đăng nhập là ai để hiển thị các tính năng phù hợp:
 
-### Cách 1: Chạy bằng 1-Click (Trên Windows)
-Nếu máy bạn đã cài sẵn Java, Node.js và MySQL:
-- Chỉ cần nhấp đúp chuột vào file **`start_dev.bat`** ở thư mục gốc. 
-- Hệ thống sẽ tự động cấu hình và mở trang web lên cho bạn.
+### 🧑‍💼 Dành cho Phòng Đào Tạo (Quản trị viên)
+- **Tạo và quản lý lớp học:** Quyết định học kỳ này mở những môn nào, sĩ số bao nhiêu.
+- **Phân công giảng dạy:** Sắp xếp giảng viên A dạy môn B ở phòng C.
+- **Hệ thống cảnh báo học vụ:** Web sẽ tự động "nhặt" ra những sinh viên có điểm trung bình quá thấp để nhà trường kịp thời nhắc nhở.
+- **Xuất báo cáo:** Tải danh sách điểm, danh sách lớp ra file Excel chỉ với 1 nút bấm.
 
-### Cách 2: Chạy bằng Docker (Khuyên dùng)
-Nếu máy bạn có cài Docker, chỉ cần mở Terminal (CMD) và gõ một dòng lệnh duy nhất:
+### 👨‍🏫 Dành cho Giảng Viên
+- **Xem thời khóa biểu:** Đăng nhập vào là biết ngay hôm nay mình dạy lúc mấy giờ, ở tòa nhà nào.
+- **Nhập điểm trực tuyến:** Nhập điểm chuyên cần, giữa kỳ và cuối kỳ. Hệ thống sẽ tự động tính ra điểm tổng kết và xếp loại (A, B, C, D, F).
+- **Khóa bảng điểm:** Khi đã nhập xong, giảng viên có thể "chốt" điểm để sinh viên vào xem.
+
+### 🎓 Dành cho Sinh Viên
+- **Đăng ký tín chỉ:** Giao diện trực quan giúp sinh viên chọn lớp trống, tránh trùng lịch học.
+- **Xem thời khóa biểu:** Lịch học được hiển thị theo tuần, rõ ràng ngày giờ và phòng học.
+- **Xem bảng điểm & Tiến độ:** Xem lại điểm các kỳ trước, biết mình đã học được bao nhiêu phần trăm chương trình đại học.
+
+---
+
+## 🔄 3. Sơ đồ cách hệ thống vận hành
+
+*(Dưới đây là sơ đồ mô tả cách 3 nhóm người dùng tương tác với hệ thống)*
+
+```mermaid
+flowchart TD
+    Admin(["🧑‍💼 Phòng Đào Tạo"])
+    Teacher(["👨‍🏫 Giảng Viên"])
+    Student(["🎓 Sinh Viên"])
+
+    subgraph "Hệ Thống Phần Mềm (SMS)"
+        A[Tạo Môn học & Mở Lớp]
+        B[Phân công Lịch dạy & Phòng học]
+        C[Đăng ký Tín chỉ]
+        D[Vào điểm & Tính GPA tự động]
+    end
+
+    Admin -->|"1. Mở lớp đầu kỳ"| A
+    Admin -->|"2. Sắp xếp"| B
+    
+    B -.->|"Thông báo lịch dạy"| Teacher
+    
+    Student -->|"3. Chọn lớp để học"| C
+    C -.->|"Danh sách lớp"| Teacher
+    
+    Teacher -->|"4. Nhập điểm cuối kỳ"| D
+    D -.->|"Xem kết quả"| Student
+    D -.->|"Quản lý sinh viên yếu"| Admin
+```
+
+---
+
+## 🚀 4. Hướng dẫn chạy thử dự án
+
+Bạn muốn xem thử giao diện và dùng thử? Rất đơn giản, không cần biết code cũng làm được:
+
+### Cách dễ nhất (Chạy 1-Click trên Windows)
+1. Tải toàn bộ thư mục code này về máy.
+2. Tìm file có tên **`start_dev.bat`** và nhấp đúp chuột vào nó.
+3. Chờ một lát, màn hình đen (Terminal) sẽ tự động bật các dịch vụ. Khi xong, nó sẽ mở trang web lên cho bạn.
+
+### Dành cho máy có cài Docker
+Nếu máy bạn dùng Docker, chỉ cần gõ lệnh sau vào Terminal:
 ```bash
 docker compose up --build -d
 ```
-
-Sau khi chạy xong, hãy mở trình duyệt web và truy cập:
-- **Trang web chính:** `http://localhost:5173`
+Sau đó mở trình duyệt web (Chrome/Edge) và vào đường dẫn: `http://localhost:5173`
 
 ---
 
-## 🔐 Tài khoản để Đăng nhập thử nghiệm
+## 🔐 5. Tài khoản dùng thử
 
-Hệ thống đã có sẵn dữ liệu mẫu. Bạn có thể dùng các tài khoản sau để đăng nhập và trải nghiệm thử các tính năng:
+Hệ thống đã tạo sẵn một số người dùng ảo để bạn đăng nhập thử. Hãy nhập vào ô Đăng nhập trên web:
 
-| Bạn muốn làm ai? | Tên đăng nhập | Mật khẩu | 
+| Bạn muốn trải nghiệm góc nhìn của ai? | Tên đăng nhập | Mật khẩu | 
 | :--- | :--- | :--- | 
-| **Phòng Đào Tạo** | `admin` | `123456` | 
-| **Giảng Viên** | `1000001` | `123456` | 
-| **Sinh Viên** | `2300001` | `123456` | 
-
-> *(Ghi chú: Sinh viên có thể thử tài khoản `2500001`, giảng viên có thể thử `1000002` v.v..)*
+| **Phòng Đào Tạo** (Thấy tất cả mọi thứ) | `admin` | `123456` | 
+| **Giảng Viên** (Chỉ thấy lịch dạy & lớp của mình)| `1000001` | `123456` | 
+| **Sinh Viên** (Chỉ thấy điểm & lịch học của mình)| `2300001` | `123456` | 
 
 ---
 
-## 🛠️ Dành cho Dân Kỹ Thuật (Tech Stack)
+## 📂 6. Cấu trúc thư mục (Bên trong code có gì?)
 
-Nếu bạn tò mò dự án này được lập trình bằng công nghệ gì:
-- **Phần Giao diện (Frontend):** Xây dựng bằng `React 19` (Vite), giao diện theo phong cách Tối giản & Trẻ trung (Minimalism & Swiss Style).
-- **Phần Xử lý (Backend):** Sử dụng `Spring Boot 3.5` (Java 23) mạnh mẽ, bảo mật bằng JWT.
-- **Cơ sở dữ liệu (Database):** Lưu trữ trên `MySQL 8`.
-- **Cấu trúc dữ liệu:** Toàn bộ API và luồng dữ liệu đều tuân thủ chuẩn RESTful.
+Dành cho những ai muốn mở code ra xem, dự án được chia làm các phần rất gọn gàng:
+
+- 📁 **`backend/`**: Là "bộ não" của hệ thống (viết bằng Java). Nó tính toán điểm số, lưu dữ liệu và kiểm tra mật khẩu.
+- 📁 **`frontend/`**: Là "bộ mặt" của hệ thống (viết bằng React). Chính là giao diện web tuyệt đẹp mà bạn nhìn thấy.
+- 📁 **`database/`**: Nơi chứa cấu trúc kho lưu trữ dữ liệu (MySQL).
+- 📁 **`docs/`**: Chứa các tài liệu phân tích thiết kế, bản vẽ ban đầu của dự án.
 
 ---
 *Phát triển bởi DevMarkie - 2026*

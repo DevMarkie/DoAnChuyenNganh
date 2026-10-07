@@ -10,34 +10,34 @@
 /* ——— CSS Custom Properties / Design Tokens ——— */
 :root {
   /* Colors — Light Mode (Clean Academic Slate) */
-  --bg-app: #f8fafc;
+  --bg-app: #f0fdfa;
   --bg-surface: #ffffff;
   --bg-subtle: #f1f5f9;
   --bg-muted: #e2e8f0;
-  --bg-hover: #f1f5f9;
-  --bg-active: #e2e8f0;
+  --bg-hover: #ccfbf1;
+  --bg-active: #99f6e4;
 
   /* Borders */
-  --border-color: #e2e8f0;
-  --border-subtle: #cbd5e1;
-  --border-focus: #2563eb;
+  --border-color: #5eead4;
+  --border-subtle: #99f6e4;
+  --border-focus: #0d9488;
 
   /* Primary — used only as a restrained accent (links, focus, active nav) */
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #eff6ff;
-  --primary-border: #dbeafe;
-  --primary-gradient: #18181b;
+  --primary: #0d9488;
+  --primary-hover: #0f766e;
+  --primary-light: #ccfbf1;
+  --primary-border: #5eead4;
+  --primary-gradient: #115e59;
 
   /* Neutral action ink — buttons & primary actions (monochrome, no gradient) */
-  --btn-primary-bg: #18181b;
+  --btn-primary-bg: #0d9488;
   --btn-primary-fg: #ffffff;
-  --btn-primary-hover: #000000;
+  --btn-primary-hover: #0f766e;
 
   /* Secondary / Slate */
-  --secondary: #475569;
-  --secondary-hover: #334155;
-  --secondary-light: #f8fafc;
+  --secondary: #2dd4bf;
+  --secondary-hover: #14b8a6;
+  --secondary-light: #f0fdfa;
 
   /* Status Colors (Soft Pastel Tint + Crisp Contrast) */
   --success: #059669;
@@ -61,9 +61,9 @@
   --info-text: #075985;
 
   /* Typography Colors */
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-secondary: #475569;
+  --text-main: #134e4a;
+  --text-muted: #475569;
+  --text-secondary: #0f172a;
   --text-light: #94a3b8;
   --text-inverse: #ffffff;
 
@@ -207,7 +207,7 @@
 
 html {
   font-size: 14px;
-  font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Work Sans', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-main);
   background-color: var(--bg-app);
   -webkit-font-smoothing: antialiased;
@@ -224,6 +224,7 @@ body {
 
 /* ——— Typography ——— */
 h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', 'Work Sans', sans-serif;
   color: var(--text-main);
   font-weight: 700;
   letter-spacing: -0.02em;

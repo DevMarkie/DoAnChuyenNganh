@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Calendar, Clock, MapPin, Layers, CheckCircle2,
-  Grid, List, Printer, School, CalendarDays, RefreshCw
+  Calendar, Clock, MapPin, Layers,
+  Grid, List, Printer, School, RefreshCw
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { scheduleService } from '../../services/dataService';
@@ -30,10 +30,8 @@ export default function LecturerSchedulePage() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
 
-  const todayVal = useMemo(() => {
-    const day = new Date().getDay();
-    return day === 0 ? 8 : day + 1;
-  }, []);
+  const day = new Date().getDay();
+  const todayVal = day === 0 ? 8 : day + 1;
 
   const loadSchedule = async () => {
     try {
@@ -82,7 +80,7 @@ export default function LecturerSchedulePage() {
       {/* KPI Stats */}
       <div className="stats-grid" style={{ marginBottom: '20px' }}>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+          <div className="stat-icon-wrapper" style={{ background: 'var(--info-bg)', color: 'var(--info-text)' }}>
             <Calendar size={24} />
           </div>
           <div>
@@ -92,7 +90,7 @@ export default function LecturerSchedulePage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+          <div className="stat-icon-wrapper" style={{ background: 'var(--success-bg)', color: 'var(--success-text)' }}>
             <Layers size={24} />
           </div>
           <div>
@@ -102,7 +100,7 @@ export default function LecturerSchedulePage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+          <div className="stat-icon-wrapper" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
             <MapPin size={24} />
           </div>
           <div>
@@ -112,7 +110,7 @@ export default function LecturerSchedulePage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#fffbeb', color: '#d97706' }}>
+          <div className="stat-icon-wrapper" style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
             <Clock size={24} />
           </div>
           <div>
@@ -122,73 +120,7 @@ export default function LecturerSchedulePage() {
         </div>
       </div>
 
-      {/* TODAY FOCUS BANNER */}
-      <div
-        className="card"
-        style={{
-          padding: '20px',
-          marginBottom: '20px',
-          background: 'var(--bg-surface)',
-          borderLeft: '5px solid var(--primary)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CalendarDays size={20} style={{ color: 'var(--primary)' }} />
-            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700 }}>
-              Hôm Nay ({DAYS.find((d) => d.value === todayVal)?.label}) — Lịch Trình Giảng Dạy
-            </h3>
-          </div>
-          <span className="badge badge-neutral" style={{ fontSize: '0.75rem' }}>
-            Tài khoản: {user?.fullName || user?.username}
-          </span>
-        </div>
 
-        {todayClasses.length === 0 ? (
-          <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CheckCircle2 size={16} style={{ color: 'var(--success)' }} />
-            Hôm nay Thầy/Cô không có lịch lên lớp! Có thể chuẩn bị bài giảng, chấm điểm hoặc nghiên cứu khoa học.
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
-            {todayClasses.map((s) => (
-              <div
-                key={s.id}
-                style={{
-                  background: 'var(--primary-light)',
-                  border: '1px solid var(--primary-border)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '14px',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
-                    {s.courseSection?.subject?.subjectName || 'Lớp giảng dạy'}
-                  </div>
-                  <span className="badge badge-success" style={{ fontWeight: 700 }}>
-                    Phòng {s.room}
-                  </span>
-                </div>
-
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <Clock size={13} />
-                  <strong>Tiết {s.startPeriod} - {s.endPeriod}</strong> ({s.periodTimeString || ''})
-                </div>
-
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                  Mã lớp HP: <strong>{s.courseSection?.sectionCode}</strong>
-                </div>
-
-                {s.note && (
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '6px', fontStyle: 'italic' }}>
-                    Lưu ý: {s.note}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* View Switcher & Filter Bar */}
       <div

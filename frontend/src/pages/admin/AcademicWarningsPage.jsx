@@ -22,10 +22,7 @@ export default function AcademicWarningsPage() {
       .catch(() => toast.error('Không thể tải danh sách học kỳ'));
   }, []);
 
-  // Reset page when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [level, semesterId]);
+
 
   useEffect(() => {
     const loadWarnings = async () => {
@@ -36,15 +33,9 @@ export default function AcademicWarningsPage() {
         if (semesterId) params.semesterId = semesterId;
         const response = await academicWarningService.getAll(params);
         
-        // Handle both paginated response and fallback unpaginated response
-        if (response.data?.totalPages !== undefined) {
-           setWarnings(response.data.data || response.data.content || []);
-           setTotalPages(response.data.totalPages);
-        } else {
-           const allData = response.data?.data || [];
-           setTotalPages(Math.ceil(allData.length / pageSize) || 1);
-           setWarnings(allData.slice(page * pageSize, (page + 1) * pageSize));
-        }
+        // Use standard paginated response
+        setWarnings(response.data?.data || response.data?.content || []);
+        setTotalPages(response.data?.totalPages || 1);
       } catch {
         toast.error('Lỗi khi tải danh sách cảnh báo học vụ');
       } finally {
@@ -78,7 +69,11 @@ export default function AcademicWarningsPage() {
 
       <div className="card mb-4">
         <div className="card-body d-flex gap-3 flex-wrap align-items-center">
-          <select className="form-select w-auto min-w-200" value={semesterId} onChange={(e) => setSemesterId(e.target.value)}>
+          <select 
+            className="form-select form-select-sm w-auto min-w-200" 
+            value={semesterId} 
+            onChange={(e) => { setSemesterId(e.target.value); setPage(0); }}
+          >
             <option value="">Tất cả học kỳ</option>
             {semesters.map((semester) => (
               <option key={semester.id} value={semester.id}>
@@ -86,7 +81,11 @@ export default function AcademicWarningsPage() {
               </option>
             ))}
           </select>
-          <select className="form-select w-auto min-w-150" value={level} onChange={(e) => setLevel(e.target.value)}>
+          <select 
+            className="form-select form-select-sm w-auto min-w-150" 
+            value={level} 
+            onChange={(e) => { setLevel(e.target.value); setPage(0); }}
+          >
             <option value="">Tất cả mức</option>
             <option value="1">Mức 1</option>
             <option value="2">Mức 2</option>
@@ -96,8 +95,8 @@ export default function AcademicWarningsPage() {
       </div>
 
       <div className="card">
-        <div className="table-container">
-          <table className="table">
+        <div className="table-container overflow-x-auto" style={{ borderTop: '1px solid #eee' }}>
+          <table className="table table-hover table-sm" style={{ fontSize: '13px', margin: 0 }}>
             <thead>
               <tr>
                 <th>Sinh viên</th>
@@ -116,10 +115,10 @@ export default function AcademicWarningsPage() {
                 <tr><td colSpan="7" className="text-center p-5 text-muted">Không có sinh viên bị cảnh báo.</td></tr>
               ) : (
                 warnings.map((item) => (
-                  <tr key={item.studentId}>
-                    <td>
-                      <strong>{item.studentCode}</strong><br />
-                      <span className="text-secondary">{item.studentName}</span>
+                  <tr key={item.studentId} className="align-middle">
+                    <td className="py-2">
+                      <div style={{ fontWeight: 600 }}>{item.studentCode}</div>
+                      <div className="text-secondary" style={{ fontSize: '11px' }}>{item.studentName}</div>
                     </td>
                     <td>{item.className}</td>
                     <td>{Number(item.cumulativeGpa || 0).toFixed(2)}</td>

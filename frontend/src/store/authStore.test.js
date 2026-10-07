@@ -88,11 +88,4 @@ describe('authStore actions', () => {
     expect(store.getState().isAuthenticated).toBe(false);
   });
 
-  it('getRole / getUserId decode claims from the stored token', async () => {
-    const store = await loadStore();
-    localStorage.setItem('token', makeToken({ exp: futureExp(), role: 'LECTURER', userId: 42 }));
-
-    expect(store.getState().getRole()).toBe('LECTURER');
-    expect(store.getState().getUserId()).toBe(42);
-  });
 });

@@ -67,28 +67,6 @@ const useAuthStore = create((set, get) => ({
     }
     return true;
   },
-
-  getRole: () => {
-    const token = localStorage.getItem('token');
-    if (!token) return null;
-    try {
-      const decoded = decodeJwt(token);
-      return decoded.role;
-    } catch {
-      return null;
-    }
-  },
-
-  getUserId: () => {
-    const token = localStorage.getItem('token');
-    if (!token) return null;
-    try {
-      const decoded = decodeJwt(token);
-      return decoded.userId;
-    } catch {
-      return null;
-    }
-  },
 }));
 
 export default useAuthStore;

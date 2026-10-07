@@ -22,7 +22,7 @@ export default function DashboardPage() {
       const res = await dashboardService.getDashboard();
       setData(res.data.data);
     } catch (err) {
-      console.error('Error fetching dashboard', err);
+      // console.error removed for security
     } finally {
       setLoading(false);
     }

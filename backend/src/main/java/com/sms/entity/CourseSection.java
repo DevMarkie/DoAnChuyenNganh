@@ -37,6 +37,13 @@ public class CourseSection {
     @Column(name = "max_students", nullable = false)
     private Integer maxStudents = 40;
 
+    @Column(name = "section_type", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private SectionType sectionType = SectionType.REGULAR;
+
+    @Column(name = "min_students", nullable = false)
+    private Integer minStudents = 1;
+
     /**
      * Số chỗ đã được giữ trong lớp học phần. Tên thuộc tính khớp với API
      * mà giao diện sử dụng, còn cột vật lý vẫn là {@code enrolled_count}.
@@ -53,6 +60,12 @@ public class CourseSection {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SectionStatus status = SectionStatus.OPEN;
+
+    @Column(name = "scale_coefficient", nullable = false, precision = 3, scale = 2)
+    private java.math.BigDecimal scaleCoefficient = java.math.BigDecimal.ONE;
+
+    @Column(name = "base_tuition_rate", nullable = false, precision = 12, scale = 2)
+    private java.math.BigDecimal baseTuitionRate = java.math.BigDecimal.ZERO;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -72,6 +85,10 @@ public class CourseSection {
     }
 
     public enum SectionStatus {
-        OPEN, CLOSED, CANCELLED
+        OPEN, ACTIVE, CLOSED, CANCELLED, PENDING_FEE, LOCKED_BILLING
+    }
+
+    public enum SectionType {
+        REGULAR, SPECIAL
     }
 }

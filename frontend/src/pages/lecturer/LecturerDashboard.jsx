@@ -25,7 +25,7 @@ export default function LecturerDashboard() {
       setProfile(resProfile.data.data);
       setMySections(resSec.data.data || []);
     } catch (err) {
-      console.error(err);
+      // console.error removed for security
     } finally {
       setLoading(false);
     }

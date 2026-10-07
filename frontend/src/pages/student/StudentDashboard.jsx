@@ -28,7 +28,7 @@ export default function StudentDashboard() {
       setTranscript(resTrans.data.data);
       setEnrollments(resEnr.data.data || []);
     } catch (err) {
-      console.error(err);
+      // console.error removed for security
     } finally {
       setLoading(false);
     }

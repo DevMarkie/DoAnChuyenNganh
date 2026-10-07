@@ -9,8 +9,10 @@ import java.util.List;
 @Repository
 public interface PasswordResetRequestRepository extends JpaRepository<PasswordResetRequest, Long> {
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"user"})
     List<PasswordResetRequest> findAllByOrderByCreatedAtDesc();
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"user"})
     List<PasswordResetRequest> findByStatusOrderByCreatedAtDesc(RequestStatus status);
 
     long countByStatus(RequestStatus status);

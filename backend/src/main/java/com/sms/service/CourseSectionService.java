@@ -82,6 +82,7 @@ public class CourseSectionService {
         section.setLecturer(lecturer);
         section.setSemester(semester);
         section.setMaxStudents(request.getMaxStudents() != null ? request.getMaxStudents() : 40);
+        section.setMinStudents((int) Math.ceil(section.getMaxStudents() * 2.0 / 3.0));
         section.setCurrentStudents(0);
         section.setSchedule(request.getSchedule());
         section.setRoom(request.getRoom());

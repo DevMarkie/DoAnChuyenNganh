@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +15,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Override
     @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
-    List<Student> findAll();
+    @NonNull List<Student> findAll();
 
     @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
     Optional<Student> findByStudentCode(String studentCode);

@@ -51,4 +51,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
            "WHERE e.student.id = :studentId AND e.status = 'ENROLLED' " +
            "AND cs.semester.id = :semesterId")
     int countEnrolledCredits(@Param("studentId") Long studentId, @Param("semesterId") Integer semesterId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("UPDATE Enrollment e SET e.status = 'CANCELLED' WHERE e.section.id = :sectionId AND e.status = 'ENROLLED'")
+    int cancelActiveBySectionId(@Param("sectionId") Long sectionId);
 }

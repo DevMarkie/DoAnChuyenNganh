@@ -2,7 +2,11 @@ package com.sms.service.scheduler;
 
 import com.sms.entity.CourseSection;
 import com.sms.entity.Semester;
+import com.sms.entity.Enrollment;
+import com.sms.entity.Notification;
 import com.sms.repository.CourseSectionRepository;
+import com.sms.repository.EnrollmentRepository;
+import com.sms.repository.NotificationRepository;
 import com.sms.repository.SemesterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +27,8 @@ public class AcademicScheduler {
 
     private final SemesterRepository semesterRepository;
     private final CourseSectionRepository courseSectionRepository;
-
-    private static final int MIN_STUDENTS_PER_SECTION = 15;
+    private final EnrollmentRepository enrollmentRepository;
+    private final NotificationRepository notificationRepository;
 
     /**
      * GAP-04: Auto-cancel lớp thiếu sĩ số.
@@ -39,19 +43,38 @@ public class AcademicScheduler {
         
         for (Semester sem : activeSemesters) {
             // Kiểm tra xem đợt đăng ký đã kết thúc chưa
-            if (sem.getRegistrationEnd() != null && LocalDate.now().isAfter(sem.getRegistrationEnd())) {
+            if (sem.getRegistrationEnd() != null && !LocalDate.now().isBefore(sem.getRegistrationEnd())) {
                 List<CourseSection> openSections = courseSectionRepository.findBySemesterIdAndStatus(
                         sem.getId(), CourseSection.SectionStatus.OPEN);
                 
                 int cancelCount = 0;
                 for (CourseSection section : openSections) {
-                    if (section.getCurrentStudents() < MIN_STUDENTS_PER_SECTION) {
+                    if (section.getSectionType() != null
+                            && section.getSectionType() != CourseSection.SectionType.REGULAR) {
+                        continue;
+                    }
+                    int maxStudents = section.getMaxStudents() == null ? 40 : section.getMaxStudents();
+                    int minStudents = (int) Math.ceil(maxStudents * 2.0 / 3.0);
+                    section.setMinStudents(minStudents);
+                    if (section.getCurrentStudents() < minStudents) {
                         log.warn("Section {} ({}) has only {} students. Cancelling...", 
                                 section.getSectionCode(), section.getSubject().getSubjectName(), section.getCurrentStudents());
                         
+                        List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(section.getId());
+                        for (Enrollment enrollment : enrollments) {
+                            Notification notification = new Notification();
+                            notification.setStudent(enrollment.getStudent());
+                            notification.setMessage("Lớp " + section.getSectionCode()
+                                    + " bị hủy do không đủ sĩ số đăng ký.");
+                            notificationRepository.save(notification);
+                        }
+                        enrollmentRepository.cancelActiveBySectionId(section.getId());
                         section.setStatus(CourseSection.SectionStatus.CANCELLED);
                         courseSectionRepository.save(section);
                         cancelCount++;
+                    } else {
+                        section.setStatus(CourseSection.SectionStatus.ACTIVE);
+                        courseSectionRepository.save(section);
                     }
                 }
                 log.info("Cancelled {} sections in semester {}", cancelCount, sem.getSemesterCode());

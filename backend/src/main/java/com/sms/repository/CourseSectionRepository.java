@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.Lock;
 import java.util.List;
@@ -14,7 +15,7 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
 
     @Override
     @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
-    List<CourseSection> findAll();
+    @NonNull List<CourseSection> findAll();
 
     /**
      * Tìm kiếm học phần phân trang với bộ lọc keyword, học kỳ, trạng thái.
@@ -38,7 +39,7 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
 
     @Override
     @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
-    Optional<CourseSection> findById(Long id);
+    @NonNull Optional<CourseSection> findById(@NonNull Long id);
 
     /**
      * Serialize changes to a section's capacity. Without this lock, two

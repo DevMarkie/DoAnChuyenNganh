@@ -251,6 +251,13 @@ async function runExperience() {
       headers: { Authorization: `Bearer ${adminToken}` }
     });
     console.log(`   Kết quả gán trực tiếp: ${assignRes.data.message || (assignRes.ok ? 'Thành công' : 'Lỗi')}`);
+    // Thu hồi việc gán để trả lại sĩ số và không làm dở dang bảng điểm
+    if (assignRes.ok && assignRes.data?.data?.id) {
+      await request(`/enrollments/${assignRes.data.data.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+    }
     report.positives.push('Tính năng Admin gán sinh viên vào lớp học phần hoạt động tốt, kiểm soát trùng lịch, tiên quyết và sĩ số tối đa.');
   }
 

@@ -18,8 +18,12 @@ public class JwtUtil {
     private final long expiration;
 
     public JwtUtil(@Value("${app.jwt.secret:}") String secret,
-                   @Value("${app.jwt.expiration}") long expiration) {
+                   @Value("${app.jwt.expiration}") long expiration,
+                   @Value("${spring.profiles.active:default}") String activeProfile) {
         if (secret == null || secret.isBlank()) {
+            if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
+                throw new IllegalStateException("JWT_SECRET must be set in production environment!");
+            }
             // No secret configured: generate a random ephemeral key so a known
             // signing key is never shipped. Tokens are invalidated on restart —
             // set JWT_SECRET (base64, >= 64 bytes) in production for a stable key.

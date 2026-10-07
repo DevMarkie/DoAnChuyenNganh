@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.lang.NonNull;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +16,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
 
     @Override
     @EntityGraph(attributePaths = {"section", "section.subject", "section.lecturer", "section.semester", "classEntity"})
-    List<Schedule> findAll();
+    @NonNull List<Schedule> findAll();
 
     @EntityGraph(attributePaths = {"section", "section.subject", "section.lecturer", "section.semester", "classEntity"})
     List<Schedule> findBySectionId(Long sectionId);

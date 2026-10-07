@@ -278,7 +278,11 @@ CREATE TABLE course_sections (
     lecturer_id    BIGINT       NOT NULL,
     semester_id    INT          NOT NULL,
     max_students   INT          NOT NULL DEFAULT 40,
+    section_type   ENUM('REGULAR', 'SPECIAL') NOT NULL DEFAULT 'REGULAR',
+    min_students   INT          NOT NULL DEFAULT 1,
     enrolled_count INT          NOT NULL DEFAULT 0,
+    scale_coefficient DECIMAL(3,2) NOT NULL DEFAULT 1.00,
+    base_tuition_rate DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     schedule       VARCHAR(200) NULL     COMMENT 'VD: Thứ 2 (7:30-9:30), Thứ 4 (7:30-9:30)',
     room           VARCHAR(50)  NULL,
     status         ENUM('OPEN', 'CLOSED', 'CANCELLED') NOT NULL DEFAULT 'OPEN',
@@ -291,6 +295,54 @@ CREATE TABLE course_sections (
     CONSTRAINT fk_course_sections_subject FOREIGN KEY (subject_id) REFERENCES subjects (id),
     CONSTRAINT fk_course_sections_lecturer FOREIGN KEY (lecturer_id) REFERENCES lecturers (id),
     CONSTRAINT fk_course_sections_semester FOREIGN KEY (semester_id) REFERENCES semesters (id)
+);
+
+CREATE TABLE class_opening_requests (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    student_id BIGINT NOT NULL,
+    subject_id INT NOT NULL,
+    semester_id INT NOT NULL,
+    request_type ENUM('LEARN_AGAIN', 'IMPROVE', 'NEW') NOT NULL,
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_class_opening_requests PRIMARY KEY (id),
+    CONSTRAINT uq_opening_request_student_course_semester UNIQUE (student_id, subject_id, semester_id),
+    CONSTRAINT fk_opening_request_student FOREIGN KEY (student_id) REFERENCES students (id),
+    CONSTRAINT fk_opening_request_subject FOREIGN KEY (subject_id) REFERENCES subjects (id),
+    CONSTRAINT fk_opening_request_semester FOREIGN KEY (semester_id) REFERENCES semesters (id)
+);
+
+CREATE TABLE fee_scale_rules (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    min_students INT NOT NULL,
+    max_students INT NOT NULL,
+    coefficient DECIMAL(3,2) NOT NULL,
+    CONSTRAINT pk_fee_scale_rules PRIMARY KEY (id)
+);
+
+CREATE TABLE student_invoices (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    student_id BIGINT NOT NULL,
+    section_id BIGINT NOT NULL,
+    credits INT NOT NULL,
+    base_rate DECIMAL(12,2) NOT NULL,
+    coefficient DECIMAL(3,2) NOT NULL,
+    amount DECIMAL(14,2) NOT NULL,
+    status ENUM('UNPAID', 'PAID', 'CANCELLED') NOT NULL DEFAULT 'UNPAID',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_student_invoices PRIMARY KEY (id),
+    CONSTRAINT uq_invoice_student_section UNIQUE (student_id, section_id),
+    CONSTRAINT fk_invoice_student FOREIGN KEY (student_id) REFERENCES students (id),
+    CONSTRAINT fk_invoice_section FOREIGN KEY (section_id) REFERENCES course_sections (id)
+);
+
+CREATE TABLE notifications (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    student_id BIGINT NOT NULL,
+    message VARCHAR(500) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_notifications PRIMARY KEY (id),
+    CONSTRAINT fk_notifications_student FOREIGN KEY (student_id) REFERENCES students (id)
 );
 
 -- ============================================================

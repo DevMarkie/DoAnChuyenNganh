@@ -781,6 +781,7 @@ async function executeFullTest() {
             cc2Score: 10.0,
             midtermScore: 8.5,
             finalScore: 9.0,
+            specialGrade: "NONE",
             finalize: false,
           },
         });
@@ -794,6 +795,7 @@ async function executeFullTest() {
             cc2Score: 10.0,
             midtermScore: 8.5,
             finalScore: 9.0,
+            specialGrade: "NONE",
             finalize: false,
           },
         });
@@ -924,24 +926,25 @@ async function executeFullTest() {
           },
         });
         // BR-Grade03: Lecturer has 7-day grace window. We simulate window expiry (> 7 days)
+        const expireSql = `UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};`;
         try {
           const { execSync } = require("child_process");
           try {
             execSync(
-              `docker exec student_management_db mysql -uroot student_management -e "UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};"`,
+              `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "${expireSql}"`,
               { stdio: "ignore" }
             );
-          } catch (e) {
-            // Fallback to local mysql (if running native)
+          } catch (e) {}
+          try {
             execSync(
-              `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};"`,
+              `docker exec student_management_db mysql -uroot student_management -e "${expireSql}"`,
               { stdio: "ignore" }
             );
-          }
+          } catch (e) {}
         } catch (e) {
-          // If both fail, we might not be able to simulate it properly, but we log it.
           console.warn("Could not mutate DB to simulate grace window expiry.", e);
         }
+
         // Lecturer attempts edit after grace window expired
         const editRes = await api("/grades", {
           method: "PUT",
@@ -954,6 +957,19 @@ async function executeFullTest() {
             finalScore: 7.0,
           },
         });
+
+        // Restore enrollment original grade
+        try {
+          const { execSync } = require("child_process");
+          const restoreSql = `UPDATE grades SET cc1_score = 9.5, cc2_score = 9.5, midterm_score = 8.0, final_score = 8.0, total_score = 8.15, letter_grade = 'B+', gpa_point = 3.5, is_finalized = 1, finalized_at = '2025-01-15 10:00:00' WHERE enrollment_id = ${enrollmentId};`;
+          try {
+            execSync(`"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "${restoreSql}"`, { stdio: "ignore" });
+          } catch (e) {}
+          try {
+            execSync(`docker exec student_management_db mysql -uroot student_management -e "${restoreSql}"`, { stdio: "ignore" });
+          } catch (e) {}
+        } catch (e) {}
+
         if (editRes.ok && editRes.data?.success) {
           throw new Error("LỖ HỔNG: Giảng viên sửa được bảng điểm đã bị khóa quá 7 ngày!");
         }
@@ -1387,6 +1403,18 @@ async function executeFullTest() {
   console.log(
     `${colors.bright}${colors.blue}======================================================================${colors.reset}\n`,
   );
+
+  // Dọn dẹp dữ liệu kiểm thử tạm thời để cơ sở dữ liệu luôn nguyên vẹn, sạch đẹp
+  try {
+    const { execSync } = require("child_process");
+    const cleanupSql = "DELETE FROM curriculum_block_subjects WHERE subject_id IN (SELECT id FROM subjects WHERE subject_code LIKE 'SUB%'); DELETE FROM subjects WHERE subject_code LIKE 'SUB%'; DELETE FROM classes WHERE code LIKE 'K18_T%'; DELETE FROM departments WHERE code LIKE 'TD%' OR name LIKE '%Kiểm Thử%'; DELETE FROM password_reset_requests WHERE reason LIKE '%test%' OR reason LIKE '%kiểm thử%'; UPDATE users SET password = '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', must_change_password = 0 WHERE username = '2500003';";
+    try {
+      execSync(`"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "${cleanupSql}"`, { stdio: "ignore" });
+    } catch (e) {}
+    try {
+      execSync(`docker exec student_management_db mysql -uroot student_management -e "${cleanupSql}"`, { stdio: "ignore" });
+    } catch (e) {}
+  } catch (e) {}
 
   return results;
 }

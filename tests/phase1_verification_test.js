@@ -86,6 +86,21 @@ async function runPhase1Tests() {
         ? "THÀNH CÔNG (Tự động gán điểm F và Điểm tổng kết 0.0)"
         : `Kết quả: ${JSON.stringify(specialGradeData)}`
     );
+
+    // Hoàn nguyên lại điểm ban đầu cho enrollment để DB luôn sạch
+    await fetch(`${BASE_URL}/grades`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
+      body: JSON.stringify({
+        enrollmentId: enrollment.id,
+        cc1Score: 9.5,
+        cc2Score: 9.5,
+        midtermScore: 8.0,
+        finalScore: 8.0,
+        specialGrade: "NONE",
+        finalize: true
+      })
+    });
   }
 
   // 6. Test Ràng buộc Môn tiên quyết: Tìm môn có tiên quyết (vd CS201/CS202 yêu cầu CS101)

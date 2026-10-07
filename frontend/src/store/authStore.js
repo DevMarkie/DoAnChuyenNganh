@@ -1,13 +1,14 @@
 import { create } from 'zustand';
-import { jwtDecode } from 'jwt-decode';
 import { authService } from '../services/dataService';
+
+const decodeJwt = (token) => JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
 
 /**
  * Check if a JWT token is expired (with 60s buffer to avoid edge-case failures)
  */
 const isTokenExpired = (token) => {
   try {
-    const decoded = jwtDecode(token);
+    const decoded = decodeJwt(token);
     if (!decoded.exp) return false;
     // 60-second buffer: treat token as expired slightly before actual expiry
     return decoded.exp * 1000 < Date.now() - 60_000;
@@ -71,7 +72,7 @@ const useAuthStore = create((set, get) => ({
     const token = localStorage.getItem('token');
     if (!token) return null;
     try {
-      const decoded = jwtDecode(token);
+      const decoded = decodeJwt(token);
       return decoded.role;
     } catch {
       return null;
@@ -82,7 +83,7 @@ const useAuthStore = create((set, get) => ({
     const token = localStorage.getItem('token');
     if (!token) return null;
     try {
-      const decoded = jwtDecode(token);
+      const decoded = decodeJwt(token);
       return decoded.userId;
     } catch {
       return null;

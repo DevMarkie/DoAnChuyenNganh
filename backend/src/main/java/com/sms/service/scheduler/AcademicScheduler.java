@@ -88,20 +88,18 @@ public class AcademicScheduler {
      * GAP-02: Kiểm tra sinh viên đăng ký dưới số tín chỉ tối thiểu (12 tín).
      * Chạy mỗi ngày lúc 1:30 AM (sau khi hủy lớp thiếu sĩ số).
      */
-    @Scheduled(cron = "0 30 1 * * ?") 
-    @Transactional(readOnly = true)
-    public void warnUnderEnrolledStudents() {
-        log.info("Starting minimum credits check job...");
-        List<Semester> activeSemesters = semesterRepository.findByStatus(Semester.SemesterStatus.ACTIVE);
-        
-        for (Semester sem : activeSemesters) {
-            // Chỉ kiểm tra khi đã đóng cổng đăng ký
-            if (sem.getRegistrationEnd() != null && LocalDate.now().isAfter(sem.getRegistrationEnd())) {
-                // Trong thực tế sẽ dùng custom query để JOIN thẳng Enrollment và Subject lấy SUM(credits)
-                // log ra danh sách để giáo vụ xử lý hoặc gửi email cảnh báo.
-                log.info("Checking minimum credits for semester: {}", sem.getSemesterCode());
-                // TODO: Implement bulk query to find students with sum(credits) < MIN_CREDITS_PER_SEMESTER
-            }
-        }
-    }
+    // TODO: Implement when minimum credit warning feature is required
+    // @Scheduled(cron = "0 30 1 * * ?") 
+    // @Transactional(readOnly = true)
+    // public void warnUnderEnrolledStudents() {
+    //     log.info("Starting minimum credits check job...");
+    //     List<Semester> activeSemesters = semesterRepository.findByStatus(Semester.SemesterStatus.ACTIVE);
+    //     
+    //     for (Semester sem : activeSemesters) {
+    //         if (sem.getRegistrationEnd() != null && LocalDate.now().isAfter(sem.getRegistrationEnd())) {
+    //             log.info("Checking minimum credits for semester: {}", sem.getSemesterCode());
+    //             // TODO: Implement bulk query to find students with sum(credits) < MIN_CREDITS_PER_SEMESTER
+    //         }
+    //     }
+    // }
 }

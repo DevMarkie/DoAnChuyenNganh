@@ -6,7 +6,7 @@
  * 3. Mã điểm đặc biệt (Special Grade: V, I, M)
  */
 
-const BASE_URL = "http://localhost:8080/api";
+const BASE_URL = process.env.API_BASE_URL || "http://localhost:8080/api";
 
 async function runPhase1Tests() {
   console.log("=== BẮT ĐẦU KIỂM THỬ NGHIỆM THU PHASE 1 (LIVE API) ===");

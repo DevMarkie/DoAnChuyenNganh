@@ -53,9 +53,18 @@ public class SpecialClassService {
     @Transactional
     public CourseSection createSpecialSection(Integer subjectId, Integer semesterId, Long lecturerId,
                                                String sectionCode, Integer maxStudents, BigDecimal baseRate) {
-        List<ClassOpeningRequest> requests = requestRepository.findBySubjectIdAndSemesterId(subjectId, semesterId);
+        List<ClassOpeningRequest> requests = requestRepository.findPendingForUpdate(
+                subjectId, semesterId, ClassOpeningRequest.RequestStatus.PENDING);
         if (requests.isEmpty()) {
-            throw new BadRequestException("Chưa có đơn đề nghị mở lớp");
+            throw new BadRequestException("Không có đơn đề nghị mở lớp đang chờ xử lý");
+        }
+        if (!sectionRepository.findNonCancelledBySubjectAndSemester(subjectId, semesterId).isEmpty()) {
+            throw new BadRequestException("Môn học đã có lớp đang mở trong học kỳ này");
+        }
+        int capacity = maxStudents == null ? requests.size() : maxStudents;
+        if (capacity < requests.size()) {
+            throw new BadRequestException("Sĩ số tối đa không được nhỏ hơn số đơn đang chờ duyệt ("
+                    + requests.size() + ")");
         }
         Subject subject = subjectRepository.findById(subjectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy môn học"));
@@ -70,14 +79,19 @@ public class SpecialClassService {
         section.setSemester(semester);
         section.setLecturer(lecturer);
         section.setSectionType(CourseSection.SectionType.SPECIAL);
-        section.setMaxStudents(maxStudents == null ? requests.size() : maxStudents);
+        section.setMaxStudents(capacity);
         section.setMinStudents(1);
-        section.setCurrentStudents(requests.size());
+        section.setCurrentStudents(0);
         section.setBaseTuitionRate(baseRate == null ? BigDecimal.ZERO
                 : baseRate.max(minimumTuitionRate(subject)));
         section.setStatus(CourseSection.SectionStatus.PENDING_FEE);
         CourseSection saved = sectionRepository.save(section);
         for (ClassOpeningRequest request : requests) {
+            if (enrollmentRepository.existsByStudentIdAndSectionSubjectIdAndSectionSemesterIdAndStatus(
+                    request.getStudent().getId(), subjectId, semesterId, Enrollment.EnrollmentStatus.ENROLLED)) {
+                throw new BadRequestException("Sinh viên " + request.getStudent().getStudentCode()
+                        + " đã đăng ký môn học này trong học kỳ");
+            }
             request.setStatus(ClassOpeningRequest.RequestStatus.APPROVED);
             Enrollment enrollment = new Enrollment();
             enrollment.setStudent(request.getStudent());

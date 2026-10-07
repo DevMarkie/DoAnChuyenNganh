@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   KeyRound, Search, CheckCircle2, XCircle, Clock,
-  RefreshCw, Copy, Check, Send, AlertTriangle, ShieldCheck, User, Mail, Phone, ClipboardList
+  RefreshCw, Copy, Check, Send, AlertTriangle, Mail, Phone, ClipboardList
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { passwordResetService } from '../../services/dataService';
@@ -12,8 +12,6 @@ export default function PasswordResetsPage() {
   const [statusFilter, setStatusFilter] = useState('PENDING');
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
-  const [batchActionType, setBatchActionType] = useState(null); // 'APPROVE' or 'REJECT'
-
   // Approve Modal State
   const [approvingItem, setApprovingItem] = useState(null);
   const [newPassword, setNewPassword] = useState('');
@@ -28,10 +26,6 @@ export default function PasswordResetsPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectLoading, setRejectLoading] = useState(false);
 
-  useEffect(() => {
-    loadRequests();
-  }, [statusFilter]);
-
   const loadRequests = async () => {
     try {
       setLoading(true);
@@ -43,6 +37,11 @@ export default function PasswordResetsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadRequests();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter]);
 
   const handleOpenApprove = (item) => {
     setApprovingItem(item);

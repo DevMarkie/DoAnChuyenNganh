@@ -121,16 +121,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public org.springframework.security.authentication.AuthenticationProvider authenticationProvider(
-            org.springframework.security.core.userdetails.UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder) {
-        org.springframework.security.authentication.dao.DaoAuthenticationProvider authProvider = 
-                new org.springframework.security.authentication.dao.DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return authProvider;
-    }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layers, Calendar, Users, ArrowUpRight, Search, BookOpen } from 'lucide-react';
+import { ArrowUpRight, Search } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { courseSectionService } from '../../services/dataService';
 
@@ -9,10 +9,6 @@ export default function MySectionsPage() {
   const [sections, setSections] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadSections();
-  }, []);
 
   const loadSections = async () => {
     try {
@@ -25,6 +21,11 @@ export default function MySectionsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadSections();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const filtered = sections.filter((s) => {
     if (!search) return true;

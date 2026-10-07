@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layers, Users, ClipboardCheck, BookOpen, Clock, ArrowUpRight, GraduationCap } from 'lucide-react';
+import { Layers, Users, ArrowUpRight, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { courseSectionService, lecturerService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
@@ -11,10 +11,6 @@ export default function LecturerDashboard() {
   const [mySections, setMySections] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       setLoading(true);
@@ -24,12 +20,17 @@ export default function LecturerDashboard() {
       ]);
       setProfile(resProfile.data.data);
       setMySections(resSec.data.data || []);
-    } catch (err) {
+    } catch {
       // console.error removed for security
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const totalStudents = mySections.reduce((acc, s) => acc + (s.currentStudents || 0), 0);
 

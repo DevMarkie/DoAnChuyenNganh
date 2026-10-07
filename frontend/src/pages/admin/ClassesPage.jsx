@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, CheckCircle, XCircle, X, School, Filter, Search, RotateCcw } from 'lucide-react';
+import { Plus, Edit2, CheckCircle, XCircle, X, Filter, Search, RotateCcw } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { classService, departmentService } from '../../services/dataService';
 
@@ -19,10 +19,6 @@ export default function ClassesPage() {
     academicYear: 'K18',
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       setLoading(true);
@@ -38,6 +34,11 @@ export default function ClassesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleOpenModal = (cls = null) => {
     if (cls) {

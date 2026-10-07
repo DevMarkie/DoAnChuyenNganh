@@ -2,11 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import {
   Layers,
   Save,
-  CheckCircle2,
-  ClipboardList,
-  Award,
-  TrendingUp,
-  AlertCircle,
   Download,
 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -19,10 +14,6 @@ export default function AdminGradesPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const saveInFlight = useRef(false);
-
-  useEffect(() => {
-    loadSections();
-  }, []);
 
   const loadSections = async () => {
     try {
@@ -37,6 +28,11 @@ export default function AdminGradesPage() {
       toast.error("Lỗi khi tải danh sách học phần");
     }
   };
+
+  useEffect(() => {
+    loadSections();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadGrades = async (sectionId) => {
     try {

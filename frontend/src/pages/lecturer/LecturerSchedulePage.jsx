@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
-  Calendar, Clock, MapPin, User, BookOpen, Layers, CheckCircle2,
-  Grid, List, Printer, School, CalendarDays, RefreshCw, Users
+  Calendar, Clock, MapPin, Layers, CheckCircle2,
+  Grid, List, Printer, School, CalendarDays, RefreshCw
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { scheduleService } from '../../services/dataService';
@@ -30,11 +30,9 @@ export default function LecturerSchedulePage() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
 
-  const currentJsDay = new Date().getDay();
-  const todayVal = currentJsDay === 0 ? 8 : currentJsDay + 1;
-
-  useEffect(() => {
-    loadSchedule();
+  const todayVal = useMemo(() => {
+    const day = new Date().getDay();
+    return day === 0 ? 8 : day + 1;
   }, []);
 
   const loadSchedule = async () => {
@@ -48,6 +46,11 @@ export default function LecturerSchedulePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadSchedule();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const todayClasses = schedules.filter((s) => s.dayOfWeek === todayVal);
   const uniqueSections = new Set(schedules.map((s) => s.courseSection?.id).filter(Boolean)).size;

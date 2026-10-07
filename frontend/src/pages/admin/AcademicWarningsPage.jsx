@@ -10,28 +10,29 @@ export default function AcademicWarningsPage() {
   const [semesters, setSemesters] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const loadWarnings = async () => {
-    try {
-      setLoading(true);
-      const params = {};
-      if (level) params.level = level;
-      if (semesterId) params.semesterId = semesterId;
-      const response = await academicWarningService.getAll(params);
-      setWarnings(response.data.data || []);
-    } catch {
-      toast.error('Lỗi khi tải danh sách cảnh báo học vụ');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     semesterService.getAll()
       .then((response) => setSemesters(response.data.data || []))
       .catch(() => toast.error('Không thể tải danh sách học kỳ'));
   }, []);
 
-  useEffect(() => { loadWarnings(); }, [level, semesterId]);
+  useEffect(() => {
+    const loadWarnings = async () => {
+      try {
+        setLoading(true);
+        const params = {};
+        if (level) params.level = level;
+        if (semesterId) params.semesterId = semesterId;
+        const response = await academicWarningService.getAll(params);
+        setWarnings(response.data.data || []);
+      } catch {
+        toast.error('Lỗi khi tải danh sách cảnh báo học vụ');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadWarnings();
+  }, [level, semesterId]);
 
   const exportCsv = () => {
     const escape = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;

@@ -2,10 +2,8 @@ import { useState, useEffect } from "react";
 import {
   Plus,
   Edit2,
-  Layers,
   Filter,
   X,
-  Users,
   Search,
   RotateCcw,
 } from "lucide-react";
@@ -45,10 +43,6 @@ export default function CourseSectionsPage() {
     endDate: "",
   });
 
-  useEffect(() => {
-    loadInitial();
-  }, []);
-
   const loadInitial = async () => {
     try {
       setLoading(true);
@@ -71,6 +65,11 @@ export default function CourseSectionsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadInitial();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleOpenModal = (sec = null) => {
     if (sec) {

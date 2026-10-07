@@ -33,30 +33,33 @@ export default function AssignEnrollmentsPage() {
   const [batchAssigning, setBatchAssigning] = useState(false);
   const [override, setOverride] = useState(null);
 
-  useEffect(() => { loadInitial(); }, []);
-
-  const loadInitial = async () => {
-    try {
-      setLoading(true);
-      const [resSec, resStu, resClass, resSem] = await Promise.all([
-        courseSectionService.getAll(),
-        studentService.getAll(),
-        classService.getAll(),
-        semesterService.getAll(),
-      ]);
-      setSections(resSec.data?.data || []);
-      setStudents(resStu.data?.data || []);
-      setClasses(resClass.data?.data || []);
-      const semList = resSem.data?.data || [];
-      setSemesters(semList);
-      const cur = semList.find((s) => s.isCurrent);
-      if (cur) setSelectedSemester(String(cur.id));
-    } catch {
-      toast.error('Lỗi khi tải dữ liệu xếp lớp');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    let alive = true;
+    const loadInitial = async () => {
+      try {
+        const [resSec, resStu, resClass, resSem] = await Promise.all([
+          courseSectionService.getAll(),
+          studentService.getAll(),
+          classService.getAll(),
+          semesterService.getAll(),
+        ]);
+        if (!alive) return;
+        setSections(resSec.data?.data || []);
+        setStudents(resStu.data?.data || []);
+        setClasses(resClass.data?.data || []);
+        const semList = resSem.data?.data || [];
+        setSemesters(semList);
+        const cur = semList.find((s) => s.isCurrent);
+        if (cur) setSelectedSemester(String(cur.id));
+      } catch {
+        if (alive) toast.error('Lỗi khi tải dữ liệu xếp lớp');
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+    loadInitial();
+    return () => { alive = false; };
+  }, []);
 
   const filteredSections = useMemo(() => (
     selectedSemester
@@ -70,8 +73,7 @@ export default function AssignEnrollmentsPage() {
 
   // Nạp danh sách SV đang có trong lớp học phần mỗi khi đổi lớp.
   useEffect(() => {
-    if (!selectedSectionId) { setEnrollments([]); return; }
-    setSelectedStudentId('');
+    if (!selectedSectionId) return;
     let alive = true;
     (async () => {
       try {
@@ -204,7 +206,12 @@ export default function AssignEnrollmentsPage() {
             <label className="form-label">Học kỳ</label>
             <select
               value={selectedSemester}
-              onChange={(e) => { setSelectedSemester(e.target.value); setSelectedSectionId(''); }}
+              onChange={(e) => { 
+                setSelectedSemester(e.target.value); 
+                setSelectedSectionId(''); 
+                setEnrollments([]); 
+                setSelectedStudentId('');
+              }}
               className="form-select"
             >
               <option value="">Tất cả học kỳ</option>
@@ -217,7 +224,12 @@ export default function AssignEnrollmentsPage() {
             <label className="form-label">Lớp học phần *</label>
             <select
               value={selectedSectionId}
-              onChange={(e) => setSelectedSectionId(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedSectionId(val);
+                if (!val) setEnrollments([]);
+                setSelectedStudentId('');
+              }}
               className="form-select"
             >
               <option value="">-- Chọn lớp học phần cần xếp --</option>
@@ -232,7 +244,12 @@ export default function AssignEnrollmentsPage() {
             <button
               type="button"
               className="btn btn-outline"
-              onClick={() => { setSelectedSemester(''); setSelectedSectionId(''); }}
+              onClick={() => { 
+                setSelectedSemester(''); 
+                setSelectedSectionId(''); 
+                setEnrollments([]); 
+                setSelectedStudentId('');
+              }}
               title="Bỏ lọc học kỳ"
               style={{ height: '38px' }}
             >

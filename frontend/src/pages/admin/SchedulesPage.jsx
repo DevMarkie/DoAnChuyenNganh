@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
-  Calendar, Clock, MapPin, User, BookOpen, Plus, Trash2, Edit2, Search,
-  Filter, AlertTriangle, Layers, School, CheckCircle2, Grid, List, RefreshCw
+  Calendar, Clock, MapPin, User, Plus, Trash2, Edit2, Search,
+  AlertTriangle, School, Grid, List, RefreshCw
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import {
@@ -56,10 +56,6 @@ export default function SchedulesPage() {
     note: 'Lý thuyết',
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       setLoading(true);
@@ -82,6 +78,11 @@ export default function SchedulesPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleOpenModal = (sched = null) => {
     setConflictError('');

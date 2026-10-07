@@ -1,12 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  BookMarked,
   Check,
   Plus,
   AlertCircle,
   Search,
-  Calendar,
-  Users,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -25,10 +22,6 @@ export default function EnrollPage() {
   const [loadError, setLoadError] = useState(false);
   const [enrollingId, setEnrollingId] = useState(null);
   const enrollmentInFlight = useRef(false);
-
-  useEffect(() => {
-    loadData({ initial: true });
-  }, []);
 
   const loadData = async ({ initial = false } = {}) => {
     try {
@@ -58,6 +51,11 @@ export default function EnrollPage() {
       else setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    loadData({ initial: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleEnroll = async (sectionId) => {
     if (enrollmentInFlight.current) return;

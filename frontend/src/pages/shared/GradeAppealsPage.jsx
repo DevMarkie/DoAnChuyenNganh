@@ -12,6 +12,11 @@ export default function GradeAppealsPage() {
   const [form, setForm] = useState({ status: 'APPROVED', newScore: '', reviewNotes: '' });
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
+
   const load = async () => {
     try {
       setLoading(true);
@@ -21,8 +26,6 @@ export default function GradeAppealsPage() {
       toast.error(err.response?.data?.message || 'Không thể tải đơn phúc khảo');
     } finally { setLoading(false); }
   };
-
-  useEffect(() => { load(); }, [status]);
 
   const openReview = (appeal) => {
     setSelected(appeal);

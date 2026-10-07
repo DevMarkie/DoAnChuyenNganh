@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Lock, User, X, Mail, Phone, CheckCircle, GraduationCap, BookOpen, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -113,10 +113,12 @@ export default function PortalLoginPage({ portalType = 'student' }) {
   const [password, setPassword] = useState(config.defaultPass);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const [prevPortalType, setPrevPortalType] = useState(portalType);
+  if (portalType !== prevPortalType) {
+    setPrevPortalType(portalType);
     setUsername(config.defaultUser);
     setPassword(config.defaultPass);
-  }, [portalType, config.defaultUser, config.defaultPass]);
+  }
 
   // Forgot password modal states
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
@@ -214,7 +216,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--bg-app)' }}>
       {/* Left Column: Brand & Feature Panel — themed with portal color */}
       <div
-        className="login-brand-panel"
+        className="login-brand-panel force-light-text"
         style={{
           '--login-accent-gradient': config.panelGradient,
           flex: '1 1 46%',
@@ -340,7 +342,9 @@ export default function PortalLoginPage({ portalType = 'student' }) {
           </div>
 
           {/* Sample Account Helper */}
-          <div style={{
+          <div 
+            className="force-light-text"
+            style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '10px 14px', backgroundColor: accentSoft,
             borderRadius: 'var(--radius-md)', border: `1px solid ${config.accentBorder}`,

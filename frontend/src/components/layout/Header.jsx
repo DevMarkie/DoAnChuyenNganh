@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
-import { LogOut, Sun, Moon, Shield, User, GraduationCap, ChevronRight } from 'lucide-react';
+import { LogOut, Sun, Moon, ChevronRight } from 'lucide-react';
 
 export default function Header() {
   const navigate = useNavigate();

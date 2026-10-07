@@ -26,6 +26,9 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
            @Param("semesterId") Integer semesterId,
            @Param("subjectId") Integer subjectId);
 
+    boolean existsByStudentIdAndSectionSubjectIdAndSectionSemesterIdAndStatus(
+            Long studentId, Integer subjectId, Integer semesterId, Enrollment.EnrollmentStatus status);
+
     /** Batch-load enrollments with their section + lecturer initialised (for bulk grade entry BR-07 check). */
     @Query("SELECT e FROM Enrollment e " +
            "JOIN FETCH e.section cs " +

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, BookOpen, GraduationCap, KeyRound, Save, ShieldCheck, Building2 } from 'lucide-react';
+import { KeyRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { lecturerService, authService } from '../../services/dataService';
 
@@ -12,10 +12,6 @@ export default function LecturerProfilePage() {
     confirmPassword: '',
   });
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
   const loadProfile = async () => {
     try {
       setLoading(true);
@@ -27,6 +23,11 @@ export default function LecturerProfilePage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadProfile();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChangePassword = async (e) => {
     e.preventDefault();

@@ -22,10 +22,6 @@ export default function SubjectsPage() {
     prerequisiteIds: [],
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       setLoading(true);
@@ -41,6 +37,11 @@ export default function SubjectsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleOpenModal = (sub = null) => {
     if (sub) {

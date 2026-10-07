@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Award, BookOpen, CheckCircle2, FileText, Printer, AlertTriangle, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { gradeAppealService, transcriptService } from '../../services/dataService';
@@ -10,11 +10,6 @@ export default function TranscriptPage() {
   const [appealCourse, setAppealCourse] = useState(null);
   const [appealForm, setAppealForm] = useState({ scoreComponent: 'FINAL', desiredScore: '', reason: '' });
   const [appealSubmitting, setAppealSubmitting] = useState(false);
-
-  useEffect(() => {
-    loadTranscript();
-    loadAppeals();
-  }, []);
 
   const loadTranscript = async () => {
     try {
@@ -37,9 +32,17 @@ export default function TranscriptPage() {
     }
   };
 
+  useEffect(() => {
+    loadTranscript();
+    loadAppeals();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const nowTime = useMemo(() => Date.now(), []);
+
   const canAppeal = (course) => {
     if (!course?.finalizedAt) return false;
-    return new Date(course.finalizedAt).getTime() + (7 * 24 * 60 * 60 * 1000) >= Date.now();
+    return new Date(course.finalizedAt).getTime() + (7 * 24 * 60 * 60 * 1000) >= nowTime;
   };
 
   const openAppeal = (course) => {

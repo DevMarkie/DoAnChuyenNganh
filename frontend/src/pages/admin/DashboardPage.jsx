@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Users, GraduationCap, School, BookOpen, UserCog, Layers, Award,
-  TrendingUp, ArrowUpRight, CheckCircle2, Clock, Calendar
+  TrendingUp, Calendar
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, CartesianGrid, Legend } from 'recharts';
 import { dashboardService } from '../../services/dataService';
@@ -13,20 +13,19 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        setLoading(true);
+        const res = await dashboardService.getDashboard();
+        setData(res.data.data);
+      } catch {
+        // console.error removed for security
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchDashboard();
   }, []);
-
-  const fetchDashboard = async () => {
-    try {
-      setLoading(true);
-      const res = await dashboardService.getDashboard();
-      setData(res.data.data);
-    } catch (err) {
-      // console.error removed for security
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (

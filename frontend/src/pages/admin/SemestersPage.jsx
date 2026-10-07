@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, CheckCircle, Star, X, CalendarDays } from 'lucide-react';
+import { Plus, Edit2, Star, X, CalendarDays } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { semesterService } from '../../services/dataService';
 
@@ -22,10 +22,6 @@ export default function SemestersPage() {
     status: 'ACTIVE',
   });
 
-  useEffect(() => {
-    loadSemesters();
-  }, []);
-
   const loadSemesters = async () => {
     try {
       setLoading(true);
@@ -37,6 +33,11 @@ export default function SemestersPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadSemesters();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleOpenModal = (sem = null) => {
     if (sem) {

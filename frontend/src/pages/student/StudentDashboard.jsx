@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Award, BookOpen, Layers, BookMarked, TrendingUp, ArrowUpRight, GraduationCap } from 'lucide-react';
+import { Award, BookOpen, Layers, BookMarked } from 'lucide-react';
 import { studentService, transcriptService, enrollmentService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
 
@@ -11,10 +11,6 @@ export default function StudentDashboard() {
   const [transcript, setTranscript] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const loadData = async () => {
     try {
@@ -27,12 +23,17 @@ export default function StudentDashboard() {
       setProfile(resProfile.data.data);
       setTranscript(resTrans.data.data);
       setEnrollments(resEnr.data.data || []);
-    } catch (err) {
+    } catch {
       // console.error removed for security
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const gpa = transcript?.cumulativeGpa ? Number(transcript.cumulativeGpa).toFixed(2) : '0.00';
 

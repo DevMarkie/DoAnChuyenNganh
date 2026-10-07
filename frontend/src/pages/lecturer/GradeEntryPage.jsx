@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Layers,
   Save,
   CheckCircle,
   AlertCircle,
-  Award,
   CheckCircle2,
   Download,
   Lock,
@@ -33,10 +32,6 @@ export default function GradeEntryPage() {
   const [savingImport, setSavingImport] = useState(false);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    loadSections();
-  }, []);
-
   const loadSections = async () => {
     try {
       const res = await courseSectionService.getMySections();
@@ -54,6 +49,11 @@ export default function GradeEntryPage() {
       toast.error("Lỗi khi tải danh sách lớp học phần");
     }
   };
+
+  useEffect(() => {
+    loadSections();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadGrades = async (sectionId) => {
     try {
@@ -308,7 +308,7 @@ export default function GradeEntryPage() {
   const isLocked =
     grades.length > 0 && grades.every((g) => g.editWindowExpired);
   // Cả lớp chốt cùng lúc nên finalizedAt gần như bằng nhau — lấy dòng đầu để tính số ngày còn lại.
-  const editDaysLeft = (() => {
+  const editDaysLeft = useMemo(() => {
     const g = grades.find((x) => x.isFinalized && x.finalizedAt);
     if (!g) return null;
     const expireAt =
@@ -317,7 +317,8 @@ export default function GradeEntryPage() {
       0,
       Math.ceil((expireAt - Date.now()) / (24 * 60 * 60 * 1000)),
     );
-  })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grades]);
 
   return (
     <div>

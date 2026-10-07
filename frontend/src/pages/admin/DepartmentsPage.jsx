@@ -16,10 +16,6 @@ export default function DepartmentsPage() {
     description: '',
   });
 
-  useEffect(() => {
-    loadDepartments();
-  }, []);
-
   const loadDepartments = async () => {
     try {
       setLoading(true);
@@ -31,6 +27,11 @@ export default function DepartmentsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadDepartments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();

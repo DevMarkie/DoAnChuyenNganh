@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Edit2, UserX, UserCheck, X, Filter, RotateCcw, Building2 } from 'lucide-react';
+import { Plus, Search, Edit2, UserX, UserCheck, X, Filter, RotateCcw, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { utils, writeFile } from 'xlsx';
 import { studentService, classService, departmentService } from '../../services/dataService';
 import { genderLabel } from '../../utils/labels';
+import Skeleton from '../../components/common/Skeleton';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tất cả trạng thái' },
@@ -18,6 +20,7 @@ export default function StudentsPage() {
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -37,11 +40,6 @@ export default function StudentsPage() {
     password: '',
   });
 
-  // Load all students, classes, and departments
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       setLoading(true);
@@ -60,12 +58,27 @@ export default function StudentsPage() {
     }
   };
 
+  // Load all students, classes, and departments
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleResetFilters = () => {
     setSearch('');
+    setSearchInput('');
     setSelectedClass('');
     setSelectedDepartment('');
     setSelectedStatus('');
   };
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   // When changing department, filter class dropdown
   const filteredClasses = selectedDepartment
@@ -78,6 +91,7 @@ export default function StudentsPage() {
       const isValid = filteredClasses.some((c) => c.id === parseInt(selectedClass));
       if (!isValid) setSelectedClass('');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDepartment]);
 
   // Real-time instant filtering of all students
@@ -205,8 +219,41 @@ export default function StudentsPage() {
     if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
-
   const hasActiveFilters = search || selectedClass || selectedDepartment || selectedStatus;
+
+  const handleExportExcel = () => {
+    if (!filteredStudents || filteredStudents.length === 0) {
+      toast.info('Không có dữ liệu để xuất!');
+      return;
+    }
+    
+    const exportData = filteredStudents.map((s, index) => ({
+      'STT': index + 1,
+      'Mã SV': s.studentCode,
+      'Họ và tên': s.fullName,
+      'Lớp': s.className || '',
+      'Khoa/Ngành': s.departmentName || '',
+      'Ngày sinh': new Date(s.dateOfBirth).toLocaleDateString('vi-VN'),
+      'Giới tính': genderLabel(s.gender),
+      'SĐT': s.phone || '',
+      'Email': s.email || '',
+      'Trạng thái': s.status === 'ACTIVE' || s.status === 'STUDYING' ? 'Đang học' :
+                    s.status === 'GRADUATED' ? 'Tốt nghiệp' :
+                    s.status === 'SUSPENDED' ? 'Đình chỉ' : 'Thôi học'
+    }));
+
+    const ws = utils.json_to_sheet(exportData);
+    
+    // Customize column widths
+    ws['!cols'] = [
+      {wch:5}, {wch:12}, {wch:25}, {wch:15}, {wch:20}, 
+      {wch:12}, {wch:10}, {wch:12}, {wch:25}, {wch:15}
+    ];
+
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Danh_Sach_SV");
+    writeFile(wb, `Danh_Sach_Sinh_Vien_${new Date().getTime()}.xlsx`);
+  };
 
   return (
     <div>
@@ -218,7 +265,11 @@ export default function StudentsPage() {
             Quản lý cơ sở dữ liệu sinh viên chính quy, thông tin học vụ và trạng thái đào tạo
           </p>
         </div>
-        <div className="page-header-actions">
+        <div className="page-header-actions" style={{ display: 'flex', gap: '12px' }}>
+          <button className="btn btn-outline" onClick={handleExportExcel} title="Xuất file Excel">
+            <Download size={16} />
+            <span>Xuất Excel</span>
+          </button>
           <button className="btn btn-primary" onClick={() => handleOpenModal()}>
             <Plus size={16} />
             <span>Thêm sinh viên mới</span>
@@ -236,8 +287,8 @@ export default function StudentsPage() {
               <input
                 type="text"
                 placeholder="Tìm theo mã SV, họ tên, email, SĐT..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="form-control"
                 style={{ paddingLeft: '36px' }}
               />
@@ -356,11 +407,27 @@ export default function StudentsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan="9" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
-                    Đang tải danh sách sinh viên...
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={`sk-${idx}`}>
+                    <td>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <Skeleton width="36px" height="36px" borderRadius="50%" />
+                        <div style={{ flex: 1 }}>
+                          <Skeleton width="120px" height="16px" style={{ marginBottom: '4px' }} />
+                          <Skeleton width="80px" height="12px" />
+                        </div>
+                      </div>
+                    </td>
+                    <td><Skeleton width="100px" height="16px" /></td>
+                    <td><Skeleton width="80px" height="16px" /></td>
+                    <td><Skeleton width="150px" height="16px" /></td>
+                    <td><Skeleton width="90px" height="16px" /></td>
+                    <td><Skeleton width="60px" height="16px" /></td>
+                    <td><Skeleton width="140px" height="16px" /></td>
+                    <td><Skeleton width="100px" height="24px" borderRadius="12px" /></td>
+                    <td><Skeleton width="60px" height="32px" /></td>
+                  </tr>
+                ))
               ) : filteredStudents.length === 0 ? (
                 <tr>
                   <td colSpan="9" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>

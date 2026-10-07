@@ -1,23 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Trash2,
-  AlertCircle,
-  Calendar,
-  BookOpen,
-  CheckCircle,
   Lock,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { enrollmentService } from "../../services/dataService";
+import Skeleton from "../../components/common/Skeleton";
 
 export default function MyEnrollmentsPage() {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const cancellationInFlight = useRef(false);
-
-  useEffect(() => {
-    loadEnrollments();
-  }, []);
 
   const loadEnrollments = async () => {
     try {
@@ -30,6 +23,11 @@ export default function MyEnrollmentsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadEnrollments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCancel = async (id, sectionName) => {
     if (cancellationInFlight.current) return;
@@ -138,18 +136,20 @@ export default function MyEnrollmentsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td
-                    colSpan="10"
-                    style={{
-                      textAlign: "center",
-                      padding: "48px 20px",
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    Đang tải danh sách học phần đã đăng ký...
-                  </td>
-                </tr>
+                Array.from({ length: 3 }).map((_, idx) => (
+                  <tr key={`sk-${idx}`}>
+                    <td><Skeleton width="100px" height="16px" /></td>
+                    <td><Skeleton width="200px" height="16px" /></td>
+                    <td><Skeleton width="60px" height="16px" /></td>
+                    <td><Skeleton width="80px" height="16px" /></td>
+                    <td><Skeleton width="150px" height="16px" /></td>
+                    <td><Skeleton width="120px" height="32px" /></td>
+                    <td><Skeleton width="80px" height="16px" /></td>
+                    <td><Skeleton width="90px" height="16px" /></td>
+                    <td><Skeleton width="100px" height="24px" borderRadius="12px" /></td>
+                    <td><Skeleton width="60px" height="32px" /></td>
+                  </tr>
+                ))
               ) : enrollments.length === 0 ? (
                 <tr>
                   <td

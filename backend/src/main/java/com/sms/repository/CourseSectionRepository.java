@@ -64,6 +64,11 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
     @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
     List<CourseSection> findBySubjectId(Integer subjectId);
 
+    @Query("SELECT cs FROM CourseSection cs WHERE cs.subject.id = :subjectId " +
+            "AND cs.semester.id = :semesterId AND cs.status <> 'CANCELLED'")
+    List<CourseSection> findNonCancelledBySubjectAndSemester(
+            @Param("subjectId") Integer subjectId, @Param("semesterId") Integer semesterId);
+
     @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
     List<CourseSection> findBySemesterIdAndStatus(Integer semesterId, CourseSection.SectionStatus status);
 

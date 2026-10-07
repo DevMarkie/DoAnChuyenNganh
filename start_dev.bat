@@ -9,17 +9,17 @@ echo.
 
 :: 1. Kiểm tra & xác định MySQL Database
 echo [1/3] Đang kiểm tra kết nối Database MySQL...
-netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo [MySQL] Phát hiện MySQL Database cục bộ đang chạy trên cổng 3306.
-    set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
-    goto :db_ready
-)
-
 netstat -ano | findstr ":3308 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo [MySQL] Phát hiện MySQL Docker Container đang chạy trên cổng 3308.
     set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3308/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+    goto :db_ready
+)
+
+netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [MySQL] Phát hiện MySQL Database cục bộ đang chạy trên cổng 3306.
+    set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
     goto :db_ready
 )
 

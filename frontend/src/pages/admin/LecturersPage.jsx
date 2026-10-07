@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, CheckCircle, XCircle, X, UserCog, Filter, RotateCcw } from 'lucide-react';
+import { Plus, Search, Edit2, CheckCircle, XCircle, X, Filter, RotateCcw } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { lecturerService, departmentService } from '../../services/dataService';
+import Skeleton from '../../components/common/Skeleton';
 
 export default function LecturersPage() {
   const [lecturers, setLecturers] = useState([]);
@@ -25,10 +26,6 @@ export default function LecturersPage() {
     password: '',
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       setLoading(true);
@@ -45,22 +42,11 @@ export default function LecturersPage() {
     }
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!search.trim()) {
-      loadData();
-      return;
-    }
-    try {
-      setLoading(true);
-      const res = await lecturerService.search(search);
-      setLecturers(res.data.data || []);
-    } catch {
-      toast.error('Lỗi khi tìm kiếm');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    loadData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const handleOpenModal = (lec = null) => {
     if (lec) {
@@ -225,11 +211,26 @@ export default function LecturersPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
-                    Đang tải danh sách giảng viên...
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, idx) => (
+                  <tr key={`sk-${idx}`}>
+                    <td>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <Skeleton width="36px" height="36px" borderRadius="50%" />
+                        <div style={{ flex: 1 }}>
+                          <Skeleton width="120px" height="16px" style={{ marginBottom: '4px' }} />
+                          <Skeleton width="80px" height="12px" />
+                        </div>
+                      </div>
+                    </td>
+                    <td><Skeleton width="100px" height="16px" /></td>
+                    <td><Skeleton width="150px" height="16px" /></td>
+                    <td><Skeleton width="80px" height="16px" /></td>
+                    <td><Skeleton width="120px" height="16px" /></td>
+                    <td><Skeleton width="100px" height="16px" /></td>
+                    <td><Skeleton width="100px" height="24px" borderRadius="12px" /></td>
+                    <td><Skeleton width="60px" height="32px" /></td>
+                  </tr>
+                ))
               ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>

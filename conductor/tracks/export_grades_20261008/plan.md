@@ -1,7 +1,7 @@
 # Plan: Tính năng Xuất Báo Cáo Điểm
 
 ## Phase 1: Backend - Export API (Java/Spring Boot)
-- [ ] Task: Khởi tạo Data Transfer Object (DTO)
+- [x] 1f66083 Task: Khởi tạo Data Transfer Object (DTO)
   - [ ] Write failing tests cho việc mapping dữ liệu sinh viên sang `GradeExportDTO`
   - [ ] Cài đặt `GradeExportDTO` chứa các trường: MSSV, Họ Tên, Điểm CC, Điểm GK, Điểm CK, Điểm Tổng Kết, Xếp Loại
 - [ ] Task: Cài đặt Service tạo file Excel (ví dụ dùng thư viện Apache POI)

@@ -69,4 +69,10 @@ const useAuthStore = create((set, get) => ({
   },
 }));
 
+// When api.js detects a 401 it fires this event; triggering logout clears the
+// auth state so ProtectedRoute auto-redirects to the login page.
+window.addEventListener("auth:session-expired", () => {
+  useAuthStore.getState().logout();
+});
+
 export default useAuthStore;

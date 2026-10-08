@@ -39,7 +39,6 @@ const fetchApi = async (method, url, config = {}) => {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           window.dispatchEvent(new CustomEvent("auth:session-expired"));
-          window.location.hash = "#/";
         }
         const err = new Error(response.statusText || 'Error');
         err.response = response;

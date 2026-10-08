@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit2, UserX, UserCheck, X, Filter, RotateCcw, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { utils, writeFile } from 'xlsx';
 import { studentService, classService, departmentService } from '../../services/dataService';
 import { genderLabel } from '../../utils/labels';
 import Skeleton from '../../components/common/Skeleton';
@@ -242,17 +241,20 @@ export default function StudentsPage() {
                     s.status === 'SUSPENDED' ? 'Đình chỉ' : 'Thôi học'
     }));
 
-    const ws = utils.json_to_sheet(exportData);
+    // CSV Export
+    const headers = Object.keys(exportData[0]).join(',');
+    const csvContent = exportData.map(row => 
+      Object.values(row).map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
     
-    // Customize column widths
-    ws['!cols'] = [
-      {wch:5}, {wch:12}, {wch:25}, {wch:15}, {wch:20}, 
-      {wch:12}, {wch:10}, {wch:12}, {wch:25}, {wch:15}
-    ];
-
-    const wb = utils.book_new();
-    utils.book_append_sheet(wb, ws, "Danh_Sach_SV");
-    writeFile(wb, `Danh_Sach_Sinh_Vien_${new Date().getTime()}.xlsx`);
+    // Add BOM for UTF-8 Excel compatibility
+    const blob = new Blob(["\uFEFF" + headers + "\n" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `Danh_Sach_Sinh_Vien_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (

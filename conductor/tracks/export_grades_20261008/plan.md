@@ -1,16 +1,16 @@
 # Plan: Tính năng Xuất Báo Cáo Điểm
 
-## Phase 1: Backend - Export API (Java/Spring Boot)
+## Phase 1: Backend - Export API (Java/Spring Boot) [checkpoint: f33c37f]
 - [x] 1f66083 Task: Khởi tạo Data Transfer Object (DTO)
   - [ ] Write failing tests cho việc mapping dữ liệu sinh viên sang `GradeExportDTO`
   - [ ] Cài đặt `GradeExportDTO` chứa các trường: MSSV, Họ Tên, Điểm CC, Điểm GK, Điểm CK, Điểm Tổng Kết, Xếp Loại
 - [x] (Sẵn có) Task: Cài đặt Service tạo file Excel (ví dụ dùng thư viện Apache POI)
   - [ ] Write failing tests kiểm tra logic tạo file Excel (mock dữ liệu)
   - [ ] Cài đặt logic tạo Worksheet, in đậm Header và mapping danh sách DTO vào các row.
-- [ ] Task: Cài đặt API Endpoint xuất file
+- [x] (Sẵn có) Task: Cài đặt API Endpoint xuất file
   - [ ] Write failing integration tests kiểm tra phân quyền (Chỉ Admin và Giảng viên được truy cập)
   - [ ] Cài đặt Controller endpoint (VD: `GET /api/classes/{classId}/export-grades`), trả về file `.xlsx` (MIME type: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] f33c37f Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Frontend - Giao diện & Tích hợp API (React)
 - [ ] Task: Cài đặt API Client

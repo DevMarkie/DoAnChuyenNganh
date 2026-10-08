@@ -4,7 +4,7 @@
 - [x] 1f66083 Task: Khởi tạo Data Transfer Object (DTO)
   - [ ] Write failing tests cho việc mapping dữ liệu sinh viên sang `GradeExportDTO`
   - [ ] Cài đặt `GradeExportDTO` chứa các trường: MSSV, Họ Tên, Điểm CC, Điểm GK, Điểm CK, Điểm Tổng Kết, Xếp Loại
-- [ ] Task: Cài đặt Service tạo file Excel (ví dụ dùng thư viện Apache POI)
+- [x] (Sẵn có) Task: Cài đặt Service tạo file Excel (ví dụ dùng thư viện Apache POI)
   - [ ] Write failing tests kiểm tra logic tạo file Excel (mock dữ liệu)
   - [ ] Cài đặt logic tạo Worksheet, in đậm Header và mapping danh sách DTO vào các row.
 - [ ] Task: Cài đặt API Endpoint xuất file

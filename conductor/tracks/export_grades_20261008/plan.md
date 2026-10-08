@@ -12,7 +12,7 @@
   - [ ] Cài đặt Controller endpoint (VD: `GET /api/classes/{classId}/export-grades`), trả về file `.xlsx` (MIME type: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`)
 - [x] f33c37f Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: Frontend - Giao diện & Tích hợp API (React)
+## Phase 2: Frontend - Giao diện & Tích hợp API (React) [checkpoint: ec67017]
 - [x] (Sẵn có) Task: Cài đặt API Client
   - [ ] Write failing tests cho hàm gọi API (Mock Axios)
   - [ ] Cài đặt hàm gọi API hỗ trợ nhận kiểu dữ liệu `blob` (để xử lý file tải về)
@@ -20,4 +20,4 @@
   - [ ] Write failing tests kiểm tra sự hiển thị của nút bấm (chỉ hiện với đúng role)
   - [ ] Thêm nút "Xuất báo cáo điểm" vào trang quản lý lớp (`Admin`) và trang nhập điểm (`GradeEntryPage.jsx` cho Giảng viên)
   - [ ] Cài đặt logic xử lý khi nhấn nút (hiển thị loading, tải file, xử lý lỗi nếu API trả về 403)
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] ec67017 Task: Phase Verification & Checkpoint (Refer to workflow.md)

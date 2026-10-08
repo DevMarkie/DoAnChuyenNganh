@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
 import { Layers, Users, ArrowUpRight, GraduationCap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -127,11 +128,7 @@ export default function LecturerDashboard() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
-                    Đang tải danh sách lớp học phần...
-                  </td>
-                </tr>
+                <TableRowSkeleton columns={7} />
               ) : mySections.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>

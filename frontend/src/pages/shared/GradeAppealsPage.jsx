@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useEffect, useState } from 'react';
 import { CheckCircle2, X, ClipboardCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -59,7 +60,7 @@ export default function GradeAppealsPage() {
       </div>
       <div className="card">
         <div className="table-container"><table className="table"><thead><tr><th>Sinh viên</th><th>Học phần</th><th>Cột điểm</th><th>Điểm cũ</th><th>Lý do</th><th>Trạng thái</th><th /></tr></thead>
-          <tbody>{loading ? <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>Đang tải...</td></tr> : appeals.length === 0 ? <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Không có đơn phúc khảo.</td></tr> : appeals.map((appeal) => <tr key={appeal.id}>
+          <tbody>{loading ? <TableRowSkeleton columns={7} /> : appeals.length === 0 ? <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Không có đơn phúc khảo.</td></tr> : appeals.map((appeal) => <tr key={appeal.id}>
             <td><strong>{appeal.studentCode}</strong><br />{appeal.studentName}</td>
             <td><strong>{appeal.subjectCode}</strong><br />{appeal.subjectName}</td>
             <td>{appeal.scoreComponent}</td><td>{appeal.currentScore ?? '—'}</td>

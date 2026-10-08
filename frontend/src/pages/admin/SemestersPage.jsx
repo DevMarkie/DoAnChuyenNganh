@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Star, X, CalendarDays } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -133,11 +134,7 @@ export default function SemestersPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
-                    Đang tải dữ liệu học kỳ...
-                  </td>
-                </tr>
+                <TableRowSkeleton columns={8} />
               ) : semesters.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>

@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -514,9 +515,9 @@ export default function GradeEntryPage() {
           <table className="table">
             <thead>
               <tr>
-                <th style={{ width: "50px" }}>STT</th>
-                <th>Mã SV</th>
-                <th>Họ và Tên Sinh Viên</th>
+                <th style={{ width: "50px", position: "sticky", left: 0, zIndex: 11, backgroundColor: "var(--bg-surface)" }}>STT</th>
+                <th style={{ width: "120px", position: "sticky", left: "50px", zIndex: 11, backgroundColor: "var(--bg-surface)" }}>Mã SV</th>
+                <th style={{ minWidth: "200px", position: "sticky", left: "170px", zIndex: 11, backgroundColor: "var(--bg-surface)", boxShadow: "2px 0 5px -2px rgba(0,0,0,0.1)" }}>Họ và Tên Sinh Viên</th>
                 <th>Lớp SH</th>
                 <th style={{ textAlign: "center" }}>
                   CC1 (5%)
@@ -549,18 +550,7 @@ export default function GradeEntryPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td
-                    colSpan="13"
-                    style={{
-                      textAlign: "center",
-                      padding: "48px 20px",
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    Đang tải danh sách điểm sinh viên...
-                  </td>
-                </tr>
+                <TableRowSkeleton columns={13} />
               ) : grades.length === 0 ? (
                 <tr>
                   <td
@@ -581,11 +571,15 @@ export default function GradeEntryPage() {
                       style={{
                         color: "var(--text-muted)",
                         fontSize: "0.85rem",
+                        position: "sticky",
+                        left: 0,
+                        zIndex: 5,
+                        backgroundColor: "var(--bg-surface)"
                       }}
                     >
                       {idx + 1}
                     </td>
-                    <td>
+                    <td style={{ position: "sticky", left: "50px", zIndex: 5, backgroundColor: "var(--bg-surface)" }}>
                       <span
                         style={{
                           display: "inline-block",
@@ -602,7 +596,7 @@ export default function GradeEntryPage() {
                         {g.enrollment?.student?.studentCode}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 600, color: "var(--text-main)" }}>
+                    <td style={{ fontWeight: 600, color: "var(--text-main)", position: "sticky", left: "170px", zIndex: 5, backgroundColor: "var(--bg-surface)", boxShadow: "2px 0 5px -2px rgba(0,0,0,0.1)" }}>
                       {g.enrollment?.student?.fullName}
                     </td>
                     <td style={{ color: "var(--text-secondary)" }}>

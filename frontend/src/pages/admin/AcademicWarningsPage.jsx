@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useEffect, useState } from 'react';
 import { AlertTriangle, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -110,7 +111,7 @@ export default function AcademicWarningsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="7" className="text-center p-5">Đang tải...</td></tr>
+                <TableRowSkeleton columns={7} />
               ) : warnings.length === 0 ? (
                 <tr><td colSpan="7" className="text-center p-5 text-muted">Không có sinh viên bị cảnh báo.</td></tr>
               ) : (

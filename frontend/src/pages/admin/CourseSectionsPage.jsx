@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from "react";
 import {
   Plus,
@@ -286,18 +287,7 @@ export default function CourseSectionsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td
-                    colSpan="9"
-                    style={{
-                      textAlign: "center",
-                      padding: "48px 20px",
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    Đang tải danh sách lớp học phần...
-                  </td>
-                </tr>
+                <TableRowSkeleton columns={9} />
               ) : filtered.length === 0 ? (
                 <tr>
                   <td

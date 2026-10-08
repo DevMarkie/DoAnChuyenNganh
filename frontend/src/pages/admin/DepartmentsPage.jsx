@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, CheckCircle, XCircle, X, Building2, RotateCcw } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -158,11 +159,7 @@ export default function DepartmentsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
-                    Đang tải danh sách khoa viện...
-                  </td>
-                </tr>
+                <TableRowSkeleton columns={5} />
               ) : departments.length === 0 ? (
                 <tr>
                   <td colSpan="5" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>

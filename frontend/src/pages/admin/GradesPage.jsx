@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect, useRef } from "react";
 import {
   Layers,
@@ -266,18 +267,7 @@ export default function AdminGradesPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td
-                    colSpan="10"
-                    style={{
-                      textAlign: "center",
-                      padding: "48px 20px",
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    Đang tải bảng điểm học phần...
-                  </td>
-                </tr>
+                <TableRowSkeleton columns={10} />
               ) : grades.length === 0 ? (
                 <tr>
                   <td

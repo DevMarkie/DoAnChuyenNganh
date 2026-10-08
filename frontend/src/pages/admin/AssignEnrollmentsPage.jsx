@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect, useMemo } from 'react';
 import { UserPlus, Users, Search, AlertTriangle, X, RotateCcw } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -419,7 +420,7 @@ export default function AssignEnrollmentsPage() {
                 </thead>
                 <tbody>
                   {loadingEnroll ? (
-                    <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>Đang tải...</td></tr>
+                    <TableRowSkeleton columns={5} />
                   ) : enrollments.filter((e) => e.status === 'ENROLLED').length === 0 ? (
                     <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>Lớp học phần chưa có sinh viên nào.</td></tr>
                   ) : (

@@ -1,3 +1,4 @@
+import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, CheckCircle, XCircle, X, BookOpen, Filter, RotateCcw } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -214,11 +215,7 @@ export default function SubjectsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
-                    Đang tải danh sách môn học...
-                  </td>
-                </tr>
+                <TableRowSkeleton columns={8} />
               ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>

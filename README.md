@@ -35,7 +35,7 @@ Trang web sẽ tự động nhận diện người đăng nhập là ai để hi
 
 ### 👨‍🏫 Dành cho Giảng Viên
 - **Xem thời khóa biểu:** Đăng nhập vào là biết ngay hôm nay mình dạy lúc mấy giờ, ở tòa nhà nào.
-- **Nhập điểm trực tuyến:** Nhập điểm chuyên cần, giữa kỳ và cuối kỳ. Hệ thống sẽ tự động tính ra điểm tổng kết và xếp loại (A, B, C, D, F).
+- **Nhập điểm trực tuyến & Import Excel:** Hỗ trợ nhập điểm trực tiếp trên web hoặc tải lên từ file Excel tiện lợi. Hệ thống sẽ tự động tính ra điểm tổng kết và xếp loại (A, B, C, D, F).
 - **Khóa bảng điểm:** Khi đã nhập xong, giảng viên có thể "chốt" điểm để sinh viên vào xem.
 
 ### 🎓 Dành cho Sinh Viên

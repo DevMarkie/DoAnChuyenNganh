@@ -13,11 +13,11 @@
 - [x] f33c37f Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Frontend - Giao diện & Tích hợp API (React)
-- [ ] Task: Cài đặt API Client
+- [x] (Sẵn có) Task: Cài đặt API Client
   - [ ] Write failing tests cho hàm gọi API (Mock Axios)
   - [ ] Cài đặt hàm gọi API hỗ trợ nhận kiểu dữ liệu `blob` (để xử lý file tải về)
-- [ ] Task: Tích hợp nút Xuất báo cáo lên giao diện
+- [x] (Sẵn có) Task: Tích hợp nút Xuất báo cáo lên giao diện
   - [ ] Write failing tests kiểm tra sự hiển thị của nút bấm (chỉ hiện với đúng role)
   - [ ] Thêm nút "Xuất báo cáo điểm" vào trang quản lý lớp (`Admin`) và trang nhập điểm (`GradeEntryPage.jsx` cho Giảng viên)
   - [ ] Cài đặt logic xử lý khi nhấn nút (hiển thị loading, tải file, xử lý lỗi nếu API trả về 403)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)

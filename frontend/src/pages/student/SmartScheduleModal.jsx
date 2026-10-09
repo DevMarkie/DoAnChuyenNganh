@@ -1,14 +1,9 @@
 import { useState, useMemo } from "react";
 import {
   Sparkles,
-  Calendar,
   Clock,
   CheckCircle2,
-  AlertTriangle,
   X,
-  BookOpen,
-  ArrowRight,
-  Check,
 } from "lucide-react";
 import { toast } from "react-toastify";
 

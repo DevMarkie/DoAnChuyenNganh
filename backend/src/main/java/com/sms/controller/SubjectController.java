@@ -18,20 +18,17 @@ public class SubjectController {
     private final SubjectService subjectService;
 
     @GetMapping
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<SubjectResponse>>> getAll() {
         return ResponseEntity.ok(ApiResponse.success(subjectService.findAll().stream()
                 .map(SubjectResponse::from).toList()));
     }
 
     @GetMapping("/{id}")
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<SubjectResponse>> getById(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.success(SubjectResponse.from(subjectService.findById(id))));
     }
 
     @GetMapping("/search")
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<SubjectResponse>>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(ApiResponse.success(subjectService.search(keyword).stream()
                 .map(SubjectResponse::from).toList()));

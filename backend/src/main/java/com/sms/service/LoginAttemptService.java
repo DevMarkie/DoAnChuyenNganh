@@ -19,6 +19,7 @@ public class LoginAttemptService {
 
     private record AttemptInfo(int count, Instant lockedUntil) {}
 
+    // ponytail: in-memory map; switch to Redis if multi-instance deployment
     private final ConcurrentHashMap<String, AttemptInfo> attempts = new ConcurrentHashMap<>();
 
     /**
@@ -32,6 +33,11 @@ public class LoginAttemptService {
      * Gọi khi đăng nhập thất bại — tăng bộ đếm và khoá nếu vượt ngưỡng.
      */
     public void loginFailed(String username) {
+        // Tránh phình to RAM khi bị spam hàng ngàn user ngẫu nhiên
+        if (attempts.size() > 1000) {
+            attempts.entrySet().removeIf(e -> e.getValue().lockedUntil() == null || Instant.now().isAfter(e.getValue().lockedUntil()));
+        }
+
         String key = username.toLowerCase();
         AttemptInfo info = attempts.getOrDefault(key, new AttemptInfo(0, null));
 

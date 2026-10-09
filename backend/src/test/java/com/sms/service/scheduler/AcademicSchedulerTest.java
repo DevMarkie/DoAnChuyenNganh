@@ -5,7 +5,6 @@ import com.sms.entity.Semester;
 import com.sms.entity.Subject;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
-import com.sms.repository.NotificationRepository;
 import com.sms.repository.SemesterRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,9 +30,6 @@ public class AcademicSchedulerTest {
 
     @Mock
     private EnrollmentRepository enrollmentRepository;
-
-    @Mock
-    private NotificationRepository notificationRepository;
 
     @InjectMocks
     private AcademicScheduler academicScheduler;
@@ -76,8 +72,6 @@ public class AcademicSchedulerTest {
                 .thenReturn(List.of(activeSemester));
         when(courseSectionRepository.findBySemesterIdAndStatus(1, CourseSection.SectionStatus.OPEN))
                 .thenReturn(List.of(sectionUnderEnrolled, sectionOk));
-        when(enrollmentRepository.findActiveBySectionId(sectionUnderEnrolled.getId()))
-                .thenReturn(List.of());
 
         academicScheduler.autoCancelUnderEnrolledSections();
 

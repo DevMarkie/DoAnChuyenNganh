@@ -3,10 +3,8 @@ package com.sms.service.scheduler;
 import com.sms.entity.CourseSection;
 import com.sms.entity.Semester;
 import com.sms.entity.Enrollment;
-import com.sms.entity.Notification;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
-import com.sms.repository.NotificationRepository;
 import com.sms.repository.SemesterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +26,6 @@ public class AcademicScheduler {
     private final SemesterRepository semesterRepository;
     private final CourseSectionRepository courseSectionRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final NotificationRepository notificationRepository;
 
     /**
      * GAP-04: Auto-cancel lớp thiếu sĩ số.
@@ -60,14 +57,6 @@ public class AcademicScheduler {
                         log.warn("Section {} ({}) has only {} students. Cancelling...", 
                                 section.getSectionCode(), section.getSubject().getSubjectName(), section.getCurrentStudents());
                         
-                        List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(section.getId());
-                        for (Enrollment enrollment : enrollments) {
-                            Notification notification = new Notification();
-                            notification.setStudent(enrollment.getStudent());
-                            notification.setMessage("Lớp " + section.getSectionCode()
-                                    + " bị hủy do không đủ sĩ số đăng ký.");
-                            notificationRepository.save(notification);
-                        }
                         enrollmentRepository.cancelActiveBySectionId(section.getId());
                         section.setStatus(CourseSection.SectionStatus.CANCELLED);
                         courseSectionRepository.save(section);

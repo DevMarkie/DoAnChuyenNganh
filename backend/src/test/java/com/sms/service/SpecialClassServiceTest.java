@@ -41,8 +41,6 @@ class SpecialClassServiceTest {
     @Mock
     private FeeScaleRuleRepository feeScaleRuleRepository;
     @Mock
-    private StudentInvoiceRepository invoiceRepository;
-    @Mock
     private LecturerRepository lecturerRepository;
 
     @InjectMocks
@@ -155,7 +153,7 @@ class SpecialClassServiceTest {
     }
 
     @Test
-    @DisplayName("finalizeBilling tính toán học phí lớp riêng và tạo hóa đơn chuẩn xác")
+    @DisplayName("finalizeBilling chốt hệ số học phí lớp riêng và cập nhật trạng thái LOCKED_BILLING")
     void finalizeBilling_Success() {
         CourseSection section = new CourseSection();
         section.setId(200L);
@@ -178,13 +176,11 @@ class SpecialClassServiceTest {
         when(enrollmentRepository.findActiveBySectionId(200L)).thenReturn(List.of(enr));
         when(feeScaleRuleRepository.findFirstByMinStudentsLessThanEqualAndMaxStudentsGreaterThanEqual(1, 1))
                 .thenReturn(Optional.of(rule));
-        when(invoiceRepository.existsByStudentIdAndSectionId(10L, 200L)).thenReturn(false);
         when(sectionRepository.save(any(CourseSection.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CourseSection result = specialClassService.finalizeBilling(200L);
 
         assertThat(result.getStatus()).isEqualTo(CourseSection.SectionStatus.LOCKED_BILLING);
         assertThat(result.getScaleCoefficient()).isEqualByComparingTo("2.50");
-        verify(invoiceRepository, times(1)).save(any(StudentInvoice.class));
     }
 }

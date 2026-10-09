@@ -22,7 +22,6 @@ public class SpecialClassService {
     private final CourseSectionRepository sectionRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final FeeScaleRuleRepository feeScaleRuleRepository;
-    private final StudentInvoiceRepository invoiceRepository;
     private final LecturerRepository lecturerRepository;
 
     @Transactional
@@ -121,21 +120,6 @@ public class SpecialClassService {
         }
         section.setScaleCoefficient(coefficient);
         section.setStatus(CourseSection.SectionStatus.LOCKED_BILLING);
-        for (Enrollment enrollment : enrollmentRepository.findActiveBySectionId(sectionId)) {
-            int credits = section.getSubject().getCredits();
-            BigDecimal amount = baseRate.multiply(coefficient).multiply(BigDecimal.valueOf(credits))
-                    .setScale(2, RoundingMode.HALF_UP);
-            if (!invoiceRepository.existsByStudentIdAndSectionId(enrollment.getStudent().getId(), sectionId)) {
-                StudentInvoice invoice = new StudentInvoice();
-                invoice.setStudent(enrollment.getStudent());
-                invoice.setSection(section);
-                invoice.setCredits(credits);
-                invoice.setBaseRate(baseRate);
-                invoice.setCoefficient(coefficient);
-                invoice.setAmount(amount);
-                invoiceRepository.save(invoice);
-            }
-        }
         return sectionRepository.save(section);
     }
 

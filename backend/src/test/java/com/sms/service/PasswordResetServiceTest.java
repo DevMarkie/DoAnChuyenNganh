@@ -87,11 +87,13 @@ public class PasswordResetServiceTest {
         when(userRepository.findByUsername("user1")).thenReturn(Optional.of(user));
         when(resetRepository.existsByUserIdAndStatus(1L, PasswordResetRequest.RequestStatus.PENDING)).thenReturn(false);
         when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
-        when(resetRepository.save(any(PasswordResetRequest.class))).thenReturn(resetRequest);
+        when(resetRepository.save(any(PasswordResetRequest.class))).thenAnswer(i -> i.getArgument(0));
 
         PasswordResetRequest result = passwordResetService.createRequest(request);
 
         assertNotNull(result);
+        // Khang dinh tren DOI TUONG service dung: username lay tu user, trang thai PENDING.
+        assertEquals("user1", result.getUsername());
         assertEquals(PasswordResetRequest.RequestStatus.PENDING, result.getStatus());
     }
 

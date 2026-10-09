@@ -129,7 +129,8 @@ public class GradeServiceTest {
         when(gradeRepository.save(any(Grade.class))).thenReturn(grade);
 
         Grade saved = gradeService.saveGrade(1L, request);
-        assertNotNull(saved);
+        // request.cc1=8 ghi de diem cu (10) -> chung minh service da map request vao grade.
+        assertEquals(0, BigDecimal.valueOf(8).compareTo(saved.getCc1Score()));
         verify(gradeRepository).save(any(Grade.class));
     }
 
@@ -170,7 +171,8 @@ public class GradeServiceTest {
         when(enrollmentRepository.findByIdInWithSection(anyList())).thenReturn(List.of(enrollment));
         when(gradeRepository.findByEnrollmentIdIn(anyList())).thenReturn(List.of(grade));
 
-        assertDoesNotThrow(() -> gradeService.saveGrades(1L, List.of(request)));
+        gradeService.saveGrades(1L, List.of(request));
+        assertEquals(0, BigDecimal.valueOf(8).compareTo(grade.getCc1Score()));
         verify(gradeRepository).saveAll(anyList());
     }
 
@@ -181,7 +183,8 @@ public class GradeServiceTest {
         when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
         when(gradeRepository.findByEnrollmentIdIn(anyList())).thenReturn(List.of(grade));
 
-        assertDoesNotThrow(() -> gradeService.saveImportedGrades(1L, 1L, List.of(request)));
+        gradeService.saveImportedGrades(1L, 1L, List.of(request));
+        assertEquals(0, BigDecimal.valueOf(8).compareTo(grade.getCc1Score()));
         verify(gradeRepository).saveAll(anyList());
     }
 

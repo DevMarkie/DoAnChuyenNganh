@@ -22,6 +22,7 @@ import com.sms.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -158,6 +159,13 @@ public class GradeAppealServiceTest {
         when(appealRepository.save(any())).thenReturn(appeal);
 
         GradeAppeal result = appealService.create(1L, req);
+
+        // Khang dinh diem hien tai duoc doc TU bang diem (final=5), khong phai gia tri stub tu tra ve.
+        ArgumentCaptor<GradeAppeal> captor = ArgumentCaptor.forClass(GradeAppeal.class);
+        verify(appealRepository).save(captor.capture());
+        GradeAppeal built = captor.getValue();
+        assertEquals(0, BigDecimal.valueOf(5).compareTo(built.getCurrentScore()));
+        assertEquals(GradeAppeal.AppealStatus.PENDING, built.getStatus());
         assertNotNull(result);
     }
 

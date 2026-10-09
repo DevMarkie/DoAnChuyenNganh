@@ -16,8 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -83,8 +85,11 @@ public class ExcelImportServiceTest {
 
         byte[] result = excelImportService.generateImportTemplate(1L);
 
-        assertNotNull(result);
-        assertTrue(result.length > 0);
+        // Mo lai bang POI de chac chan la file XLSX hop le co du lieu, khong chi "khac rong".
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(result))) {
+            assertTrue(wb.getNumberOfSheets() > 0);
+            assertTrue(wb.getSheetAt(0).getPhysicalNumberOfRows() > 0);
+        }
     }
 
     @Test
@@ -122,8 +127,10 @@ public class ExcelImportServiceTest {
 
         byte[] result = excelImportService.generateStudentTemplate();
 
-        assertNotNull(result);
-        assertTrue(result.length > 0);
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(result))) {
+            assertTrue(wb.getNumberOfSheets() > 0);
+            assertTrue(wb.getSheetAt(0).getPhysicalNumberOfRows() > 0);
+        }
     }
 
     @Test

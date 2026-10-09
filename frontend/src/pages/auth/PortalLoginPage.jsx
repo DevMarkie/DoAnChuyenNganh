@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, User, X, Mail, Phone, CheckCircle, GraduationCap, BookOpen, ShieldCheck } from 'lucide-react';
+import { Lock, User, X, Mail, Phone, CheckCircle, GraduationCap, BookOpen, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
@@ -111,6 +111,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
 
   const [username, setUsername] = useState(config.defaultUser);
   const [password, setPassword] = useState(config.defaultPass);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [prevPortalType, setPrevPortalType] = useState(portalType);
@@ -118,6 +119,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
     setPrevPortalType(portalType);
     setUsername(config.defaultUser);
     setPassword(config.defaultPass);
+    setShowPassword(false);
   }
 
   // Forgot password modal states
@@ -402,14 +404,30 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                   transform: 'translateY(-50%)', color: 'var(--text-light)',
                 }} />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Nhập mật khẩu của bạn"
                   required
                   className="form-control"
-                  style={{ paddingLeft: '38px' }}
+                  style={{ paddingLeft: '38px', paddingRight: '40px' }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  style={{
+                    position: 'absolute', right: '12px', top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', padding: '4px',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                    color: showPassword ? accent : 'var(--text-light)',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </div>
 

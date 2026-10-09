@@ -1,2 +1,0 @@
----
-- [x] **Track: Xuất báo cáo điểm** *Link: [./tracks/export_grades_20261008/index.md](./tracks/export_grades_20261008/index.md)*

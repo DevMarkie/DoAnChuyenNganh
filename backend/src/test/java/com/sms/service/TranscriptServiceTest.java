@@ -117,4 +117,67 @@ public class TranscriptServiceTest {
         when(studentRepository.findById(99L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> transcriptService.getTranscript(99L));
     }
+
+    private static Grade makeGrade(String code, int credits, double gpa, int semId) {
+        Subject s = new Subject();
+        s.setSubjectCode(code);
+        s.setSubjectName(code);
+        s.setCredits(credits);
+
+        Semester sem = new Semester();
+        sem.setId(semId);
+        sem.setSemesterName("HK" + semId);
+        sem.setAcademicYear("2025-2026");
+
+        CourseSection sec = new CourseSection();
+        sec.setSubject(s);
+        sec.setSemester(sem);
+
+        Enrollment enr = new Enrollment();
+        enr.setSection(sec);
+
+        Grade g = new Grade();
+        g.setEnrollment(enr);
+        g.setGpaPoint(BigDecimal.valueOf(gpa));
+        g.setLetterGrade(gpa > 0 ? "P" : "F");
+        return g;
+    }
+
+    @Test
+    void retake_countsBestAttempt() {
+        when(studentRepository.findById(10L)).thenReturn(Optional.of(student));
+        when(gradeRepository.findFinalizedByStudentId(10L)).thenReturn(List.of(
+                makeGrade("CS101", 3, 0.0, 1),
+                makeGrade("CS101", 3, 4.0, 2)));
+
+        TranscriptResponse t = transcriptService.getTranscript(10L);
+        assertEquals(0, BigDecimal.valueOf(4.00).compareTo(t.getCumulativeGpa()));
+        assertEquals(3, t.getTotalCredits());
+        assertEquals(1, t.getCompletedCourses());
+    }
+
+    @Test
+    void improvement_lowerSecondAttempt_keepsBestGradeForCpa() {
+        when(studentRepository.findById(20L)).thenReturn(Optional.of(student));
+        when(gradeRepository.findFinalizedByStudentId(20L)).thenReturn(List.of(
+                makeGrade("CS104", 3, 3.0, 1),
+                makeGrade("CS104", 3, 2.0, 2)));
+
+        TranscriptResponse t = transcriptService.getTranscript(20L);
+        assertEquals(0, BigDecimal.valueOf(3.00).compareTo(t.getCumulativeGpa()));
+        assertEquals(3, t.getTotalCredits());
+    }
+
+    @Test
+    void failingGrade_excludedFromEarnedCredits_butCountedInCpa() {
+        when(studentRepository.findById(30L)).thenReturn(Optional.of(student));
+        when(gradeRepository.findFinalizedByStudentId(30L)).thenReturn(List.of(
+                makeGrade("CS102", 3, 0.0, 1),
+                makeGrade("CS103", 2, 3.0, 1)));
+
+        TranscriptResponse t = transcriptService.getTranscript(30L);
+        assertEquals(2, t.getTotalCredits());
+        assertEquals(1, t.getCompletedCourses());
+        assertEquals(0, BigDecimal.valueOf(1.20).compareTo(t.getCumulativeGpa()));
+    }
 }

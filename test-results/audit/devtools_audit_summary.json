@@ -1,0 +1,194 @@
+{
+  "timestamp": "2026-10-09T05:20:09.073Z",
+  "auditedPages": [
+    {
+      "name": "01_student_login",
+      "url": "http://localhost:5173/#/student/login",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\01_student_login.png"
+    },
+    {
+      "name": "02_student_dashboard",
+      "url": "http://localhost:5173/#/student/dashboard",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\02_student_dashboard.png"
+    },
+    {
+      "name": "03_student_schedule",
+      "url": "http://localhost:5173/#/student/schedule",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\03_student_schedule.png"
+    },
+    {
+      "name": "04_student_class_list_modal",
+      "url": "http://localhost:5173/#/student/schedule",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\04_student_class_list_modal.png"
+    },
+    {
+      "name": "05_student_enroll",
+      "url": "http://localhost:5173/#/student/enroll",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\05_student_enroll.png"
+    },
+    {
+      "name": "06_student_my_enrollments",
+      "url": "http://localhost:5173/#/student/enrollments",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\06_student_my_enrollments.png"
+    },
+    {
+      "name": "07_student_transcript",
+      "url": "http://localhost:5173/#/student/transcript",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\07_student_transcript.png"
+    },
+    {
+      "name": "08_student_curriculum",
+      "url": "http://localhost:5173/#/student/curriculum",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\08_student_curriculum.png"
+    },
+    {
+      "name": "09_student_profile",
+      "url": "http://localhost:5173/#/student/profile",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\09_student_profile.png"
+    },
+    {
+      "name": "10_lecturer_login",
+      "url": "http://localhost:5173/#/lecturer/login",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\10_lecturer_login.png"
+    },
+    {
+      "name": "11_lecturer_dashboard",
+      "url": "http://localhost:5173/#/lecturer/dashboard",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\11_lecturer_dashboard.png"
+    },
+    {
+      "name": "12_lecturer_sections",
+      "url": "http://localhost:5173/#/lecturer/my-sections",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\12_lecturer_sections.png"
+    },
+    {
+      "name": "13_lecturer_schedule",
+      "url": "http://localhost:5173/#/lecturer/schedule",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\13_lecturer_schedule.png"
+    },
+    {
+      "name": "15_lecturer_grades",
+      "url": "http://localhost:5173/#/lecturer/grades",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\15_lecturer_grades.png"
+    },
+    {
+      "name": "16_lecturer_grade_appeals",
+      "url": "http://localhost:5173/#/lecturer/grade-appeals",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\16_lecturer_grade_appeals.png"
+    },
+    {
+      "name": "17_lecturer_profile",
+      "url": "http://localhost:5173/#/lecturer/profile",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\17_lecturer_profile.png"
+    },
+    {
+      "name": "18_admin_login",
+      "url": "http://localhost:5173/#/admin/login",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\18_admin_login.png"
+    },
+    {
+      "name": "19_admin_dashboard",
+      "url": "http://localhost:5173/#/admin/dashboard",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\19_admin_dashboard.png"
+    },
+    {
+      "name": "20_admin_students",
+      "url": "http://localhost:5173/#/admin/students",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\20_admin_students.png"
+    },
+    {
+      "name": "21_admin_departments",
+      "url": "http://localhost:5173/#/admin/departments",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\21_admin_departments.png"
+    },
+    {
+      "name": "22_admin_classes",
+      "url": "http://localhost:5173/#/admin/classes",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\22_admin_classes.png"
+    },
+    {
+      "name": "23_admin_subjects",
+      "url": "http://localhost:5173/#/admin/subjects",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\23_admin_subjects.png"
+    },
+    {
+      "name": "24_admin_lecturers",
+      "url": "http://localhost:5173/#/admin/lecturers",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\24_admin_lecturers.png"
+    },
+    {
+      "name": "25_admin_semesters",
+      "url": "http://localhost:5173/#/admin/semesters",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\25_admin_semesters.png"
+    },
+    {
+      "name": "26_admin_course_sections",
+      "url": "http://localhost:5173/#/admin/course-sections",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\26_admin_course_sections.png"
+    },
+    {
+      "name": "27_admin_assign_enrollments",
+      "url": "http://localhost:5173/#/admin/assign-enrollments",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\27_admin_assign_enrollments.png"
+    },
+    {
+      "name": "28_admin_schedules",
+      "url": "http://localhost:5173/#/admin/schedules",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\28_admin_schedules.png"
+    },
+    {
+      "name": "29_admin_grades",
+      "url": "http://localhost:5173/#/admin/grades",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\29_admin_grades.png"
+    },
+    {
+      "name": "30_admin_password_resets",
+      "url": "http://localhost:5173/#/admin/password-resets",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\30_admin_password_resets.png"
+    },
+    {
+      "name": "31_admin_academic_warnings",
+      "url": "http://localhost:5173/#/admin/academic-warnings",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\31_admin_academic_warnings.png"
+    },
+    {
+      "name": "32_admin_grade_appeals",
+      "url": "http://localhost:5173/#/admin/grade-appeals",
+      "hasContent": true,
+      "snapPath": "C:\\Users\\Public\\Learn Phenikaa\\Nam4\\Ky1\\DoAnChuyenNganh\\test-results\\devtools_screenshots\\32_admin_grade_appeals.png"
+    }
+  ],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "networkFailures": []
+}

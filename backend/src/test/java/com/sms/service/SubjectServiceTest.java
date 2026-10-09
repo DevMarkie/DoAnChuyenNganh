@@ -152,4 +152,38 @@ public class SubjectServiceTest {
         assertFalse(subject.getIsActive());
         verify(subjectRepository).save(subject);
     }
+
+    @Test
+    void update_rejectsIndirectCycle() {
+        Subject current = new Subject();
+        current.setId(10);
+        current.setSubjectCode("CS201");
+
+        Subject prerequisite = new Subject();
+        prerequisite.setId(20);
+        prerequisite.setSubjectCode("CS101");
+        prerequisite.setPrerequisites(java.util.Set.of(current));
+
+        when(subjectRepository.findById(10)).thenReturn(Optional.of(current));
+        when(departmentRepository.findById(1)).thenReturn(Optional.of(new Department()));
+        when(subjectRepository.findAllById(java.util.Set.of(20))).thenReturn(List.of(prerequisite));
+
+        SubjectRequest req = new SubjectRequest("CS201", "Data Structures", 3, "", 1, List.of(20));
+        assertThrows(BadRequestException.class, () -> subjectService.update(10, req));
+        verify(subjectRepository, never()).save(any(Subject.class));
+    }
+
+    @Test
+    void update_rejectsUnknownPrerequisiteId() {
+        Subject current = new Subject();
+        current.setId(10);
+        current.setSubjectCode("CS201");
+
+        when(subjectRepository.findById(10)).thenReturn(Optional.of(current));
+        when(departmentRepository.findById(1)).thenReturn(Optional.of(new Department()));
+        when(subjectRepository.findAllById(java.util.Set.of(999))).thenReturn(List.of());
+
+        SubjectRequest req = new SubjectRequest("CS201", "Data Structures", 3, "", 1, List.of(999));
+        assertThrows(ResourceNotFoundException.class, () -> subjectService.update(10, req));
+    }
 }

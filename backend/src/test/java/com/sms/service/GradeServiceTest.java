@@ -184,4 +184,107 @@ public class GradeServiceTest {
         assertDoesNotThrow(() -> gradeService.saveImportedGrades(1L, 1L, List.of(request)));
         verify(gradeRepository).saveAll(anyList());
     }
+
+    @Test
+    void saveGrades_resolvesLecturerOnce_batchLoads_andSavesAllInOneCall() {
+        long adminUserId = 500L;
+        GradeRequest r1 = new GradeRequest();
+        r1.setEnrollmentId(1L);
+        r1.setCc1Score(BigDecimal.valueOf(9.0));
+        r1.setCc2Score(BigDecimal.valueOf(9.0));
+        r1.setMidtermScore(BigDecimal.valueOf(8.0));
+        r1.setFinalScore(BigDecimal.valueOf(7.5));
+
+        when(lecturerRepository.findByUserId(adminUserId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.findByIdInWithSection(anyList()))
+                .thenReturn(List.of(enrollment));
+        when(gradeRepository.findByEnrollmentIdIn(anyList())).thenReturn(List.of());
+        when(gradeRepository.saveAll(anyList())).thenAnswer(i -> i.getArgument(0));
+
+        gradeService.saveGrades(adminUserId, List.of(r1));
+
+        verify(lecturerRepository, times(1)).findByUserId(adminUserId);
+        verify(enrollmentRepository, times(1)).findByIdInWithSection(anyList());
+        verify(gradeRepository, times(1)).findByEnrollmentIdIn(anyList());
+        verify(gradeRepository, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    void calculateTotalScore_usesFiveFiveThirtySixtyWeights() {
+        Grade g = new Grade();
+        g.setCc1Score(BigDecimal.valueOf(8.0));
+        g.setCc2Score(BigDecimal.valueOf(6.0));
+        g.setMidtermScore(BigDecimal.valueOf(7.0));
+        g.setFinalScore(BigDecimal.valueOf(9.0));
+
+        g.calculateTotalScore();
+
+        assertEquals(0, BigDecimal.valueOf(8.20).compareTo(g.getTotalScore()));
+    }
+
+    @Test
+    void saveImportedGrades_rejectsEnrollmentFromAnotherSection() {
+        CourseSection selectedSection = new CourseSection();
+        selectedSection.setId(999L);
+        when(courseSectionRepository.findById(999L)).thenReturn(Optional.of(selectedSection));
+        when(enrollmentRepository.findByIdInWithSection(anyList()))
+                .thenReturn(List.of(enrollment));
+
+        assertThrows(BadRequestException.class, () -> 
+                gradeService.saveImportedGrades(500L, 999L, List.of(request)));
+    }
+
+    @Test
+    void lecturer_canEditFinalizedGrade_withinGraceWindow() {
+        long lectUserId = 42L;
+        courseSection.setLecturer(lecturer);
+        Grade existing = new Grade();
+        existing.setEnrollment(enrollment);
+        existing.setIsFinalized(true);
+        existing.setFinalizedAt(LocalDateTime.now().minusDays(2));
+
+        when(lecturerRepository.findByUserId(lectUserId)).thenReturn(Optional.of(lecturer));
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.of(existing));
+        when(gradeRepository.save(any(Grade.class))).thenAnswer(i -> i.getArgument(0));
+
+        Grade saved = gradeService.saveGrade(lectUserId, request);
+        assertEquals(0, BigDecimal.valueOf(8.0).compareTo(saved.getMidtermScore()));
+    }
+
+    @Test
+    void lecturer_cannotEditFinalizedGrade_afterGraceWindow() {
+        long lectUserId = 42L;
+        courseSection.setLecturer(lecturer);
+        Grade existing = new Grade();
+        existing.setEnrollment(enrollment);
+        existing.setIsFinalized(true);
+        existing.setFinalizedAt(LocalDateTime.now().minusDays(8));
+
+        when(lecturerRepository.findByUserId(lectUserId)).thenReturn(Optional.of(lecturer));
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.of(existing));
+
+        assertThrows(BadRequestException.class, () -> gradeService.saveGrade(lectUserId, request));
+    }
+
+    @Test
+    void specialGradeV_countsAsCompleteAndProducesFailingGrade() {
+        long adminUserId = 500L;
+        GradeRequest reqV = new GradeRequest();
+        reqV.setEnrollmentId(1L);
+        reqV.setSpecialGrade(Grade.SpecialGrade.V);
+        reqV.setFinalize(true);
+
+        when(lecturerRepository.findByUserId(adminUserId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.empty());
+        when(enrollmentRepository.findActiveBySectionId(courseSection.getId())).thenReturn(List.of(enrollment));
+        when(gradeRepository.save(any(Grade.class))).thenAnswer(i -> i.getArgument(0));
+
+        Grade saved = gradeService.saveGrade(adminUserId, reqV);
+        assertEquals(Grade.SpecialGrade.V, saved.getSpecialGrade());
+        assertEquals("F", saved.getLetterGrade());
+        assertTrue(saved.getIsFinalized());
+    }
 }

@@ -174,4 +174,66 @@ public class PasswordResetServiceTest {
 
         assertEquals(1, results.size());
     }
+
+    @Test
+    void approve_sendsToOnFileEmail_notRequesterSuppliedAddress() {
+        Role role = new Role();
+        role.setName("STUDENT");
+        User target = new User();
+        target.setId(10L);
+        target.setUsername("2500001");
+        target.setEmail("account.email@school.edu.vn");
+        target.setRole(role);
+
+        PasswordResetRequest req = PasswordResetRequest.builder()
+                .id(1L)
+                .user(target)
+                .username(target.getUsername())
+                .fullName("Nguyen Van A")
+                .role("STUDENT")
+                .email("attacker@evil.com")
+                .status(PasswordResetRequest.RequestStatus.PENDING)
+                .build();
+
+        Student profile = new Student();
+        profile.setId(99L);
+        profile.setEmail("profile.email@school.edu.vn");
+
+        when(resetRepository.findById(1L)).thenReturn(Optional.of(req));
+        when(userRepository.findById(500L)).thenReturn(Optional.of(new User()));
+        when(studentRepository.findByUserId(10L)).thenReturn(Optional.of(profile));
+        when(passwordEncoder.encode(anyString())).thenReturn("ENCODED");
+        when(resetRepository.save(any(PasswordResetRequest.class))).thenAnswer(i -> i.getArgument(0));
+        when(emailService.sendPasswordResetEmail(anyString(), anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(true);
+
+        PasswordResetResult result = passwordResetService.approveRequest(1L, null, 500L);
+
+        org.mockito.ArgumentCaptor<String> to = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendPasswordResetEmail(to.capture(), anyString(), anyString(), anyString(), anyString());
+
+        assertEquals("profile.email@school.edu.vn", to.getValue());
+        assertNotEquals("attacker@evil.com", to.getValue());
+        assertTrue(result.isEmailSent());
+    }
+
+    @Test
+    void createRequest_pendingAlreadyExists_returnsNullWithoutSaving() {
+        ForgotPasswordRequest fr = new ForgotPasswordRequest();
+        fr.setUsername("user1");
+        fr.setEmail("user1@example.com");
+
+        User user = new User();
+        user.setId(12L);
+        user.setUsername("user1");
+
+        when(userRepository.findByUsername("user1")).thenReturn(Optional.of(user));
+        when(resetRepository.existsByUserIdAndStatus(
+                12L, PasswordResetRequest.RequestStatus.PENDING))
+                .thenReturn(true);
+
+        PasswordResetRequest req = passwordResetService.createRequest(fr);
+        assertNull(req);
+        verify(resetRepository, never()).save(any());
+    }
 }

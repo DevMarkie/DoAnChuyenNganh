@@ -219,7 +219,7 @@ export default function SchedulesPage() {
       {/* KPI Stats */}
       <div className="stats-grid" style={{ marginBottom: '20px' }}>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+          <div className="stat-icon" style={{ background: 'var(--info-bg)', color: 'var(--info)' }}>
             <Calendar size={24} />
           </div>
           <div>
@@ -229,7 +229,7 @@ export default function SchedulesPage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+          <div className="stat-icon" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
             <MapPin size={24} />
           </div>
           <div>
@@ -239,7 +239,7 @@ export default function SchedulesPage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+          <div className="stat-icon" style={{ background: 'rgba(124, 58, 237, 0.15)', color: '#8b5cf6' }}>
             <User size={24} />
           </div>
           <div>
@@ -249,7 +249,7 @@ export default function SchedulesPage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#fffbeb', color: '#d97706' }}>
+          <div className="stat-icon" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
             <AlertTriangle size={24} />
           </div>
           <div>

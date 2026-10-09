@@ -6,8 +6,10 @@ import { LogOut, Sun, Moon, ChevronRight } from 'lucide-react';
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuthStore();
-  const { theme, toggleTheme } = useThemeStore();
+  const user = useAuthStore(state => state.user);
+  const logout = useAuthStore(state => state.logout);
+  const theme = useThemeStore(state => state.theme);
+  const toggleTheme = useThemeStore(state => state.toggleTheme);
 
   const roleLabel = user?.role === 'ADMIN' ? 'Quản trị viên'
     : user?.role === 'LECTURER' ? 'Giảng viên' : 'Sinh viên';

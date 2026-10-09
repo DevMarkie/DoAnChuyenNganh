@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Check,
   Plus,
@@ -79,19 +79,17 @@ export default function EnrollPage() {
     }
   };
 
-  const isEnrolled = (sectionId) => {
-    return myEnrollments.some(
-      (e) => e.courseSection?.id === sectionId && e.status === "ENROLLED",
-    );
-  };
-
-  const isSubjectAlreadyEnrolled = (subjectId) => {
-    return myEnrollments.some(
-      (enrollment) =>
-        enrollment.courseSection?.subject?.id === subjectId &&
-        enrollment.status === "ENROLLED",
-    );
-  };
+  const { enrolledSectionIds, enrolledSubjectIds } = useMemo(() => {
+    const secIds = new Set();
+    const subIds = new Set();
+    myEnrollments.forEach((e) => {
+      if (e.status === "ENROLLED") {
+        if (e.courseSection?.id) secIds.add(e.courseSection.id);
+        if (e.courseSection?.subject?.id) subIds.add(e.courseSection.subject.id);
+      }
+    });
+    return { enrolledSectionIds: secIds, enrolledSubjectIds: subIds };
+  }, [myEnrollments]);
 
   const filtered = availableSections.filter((s) => {
     if (!search) return true;
@@ -335,9 +333,9 @@ export default function EnrollPage() {
                 </tr>
               ) : (
                 filtered.map((s) => {
-                  const enrolled = isEnrolled(s.id);
+                  const enrolled = enrolledSectionIds.has(s.id);
                   const subjectAlreadyEnrolled =
-                    !enrolled && isSubjectAlreadyEnrolled(s.subject?.id);
+                    !enrolled && enrolledSubjectIds.has(s.subject?.id);
                   const isFull = (s.currentStudents || 0) >= s.maxStudents;
 
                   return (

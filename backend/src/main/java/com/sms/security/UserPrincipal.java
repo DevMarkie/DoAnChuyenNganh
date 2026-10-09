@@ -40,6 +40,21 @@ public class UserPrincipal implements UserDetails {
         );
     }
 
+    public static UserPrincipal createFromClaims(io.jsonwebtoken.Claims claims) {
+        String role = claims.get("role", String.class);
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+        return new UserPrincipal(
+                claims.get("userId", Long.class),
+                claims.getSubject(),
+                null,
+                claims.get("email", String.class),
+                role,
+                true, // Giả định token còn hạn thì active
+                false, // Không có thông tin này trong JWT
+                authorities
+        );
+    }
+
     @Override
     public boolean isAccountNonExpired() { return true; }
 

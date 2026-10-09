@@ -49,14 +49,9 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        return parseClaims(token).getSubject();
-    }
-
-    public boolean validateToken(String token) {
+    public Claims getValidatedClaims(String token) {
         try {
-            parseClaims(token);
-            return true;
+            return parseClaims(token);
         } catch (ExpiredJwtException e) {
             log.warn("JWT token expired: {}", e.getMessage());
         } catch (MalformedJwtException e) {
@@ -66,7 +61,7 @@ public class JwtUtil {
         } catch (JwtException | IllegalArgumentException e) {
             log.warn("Invalid JWT token: {}", e.getMessage());
         }
-        return false;
+        return null;
     }
 
     /**

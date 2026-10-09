@@ -11,7 +11,7 @@ const isTokenExpired = (token) => {
     const decoded = decodeJwt(token);
     if (!decoded.exp) return false;
     // 60-second buffer: treat token as expired slightly before actual expiry
-    return decoded.exp * 1000 < Date.now() - 60_000;
+    return (decoded.exp * 1000) < (Date.now() + 60_000);
   } catch {
     return true;
   }

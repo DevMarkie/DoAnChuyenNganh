@@ -29,7 +29,8 @@ const fetchApi = async (method, url, config = {}) => {
 
   const doFetch = async () => {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 15000);
+    const timeoutMs = config.timeout || 15000;
+    const id = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const response = await fetch(fullUrl, { ...options, signal: controller.signal });
       clearTimeout(id);

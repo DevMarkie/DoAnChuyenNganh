@@ -38,6 +38,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
     /** In-memory sliding window counters, keyed by username. */
     private final Map<String, UserBucket> buckets = new ConcurrentHashMap<>();
 
+    /**
+     * Dọn dẹp định kỳ (mỗi 5 phút) để chống memory leak từ những user
+     * không còn gửi request nữa.
+     */
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 300000)
+    public void cleanupExpiredBuckets() {
+        long now = System.currentTimeMillis();
+        buckets.entrySet().removeIf(entry -> now - entry.getValue().windowStart.get() > WINDOW_MS);
+    }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();

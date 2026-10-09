@@ -290,6 +290,7 @@ public class EnrollmentService {
                 enrollment.setStudent(student);
                 enrollment.setSection(section);
                 enrollment.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
+                enrollment.setEnrollmentType(resolveEnrollmentType(student.getId(), section.getSubject().getId()));
                 toEnroll.add(enrollment);
             }
         }
@@ -308,10 +309,6 @@ public class EnrollmentService {
             courseSectionRepository.save(section);
         }
 
-        List<Enrollment> results = new java.util.ArrayList<>();
-        for (Enrollment enrollment : toEnroll) {
-            results.add(enrollmentRepository.save(enrollment));
-        }
-        return results;
+        return enrollmentRepository.saveAll(toEnroll);
     }
 }

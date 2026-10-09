@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Calendar, Clock, MapPin, User, BookOpen, Layers, CheckCircle2,
   Grid, List, Printer, School, CalendarDays, RefreshCw
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { scheduleService } from '../../services/dataService';
+import { scheduleService, semesterService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
 import StudentClassListModal from './StudentClassListModal';
 
@@ -28,20 +28,23 @@ const PERIOD_SLOTS = [
 export default function StudentSchedulePage() {
   const { user } = useAuthStore();
   const [schedules, setSchedules] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState('');
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [selectedSection, setSelectedSection] = useState(null);
 
   // Current day calculation
-  const todayVal = useMemo(() => {
+  const [todayVal] = useState(() => {
     const day = new Date().getDay(); // 0 = Sunday, 1 = Monday...
     return day === 0 ? 8 : day + 1; // 2..8
-  }, []);
+  });
 
-  const loadSchedule = async () => {
+  const loadScheduleForSemester = async (semId) => {
     try {
       setLoading(true);
-      const res = await scheduleService.getMySchedule();
+      const params = semId ? { semesterId: semId } : {};
+      const res = await scheduleService.getMySchedule(params);
       setSchedules(res.data?.data || []);
     } catch {
       toast.error('Lỗi khi tải thời khóa biểu sinh viên');
@@ -51,15 +54,39 @@ export default function StudentSchedulePage() {
   };
 
   useEffect(() => {
-    loadSchedule();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const initData = async () => {
+      try {
+        setLoading(true);
+        const semRes = await semesterService.getAll();
+        const semList = semRes.data?.data || [];
+        setSemesters(semList);
+
+        const currentSem = semList.find((s) => s.isCurrent) || semList[0];
+        const defaultSemId = currentSem ? currentSem.id : '';
+        setSelectedSemesterId(defaultSemId);
+
+        await loadScheduleForSemester(defaultSemId);
+      } catch {
+        toast.error('Lỗi khi khởi tạo thời khóa biểu');
+        setLoading(false);
+      }
+    };
+
+    initData();
   }, []);
+
+  const handleSemesterChange = (newSemId) => {
+    setSelectedSemesterId(newSemId);
+    loadScheduleForSemester(newSemId);
+  };
 
   const todayClasses = schedules.filter((s) => s.dayOfWeek === todayVal);
   const totalCredits = schedules.reduce(
     (acc, s) => acc + (s.courseSection?.subject?.credits || 0),
     0
   );
+
+  const activeSemesterObj = semesters.find((s) => String(s.id) === String(selectedSemesterId));
 
   return (
     <div>
@@ -68,10 +95,48 @@ export default function StudentSchedulePage() {
         <div>
           <h1>Thời Khóa Biểu & Lịch Học Tuần</h1>
           <p>
-            Lịch học tự động liên kết từ lớp học phần đã đăng ký và lớp sinh hoạt của sinh viên
+            {activeSemesterObj
+              ? `Lịch học ${activeSemesterObj.semesterName}${activeSemesterObj.isCurrent ? ' (Học kỳ hiện tại)' : ''}`
+              : 'Lịch học tự động liên kết từ lớp học phần đã đăng ký và lớp sinh hoạt của sinh viên'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Semester Selector */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'var(--bg-surface)',
+            padding: '6px 14px',
+            borderRadius: 'var(--radius-md)',
+            border: '1.5px solid var(--primary-border)',
+            boxShadow: 'var(--shadow-xs)'
+          }}>
+            <School size={18} style={{ color: 'var(--primary)' }} />
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              Học kỳ:
+            </span>
+            <select
+              value={selectedSemesterId}
+              onChange={(e) => handleSemesterChange(e.target.value)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                color: 'var(--primary)',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              {semesters.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.semesterName} {s.isCurrent ? '★ (Hiện tại)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button
             className="btn btn-outline"
             onClick={() => window.print()}
@@ -79,7 +144,11 @@ export default function StudentSchedulePage() {
           >
             <Printer size={16} /> In TKB
           </button>
-          <button className="btn btn-outline" onClick={loadSchedule} title="Tải lại">
+          <button
+            className="btn btn-outline"
+            onClick={() => loadScheduleForSemester(selectedSemesterId)}
+            title="Tải lại"
+          >
             <RefreshCw size={16} /> Tải lại
           </button>
         </div>
@@ -365,6 +434,20 @@ export default function StudentSchedulePage() {
                         gap: '6px',
                       }}
                     >
+                      {cellSchedules.length > 1 && (
+                        <div style={{
+                          background: '#fef2f2',
+                          color: '#dc2626',
+                          border: '1px solid #fca5a5',
+                          borderRadius: '4px',
+                          padding: '3px 6px',
+                          fontSize: '0.675rem',
+                          fontWeight: 700,
+                          textAlign: 'center',
+                        }}>
+                          ⚠️ Trùng ca ({cellSchedules.length} môn)
+                        </div>
+                      )}
                       {cellSchedules.map((s) => {
                         const subj = s.courseSection?.subject;
                         const lect = s.courseSection?.lecturer;

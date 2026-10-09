@@ -4,7 +4,7 @@ import {
   Grid, List, Printer, School, RefreshCw
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { scheduleService } from '../../services/dataService';
+import { scheduleService, semesterService } from '../../services/dataService';
 import LecturerAttendanceModal from './LecturerAttendanceModal';
 
 const DAYS = [
@@ -26,17 +26,22 @@ const PERIOD_SLOTS = [
 
 export default function LecturerSchedulePage() {
   const [schedules, setSchedules] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState('');
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [selectedSection, setSelectedSection] = useState(null);
 
-  const day = new Date().getDay();
-  const todayVal = day === 0 ? 8 : day + 1;
+  const [todayVal] = useState(() => {
+    const day = new Date().getDay();
+    return day === 0 ? 8 : day + 1;
+  });
 
-  const loadSchedule = async () => {
+  const loadScheduleForSemester = async (semId) => {
     try {
       setLoading(true);
-      const res = await scheduleService.getLecturerSchedule();
+      const params = semId ? { semesterId: semId } : {};
+      const res = await scheduleService.getLecturerSchedule(params);
       setSchedules(res.data?.data || []);
     } catch {
       toast.error('Lỗi khi tải lịch giảng dạy');
@@ -46,12 +51,36 @@ export default function LecturerSchedulePage() {
   };
 
   useEffect(() => {
-    loadSchedule();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const initData = async () => {
+      try {
+        setLoading(true);
+        const semRes = await semesterService.getAll();
+        const semList = semRes.data?.data || [];
+        setSemesters(semList);
+
+        const currentSem = semList.find((s) => s.isCurrent) || semList[0];
+        const defaultSemId = currentSem ? currentSem.id : '';
+        setSelectedSemesterId(defaultSemId);
+
+        await loadScheduleForSemester(defaultSemId);
+      } catch {
+        toast.error('Lỗi khi khởi tạo lịch giảng dạy');
+        setLoading(false);
+      }
+    };
+
+    initData();
   }, []);
+
+  const handleSemesterChange = (newSemId) => {
+    setSelectedSemesterId(newSemId);
+    loadScheduleForSemester(newSemId);
+  };
 
   const todayClasses = schedules.filter((s) => s.dayOfWeek === todayVal);
   const uniqueSections = new Set(schedules.map((s) => s.courseSection?.id).filter(Boolean)).size;
+
+  const activeSemesterObj = semesters.find((s) => String(s.id) === String(selectedSemesterId));
 
   return (
     <div>
@@ -60,10 +89,48 @@ export default function LecturerSchedulePage() {
         <div>
           <h1>Lịch Giảng Dạy & Thời Khóa Biểu Tuần</h1>
           <p>
-            Thời khóa biểu các lớp học phần được phân công giảng dạy trong học kỳ
+            {activeSemesterObj
+              ? `Thời khóa biểu giảng dạy ${activeSemesterObj.semesterName}${activeSemesterObj.isCurrent ? ' (Học kỳ hiện tại)' : ''}`
+              : 'Thời khóa biểu các lớp học phần được phân công giảng dạy trong học kỳ'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Semester Selector */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'var(--bg-surface)',
+            padding: '6px 14px',
+            borderRadius: 'var(--radius-md)',
+            border: '1.5px solid var(--primary-border)',
+            boxShadow: 'var(--shadow-xs)'
+          }}>
+            <School size={18} style={{ color: 'var(--primary)' }} />
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+              Học kỳ:
+            </span>
+            <select
+              value={selectedSemesterId}
+              onChange={(e) => handleSemesterChange(e.target.value)}
+              style={{
+                border: 'none',
+                background: 'transparent',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                color: 'var(--primary)',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              {semesters.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.semesterName} {s.isCurrent ? '★ (Hiện tại)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button
             className="btn btn-outline"
             onClick={() => window.print()}
@@ -71,7 +138,11 @@ export default function LecturerSchedulePage() {
           >
             <Printer size={16} /> In lịch
           </button>
-          <button className="btn btn-outline" onClick={loadSchedule} title="Tải lại">
+          <button
+            className="btn btn-outline"
+            onClick={() => loadScheduleForSemester(selectedSemesterId)}
+            title="Tải lại"
+          >
             <RefreshCw size={16} /> Tải lại
           </button>
         </div>

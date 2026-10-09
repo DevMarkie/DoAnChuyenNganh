@@ -70,8 +70,14 @@ public class ScheduleService {
         Lecturer lecturer = lecturerRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ giảng viên"));
 
-        if (semesterId != null) {
-            return scheduleRepository.findByLecturerIdAndSemesterId(lecturer.getId(), semesterId);
+        Long requestedSemesterId = semesterId;
+        if (requestedSemesterId == null) {
+            requestedSemesterId = semesterRepository.findByIsCurrentTrue()
+                    .map(semester -> semester.getId().longValue())
+                    .orElse(null);
+        }
+        if (requestedSemesterId != null) {
+            return scheduleRepository.findByLecturerIdAndSemesterId(lecturer.getId(), requestedSemesterId);
         }
         return scheduleRepository.findByLecturerId(lecturer.getId());
     }

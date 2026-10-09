@@ -124,12 +124,23 @@ public class GradeAppealServiceTest {
     }
 
     @Test
-    void findAll_Lecturer_Success() {
+    void findAll_Lecturer_filtersOutOtherLecturersAppeals() {
+        Lecturer other = new Lecturer();
+        other.setId(2L);
+        CourseSection otherSection = new CourseSection();
+        otherSection.setLecturer(other);
+        Enrollment otherEnrollment = new Enrollment();
+        otherEnrollment.setSection(otherSection);
+        GradeAppeal otherAppeal = new GradeAppeal();
+        otherAppeal.setId(2L);
+        otherAppeal.setEnrollment(otherEnrollment);
+
         when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
-        when(appealRepository.findAllWithDetails()).thenReturn(List.of(appeal));
+        when(appealRepository.findAllWithDetails()).thenReturn(List.of(appeal, otherAppeal));
 
         List<GradeAppeal> result = appealService.findAll(1L, null, null, null);
         assertEquals(1, result.size());
+        assertSame(appeal, result.get(0));
     }
 
     @Test

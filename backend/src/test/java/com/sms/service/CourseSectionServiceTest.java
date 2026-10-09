@@ -16,6 +16,7 @@ import com.sms.repository.SubjectRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -171,7 +172,14 @@ public class CourseSectionServiceTest {
                 .thenReturn(List.of());
 
         courseSectionService.create(request);
-        verify(scheduleRepository).save(any(Schedule.class));
+
+        ArgumentCaptor<Schedule> scheduleCaptor = ArgumentCaptor.forClass(Schedule.class);
+        verify(scheduleRepository).save(scheduleCaptor.capture());
+        Schedule saved = scheduleCaptor.getValue();
+        assertEquals(2, saved.getDayOfWeek().intValue());
+        assertEquals(1, saved.getStartPeriod().intValue());
+        assertEquals(3, saved.getEndPeriod().intValue());
+        assertEquals("A101", saved.getRoom());
     }
 
     @Test

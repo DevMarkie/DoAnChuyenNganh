@@ -107,21 +107,6 @@ public class SubjectServiceTest {
     }
 
     @Test
-    void create_SelfPrerequisite_ShouldThrow() {
-        request.setPrerequisiteIds(List.of(1));
-        // In create, subjectId is null, so checking self-prerequisite relies on not finding self.
-        // But logic in resolvePrerequisites says `if (subjectId != null && uniqueIds.contains(subjectId))`
-        // So during create, it just checks if the prereq exists.
-        
-        when(subjectRepository.existsBySubjectCode("CS101")).thenReturn(false);
-        when(departmentRepository.findById(1)).thenReturn(Optional.of(department));
-        when(subjectRepository.findAllById(any())).thenReturn(List.of(subject));
-
-        subjectService.create(request);
-        verify(subjectRepository).save(any(Subject.class));
-    }
-
-    @Test
     void update_SelfPrerequisite_ShouldThrow() {
         request.setPrerequisiteIds(List.of(1));
 

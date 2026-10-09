@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { GraduationCap, BookOpen, ShieldCheck } from 'lucide-react';
+import SmsLogo from '../../components/common/SmsLogo';
 
 const PORTAL_THEME = {
   student: {
@@ -73,12 +74,7 @@ export default function PortalHubPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '34px', height: '34px', borderRadius: '8px',
-            border: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-surface)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)', letterSpacing: '-0.03em',
-          }}>SM</div>
+          <SmsLogo size={36} />
           <div>
             <div style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
               SMS University

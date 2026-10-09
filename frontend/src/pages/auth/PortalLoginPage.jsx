@@ -4,6 +4,7 @@ import { Lock, User, X, Mail, Phone, CheckCircle, GraduationCap, BookOpen, Shiel
 import { toast } from 'react-toastify';
 import { authService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
+import SmsLogo from '../../components/common/SmsLogo';
 
 const PORTAL_CONFIG = {
   student: {
@@ -107,7 +108,6 @@ export default function PortalLoginPage({ portalType = 'student' }) {
 
   const accent = config.accent;
   const accentSoft = config.accentSoft;
-  const IconComp = config.Icon;
 
   const [username, setUsername] = useState(config.defaultUser);
   const [password, setPassword] = useState(config.defaultPass);
@@ -232,14 +232,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
       >
         {/* Top: University Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '42px', height: '42px', borderRadius: 'var(--radius-md)',
-            background: config.gradient,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: `0 4px 14px -3px ${accent}44`,
-          }}>
-            <IconComp size={22} style={{ color: '#fff' }} />
-          </div>
+          <SmsLogo size={42} />
           <div>
             <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
               SMS University
@@ -306,13 +299,8 @@ export default function PortalLoginPage({ portalType = 'student' }) {
         <div style={{ width: '100%', maxWidth: '400px' }}>
           {/* Mobile Brand (hidden on desktop via .login-mobile-brand) */}
           <div className="login-mobile-brand" style={{ marginBottom: '28px', textAlign: 'center' }}>
-            <div style={{
-              width: '44px', height: '44px', borderRadius: 'var(--radius-md)',
-              background: config.gradient,
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: '10px', boxShadow: `0 4px 14px -3px ${accent}44`,
-            }}>
-              <IconComp size={22} style={{ color: '#fff' }} />
+            <div style={{ display: 'inline-flex', marginBottom: '10px' }}>
+              <SmsLogo size={46} />
             </div>
             <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>SMS University</div>
             <div style={{ fontSize: '0.78rem', fontWeight: 600, color: accent }}>{config.title}</div>

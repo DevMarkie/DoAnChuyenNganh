@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { passwordResetService } from '../../services/dataService';
+import SmsLogo from '../common/SmsLogo';
 import {
-  LayoutDashboard, Users, Building2, GraduationCap, BookOpen, UserCog,
+  LayoutDashboard, Users, Building2, BookOpen, UserCog,
   CalendarDays, Calendar, Layers, ClipboardList, BookMarked, School, Award, AlertTriangle, Menu,
   ChevronLeft, KeyRound, UserPlus
 } from 'lucide-react';
@@ -121,9 +122,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       <div className="sidebar-header">
         {!collapsed && (
           <div className="sidebar-brand">
-            <div className="sidebar-brand-icon">
-              <GraduationCap size={22} />
-            </div>
+            <SmsLogo size={32} />
             <div className="sidebar-brand-text">
               <span className="brand-name">SMS PORTAL</span>
               <span className="brand-sub">Quản Lý Đào Tạo</span>

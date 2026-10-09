@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { scheduleService } from '../../services/dataService';
-import useAuthStore from '../../store/authStore';
+import LecturerAttendanceModal from './LecturerAttendanceModal';
 
 const DAYS = [
   { value: 2, label: 'Thứ Hai', short: 'T2', jsDay: 1 },
@@ -25,10 +25,10 @@ const PERIOD_SLOTS = [
 ];
 
 export default function LecturerSchedulePage() {
-  const { user } = useAuthStore();
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
+  const [selectedSection, setSelectedSection] = useState(null);
 
   const day = new Date().getDay();
   const todayVal = day === 0 ? 8 : day + 1;
@@ -300,7 +300,9 @@ export default function LecturerSchedulePage() {
                               padding: '8px',
                               fontSize: '0.8rem',
                               boxShadow: 'var(--shadow-xs)',
+                              cursor: 'pointer'
                             }}
+                            onClick={() => setSelectedSection(s.courseSection)}
                           >
                             <div style={{ fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.3 }}>
                               {subj?.subjectName || 'Lớp HP'}
@@ -352,7 +354,7 @@ export default function LecturerSchedulePage() {
               </thead>
               <tbody>
                 {schedules.map((s) => (
-                  <tr key={s.id}>
+                  <tr key={s.id} onClick={() => setSelectedSection(s.courseSection)} style={{ cursor: 'pointer' }}>
                     <td>
                       <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
                         {s.courseSection?.subject?.subjectName || 'Lớp HP'}
@@ -396,6 +398,13 @@ export default function LecturerSchedulePage() {
             </table>
           </div>
         </div>
+      )}
+
+      {selectedSection && (
+        <LecturerAttendanceModal
+          courseSection={selectedSection}
+          onClose={() => setSelectedSection(null)}
+        />
       )}
     </div>
   );

@@ -169,7 +169,7 @@ public class EnrollmentServiceTest {
         when(courseSectionRepository.findByIdForEnrollment(1L)).thenReturn(Optional.of(section));
         when(studentRepository.findByClassEntityId(1)).thenReturn(List.of(student));
         when(enrollmentRepository.findByStudentIdAndSectionId(1L, 1L)).thenReturn(Optional.empty());
-        when(enrollmentRepository.save(any(Enrollment.class))).thenReturn(enrollment);
+        when(enrollmentRepository.saveAll(anyList())).thenReturn(List.of(enrollment));
         
         List<Enrollment> results = enrollmentService.adminBatchAssignClass(1, 1L);
         assertEquals(1, results.size());

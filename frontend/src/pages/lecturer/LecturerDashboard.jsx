@@ -117,13 +117,13 @@ export default function LecturerDashboard() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Lớp HP</th>
-                <th>Tên Môn Học</th>
-                <th>Số Tín Chỉ</th>
-                <th>Lịch Học Chi Tiết</th>
-                <th>Phòng Học</th>
-                <th>Sĩ Số Lớp</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th>Mã lớp HP</th>
+                <th>Tên môn học</th>
+                <th>Số tín chỉ</th>
+                <th>Lịch học chi tiết</th>
+                <th>Phòng học</th>
+                <th>Sĩ số lớp</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

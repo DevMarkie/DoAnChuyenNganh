@@ -10,34 +10,34 @@
 /* ——— CSS Custom Properties / Design Tokens ——— */
 :root {
   /* Colors — Light Mode (Clean Academic Slate) */
-  --bg-app: #f0fdfa;
+  --bg-app: #f8fafc;
   --bg-surface: #ffffff;
   --bg-subtle: #f1f5f9;
   --bg-muted: #e2e8f0;
-  --bg-hover: #ccfbf1;
-  --bg-active: #99f6e4;
+  --bg-hover: #eff6ff;
+  --bg-active: #dbeafe;
 
-  /* Borders */
-  --border-color: #5eead4;
-  --border-subtle: #99f6e4;
-  --border-focus: #0d9488;
+  /* Borders — neutral slate so blue stays the only accent */
+  --border-color: #e2e8f0;
+  --border-subtle: #cbd5e1;
+  --border-focus: #2563eb;
 
-  /* Primary — used only as a restrained accent (links, focus, active nav) */
-  --primary: #0d9488;
-  --primary-hover: #0f766e;
-  --primary-light: #ccfbf1;
-  --primary-border: #5eead4;
-  --primary-gradient: #115e59;
+  /* Primary — single house accent (links, focus, active nav, primary actions) */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-border: #bfdbfe;
+  --primary-gradient: #1d4ed8;
 
-  /* Neutral action ink — buttons & primary actions (monochrome, no gradient) */
-  --btn-primary-bg: #0d9488;
+  /* Neutral action ink — buttons & primary actions (flat, no gradient) */
+  --btn-primary-bg: #2563eb;
   --btn-primary-fg: #ffffff;
-  --btn-primary-hover: #0f766e;
+  --btn-primary-hover: #1d4ed8;
 
   /* Secondary / Slate */
-  --secondary: #2dd4bf;
-  --secondary-hover: #14b8a6;
-  --secondary-light: #f0fdfa;
+  --secondary: #60a5fa;
+  --secondary-hover: #3b82f6;
+  --secondary-light: #eff6ff;
 
   /* Status Colors (Soft Pastel Tint + Crisp Contrast) */
   --success: #059669;
@@ -61,7 +61,7 @@
   --info-text: #075985;
 
   /* Typography Colors */
-  --text-main: #134e4a;
+  --text-main: #0f172a;
   --text-muted: #475569;
   --text-secondary: #0f172a;
   --text-light: #94a3b8;
@@ -403,7 +403,7 @@ p {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--primary), #6366f1, var(--success));
+  background: var(--primary);
 }
 
 .curriculum-hero-header {
@@ -418,8 +418,7 @@ p {
 .curriculum-hero-eyebrow {
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--text-muted);
   margin-bottom: 6px;
 }
@@ -723,9 +722,8 @@ p {
   background: var(--bg-surface);
   color: var(--text-muted);
   font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.78rem;
+  letter-spacing: normal;
   padding: 10px 18px;
   border-bottom: 1px solid var(--border-color);
   white-space: nowrap;
@@ -796,8 +794,7 @@ p {
   font-size: 0.825rem;
   font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: normal;
   margin-top: 2px;
 }
 
@@ -909,9 +906,8 @@ p {
   background: var(--bg-subtle);
   color: var(--text-muted);
   font-weight: 600;
-  font-size: 0.775rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  letter-spacing: normal;
   padding: 12px 18px;
   border-bottom: 1px solid var(--border-color);
   white-space: nowrap;
@@ -1190,17 +1186,17 @@ textarea.form-control {
 /* Portal color themes — applied via inline style / data-portal attribute */
 .portal-card[data-portal="student"] {
   --portal-accent: #2563eb;
-  --portal-gradient: linear-gradient(135deg, #2563eb, #3b82f6, #60a5fa);
+  --portal-gradient: #2563eb;
   --portal-shadow: rgba(37, 99, 235, 0.18);
 }
 .portal-card[data-portal="lecturer"] {
   --portal-accent: #0d9488;
-  --portal-gradient: linear-gradient(135deg, #0d9488, #14b8a6, #2dd4bf);
+  --portal-gradient: #0d9488;
   --portal-shadow: rgba(13, 148, 136, 0.18);
 }
 .portal-card[data-portal="admin"] {
   --portal-accent: #d97706;
-  --portal-gradient: linear-gradient(135deg, #d97706, #f59e0b, #fbbf24);
+  --portal-gradient: #d97706;
   --portal-shadow: rgba(217, 119, 6, 0.18);
 }
 
@@ -1265,7 +1261,7 @@ textarea.form-control {
   position: absolute;
   top: 0; left: 0; bottom: 0;
   width: 5px;
-  background: var(--login-accent-gradient, linear-gradient(180deg, #2563eb, #60a5fa));
+  background: var(--login-accent-gradient, #2563eb);
 }
 
 /* Two-column login: brand panel on the left, mobile brand hidden on wide screens */

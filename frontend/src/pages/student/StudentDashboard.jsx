@@ -124,13 +124,13 @@ export default function StudentDashboard() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Lớp HP</th>
-                <th>Tên Môn Học</th>
-                <th>Số Tín Chỉ</th>
-                <th>Giảng Viên Giảng Dạy</th>
-                <th>Lịch Học</th>
-                <th>Phòng Học</th>
-                <th>Trạng Thái</th>
+                <th>Mã lớp HP</th>
+                <th>Tên môn học</th>
+                <th>Số tín chỉ</th>
+                <th>Giảng viên giảng dạy</th>
+                <th>Lịch học</th>
+                <th>Phòng học</th>
+                <th>Trạng thái</th>
               </tr>
             </thead>
             <tbody>

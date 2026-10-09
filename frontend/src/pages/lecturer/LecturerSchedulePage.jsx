@@ -415,9 +415,9 @@ export default function LecturerSchedulePage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Lớp Học Phần & Môn Học</th>
+                  <th>Lớp học phần & môn học</th>
                   <th>Học kỳ</th>
-                  <th>Thứ & Tiết học</th>
+                  <th>Thứ & tiết học</th>
                   <th>Phòng học</th>
                   <th>Thời gian áp dụng</th>
                   <th>Ghi chú</th>

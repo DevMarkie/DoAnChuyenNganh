@@ -390,7 +390,7 @@ export default function StudentImportModal({ onImportDone }) {
                   <tr>
                     <th style={{ width: "55px", textAlign: "center" }}>Dòng</th>
                     <th style={{ width: "110px" }}>Mã SV</th>
-                    <th>Họ và Tên</th>
+                    <th>Họ và tên</th>
                     <th style={{ width: "105px" }}>Ngày sinh</th>
                     <th style={{ width: "80px" }}>Giới tính</th>
                     <th style={{ width: "130px" }}>Lớp SH</th>

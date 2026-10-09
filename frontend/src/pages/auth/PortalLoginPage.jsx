@@ -13,9 +13,6 @@ const PORTAL_CONFIG = {
     accentHover: '#1d4ed8',
     accentSoft: '#eff6ff',
     accentBorder: '#bfdbfe',
-    gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-    panelGradient: 'linear-gradient(180deg, #2563eb, #3b82f6, #60a5fa)',
-    panelBg: 'linear-gradient(160deg, #eff6ff 0%, #dbeafe 50%, #e0f2fe 100%)',
     Icon: GraduationCap,
     roleLabel: 'Sinh viên',
     title: 'Cổng thông tin sinh viên',
@@ -44,9 +41,6 @@ const PORTAL_CONFIG = {
     accentHover: '#0f766e',
     accentSoft: '#f0fdfa',
     accentBorder: '#99f6e4',
-    gradient: 'linear-gradient(135deg, #0d9488, #14b8a6)',
-    panelGradient: 'linear-gradient(180deg, #0d9488, #14b8a6, #2dd4bf)',
-    panelBg: 'linear-gradient(160deg, #f0fdfa 0%, #ccfbf1 50%, #d1fae5 100%)',
     Icon: BookOpen,
     roleLabel: 'Giảng viên',
     title: 'Cổng cán bộ & giảng viên',
@@ -75,9 +69,6 @@ const PORTAL_CONFIG = {
     accentHover: '#b45309',
     accentSoft: '#fffbeb',
     accentBorder: '#fde68a',
-    gradient: 'linear-gradient(135deg, #d97706, #f59e0b)',
-    panelGradient: 'linear-gradient(180deg, #d97706, #f59e0b, #fbbf24)',
-    panelBg: 'linear-gradient(160deg, #fffbeb 0%, #fef3c7 50%, #fef9c3 100%)',
     Icon: ShieldCheck,
     roleLabel: 'Quản trị viên',
     title: 'Cổng quản trị viên hệ thống',
@@ -220,13 +211,13 @@ export default function PortalLoginPage({ portalType = 'student' }) {
       <div
         className="login-brand-panel force-light-text"
         style={{
-          '--login-accent-gradient': config.panelGradient,
+          '--login-accent-gradient': config.accent,
           flex: '1 1 46%',
           padding: '56px 60px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: config.panelBg,
+          background: config.accentSoft,
           borderRight: '1px solid var(--border-color)',
         }}
       >
@@ -425,7 +416,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
               className="btn btn-primary"
               style={{
                 width: '100%', padding: '12px', fontSize: '0.9rem',
-                background: config.gradient, borderColor: accent,
+                background: accent, borderColor: accent,
                 color: '#fff',
               }}
             >

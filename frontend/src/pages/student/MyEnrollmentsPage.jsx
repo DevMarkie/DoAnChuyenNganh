@@ -122,16 +122,16 @@ export default function MyEnrollmentsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Lớp HP</th>
-                <th>Tên Môn Học</th>
-                <th>Số Tín Chỉ</th>
-                <th>Học Kỳ</th>
-                <th>Giảng Viên Giảng Dạy</th>
-                <th>Lịch Học Chi Tiết</th>
-                <th>Phòng Học</th>
-                <th>Ngày Đăng Ký</th>
-                <th>Trạng Thái</th>
-                <th style={{ textAlign: "right" }}>Thao Tác</th>
+                <th>Mã lớp HP</th>
+                <th>Tên môn học</th>
+                <th>Số tín chỉ</th>
+                <th>Học kỳ</th>
+                <th>Giảng viên giảng dạy</th>
+                <th>Lịch học chi tiết</th>
+                <th>Phòng học</th>
+                <th>Ngày đăng ký</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: "right" }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

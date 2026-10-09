@@ -551,11 +551,11 @@ export default function SchedulesPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Thứ & Tiết học</th>
+                  <th>Thứ & tiết học</th>
                   <th>Phòng học</th>
-                  <th>Lớp Học Phần / Môn Học</th>
-                  <th>Lớp Sinh Hoạt</th>
-                  <th>Giảng Viên</th>
+                  <th>Lớp học phần / môn học</th>
+                  <th>Lớp sinh hoạt</th>
+                  <th>Giảng viên</th>
                   <th>Thời gian áp dụng</th>
                   <th>Ghi chú</th>
                   <th style={{ textAlign: 'right' }}>Thao tác</th>

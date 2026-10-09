@@ -396,7 +396,7 @@ export default function GradeEntryPage() {
               <tr>
                 <th style={{ width: "50px", position: "sticky", left: 0, zIndex: 11, backgroundColor: "var(--bg-surface)" }}>STT</th>
                 <th style={{ width: "120px", position: "sticky", left: "50px", zIndex: 11, backgroundColor: "var(--bg-surface)" }}>Mã SV</th>
-                <th style={{ minWidth: "200px", position: "sticky", left: "170px", zIndex: 11, backgroundColor: "var(--bg-surface)", boxShadow: "2px 0 5px -2px rgba(0,0,0,0.1)" }}>Họ và Tên Sinh Viên</th>
+                <th style={{ minWidth: "200px", position: "sticky", left: "170px", zIndex: 11, backgroundColor: "var(--bg-surface)", boxShadow: "2px 0 5px -2px rgba(0,0,0,0.1)" }}>Họ và tên sinh viên</th>
                 <th>Lớp SH</th>
                 <th style={{ textAlign: "center" }}>
                   CC1 (5%)
@@ -421,10 +421,10 @@ export default function GradeEntryPage() {
                     V / I / M
                   </small>
                 </th>
-                <th style={{ textAlign: "center" }}>Tổng Kết</th>
+                <th style={{ textAlign: "center" }}>Tổng kết</th>
                 <th style={{ textAlign: "center" }}>Hệ 4</th>
-                <th style={{ textAlign: "center" }}>Điểm Chữ</th>
-                <th style={{ textAlign: "center" }}>Kết Quả</th>
+                <th style={{ textAlign: "center" }}>Điểm chữ</th>
+                <th style={{ textAlign: "center" }}>Kết quả</th>
               </tr>
             </thead>
             <tbody>

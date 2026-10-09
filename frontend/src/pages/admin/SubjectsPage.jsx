@@ -203,14 +203,14 @@ export default function SubjectsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Môn</th>
-                <th>Tên Môn Học</th>
-                <th>Số Tín Chỉ</th>
-                <th>Khoa Phụ Trách</th>
-                <th>Môn Tiên Quyết</th>
-                <th>Mô Tả Học Phần</th>
-                <th>Trạng Thái</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th>Mã môn</th>
+                <th>Tên môn học</th>
+                <th>Số tín chỉ</th>
+                <th>Khoa phụ trách</th>
+                <th>Môn tiên quyết</th>
+                <th>Mô tả học phần</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

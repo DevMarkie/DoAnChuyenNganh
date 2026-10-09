@@ -300,7 +300,7 @@ export default function ImportExcelModal({
                   <tr>
                     <th style={{ width: "60px" }}>Dòng</th>
                     <th>Mã SV</th>
-                    <th>Họ và Tên</th>
+                    <th>Họ và tên</th>
                     <th style={{ textAlign: "center" }}>CC1</th>
                     <th style={{ textAlign: "center" }}>CC2</th>
                     <th style={{ textAlign: "center" }}>GK</th>

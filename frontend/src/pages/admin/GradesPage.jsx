@@ -241,8 +241,8 @@ export default function AdminGradesPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Sinh Viên</th>
-                <th>Họ và Tên Sinh Viên</th>
+                <th>Mã sinh viên</th>
+                <th>Họ và tên sinh viên</th>
                 <th style={{ textAlign: "center" }}>
                   CC1 (5%)
                   <br />
@@ -257,12 +257,12 @@ export default function AdminGradesPage() {
                     Bài tập
                   </small>
                 </th>
-                <th style={{ textAlign: "center" }}>Giữa Kỳ (30%)</th>
-                <th style={{ textAlign: "center" }}>Cuối Kỳ (60%)</th>
-                <th style={{ textAlign: "center" }}>Tổng Kết (Hệ 10)</th>
+                <th style={{ textAlign: "center" }}>Giữa kỳ (30%)</th>
+                <th style={{ textAlign: "center" }}>Cuối kỳ (60%)</th>
+                <th style={{ textAlign: "center" }}>Tổng kết (hệ 10)</th>
                 <th style={{ textAlign: "center" }}>Hệ 4</th>
-                <th style={{ textAlign: "center" }}>Điểm Chữ</th>
-                <th style={{ textAlign: "center" }}>Kết Quả</th>
+                <th style={{ textAlign: "center" }}>Điểm chữ</th>
+                <th style={{ textAlign: "center" }}>Kết quả</th>
               </tr>
             </thead>
             <tbody>

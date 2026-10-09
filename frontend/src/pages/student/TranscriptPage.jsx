@@ -218,16 +218,16 @@ export default function TranscriptPage() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Mã Môn</th>
-                    <th>Tên Môn Học</th>
+                    <th>Mã môn</th>
+                    <th>Tên môn học</th>
                     <th>Số TC</th>
                     <th style={{ textAlign: 'center' }}>CC1 (5%)<br/><small style={{fontSize: '0.8em', fontWeight: 'normal'}}>Chuyên cần</small></th>
                     <th style={{ textAlign: 'center' }}>CC2 (5%)<br/><small style={{fontSize: '0.8em', fontWeight: 'normal'}}>Bài tập</small></th>
-                    <th style={{ textAlign: 'center' }}>Giữa Kỳ (30%)</th>
-                    <th style={{ textAlign: 'center' }}>Cuối Kỳ (60%)</th>
-                    <th style={{ textAlign: 'center' }}>Tổng Kết</th>
+                    <th style={{ textAlign: 'center' }}>Giữa kỳ (30%)</th>
+                    <th style={{ textAlign: 'center' }}>Cuối kỳ (60%)</th>
+                    <th style={{ textAlign: 'center' }}>Tổng kết</th>
                     <th style={{ textAlign: 'center' }}>Hệ 4</th>
-                    <th style={{ textAlign: 'center' }}>Điểm Chữ</th>
+                    <th style={{ textAlign: 'center' }}>Điểm chữ</th>
                     <th style={{ textAlign: 'center' }}>Thao tác</th>
                   </tr>
                 </thead>

@@ -199,14 +199,14 @@ export default function LecturersPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Giảng Viên</th>
+                <th>Giảng viên</th>
                 <th>Mã GV</th>
-                <th>Khoa Trực Thuộc</th>
-                <th>Học Vị</th>
-                <th>Chuyên Ngành</th>
-                <th>Liên Hệ</th>
-                <th>Trạng Thái</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th>Khoa trực thuộc</th>
+                <th>Học vị</th>
+                <th>Chuyên ngành</th>
+                <th>Liên hệ</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

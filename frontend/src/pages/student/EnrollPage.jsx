@@ -208,14 +208,14 @@ export default function EnrollPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Lớp HP</th>
-                <th>Tên Môn Học</th>
-                <th>Tín Chỉ</th>
-                <th>Giảng Viên Giảng Dạy</th>
-                <th>Lịch Học</th>
-                <th>Phòng Học</th>
-                <th>Sĩ Số ĐK</th>
-                <th style={{ textAlign: "right" }}>Thao Tác</th>
+                <th>Mã lớp HP</th>
+                <th>Tên môn học</th>
+                <th>Tín chỉ</th>
+                <th>Giảng viên giảng dạy</th>
+                <th>Lịch học</th>
+                <th>Phòng học</th>
+                <th>Sĩ số ĐK</th>
+                <th style={{ textAlign: "right" }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

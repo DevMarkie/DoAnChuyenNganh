@@ -75,15 +75,15 @@ export default function MySectionsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Lớp HP</th>
-                <th>Tên Môn Học</th>
-                <th>Tín Chỉ</th>
-                <th>Học Kỳ</th>
-                <th>Lịch Học</th>
-                <th>Phòng Học</th>
-                <th>Sĩ Số Sinh Viên</th>
-                <th>Trạng Thái</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th>Mã lớp HP</th>
+                <th>Tên môn học</th>
+                <th>Tín chỉ</th>
+                <th>Học kỳ</th>
+                <th>Lịch học</th>
+                <th>Phòng học</th>
+                <th>Sĩ số sinh viên</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

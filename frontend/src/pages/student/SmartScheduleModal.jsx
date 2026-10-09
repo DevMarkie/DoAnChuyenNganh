@@ -395,11 +395,11 @@ export default function SmartScheduleModal({
                   <thead style={{ backgroundColor: "var(--bg-hover)" }}>
                     <tr>
                       <th>Mã LHP</th>
-                      <th>Tên Môn Học</th>
-                      <th>Tín Chỉ</th>
-                      <th>Lịch Học</th>
+                      <th>Tên môn học</th>
+                      <th>Tín chỉ</th>
+                      <th>Lịch học</th>
                       <th>Phòng</th>
-                      <th>Sĩ Số</th>
+                      <th>Sĩ số</th>
                     </tr>
                   </thead>
                   <tbody>

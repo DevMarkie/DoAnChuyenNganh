@@ -274,15 +274,15 @@ export default function CourseSectionsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Lớp HP</th>
-                <th>Môn Học</th>
-                <th>Tín Chỉ</th>
-                <th>Giảng Viên Giảng Dạy</th>
-                <th>Lịch Học</th>
+                <th>Mã lớp HP</th>
+                <th>Môn học</th>
+                <th>Tín chỉ</th>
+                <th>Giảng viên giảng dạy</th>
+                <th>Lịch học</th>
                 <th>Phòng</th>
-                <th>Sĩ Số Đăng Ký</th>
-                <th>Trạng Thái</th>
-                <th style={{ textAlign: "right" }}>Thao Tác</th>
+                <th>Sĩ số đăng ký</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: "right" }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

@@ -195,12 +195,12 @@ export default function ClassesPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Lớp</th>
-                <th>Tên Lớp Sinh Hoạt</th>
-                <th>Khoa Trực Thuộc</th>
-                <th>Niên Khóa</th>
-                <th>Trạng Thái</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th>Mã lớp</th>
+                <th>Tên lớp sinh hoạt</th>
+                <th>Khoa trực thuộc</th>
+                <th>Niên khóa</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

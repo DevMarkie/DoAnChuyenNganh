@@ -150,11 +150,11 @@ export default function DepartmentsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Khoa</th>
-                <th>Tên Khoa Đào Tạo</th>
-                <th>Mô Tả / Chuyên Môn</th>
-                <th>Trạng Thái</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th>Mã khoa</th>
+                <th>Tên khoa đào tạo</th>
+                <th>Mô tả / chuyên môn</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

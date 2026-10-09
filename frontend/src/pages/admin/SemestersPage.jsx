@@ -122,14 +122,14 @@ export default function SemestersPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Mã Học Kỳ</th>
-                <th>Tên Học Kỳ</th>
-                <th>Năm Học</th>
-                <th>Thời Gian Học</th>
-                <th>Thời Gian ĐK Học Phần</th>
-                <th>Học Kỳ Hiện Tại</th>
-                <th>Trạng Thái</th>
-                <th style={{ textAlign: 'right' }}>Thao Tác</th>
+                <th>Mã học kỳ</th>
+                <th>Tên học kỳ</th>
+                <th>Năm học</th>
+                <th>Thời gian học</th>
+                <th>Thời gian ĐK học phần</th>
+                <th>Học kỳ hiện tại</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

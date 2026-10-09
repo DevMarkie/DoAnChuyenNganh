@@ -515,11 +515,11 @@ export default function StudentSchedulePage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Môn Học & Lớp HP</th>
+                  <th>Môn học & lớp HP</th>
                   <th>Số TC</th>
-                  <th>Thứ & Tiết học</th>
+                  <th>Thứ & tiết học</th>
                   <th>Phòng học</th>
-                  <th>Giảng Viên Giảng Dạy</th>
+                  <th>Giảng viên giảng dạy</th>
                   <th>Thời gian áp dụng</th>
                   <th>Ghi chú</th>
                 </tr>

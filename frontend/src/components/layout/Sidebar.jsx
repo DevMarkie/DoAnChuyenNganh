@@ -124,8 +124,8 @@ export default function Sidebar({ collapsed, onToggle }) {
           <div className="sidebar-brand">
             <SmsLogo size={32} />
             <div className="sidebar-brand-text">
-              <span className="brand-name">SMS PORTAL</span>
-              <span className="brand-sub">Quản Lý Đào Tạo</span>
+              <span className="brand-name">SMS Portal</span>
+              <span className="brand-sub">Quản lý đào tạo</span>
             </div>
           </div>
         )}

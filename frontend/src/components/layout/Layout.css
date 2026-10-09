@@ -85,8 +85,7 @@
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: normal;
 }
 
 .btn-toggle-sidebar {
@@ -106,10 +105,9 @@
 }
 
 .nav-group-title {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: normal;
   color: var(--text-muted);
   padding: 4px 10px 6px;
 }

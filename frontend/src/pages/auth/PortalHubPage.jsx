@@ -7,21 +7,18 @@ const PORTAL_THEME = {
     accent: '#2563eb',
     accentLight: '#eff6ff',
     accentBorder: '#bfdbfe',
-    gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)',
     Icon: GraduationCap,
   },
   lecturer: {
     accent: '#0d9488',
     accentLight: '#f0fdfa',
     accentBorder: '#99f6e4',
-    gradient: 'linear-gradient(135deg, #0d9488, #14b8a6)',
     Icon: BookOpen,
   },
   admin: {
     accent: '#d97706',
     accentLight: '#fffbeb',
     accentBorder: '#fde68a',
-    gradient: 'linear-gradient(135deg, #d97706, #f59e0b)',
     Icon: ShieldCheck,
   },
 };
@@ -169,7 +166,7 @@ export default function PortalHubPage() {
                 <Link to={portal.path} className="portal-btn" style={{
                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                   padding: '11px 18px', borderRadius: 'var(--radius-md)',
-                  background: theme.gradient, color: '#fff',
+                  background: theme.accent, color: '#fff',
                   fontWeight: 600, fontSize: '0.9rem', textDecoration: 'none',
                 }}>
                   Đăng nhập {portal.roleTag}

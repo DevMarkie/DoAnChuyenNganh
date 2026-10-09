@@ -45,8 +45,7 @@ public class AttendanceController {
     public ResponseEntity<ApiResponse<List<AttendanceRecord>>> getRecordsBySession(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long sessionId) {
-        // ideally verify access
-        return ResponseEntity.ok(ApiResponse.success(attendanceService.getRecordsBySession(sessionId)));
+        return ResponseEntity.ok(ApiResponse.success(attendanceService.getRecordsBySession(user.getId(), sessionId)));
     }
 
     @PostMapping("/session")

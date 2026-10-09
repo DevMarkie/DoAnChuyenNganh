@@ -53,13 +53,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token)) {
             io.jsonwebtoken.Claims claims = jwtUtil.getValidatedClaims(token);
             if (claims != null) {
-                UserPrincipal userPrincipal = UserPrincipal.createFromClaims(claims);
+                // Nạp lại user từ DB mỗi request (không tin role/active trong claim):
+                // tài khoản bị khoá/giáng cấp mất quyền NGAY, không phải chờ token hết hạn.
+                try {
+                    UserDetails userPrincipal = userDetailsService.loadUserByUsername(claims.getSubject());
+                    if (userPrincipal.isEnabled()) {
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+                    // Tài khoản đã bị xoá — để request đi tiếp ở trạng thái chưa xác thực.
+                }
             }
         }
 

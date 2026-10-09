@@ -425,4 +425,34 @@ class EnrollmentServiceTest {
         List<Enrollment> results = enrollmentService.adminBatchAssignClass(1, 100L);
         assertEquals(1, results.size());
     }
+
+    @Test
+    @DisplayName("TC-SEC-ROSTER.1: Sinh viên KHÔNG xem được danh sách lớp mình không đăng ký (chặn thu thập PII)")
+    void assertCanViewSection_fails_whenStudentNotEnrolled() {
+        Long userId = 10L, studentId = 1L, sectionId = 100L;
+        Student student = createStudent(studentId, userId);
+
+        when(lecturerRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> enrollmentService.assertCanViewSection(userId, sectionId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("không có quyền");
+    }
+
+    @Test
+    @DisplayName("TC-SEC-ROSTER.2: Sinh viên xem được danh sách lớp mình có đăng ký")
+    void assertCanViewSection_ok_whenStudentEnrolled() {
+        Long userId = 10L, studentId = 1L, sectionId = 100L;
+        Student student = createStudent(studentId, userId);
+        Enrollment enrollment = new Enrollment();
+        enrollment.setStudent(student);
+
+        when(lecturerRepository.findByUserId(userId)).thenReturn(Optional.empty());
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.of(enrollment));
+
+        assertDoesNotThrow(() -> enrollmentService.assertCanViewSection(userId, sectionId));
+    }
 }

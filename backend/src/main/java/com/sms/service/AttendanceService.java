@@ -37,7 +37,10 @@ public class AttendanceService {
         return attendanceSessionRepository.findBySectionIdOrderBySessionDateDesc(sectionId);
     }
 
-    public List<AttendanceRecord> getRecordsBySession(Long sessionId) {
+    public List<AttendanceRecord> getRecordsBySession(Long userId, Long sessionId) {
+        AttendanceSession session = attendanceSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy buổi điểm danh"));
+        enrollmentService.assertCanViewSection(userId, session.getSection().getId());
         return attendanceRecordRepository.findBySessionId(sessionId);
     }
 
@@ -76,6 +79,11 @@ public class AttendanceService {
                     record.setSession(session);
                     Enrollment enrollment = enrollmentRepository.findById(rr.getEnrollmentId())
                         .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+                    // Chặn tráo enrollmentId của lớp khác vào buổi điểm danh của lớp này
+                    // (nếu không, GV lớp A ghi khống buổi vắng cho SV lớp B).
+                    if (!section.getId().equals(enrollment.getSection().getId())) {
+                        throw new BadRequestException("Dòng điểm danh không thuộc lớp học phần này");
+                    }
                     record.setEnrollment(enrollment);
                 }
                 record.setIsPresent(rr.getIsPresent());

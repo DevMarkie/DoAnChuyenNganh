@@ -11,6 +11,9 @@ import com.sms.entity.AttendanceRecord;
 public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, Long> {
     List<AttendanceRecord> findBySessionId(Long sessionId);
     
-    @Query("SELECT COUNT(ar) FROM AttendanceRecord ar WHERE ar.enrollment.id = :enrollmentId AND ar.isPresent = false")
-    int countAbsencesByEnrollmentId(Long enrollmentId);
+    /** Số buổi vắng của mọi enrollment trong lớp, gộp 1 truy vấn (tránh N+1 ở danh sách lớp). */
+    @Query("SELECT ar.enrollment.id, COUNT(ar) FROM AttendanceRecord ar " +
+           "WHERE ar.enrollment.section.id = :sectionId AND ar.isPresent = false " +
+           "GROUP BY ar.enrollment.id")
+    List<Object[]> countAbsencesBySectionId(Long sectionId);
 }

@@ -226,7 +226,7 @@ public class GradeService {
         // BR-07: Check lecturer authorization
         if (lecturer != null) {
             CourseSection section = enrollment.getSection();
-            if (!section.getLecturer().getId().equals(lecturer.getId())) {
+            if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
                 throw new BadRequestException("Bạn không có quyền nhập điểm cho học phần này");
             }
         }

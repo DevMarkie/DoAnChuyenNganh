@@ -97,6 +97,7 @@ public class GradeController {
     }
 
     @PutMapping
+    @PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
     public ResponseEntity<ApiResponse<Grade>> saveGrade(@AuthenticationPrincipal UserPrincipal user,
                                                         @Valid @RequestBody GradeRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Lưu điểm thành công",
@@ -104,6 +105,7 @@ public class GradeController {
     }
 
     @PutMapping("/batch")
+    @PreAuthorize("hasAnyRole('ADMIN','LECTURER')")
     public ResponseEntity<ApiResponse<Void>> saveGrades(@AuthenticationPrincipal UserPrincipal user,
                                                         @Valid @RequestBody List<@Valid GradeRequest> requests) {
         gradeService.saveGrades(user.getId(), requests);

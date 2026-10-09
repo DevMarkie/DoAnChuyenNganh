@@ -1,7 +1,9 @@
 package com.sms.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,9 +52,9 @@ public class EnrollmentService {
 
     public List<Enrollment> findBySection(Long sectionId) {
         List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(sectionId);
-        enrollments.forEach(e -> {
-            e.setAbsenceCount(attendanceRecordRepository.countAbsencesByEnrollmentId(e.getId()));
-        });
+        Map<Long, Long> absences = attendanceRecordRepository.countAbsencesBySectionId(sectionId).stream()
+                .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+        enrollments.forEach(e -> e.setAbsenceCount(absences.getOrDefault(e.getId(), 0L).intValue()));
         return enrollments;
     }
 
@@ -72,6 +74,20 @@ public class EnrollmentService {
             return;
         }
 
+        // Sinh viên chỉ được xem danh sách lớp mình có đăng ký. Nếu không, bất kỳ
+        // sinh viên nào cũng enumerate được sectionId để thu thập PII (ngày sinh,
+        // email, SĐT, địa chỉ) của toàn bộ sinh viên khác.
+        Student student = studentRepository.findByUserId(userId).orElse(null);
+        if (student != null) {
+            boolean enrolled = enrollmentRepository
+                    .findByStudentIdAndSectionId(student.getId(), sectionId).isPresent();
+            if (!enrolled) {
+                throw new BadRequestException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
+            }
+            return;
+        }
+
+        // Admin (không có bản ghi Lecturer/Student) — chỉ cần lớp tồn tại.
         if (!courseSectionRepository.existsById(sectionId)) {
             throw new ResourceNotFoundException("Không tìm thấy lớp học phần");
         }

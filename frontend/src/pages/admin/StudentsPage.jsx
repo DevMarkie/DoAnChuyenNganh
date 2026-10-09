@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { studentService, classService, departmentService } from '../../services/dataService';
 import { genderLabel } from '../../utils/labels';
 import Skeleton from '../../components/common/Skeleton';
+import StudentImportModal from './StudentImportModal';
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tất cả trạng thái' },
@@ -272,6 +273,7 @@ export default function StudentsPage() {
             <Download size={16} />
             <span>Xuất Excel</span>
           </button>
+          <StudentImportModal onImportDone={loadData} />
           <button className="btn btn-primary" onClick={() => handleOpenModal()}>
             <Plus size={16} />
             <span>Thêm sinh viên mới</span>

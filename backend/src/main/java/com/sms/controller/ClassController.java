@@ -58,4 +58,11 @@ public class ClassController {
         classService.toggleActive(id);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái thành công"));
     }
+
+    @PostMapping("/batch-generate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<ClassEntity>>> batchGenerate(@Valid @RequestBody com.sms.dto.request.BatchClassRequest request) {
+        List<ClassEntity> result = classService.batchGenerate(request);
+        return ResponseEntity.ok(ApiResponse.success("Khởi tạo tự động " + result.size() + " lớp sinh hoạt thành công", result));
+    }
 }

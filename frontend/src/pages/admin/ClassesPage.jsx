@@ -1,6 +1,6 @@
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, CheckCircle, XCircle, X, Filter, Search, RotateCcw } from 'lucide-react';
+import { Plus, Edit2, CheckCircle, XCircle, X, Filter, Search, RotateCcw, Sparkles } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { classService, departmentService } from '../../services/dataService';
 
@@ -12,6 +12,9 @@ export default function ClassesPage() {
   const [selectedDept, setSelectedDept] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [batchData, setBatchData] = useState({ cohort: 'K17', academicYear: '2025-2026', classesPerDepartment: 2 });
+  const [generatingBatch, setGeneratingBatch] = useState(false);
 
   const [formData, setFormData] = useState({
     code: '',
@@ -89,6 +92,21 @@ export default function ClassesPage() {
     }
   };
 
+  const handleBatchGenerate = async (e) => {
+    e.preventDefault();
+    try {
+      setGeneratingBatch(true);
+      const res = await classService.batchGenerate(batchData);
+      toast.success(res.data?.message || 'Đã tự động khởi tạo danh sách lớp sinh hoạt thành công!');
+      setIsBatchModalOpen(false);
+      loadData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Có lỗi khi tự động tạo lớp');
+    } finally {
+      setGeneratingBatch(false);
+    }
+  };
+
   const filtered = classes.filter((c) => {
     const matchDept = selectedDept ? c.department?.id === parseInt(selectedDept) : true;
     const matchSearch = search
@@ -108,7 +126,11 @@ export default function ClassesPage() {
             Quản lý danh sách các lớp sinh hoạt hành chính theo từng niên khóa và khoa chuyên ngành
           </p>
         </div>
-        <div className="page-header-actions">
+        <div className="page-header-actions" style={{ display: 'flex', gap: '12px' }}>
+          <button className="btn btn-outline" onClick={() => setIsBatchModalOpen(true)} title="Tự động sinh lớp cho Khóa mới">
+            <Sparkles size={16} />
+            <span>Khởi tạo theo Khóa</span>
+          </button>
           <button className="btn btn-primary" onClick={() => handleOpenModal()}>
             <Plus size={16} />
             <span>Thêm lớp mới</span>
@@ -306,6 +328,75 @@ export default function ClassesPage() {
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setIsModalOpen(false)}>Huỷ</button>
                 <button type="submit" className="btn btn-primary">{editingClass ? 'Lưu thay đổi' : 'Tạo lớp'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Batch Generate Modal */}
+      {isBatchModalOpen && (
+        <div className="modal-backdrop">
+          <div className="modal" style={{ maxWidth: '480px' }}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Khởi Tạo Nhanh Lớp Theo Khóa</h3>
+              <button type="button" className="btn btn-outline" style={{ padding: '6px' }} onClick={() => setIsBatchModalOpen(false)}>
+                <X size={16} />
+              </button>
+            </div>
+            <form onSubmit={handleBatchGenerate}>
+              <div className="modal-body" style={{ display: 'grid', gap: '16px' }}>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  Hệ thống sẽ tự động quét toàn bộ các Khoa đang hoạt động ({departments.length} khoa) và sinh mã lớp theo quy tắc:
+                  <code style={{ display: 'block', margin: '6px 0', padding: '6px 10px', background: 'var(--bg-hover)', borderRadius: '4px', color: 'var(--primary)', fontWeight: 600 }}>
+                    [MÃ_KHOA][STT]-[KHÓA] (VD: CNTT01-{batchData.cohort || 'K17'})
+                  </code>
+                </p>
+                <div>
+                  <label className="form-label">Tên Khóa sinh viên *</label>
+                  <input
+                    type="text"
+                    required
+                    value={batchData.cohort}
+                    onChange={(e) => setBatchData({ ...batchData, cohort: e.target.value })}
+                    className="form-control"
+                    placeholder="VD: K17"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Niên khóa / Năm học *</label>
+                  <input
+                    type="text"
+                    required
+                    value={batchData.academicYear}
+                    onChange={(e) => setBatchData({ ...batchData, academicYear: e.target.value })}
+                    className="form-control"
+                    placeholder="VD: 2025-2026"
+                  />
+                </div>
+                <div>
+                  <label className="form-label">Số lớp cần tạo cho mỗi Khoa *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    required
+                    value={batchData.classesPerDepartment}
+                    onChange={(e) => setBatchData({ ...batchData, classesPerDepartment: parseInt(e.target.value) || 1 })}
+                    className="form-control"
+                  />
+                  <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>
+                    Dự kiến sinh tối đa: {departments.length * (batchData.classesPerDepartment || 1)} lớp (bỏ qua nếu mã đã tồn tại).
+                  </small>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-outline" onClick={() => setIsBatchModalOpen(false)} disabled={generatingBatch}>
+                  Hủy
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={generatingBatch}>
+                  {generatingBatch ? 'Đang tạo...' : 'Tự động tạo lớp'}
+                </button>
               </div>
             </form>
           </div>

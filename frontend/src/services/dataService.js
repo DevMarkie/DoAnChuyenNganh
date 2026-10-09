@@ -28,6 +28,7 @@ export const classService = {
   create: (data) => api.post('/classes', data),
   update: (id, data) => api.put(`/classes/${id}`, data),
   toggleActive: (id) => api.put(`/classes/${id}/toggle`),
+  batchGenerate: (data) => api.post('/classes/batch-generate', data),
 };
 
 export const studentService = {
@@ -40,6 +41,15 @@ export const studentService = {
   create: (data) => api.post('/students', data),
   update: (id, data) => api.put(`/students/${id}`, data),
   updateStatus: (id, status) => api.put(`/students/${id}/status?status=${status}`),
+  downloadImportTemplate: () => api.get('/students/import-template', { responseType: 'blob' }),
+  importPreview: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/students/import-preview', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  importCommit: (data) => api.post('/students/import-commit', data),
 };
 
 export const lecturerService = {

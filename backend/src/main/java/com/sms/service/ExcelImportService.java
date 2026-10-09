@@ -11,6 +11,14 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -19,14 +27,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sms.dto.response.GradeImportRow;
+import com.sms.dto.response.StudentImportRow;
+import com.sms.entity.ClassEntity;
 import com.sms.entity.CourseSection;
 import com.sms.entity.Enrollment;
 import com.sms.entity.Grade;
 import com.sms.exception.BadRequestException;
 import com.sms.exception.ResourceNotFoundException;
+import com.sms.repository.ClassRepository;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
 import com.sms.repository.GradeRepository;
+import com.sms.repository.StudentRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,6 +53,15 @@ public class ExcelImportService {
     private final CourseSectionRepository courseSectionRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final GradeRepository gradeRepository;
+    private final StudentRepository studentRepository;
+    private final ClassRepository classRepository;
+
+    private static final String[] STUDENT_HEADERS = {
+            "STT", "Mã Sinh Viên (*)", "Họ và Tên (*)", "Ngày Sinh (*)",
+            "Giới Tính (*)", "Mã Lớp SH (*)", "Email (*)", "Số Điện Thoại", "Địa Chỉ"
+    };
+    private static final int STUDENT_HEADER_ROW = 4;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
 
     private static final String[] HEADERS = { "Mã ĐK (Enrollment ID)", "Mã Sinh Viên",
             "Họ và Tên", "CC1 (5%)", "CC2 (5%)", "Giữa Kỳ (30%)", "Cuối Kỳ (60%)" };
@@ -102,11 +123,15 @@ public class ExcelImportService {
     }
 
     private void mergedText(Sheet sheet, int rowNum, String text, CellStyle style) {
+        mergedText(sheet, rowNum, text, style, 6);
+    }
+
+    private void mergedText(Sheet sheet, int rowNum, String text, CellStyle style, int toCol) {
         Row row = sheet.createRow(rowNum);
         Cell cell = row.createCell(0);
         cell.setCellValue(text);
         cell.setCellStyle(style);
-        sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, 6));
+        sheet.addMergedRegion(new CellRangeAddress(rowNum, rowNum, 0, toCol));
     }
 
     private CellStyle titleStyle(XSSFWorkbook wb) {
@@ -271,5 +296,233 @@ public class ExcelImportService {
             return null;
         }
         return BigDecimal.valueOf(val).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Xuất file Excel mẫu để thêm sinh viên hàng loạt đầu năm học.
+     */
+    public byte[] generateStudentTemplate() throws IOException {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("Danh Sách Sinh Viên");
+            CellStyle titleStyle = titleStyle(wb);
+            CellStyle noteStyle = noteStyle(wb);
+            CellStyle headerStyle = headerStyle(wb);
+            CellStyle dataStyle = wb.createCellStyle();
+            thinBorder(dataStyle);
+
+            mergedText(sheet, 0, "DANH SÁCH TÂN SINH VIÊN NHẬP HỌC (FILE MẪU)", titleStyle, 8);
+            mergedText(sheet, 1, "Hệ thống Quản lý Đào tạo - Tiếp nhận hồ sơ tân sinh viên đầu năm học", noteStyle, 8);
+            mergedText(sheet, 2, "Hướng dẫn: Các cột có dấu (*) là bắt buộc. "
+                    + "Ngày sinh định dạng YYYY-MM-DD hoặc DD/MM/YYYY. "
+                    + "Giới tính: Nam hoặc Nữ. "
+                    + "Mã lớp SH phải trùng với mã lớp trong hệ thống.", noteStyle, 8);
+
+            Row headerRow = sheet.createRow(STUDENT_HEADER_ROW);
+            for (int i = 0; i < STUDENT_HEADERS.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(STUDENT_HEADERS[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // Gợi ý mã lớp thực tế từ hệ thống nếu có
+            List<ClassEntity> activeClasses = classRepository.findAll();
+            String sampleClassCode1 = !activeClasses.isEmpty() ? activeClasses.get(0).getCode() : "KTPM01-K16";
+            String sampleClassCode2 = activeClasses.size() > 1 ? activeClasses.get(1).getCode() : sampleClassCode1;
+
+            String[][] sampleData = {
+                {"1", "24010001", "Nguyễn Văn An", "2006-03-15", "Nam", sampleClassCode1, "an.nv24010001@st.phenikaa-uni.edu.vn", "0912345678", "Hà Nội"},
+                {"2", "24010002", "Trần Thị Bình", "2006-07-22", "Nữ", sampleClassCode2, "binh.tt24010002@st.phenikaa-uni.edu.vn", "0987654321", "Hải Phòng"}
+            };
+
+            int rowIdx = STUDENT_HEADER_ROW + 1;
+            for (String[] rowData : sampleData) {
+                Row row = sheet.createRow(rowIdx++);
+                for (int col = 0; col < rowData.length; col++) {
+                    Cell cell = row.createCell(col);
+                    cell.setCellValue(rowData[col]);
+                    cell.setCellStyle(dataStyle);
+                }
+            }
+
+            sheet.setColumnWidth(0, 2000);  // STT
+            sheet.setColumnWidth(1, 4500);  // MSSV
+            sheet.setColumnWidth(2, 6500);  // Họ tên
+            sheet.setColumnWidth(3, 4000);  // Ngày sinh
+            sheet.setColumnWidth(4, 3200);  // Giới tính
+            sheet.setColumnWidth(5, 4500);  // Mã lớp
+            sheet.setColumnWidth(6, 8500);  // Email
+            sheet.setColumnWidth(7, 4500);  // SĐT
+            sheet.setColumnWidth(8, 7000);  // Địa chỉ
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wb.write(out);
+            return out.toByteArray();
+        }
+    }
+
+    /**
+     * Đọc file Excel tải lên, kiểm tra validation đối soát trùng lặp và trả về danh sách Preview. KHÔNG lưu vào DB.
+     */
+    public List<StudentImportRow> parseStudentImport(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BadRequestException("Chưa chọn file hoặc file rỗng");
+        }
+
+        List<StudentImportRow> rows = new ArrayList<>();
+        Set<String> seenStudentCodes = new HashSet<>();
+        Set<String> seenEmails = new HashSet<>();
+
+        try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = wb.getSheetAt(0);
+
+            for (Row row : sheet) {
+                if (row == null || row.getRowNum() <= STUDENT_HEADER_ROW) {
+                    continue; // Bỏ qua phần tiêu đề
+                }
+
+                String code = getCellValueAsString(row.getCell(1));
+                String name = getCellValueAsString(row.getCell(2));
+                String dobRaw = getCellValueAsString(row.getCell(3));
+                String gender = getCellValueAsString(row.getCell(4));
+                String classCode = getCellValueAsString(row.getCell(5));
+                String email = getCellValueAsString(row.getCell(6));
+                String phone = getCellValueAsString(row.getCell(7));
+                String address = getCellValueAsString(row.getCell(8));
+
+                // Bỏ qua dòng hoàn toàn rỗng
+                if (code.isBlank() && name.isBlank() && classCode.isBlank() && email.isBlank()) {
+                    continue;
+                }
+
+                List<String> errors = new ArrayList<>();
+
+                // 1. Kiểm tra MSSV
+                if (code.isBlank()) {
+                    errors.add("Mã sinh viên không được để trống");
+                } else if (!seenStudentCodes.add(code.toLowerCase())) {
+                    errors.add("Mã sinh viên bị lặp lại trong file");
+                } else if (studentRepository.existsByStudentCode(code)) {
+                    errors.add("Mã sinh viên đã tồn tại trên hệ thống");
+                }
+
+                // 2. Kiểm tra Họ và Tên
+                if (name.isBlank()) {
+                    errors.add("Họ và tên không được để trống");
+                }
+
+                // 3. Kiểm tra Ngày sinh
+                String parsedDob = parseDateOfBirth(dobRaw, errors);
+
+                // 4. Kiểm tra Giới tính
+                String normalizedGender = normalizeGender(gender);
+
+                // 5. Kiểm tra Mã lớp
+                String className = null;
+                if (classCode.isBlank()) {
+                    errors.add("Mã lớp sinh hoạt không được để trống");
+                } else {
+                    Optional<ClassEntity> clsOpt = classRepository.findByCode(classCode);
+                    if (clsOpt.isEmpty()) {
+                        errors.add("Không tìm thấy lớp sinh hoạt có mã '" + classCode + "'");
+                    } else {
+                        className = clsOpt.get().getName();
+                    }
+                }
+
+                // 6. Kiểm tra Email
+                if (email.isBlank()) {
+                    errors.add("Email không được để trống");
+                } else if (!EMAIL_PATTERN.matcher(email).matches()) {
+                    errors.add("Định dạng email không hợp lệ");
+                } else if (!seenEmails.add(email.toLowerCase())) {
+                    errors.add("Email bị lặp lại trong file");
+                } else if (studentRepository.existsByEmail(email)) {
+                    errors.add("Email đã tồn tại trên hệ thống");
+                }
+
+                StudentImportRow importRow = StudentImportRow.builder()
+                        .rowNumber(row.getRowNum() + 1)
+                        .studentCode(code)
+                        .fullName(name)
+                        .dateOfBirth(parsedDob)
+                        .gender(normalizedGender)
+                        .classCode(classCode)
+                        .className(className)
+                        .email(email)
+                        .phone(phone)
+                        .address(address)
+                        .valid(errors.isEmpty())
+                        .error(errors.isEmpty() ? null : String.join("; ", errors))
+                        .build();
+
+                rows.add(importRow);
+            }
+        } catch (IOException | EncryptedDocumentException ex) {
+            throw new BadRequestException("Không đọc được file Excel. Vui lòng dùng đúng định dạng file mẫu (.xlsx).");
+        }
+
+        if (rows.isEmpty()) {
+            throw new BadRequestException("File không chứa dữ liệu sinh viên nào. Vui lòng điền thông tin vào file mẫu.");
+        }
+
+        return rows;
+    }
+
+    private String parseDateOfBirth(String dobRaw, List<String> errors) {
+        if (dobRaw == null || dobRaw.isBlank()) {
+            errors.add("Ngày sinh không được để trống");
+            return "";
+        }
+        String trimmed = dobRaw.trim();
+        DateTimeFormatter[] formatters = new DateTimeFormatter[]{
+                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                DateTimeFormatter.ofPattern("d/M/yyyy"),
+                DateTimeFormatter.ofPattern("yyyy/MM/dd")
+        };
+        for (DateTimeFormatter dtf : formatters) {
+            try {
+                LocalDate date = LocalDate.parse(trimmed, dtf);
+                return date.toString();
+            } catch (DateTimeParseException ignored) {}
+        }
+        errors.add("Ngày sinh sai định dạng (hợp lệ: YYYY-MM-DD hoặc DD/MM/YYYY)");
+        return trimmed;
+    }
+
+    private String normalizeGender(String gender) {
+        if (gender == null || gender.isBlank()) return "Nam";
+        String g = gender.trim().toUpperCase();
+        if (g.contains("NỮ") || g.contains("NU") || g.equals("FEMALE")) {
+            return "Nữ";
+        }
+        if (g.contains("NAM") || g.equals("MALE")) {
+            return "Nam";
+        }
+        return "Khác";
+    }
+
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    LocalDate d = cell.getLocalDateTimeCellValue().toLocalDate();
+                    return d.toString();
+                } else {
+                    double num = cell.getNumericCellValue();
+                    if (num == (long) num) {
+                        return String.valueOf((long) num);
+                    } else {
+                        return String.valueOf(num);
+                    }
+                }
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
+        }
     }
 }

@@ -146,4 +146,37 @@ public class StudentServiceTest {
         assertEquals(Student.StudentStatus.ACTIVE, student.getStatus());
         verify(studentRepository).save(student);
     }
+
+    @Test
+    void saveImportedStudents_EmptyList_ThrowsBadRequest() {
+        assertThrows(BadRequestException.class, () -> studentService.saveImportedStudents(java.util.List.of()));
+    }
+
+    @Test
+    void saveImportedStudents_ValidRows_SavesSuccessfully() {
+        com.sms.dto.response.StudentImportRow row = com.sms.dto.response.StudentImportRow.builder()
+                .studentCode("STU002")
+                .fullName("Nguyen Van B")
+                .dateOfBirth("2005-05-10")
+                .gender("Nam")
+                .classCode("CNPM01")
+                .email("b.nv@example.com")
+                .phone("0912345678")
+                .valid(true)
+                .build();
+
+        when(roleRepository.findByName("STUDENT")).thenReturn(Optional.of(role));
+        when(studentRepository.existsByStudentCode("STU002")).thenReturn(false);
+        when(studentRepository.existsByEmail("b.nv@example.com")).thenReturn(false);
+        when(classRepository.findByCode("CNPM01")).thenReturn(Optional.of(classEntity));
+        when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        int count = studentService.saveImportedStudents(java.util.List.of(row));
+
+        assertEquals(1, count);
+        verify(userRepository).save(any(User.class));
+        verify(studentRepository).save(any(Student.class));
+    }
 }

@@ -1,6 +1,7 @@
 package com.sms.service;
 
 import com.sms.dto.request.StudentRequest;
+import com.sms.dto.response.StudentImportRow;
 import com.sms.entity.*;
 import com.sms.exception.*;
 import com.sms.repository.*;
@@ -147,6 +148,66 @@ public class StudentService {
             user.setIsActive(shouldBeActive);
             userRepository.save(user);
         }
+    }
+
+    /**
+     * Nhập hàng loạt sinh viên từ danh sách đã qua kiểm duyệt Preview.
+     * Tự động khởi tạo tài khoản User (Role STUDENT), mật khẩu 123456, gán lớp và kích hoạt tài khoản.
+     */
+    @Transactional
+    public int saveImportedStudents(List<StudentImportRow> validRows) {
+        if (validRows == null || validRows.isEmpty()) {
+            throw new BadRequestException("Danh sách sinh viên rỗng");
+        }
+
+        Role studentRole = roleRepository.findByName("STUDENT")
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role STUDENT"));
+
+        int count = 0;
+        for (StudentImportRow row : validRows) {
+            if (!row.isValid()) continue;
+
+            // Bỏ qua nếu MSSV hoặc Email đã tồn tại (phòng trường hợp trùng lặp)
+            if (studentRepository.existsByStudentCode(row.getStudentCode()) ||
+                studentRepository.existsByEmail(row.getEmail())) {
+                continue;
+            }
+
+            ClassEntity cls = classRepository.findByCode(row.getClassCode().trim())
+                    .orElse(null);
+            if (cls == null) continue;
+
+            // 1. Tạo tài khoản User
+            String username = row.getStudentCode().trim().toLowerCase();
+            String rawPassword = "123456";
+
+            User user = new User();
+            user.setUsername(username);
+            user.setPassword(passwordEncoder.encode(rawPassword));
+            user.setEmail(row.getEmail().trim());
+            user.setRole(studentRole);
+            user.setIsActive(true);
+            user.setMustChangePassword(true);
+            user = userRepository.save(user);
+
+            // 2. Tạo đối tượng Student
+            Student student = new Student();
+            student.setUser(user);
+            student.setStudentCode(row.getStudentCode().trim());
+            student.setFullName(row.getFullName().trim());
+            student.setDateOfBirth(LocalDate.parse(row.getDateOfBirth()));
+            student.setGender(parseGender(row.getGender()));
+            student.setEmail(row.getEmail().trim());
+            student.setPhone(row.getPhone() != null && !row.getPhone().isBlank() ? row.getPhone().trim() : null);
+            student.setAddress(row.getAddress() != null && !row.getAddress().isBlank() ? row.getAddress().trim() : null);
+            student.setClassEntity(cls);
+            student.setStatus(Student.StudentStatus.ACTIVE);
+
+            studentRepository.save(student);
+            count++;
+        }
+
+        return count;
     }
 
     private Student.Gender parseGender(String g) {

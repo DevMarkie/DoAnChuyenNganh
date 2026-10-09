@@ -37,6 +37,12 @@ public class ExcelImportServiceTest {
     @Mock
     private GradeRepository gradeRepository;
 
+    @Mock
+    private com.sms.repository.StudentRepository studentRepository;
+
+    @Mock
+    private com.sms.repository.ClassRepository classRepository;
+
     @InjectMocks
     private ExcelImportService excelImportService;
 
@@ -108,5 +114,27 @@ public class ExcelImportServiceTest {
         when(enrollmentRepository.findActiveBySectionId(1L)).thenReturn(List.of(enrollment));
 
         assertThrows(BadRequestException.class, () -> excelImportService.parseGradeImport(1L, invalidFormatFile));
+    }
+
+    @Test
+    void generateStudentTemplate_Success() throws IOException {
+        when(classRepository.findAll()).thenReturn(List.of());
+
+        byte[] result = excelImportService.generateStudentTemplate();
+
+        assertNotNull(result);
+        assertTrue(result.length > 0);
+    }
+
+    @Test
+    void parseStudentImport_EmptyFile_Throws() {
+        MockMultipartFile emptyFile = new MockMultipartFile("file", "students.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[0]);
+        assertThrows(BadRequestException.class, () -> excelImportService.parseStudentImport(emptyFile));
+    }
+
+    @Test
+    void parseStudentImport_InvalidExcelFormat_Throws() {
+        MockMultipartFile invalidFile = new MockMultipartFile("file", "students.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "corrupted content".getBytes());
+        assertThrows(BadRequestException.class, () -> excelImportService.parseStudentImport(invalidFile));
     }
 }

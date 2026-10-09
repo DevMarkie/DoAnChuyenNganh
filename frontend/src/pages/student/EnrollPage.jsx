@@ -4,6 +4,7 @@ import {
   Plus,
   AlertCircle,
   Search,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -11,6 +12,7 @@ import {
   courseSectionService,
   enrollmentService,
 } from "../../services/dataService";
+import SmartScheduleModal from "./SmartScheduleModal";
 
 export default function EnrollPage() {
   const [currentSemester, setCurrentSemester] = useState(null);
@@ -21,6 +23,7 @@ export default function EnrollPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [enrollingId, setEnrollingId] = useState(null);
+  const [smartModalOpen, setSmartModalOpen] = useState(false);
   const enrollmentInFlight = useRef(false);
 
   const loadData = async ({ initial = false } = {}) => {
@@ -181,9 +184,21 @@ export default function EnrollPage() {
             />
           </div>
 
-          <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-            Có <strong>{filtered.length}</strong> lớp học phần đang mở tiếp nhận
-            đăng ký
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+            {currentSemester?.registrationOpen && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setSmartModalOpen(true)}
+                style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <Sparkles size={16} style={{ color: "var(--primary)" }} />
+                <span>Gợi ý TKB thông minh</span>
+              </button>
+            )}
+            <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+              Có <strong>{filtered.length}</strong> lớp học phần đang mở
+            </div>
           </div>
         </div>
       </div>
@@ -452,6 +467,16 @@ export default function EnrollPage() {
           )}
         </div>
       </div>
+
+      {/* Smart Schedule Modal */}
+      {smartModalOpen && (
+        <SmartScheduleModal
+          availableSections={availableSections}
+          enrolledSubjectIds={enrolledSubjectIds}
+          onEnrollSection={handleEnroll}
+          onClose={() => setSmartModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

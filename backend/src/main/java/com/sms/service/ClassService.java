@@ -68,4 +68,37 @@ public class ClassService {
         cls.setIsActive(!cls.getIsActive());
         classRepository.save(cls);
     }
+
+    /**
+     * Tự động sinh danh sách lớp sinh hoạt theo Khóa và Năm học cho các khoa.
+     */
+    @Transactional
+    public List<ClassEntity> batchGenerate(com.sms.dto.request.BatchClassRequest request) {
+        List<Department> departments = (request.getDepartmentIds() != null && !request.getDepartmentIds().isEmpty())
+                ? departmentRepository.findAllById(request.getDepartmentIds())
+                : departmentRepository.findByIsActiveTrue();
+
+        List<ClassEntity> created = new java.util.ArrayList<>();
+        String cohort = request.getCohort().trim().toUpperCase();
+        String academicYear = request.getAcademicYear().trim();
+        int count = Math.max(1, request.getClassesPerDepartment());
+
+        for (Department dept : departments) {
+            for (int i = 1; i <= count; i++) {
+                String code = String.format("%s%02d-%s", dept.getCode().trim().toUpperCase(), i, cohort);
+                if (classRepository.existsByCode(code)) {
+                    continue;
+                }
+                String name = String.format("%s %d - %s", dept.getName().trim(), i, cohort);
+                ClassEntity cls = new ClassEntity();
+                cls.setCode(code);
+                cls.setName(name);
+                cls.setDepartment(dept);
+                cls.setAcademicYear(academicYear);
+                cls.setIsActive(true);
+                created.add(classRepository.save(cls));
+            }
+        }
+        return created;
+    }
 }

@@ -85,6 +85,19 @@ class EnrollmentServiceTest {
         return sec;
     }
 
+    /**
+     * Cho phép qua cổng kiểm tra chương trình đào tạo (assertInStudentCurriculum).
+     * Sinh viên trong các test này có major+cohort nên enroll() luôn gọi cổng này
+     * TRƯỚC bước tiên quyết/phân loại; thiếu stub sẽ ném "chưa được gán chương
+     * trình đào tạo" và che mất hành vi đang kiểm thử.
+     */
+    private void allowCurriculum(int subjectId) {
+        CurriculumProgram program = new CurriculumProgram();
+        program.setId(1L);
+        when(curriculumProgramRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.of(program));
+        when(curriculumBlockSubjectRepository.existsByProgramIdAndSubjectId(1L, subjectId)).thenReturn(true);
+    }
+
     @Test
     @DisplayName("TC-01.1: Đăng ký thất bại khi sinh viên chưa hoàn thành môn tiên quyết")
     void enroll_fails_whenPrerequisiteNotPassed() {
@@ -109,6 +122,7 @@ class EnrollmentServiceTest {
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
         when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(2);
         when(gradeRepository.existsPassedFinalizedByStudentAndSubject(studentId, prereq.getId())).thenReturn(false);
 
         assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
@@ -142,10 +156,11 @@ class EnrollmentServiceTest {
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
         when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(2);
         when(gradeRepository.existsPassedFinalizedByStudentAndSubject(studentId, prereq.getId())).thenReturn(true);
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
         when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(10);
-        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, null, 1L)).thenReturn(Collections.emptyList());
+        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, 1, 1L)).thenReturn(Collections.emptyList());
         when(scheduleRepository.findBySectionId(sectionId)).thenReturn(Collections.emptyList());
         when(gradeRepository.findFinalizedByStudentAndSubject(studentId, targetSubject.getId())).thenReturn(Collections.emptyList());
         when(enrollmentRepository.save(any(Enrollment.class))).thenAnswer(i -> i.getArgument(0));
@@ -180,9 +195,10 @@ class EnrollmentServiceTest {
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
         when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(5);
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
         when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(0);
-        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, null, 1L)).thenReturn(Collections.emptyList());
+        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, 1, 1L)).thenReturn(Collections.emptyList());
         when(scheduleRepository.findBySectionId(sectionId)).thenReturn(Collections.emptyList());
         when(gradeRepository.findFinalizedByStudentAndSubject(studentId, targetSubject.getId())).thenReturn(List.of(failingGrade));
         when(enrollmentRepository.save(any(Enrollment.class))).thenAnswer(i -> i.getArgument(0));
@@ -216,9 +232,10 @@ class EnrollmentServiceTest {
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
         when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(5);
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
         when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(0);
-        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, null, 1L)).thenReturn(Collections.emptyList());
+        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, 1, 1L)).thenReturn(Collections.emptyList());
         when(scheduleRepository.findBySectionId(sectionId)).thenReturn(Collections.emptyList());
         when(gradeRepository.findFinalizedByStudentAndSubject(studentId, targetSubject.getId())).thenReturn(List.of(passedGrade));
         when(enrollmentRepository.save(any(Enrollment.class))).thenAnswer(i -> i.getArgument(0));
@@ -256,6 +273,7 @@ class EnrollmentServiceTest {
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
         when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(targetSection));
+        allowCurriculum(5);
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
         when(enrollmentRepository.findActiveEnrollmentBySubject(studentId, 1, subject.getId()))
                 .thenReturn(Optional.of(existing));

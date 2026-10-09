@@ -133,4 +133,22 @@ public class ClassServiceTest {
         assertFalse(classEntity.getIsActive());
         verify(classRepository).save(classEntity);
     }
+
+    @Test
+    void batchGenerate_Success() {
+        com.sms.dto.request.BatchClassRequest batchReq = new com.sms.dto.request.BatchClassRequest(
+                "K17", "2025-2026", 2, null
+        );
+
+        when(departmentRepository.findByIsActiveTrue()).thenReturn(List.of(department));
+        when(classRepository.existsByCode(anyString())).thenReturn(false);
+        when(classRepository.save(any(ClassEntity.class))).thenAnswer(i -> i.getArgument(0));
+
+        List<ClassEntity> result = classService.batchGenerate(batchReq);
+
+        assertEquals(2, result.size());
+        assertEquals("IT01-K17", result.get(0).getCode());
+        assertEquals("IT02-K17", result.get(1).getCode());
+        verify(classRepository, times(2)).save(any(ClassEntity.class));
+    }
 }

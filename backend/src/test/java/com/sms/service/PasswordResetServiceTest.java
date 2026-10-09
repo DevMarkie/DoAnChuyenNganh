@@ -223,9 +223,12 @@ public class PasswordResetServiceTest {
         fr.setUsername("user1");
         fr.setEmail("user1@example.com");
 
+        Role role = new Role();
+        role.setName("STUDENT");
         User user = new User();
         user.setId(12L);
         user.setUsername("user1");
+        user.setRole(role);
 
         when(userRepository.findByUsername("user1")).thenReturn(Optional.of(user));
         when(resetRepository.existsByUserIdAndStatus(

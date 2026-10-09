@@ -35,6 +35,7 @@ class EnrollmentServiceTest {
     @Mock private LecturerRepository lecturerRepository;
     @Mock private CurriculumProgramRepository curriculumProgramRepository;
     @Mock private CurriculumBlockSubjectRepository curriculumBlockSubjectRepository;
+    @Mock private AttendanceRecordRepository attendanceRecordRepository;
 
     @InjectMocks private EnrollmentService enrollmentService;
 
@@ -454,5 +455,21 @@ class EnrollmentServiceTest {
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.of(enrollment));
 
         assertDoesNotThrow(() -> enrollmentService.assertCanViewSection(userId, sectionId));
+    }
+
+    @Test
+    @DisplayName("TC-PERF-ROSTER: absenceCount nạp theo lô, gán đúng từng enrollment")
+    void findBySection_mapsAbsenceCountPerEnrollment() {
+        Enrollment e1 = new Enrollment(); e1.setId(1L);
+        Enrollment e2 = new Enrollment(); e2.setId(2L);
+
+        when(enrollmentRepository.findActiveBySectionId(100L)).thenReturn(List.of(e1, e2));
+        when(attendanceRecordRepository.countAbsencesBySectionId(100L))
+                .thenReturn(List.<Object[]>of(new Object[]{1L, 3L})); // e2 không có buổi vắng
+
+        List<Enrollment> result = enrollmentService.findBySection(100L);
+
+        assertThat(result.get(0).getAbsenceCount()).isEqualTo(3);
+        assertThat(result.get(1).getAbsenceCount()).isEqualTo(0);
     }
 }

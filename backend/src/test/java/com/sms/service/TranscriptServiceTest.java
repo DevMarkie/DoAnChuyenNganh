@@ -180,4 +180,26 @@ public class TranscriptServiceTest {
         assertEquals(1, t.getCompletedCourses());
         assertEquals(0, BigDecimal.valueOf(1.20).compareTo(t.getCumulativeGpa()));
     }
+
+    @Test
+    void getTranscripts_groupsGradesPerStudent() {
+        Student s2 = new Student();
+        s2.setId(2L);
+        s2.setStudentCode("SV02");
+        s2.setFullName("Tran Thi B");
+
+        Grade g2 = makeGrade("CS201", 3, 0.0, 1); // F
+        g2.getEnrollment().setStudent(s2);
+
+        when(gradeRepository.findFinalizedByStudentIdIn(List.of(1L, 2L)))
+                .thenReturn(List.of(grade, g2));
+
+        List<TranscriptResponse> result = transcriptService.getTranscripts(List.of(student, s2));
+
+        assertEquals(2, result.size());
+        assertEquals("SV01", result.get(0).getStudentCode());
+        assertEquals(BigDecimal.valueOf(4.0).setScale(2), result.get(0).getCumulativeGpa());
+        assertEquals("SV02", result.get(1).getStudentCode());
+        assertEquals(0, BigDecimal.valueOf(0.00).compareTo(result.get(1).getCumulativeGpa()));
+    }
 }

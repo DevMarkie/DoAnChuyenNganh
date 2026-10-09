@@ -48,9 +48,21 @@ public class TranscriptService {
     public TranscriptResponse getTranscript(Long studentId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
+        return buildTranscript(student, gradeRepository.findFinalizedByStudentId(studentId));
+    }
 
-        List<Grade> grades = gradeRepository.findFinalizedByStudentId(studentId);
+    /** Bảng điểm cho nhiều SV trong 2 truy vấn thay vì N+1 (màn cảnh báo học vụ). */
+    public List<TranscriptResponse> getTranscripts(List<Student> students) {
+        if (students.isEmpty()) return List.of();
+        Map<Long, List<Grade>> byStudent = gradeRepository
+                .findFinalizedByStudentIdIn(students.stream().map(Student::getId).toList()).stream()
+                .collect(Collectors.groupingBy(g -> g.getEnrollment().getStudent().getId()));
+        return students.stream()
+                .map(s -> buildTranscript(s, byStudent.getOrDefault(s.getId(), List.of())))
+                .toList();
+    }
 
+    private TranscriptResponse buildTranscript(Student student, List<Grade> grades) {
         // Group by semester
         Map<Integer, List<Grade>> bySemester = grades.stream()
                 .collect(Collectors.groupingBy(g ->

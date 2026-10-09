@@ -3,6 +3,7 @@ package com.sms.controller;
 import com.sms.dto.ApiResponse;
 import com.sms.dto.response.AcademicWarningResponse;
 import com.sms.dto.response.TranscriptResponse;
+import com.sms.entity.Student;
 import com.sms.service.StudentService;
 import com.sms.service.TranscriptService;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +31,12 @@ public class AcademicWarningController {
             @RequestParam(required = false) Integer semesterId,
             @RequestParam(required = false) Integer level,
             @RequestParam(required = false) Integer majorId) {
-        List<AcademicWarningResponse> warnings = studentService.findAll().stream()
+        List<Student> students = studentService.findAll().stream()
                 .filter(student -> majorId == null
                         || (student.getClassEntity() != null && student.getClassEntity().getMajor() != null
                         && majorId.equals(student.getClassEntity().getMajor().getId())))
-                .map(student -> transcriptService.getTranscript(student.getId()))
+                .toList();
+        List<AcademicWarningResponse> warnings = transcriptService.getTranscripts(students).stream()
                 .filter(transcript -> transcript.getWarningLevel() > 0)
                 .filter(transcript -> level == null || transcript.getWarningLevel() == level)
                 .map(transcript -> toWarningResponse(transcript, semesterId))

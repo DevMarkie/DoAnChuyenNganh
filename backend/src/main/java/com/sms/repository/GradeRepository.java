@@ -46,4 +46,14 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
            "JOIN FETCH cs.semester " +
            "WHERE e.student.id = :studentId AND g.isFinalized = true")
     List<Grade> findFinalizedByStudentId(@Param("studentId") Long studentId);
+
+    /** Như findFinalizedByStudentId nhưng cho nhiều SV trong 1 truy vấn (màn cảnh báo học vụ). */
+    @Query("SELECT g FROM Grade g " +
+           "JOIN FETCH g.enrollment e " +
+           "JOIN FETCH e.student " +
+           "JOIN FETCH e.section cs " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.semester " +
+           "WHERE e.student.id IN :studentIds AND g.isFinalized = true")
+    List<Grade> findFinalizedByStudentIdIn(@Param("studentIds") Collection<Long> studentIds);
 }

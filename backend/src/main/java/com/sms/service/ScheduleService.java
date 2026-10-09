@@ -22,6 +22,8 @@ public class ScheduleService {
     private final ClassRepository classRepository;
     private final StudentRepository studentRepository;
     private final LecturerRepository lecturerRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final SemesterRepository semesterRepository;
 
     public List<Schedule> findAll() {
         return scheduleRepository.findAll();
@@ -49,8 +51,14 @@ public class ScheduleService {
 
         Integer classId = student.getClassEntity() != null ? student.getClassEntity().getId() : null;
 
-        if (semesterId != null) {
-            return scheduleRepository.findSchedulesForStudentAndSemester(student.getId(), classId, semesterId);
+        Long requestedSemesterId = semesterId;
+        if (requestedSemesterId == null) {
+            requestedSemesterId = semesterRepository.findByIsCurrentTrue()
+                    .map(semester -> semester.getId().longValue())
+                    .orElse(null);
+        }
+        if (requestedSemesterId != null) {
+            return scheduleRepository.findSchedulesForStudentAndSemester(student.getId(), classId, requestedSemesterId);
         }
         return scheduleRepository.findSchedulesForStudent(student.getId(), classId);
     }
@@ -94,6 +102,7 @@ public class ScheduleService {
             checkLecturerConflict(section.getLecturer().getId(), section.getLecturer().getFullName(),
                     request.getDayOfWeek(), request.getStartPeriod(), request.getEndPeriod(), start, end, null);
         }
+        checkStudentScheduleConflicts(section, request, start, end, null);
 
         Schedule schedule = Schedule.builder()
                 .section(section)
@@ -137,6 +146,7 @@ public class ScheduleService {
             checkLecturerConflict(section.getLecturer().getId(), section.getLecturer().getFullName(),
                     request.getDayOfWeek(), request.getStartPeriod(), request.getEndPeriod(), start, end, id);
         }
+        checkStudentScheduleConflicts(section, request, start, end, id);
 
         schedule.setSection(section);
         schedule.setClassEntity(classEntity);
@@ -202,6 +212,44 @@ public class ScheduleService {
                     lecturerName, sectionCode, subjectName,
                     c.getDayOfWeekName(), c.getStartPeriod(), c.getEndPeriod()
             ));
+        }
+    }
+
+    /**
+     * A schedule may be added after students have enrolled in its section.  At
+     * that point enrollment-time validation is too late, so protect every
+     * affected student's timetable here as well.
+     */
+    private void checkStudentScheduleConflicts(CourseSection section, ScheduleRequest request,
+                                               LocalDate startDate, LocalDate endDate, Long excludeId) {
+        for (var enrollment : enrollmentRepository.findActiveBySectionId(section.getId())) {
+            var student = enrollment.getStudent();
+            Integer classId = student.getClassEntity() == null ? null : student.getClassEntity().getId();
+            List<Schedule> existingSchedules = scheduleRepository.findSchedulesForStudentAndSemester(
+                    student.getId(), classId, section.getSemester().getId().longValue());
+
+            for (Schedule existing : existingSchedules) {
+                boolean isCurrentSchedule = excludeId != null && excludeId.equals(existing.getId());
+                boolean belongsToSameSection = existing.getSection() != null
+                        && section.getId().equals(existing.getSection().getId());
+                if (isCurrentSchedule || belongsToSameSection || existing.getDayOfWeek() == null
+                        || !existing.getDayOfWeek().equals(request.getDayOfWeek())) {
+                    continue;
+                }
+
+                boolean periodOverlap = request.getStartPeriod() <= existing.getEndPeriod()
+                        && request.getEndPeriod() >= existing.getStartPeriod();
+                boolean dateOverlap = !startDate.isAfter(existing.getEndDate())
+                        && !endDate.isBefore(existing.getStartDate());
+                if (periodOverlap && dateOverlap) {
+                    String studentName = student.getFullName() == null ? student.getStudentCode() : student.getFullName();
+                    throw new BadRequestException(String.format(
+                            "Trùng lịch học! Không thể xếp môn %s cho sinh viên %s vì trùng với lớp %s (%s) vào %s (Tiết %d - %d).",
+                            section.getSubject().getSubjectName(), studentName,
+                            existing.getSection().getSectionCode(), existing.getSection().getSubject().getSubjectName(),
+                            existing.getDayOfWeekName(), existing.getStartPeriod(), existing.getEndPeriod()));
+                }
+            }
         }
     }
 }

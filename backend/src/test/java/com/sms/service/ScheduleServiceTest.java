@@ -3,15 +3,20 @@ package com.sms.service;
 import com.sms.dto.request.ScheduleRequest;
 import com.sms.entity.ClassEntity;
 import com.sms.entity.CourseSection;
+import com.sms.entity.Enrollment;
 import com.sms.entity.Lecturer;
 import com.sms.entity.Schedule;
 import com.sms.entity.Student;
+import com.sms.entity.Subject;
+import com.sms.entity.Semester;
 import com.sms.exception.BadRequestException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.ClassRepository;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.LecturerRepository;
+import com.sms.repository.EnrollmentRepository;
 import com.sms.repository.ScheduleRepository;
+import com.sms.repository.SemesterRepository;
 import com.sms.repository.StudentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +46,10 @@ public class ScheduleServiceTest {
     private StudentRepository studentRepository;
     @Mock
     private LecturerRepository lecturerRepository;
+    @Mock
+    private EnrollmentRepository enrollmentRepository;
+    @Mock
+    private SemesterRepository semesterRepository;
 
     @InjectMocks
     private ScheduleService scheduleService;
@@ -62,6 +71,12 @@ public class ScheduleServiceTest {
         section.setId(1L);
         section.setLecturer(lecturer);
         section.setSectionCode("SE01");
+        Subject subject = new Subject();
+        subject.setSubjectName("Lập trình Java");
+        section.setSubject(subject);
+        Semester semester = new Semester();
+        semester.setId(1);
+        section.setSemester(semester);
 
         classEntity = new ClassEntity();
         classEntity.setId(1);
@@ -112,6 +127,21 @@ public class ScheduleServiceTest {
     }
 
     @Test
+    void getStudentSchedule_WithoutSemester_UsesCurrentSemester() {
+        Semester currentSemester = new Semester();
+        currentSemester.setId(1);
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
+        when(semesterRepository.findByIsCurrentTrue()).thenReturn(Optional.of(currentSemester));
+        when(scheduleRepository.findSchedulesForStudentAndSemester(1L, 1, 1L))
+                .thenReturn(List.of(schedule));
+
+        List<Schedule> result = scheduleService.getStudentSchedule(1L, null);
+
+        assertEquals(List.of(schedule), result);
+        verify(scheduleRepository, never()).findSchedulesForStudent(1L, 1);
+    }
+
+    @Test
     void getLecturerSchedule_Success() {
         when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
         when(scheduleRepository.findByLecturerIdAndSemesterId(1L, 1L))
@@ -158,6 +188,44 @@ public class ScheduleServiceTest {
                 .thenReturn(List.of(conflicting));
 
         assertThrows(BadRequestException.class, () -> scheduleService.create(request));
+    }
+
+    @Test
+    void create_WhenAnEnrolledStudentAlreadyHasAnotherSubjectAtThatTime_Throws() {
+        CourseSection conflictingSection = new CourseSection();
+        conflictingSection.setId(2L);
+        conflictingSection.setSectionCode("SE02");
+        Subject conflictingSubject = new Subject();
+        conflictingSubject.setSubjectName("Cấu trúc dữ liệu");
+        conflictingSection.setSubject(conflictingSubject);
+
+        Schedule conflictingSchedule = new Schedule();
+        conflictingSchedule.setSection(conflictingSection);
+        conflictingSchedule.setDayOfWeek(2);
+        conflictingSchedule.setStartPeriod(1);
+        conflictingSchedule.setEndPeriod(3);
+        conflictingSchedule.setStartDate(LocalDate.parse("2023-09-01"));
+        conflictingSchedule.setEndDate(LocalDate.parse("2023-12-31"));
+
+        Enrollment enrollment = new Enrollment();
+        enrollment.setStudent(student);
+        enrollment.setSection(section);
+        enrollment.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
+
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));
+        when(scheduleRepository.findRoomConflicts(any(), any(), any(), any(), any(), any(), eq(null)))
+                .thenReturn(List.of());
+        when(scheduleRepository.findLecturerConflicts(any(), any(), any(), any(), any(), any(), eq(null)))
+                .thenReturn(List.of());
+        when(enrollmentRepository.findActiveBySectionId(1L)).thenReturn(List.of(enrollment));
+        when(scheduleRepository.findSchedulesForStudentAndSemester(1L, 1, 1L))
+                .thenReturn(List.of(conflictingSchedule));
+
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> scheduleService.create(request));
+
+        assertTrue(exception.getMessage().contains("Trùng lịch học"));
+        assertTrue(exception.getMessage().contains("Cấu trúc dữ liệu"));
     }
 
     @Test

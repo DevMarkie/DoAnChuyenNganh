@@ -6,6 +6,7 @@ import {
 import { toast } from 'react-toastify';
 import { scheduleService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
+import StudentClassListModal from './StudentClassListModal';
 
 const DAYS = [
   { value: 2, label: 'Thứ Hai', short: 'T2', jsDay: 1 },
@@ -29,6 +30,7 @@ export default function StudentSchedulePage() {
   const [schedules, setSchedules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
+  const [selectedSection, setSelectedSection] = useState(null);
 
   // Current day calculation
   const todayVal = useMemo(() => {
@@ -158,11 +160,14 @@ export default function StudentSchedulePage() {
             {todayClasses.map((s) => (
               <div
                 key={s.id}
+                onClick={() => setSelectedSection({ ...s.courseSection, room: s.room })}
+                title="Nhấn để xem danh sách lớp học và số buổi vắng"
                 style={{
                   background: 'var(--primary-light)',
                   border: '1px solid var(--primary-border)',
                   borderRadius: 'var(--radius-md)',
                   padding: '14px',
+                  cursor: 'pointer',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -368,6 +373,8 @@ export default function StudentSchedulePage() {
                         return (
                           <div
                             key={s.id}
+                            onClick={() => setSelectedSection({ ...s.courseSection, room: s.room })}
+                            title="Nhấn để xem danh sách lớp học và số buổi vắng"
                             style={{
                               background: 'var(--bg-surface)',
                               border: '1px solid var(--primary-border)',
@@ -376,6 +383,7 @@ export default function StudentSchedulePage() {
                               padding: '8px',
                               fontSize: '0.8rem',
                               boxShadow: 'var(--shadow-xs)',
+                              cursor: 'pointer',
                             }}
                           >
                             <div style={{ fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.3 }}>
@@ -435,7 +443,12 @@ export default function StudentSchedulePage() {
               </thead>
               <tbody>
                 {schedules.map((s) => (
-                  <tr key={s.id}>
+                  <tr 
+                    key={s.id} 
+                    onClick={() => setSelectedSection({ ...s.courseSection, room: s.room })} 
+                    style={{ cursor: 'pointer' }}
+                    title="Nhấn để xem danh sách lớp học và số buổi vắng"
+                  >
                     <td>
                       <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
                         {s.courseSection?.subject?.subjectName || 'Lớp học'}
@@ -485,6 +498,13 @@ export default function StudentSchedulePage() {
             </table>
           </div>
         </div>
+      )}
+      
+      {selectedSection && (
+        <StudentClassListModal 
+          courseSection={selectedSection} 
+          onClose={() => setSelectedSection(null)} 
+        />
       )}
     </div>
   );

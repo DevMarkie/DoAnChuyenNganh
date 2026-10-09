@@ -24,6 +24,7 @@ import com.sms.repository.ScheduleRepository;
 import com.sms.repository.StudentRepository;
 import com.sms.repository.CurriculumBlockSubjectRepository;
 import com.sms.repository.CurriculumProgramRepository;
+import com.sms.repository.AttendanceRecordRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +41,7 @@ public class EnrollmentService {
     private final LecturerRepository lecturerRepository;
     private final CurriculumProgramRepository curriculumProgramRepository;
     private final CurriculumBlockSubjectRepository curriculumBlockSubjectRepository;
+    private final AttendanceRecordRepository attendanceRecordRepository;
     private static final int MAX_CREDITS_PER_SEMESTER = 30;
 
     public List<Enrollment> findByStudent(Long studentId) {
@@ -47,22 +49,31 @@ public class EnrollmentService {
     }
 
     public List<Enrollment> findBySection(Long sectionId) {
-        return enrollmentRepository.findActiveBySectionId(sectionId);
+        List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(sectionId);
+        enrollments.forEach(e -> {
+            e.setAbsenceCount(attendanceRecordRepository.countAbsencesByEnrollmentId(e.getId()));
+        });
+        return enrollments;
     }
 
     /**
      * BR-07 (đọc): giảng viên chỉ được xem danh sách sinh viên của lớp mình phụ
      * trách. Admin (không có bản ghi Lecturer) xem được mọi lớp.
+     * Sinh viên và Admin có quyền xem danh sách sinh viên của lớp học phần.
      */
     public void assertCanViewSection(Long userId, Long sectionId) {
         Lecturer lecturer = lecturerRepository.findByUserId(userId).orElse(null);
-        if (lecturer == null) {
+        if (lecturer != null) {
+            CourseSection section = courseSectionRepository.findById(sectionId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+            if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
+                throw new BadRequestException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
+            }
             return;
         }
-        CourseSection section = courseSectionRepository.findById(sectionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
-        if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
-            throw new BadRequestException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
+
+        if (!courseSectionRepository.existsById(sectionId)) {
+            throw new ResourceNotFoundException("Không tìm thấy lớp học phần");
         }
     }
 

@@ -55,6 +55,19 @@ public class Enrollment {
     @Column(name = "enrollment_type", nullable = false)
     private EnrollmentType enrollmentType = EnrollmentType.FIRST_TIME;
 
+    @jakarta.persistence.Transient
+    @JsonProperty("absenceCount")
+    private Integer absenceCount = 0;
+
+    @JsonProperty("absenceCount")
+    public Integer getAbsenceCount() {
+        return absenceCount != null ? absenceCount : 0;
+    }
+
+    public void setAbsenceCount(Integer absenceCount) {
+        this.absenceCount = absenceCount;
+    }
+
     @PrePersist
     protected void onCreate() {
         enrolledAt = LocalDateTime.now();

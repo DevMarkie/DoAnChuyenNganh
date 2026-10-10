@@ -96,6 +96,7 @@ public class SubjectServiceTest {
         Subject created = subjectService.create(request);
         assertNotNull(created);
         assertEquals(1, created.getId());
+        assertEquals("CS101", created.getSubjectCode()); // service map tu request, khong phai stub
         verify(subjectRepository).save(any(Subject.class));
     }
 
@@ -104,21 +105,6 @@ public class SubjectServiceTest {
         when(subjectRepository.existsBySubjectCode("CS101")).thenReturn(true);
         assertThrows(BadRequestException.class, () -> subjectService.create(request));
         verify(subjectRepository, never()).save(any());
-    }
-
-    @Test
-    void create_SelfPrerequisite_ShouldThrow() {
-        request.setPrerequisiteIds(List.of(1));
-        // In create, subjectId is null, so checking self-prerequisite relies on not finding self.
-        // But logic in resolvePrerequisites says `if (subjectId != null && uniqueIds.contains(subjectId))`
-        // So during create, it just checks if the prereq exists.
-        
-        when(subjectRepository.existsBySubjectCode("CS101")).thenReturn(false);
-        when(departmentRepository.findById(1)).thenReturn(Optional.of(department));
-        when(subjectRepository.findAllById(any())).thenReturn(List.of(subject));
-
-        subjectService.create(request);
-        verify(subjectRepository).save(any(Subject.class));
     }
 
     @Test

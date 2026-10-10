@@ -41,8 +41,11 @@ const fetchApi = async (method, url, config = {}) => {
           localStorage.removeItem("user");
           window.dispatchEvent(new CustomEvent("auth:session-expired"));
         }
-        const err = new Error(response.statusText || 'Error');
-        err.response = response;
+        // Đọc body lỗi (JSON) để UI lấy đc err.response.data.message; raw Response không có .data.
+        let errData = null;
+        try { const t = await response.text(); errData = t ? JSON.parse(t) : null; } catch { errData = null; }
+        const err = new Error((errData && errData.message) || response.statusText || 'Error');
+        err.response = { status: response.status, statusText: response.statusText, data: errData };
         throw err;
       }
       

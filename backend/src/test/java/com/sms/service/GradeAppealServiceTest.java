@@ -22,6 +22,7 @@ import com.sms.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -124,12 +125,23 @@ public class GradeAppealServiceTest {
     }
 
     @Test
-    void findAll_Lecturer_Success() {
+    void findAll_Lecturer_filtersOutOtherLecturersAppeals() {
+        Lecturer other = new Lecturer();
+        other.setId(2L);
+        CourseSection otherSection = new CourseSection();
+        otherSection.setLecturer(other);
+        Enrollment otherEnrollment = new Enrollment();
+        otherEnrollment.setSection(otherSection);
+        GradeAppeal otherAppeal = new GradeAppeal();
+        otherAppeal.setId(2L);
+        otherAppeal.setEnrollment(otherEnrollment);
+
         when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
-        when(appealRepository.findAllWithDetails()).thenReturn(List.of(appeal));
+        when(appealRepository.findAllWithDetails()).thenReturn(List.of(appeal, otherAppeal));
 
         List<GradeAppeal> result = appealService.findAll(1L, null, null, null);
         assertEquals(1, result.size());
+        assertSame(appeal, result.get(0));
     }
 
     @Test
@@ -147,6 +159,13 @@ public class GradeAppealServiceTest {
         when(appealRepository.save(any())).thenReturn(appeal);
 
         GradeAppeal result = appealService.create(1L, req);
+
+        // Khang dinh diem hien tai duoc doc TU bang diem (final=5), khong phai gia tri stub tu tra ve.
+        ArgumentCaptor<GradeAppeal> captor = ArgumentCaptor.forClass(GradeAppeal.class);
+        verify(appealRepository).save(captor.capture());
+        GradeAppeal built = captor.getValue();
+        assertEquals(0, BigDecimal.valueOf(5).compareTo(built.getCurrentScore()));
+        assertEquals(GradeAppeal.AppealStatus.PENDING, built.getStatus());
         assertNotNull(result);
     }
 

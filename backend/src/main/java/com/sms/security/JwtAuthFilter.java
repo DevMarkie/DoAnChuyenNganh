@@ -1,5 +1,7 @@
 package com.sms.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sms.dto.ApiResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +34,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/swagger-ui.html"
     );
 
+    /** Khi tài khoản còn cờ "phải đổi mật khẩu mặc định", chỉ các path này được phép. */
+    private static final List<String> MUST_CHANGE_ALLOWED = List.of(
+            "/api/auth/change-password",
+            "/api/auth/logout"
+    );
+
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * Skip JWT filter entirely for public endpoints — saves unnecessary
@@ -58,6 +68,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 try {
                     UserDetails userPrincipal = userDetailsService.loadUserByUsername(claims.getSubject());
                     if (userPrincipal.isEnabled()) {
+                        // Tài khoản còn cờ "phải đổi mật khẩu mặc định": chỉ cho đổi mật khẩu/đăng xuất.
+                        // Trước đây chỉ frontend chặn → gọi thẳng API bằng mật khẩu mặc định vẫn vào được.
+                        if (((UserPrincipal) userPrincipal).isMustChangePassword()
+                                && !MUST_CHANGE_ALLOWED.contains(request.getServletPath())) {
+                            // Trả JSON ApiResponse như mọi lỗi khác (frontend đọc data.message),
+                            // không dùng sendError (ra trang lỗi HTML của container).
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json;charset=UTF-8");
+                            MAPPER.writeValue(response.getWriter(),
+                                    ApiResponse.error("Bạn phải đổi mật khẩu mặc định trước khi sử dụng hệ thống"));
+                            return;
+                        }
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

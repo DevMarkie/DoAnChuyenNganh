@@ -1,13 +1,9 @@
 package com.sms.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,15 +12,6 @@ public class LoginAttemptServiceTest {
 
     @InjectMocks
     private LoginAttemptService loginAttemptService;
-
-    @BeforeEach
-    void setUp() {
-        // Clear internal state if needed
-        ConcurrentHashMap<?, ?> attempts = (ConcurrentHashMap<?, ?>) ReflectionTestUtils.getField(loginAttemptService, "attempts");
-        if (attempts != null) {
-            attempts.clear();
-        }
-    }
 
     @Test
     void loginSucceeded_Success() {

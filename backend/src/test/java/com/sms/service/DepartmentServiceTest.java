@@ -81,6 +81,7 @@ public class DepartmentServiceTest {
         Department created = departmentService.create(request);
         assertNotNull(created);
         assertEquals(1, created.getId());
+        assertEquals("IT", created.getCode()); // service map tu request, khong phai stub
         verify(departmentRepository).save(any(Department.class));
     }
 

@@ -16,6 +16,7 @@ import com.sms.repository.SubjectRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -148,9 +149,16 @@ public class CourseSectionServiceTest {
         when(semesterRepository.findById(1)).thenReturn(Optional.of(semester));
         when(courseSectionRepository.save(any(CourseSection.class))).thenReturn(section);
 
-        CourseSection created = courseSectionService.create(request);
-        assertNotNull(created);
-        verify(courseSectionRepository).save(any(CourseSection.class));
+        courseSectionService.create(request);
+
+        // Khang dinh gia tri service TU tinh tren entity gui di luu, khong phai object stub tra ve.
+        ArgumentCaptor<CourseSection> captor = ArgumentCaptor.forClass(CourseSection.class);
+        verify(courseSectionRepository).save(captor.capture());
+        CourseSection built = captor.getValue();
+        assertEquals(45, built.getMaxStudents());
+        assertEquals(30, built.getMinStudents()); // ceil(45 * 2/3)
+        assertEquals(0, built.getCurrentStudents());
+        assertEquals(CourseSection.SectionStatus.OPEN, built.getStatus());
     }
 
     @Test
@@ -171,7 +179,14 @@ public class CourseSectionServiceTest {
                 .thenReturn(List.of());
 
         courseSectionService.create(request);
-        verify(scheduleRepository).save(any(Schedule.class));
+
+        ArgumentCaptor<Schedule> scheduleCaptor = ArgumentCaptor.forClass(Schedule.class);
+        verify(scheduleRepository).save(scheduleCaptor.capture());
+        Schedule saved = scheduleCaptor.getValue();
+        assertEquals(2, saved.getDayOfWeek().intValue());
+        assertEquals(1, saved.getStartPeriod().intValue());
+        assertEquals(3, saved.getEndPeriod().intValue());
+        assertEquals("A101", saved.getRoom());
     }
 
     @Test

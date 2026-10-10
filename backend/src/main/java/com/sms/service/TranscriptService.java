@@ -108,9 +108,11 @@ public class TranscriptService {
                 }
             }
 
+            // Kỳ không có tín chỉ tính điểm -> GPA null (chưa xếp loại), KHÔNG phải 0.0,
+            // tránh cảnh báo học vụ nhầm cho kỳ chưa có điểm (isSemesterWarning null-safe).
             BigDecimal semesterGpa = semCredits > 0
                     ? semWeightedGpa.divide(BigDecimal.valueOf(semCredits), 2, RoundingMode.HALF_UP)
-                    : BigDecimal.ZERO;
+                    : null;
 
             semesterGrades.add(TranscriptResponse.SemesterGrade.builder()
                     .semesterId(semester.getId())

@@ -47,8 +47,11 @@ public class CourseSection {
     /**
      * Số chỗ đã được giữ trong lớp học phần. Tên thuộc tính khớp với API
      * mà giao diện sử dụng, còn cột vật lý vẫn là {@code enrolled_count}.
+     * Cột do trigger MySQL quản lý (insert/cancel enrollment) nên JPA không
+     * ghi (insertable/updatable=false) để khỏi ghi đè giá trị trigger → tránh
+     * lost update khi admin sửa lớp đúng lúc có SV đăng ký.
      */
-    @Column(name = "enrolled_count", nullable = false)
+    @Column(name = "enrolled_count", nullable = false, insertable = false, updatable = false)
     private Integer currentStudents = 0;
 
     @Column(length = 200)

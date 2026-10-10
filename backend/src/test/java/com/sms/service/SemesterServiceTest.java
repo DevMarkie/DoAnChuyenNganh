@@ -102,6 +102,7 @@ public class SemesterServiceTest {
         Semester created = semesterService.create(request);
         assertNotNull(created);
         assertEquals(1, created.getId());
+        assertEquals("HK1_2324", created.getSemesterCode()); // service map tu request, khong phai stub
         verify(semesterRepository).save(any(Semester.class));
     }
 

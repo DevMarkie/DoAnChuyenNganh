@@ -36,6 +36,10 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @AuthenticationPrincipal UserPrincipal user,
             @Valid @RequestBody ChangePasswordRequest request) {
+        // /api/auth/** là permitAll nên request ẩn danh vẫn tới đây -> principal null.
+        if (user == null) {
+            return ResponseEntity.status(401).body(ApiResponse.<Void>error("Bạn cần đăng nhập để đổi mật khẩu"));
+        }
         authService.changePassword(user.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Đổi mật khẩu thành công"));
     }

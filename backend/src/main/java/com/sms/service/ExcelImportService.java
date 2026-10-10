@@ -205,11 +205,20 @@ public class ExcelImportService {
         cell.setCellStyle(style);
     }
 
-    /** Đọc file GV tải lên, đối chiếu Mã ĐK với lớp + kiểm tra điểm 0–10. KHÔNG lưu. */
-    public List<GradeImportRow> parseGradeImport(Long sectionId, MultipartFile file) {
+    /** File upload phải là .xlsx không rỗng — chặn sớm thay vì để POI ném lỗi 500. */
+    private static void requireXlsx(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("Chưa chọn file hoặc file rỗng");
         }
+        String name = file.getOriginalFilename();
+        if (name == null || !name.toLowerCase().endsWith(".xlsx")) {
+            throw new BadRequestException("File phải có định dạng .xlsx");
+        }
+    }
+
+    /** Đọc file GV tải lên, đối chiếu Mã ĐK với lớp + kiểm tra điểm 0–10. KHÔNG lưu. */
+    public List<GradeImportRow> parseGradeImport(Long sectionId, MultipartFile file) {
+        requireXlsx(file);
         courseSectionRepository.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
 
@@ -364,9 +373,7 @@ public class ExcelImportService {
      * Đọc file Excel tải lên, kiểm tra validation đối soát trùng lặp và trả về danh sách Preview. KHÔNG lưu vào DB.
      */
     public List<StudentImportRow> parseStudentImport(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new BadRequestException("Chưa chọn file hoặc file rỗng");
-        }
+        requireXlsx(file);
 
         List<StudentImportRow> rows = new ArrayList<>();
         Set<String> seenStudentCodes = new HashSet<>();

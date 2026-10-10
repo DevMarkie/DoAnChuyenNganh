@@ -102,6 +102,7 @@ public class ClassServiceTest {
         ClassEntity created = classService.create(request);
         assertNotNull(created);
         assertEquals(1, created.getId());
+        assertEquals("SE01", created.getCode()); // service map tu request, khong phai stub
         verify(classRepository).save(any(ClassEntity.class));
     }
 

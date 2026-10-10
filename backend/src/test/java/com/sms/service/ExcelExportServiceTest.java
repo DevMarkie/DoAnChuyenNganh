@@ -16,7 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -86,8 +89,18 @@ public class ExcelExportServiceTest {
 
         byte[] result = excelExportService.exportGradeSheet(1L);
 
-        assertNotNull(result);
-        assertTrue(result.length > 0);
+        // Mo lai bang POI: file hop le + co dong du lieu SV (khong chi tieu de rong).
+        try (XSSFWorkbook wb = new XSSFWorkbook(new ByteArrayInputStream(result))) {
+            Sheet sheet = wb.getSheetAt(0);
+            DataFormatter fmt = new DataFormatter();
+            boolean hasStudent = false;
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    if ("STU001".equals(fmt.formatCellValue(cell).trim())) hasStudent = true;
+                }
+            }
+            assertTrue(hasStudent, "Bang diem phai chua dong SV STU001");
+        }
     }
 
     @Test

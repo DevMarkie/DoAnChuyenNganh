@@ -39,8 +39,10 @@ public class AcademicScheduler {
         List<Semester> activeSemesters = semesterRepository.findByStatus(Semester.SemesterStatus.ACTIVE);
         
         for (Semester sem : activeSemesters) {
-            // Kiểm tra xem đợt đăng ký đã kết thúc chưa
-            if (sem.getRegistrationEnd() != null && !LocalDate.now().isBefore(sem.getRegistrationEnd())) {
+            // Chỉ xử lý SAU khi hết hạn đăng ký. registrationEnd là ngày cuối CÒN mở
+            // (Semester.isRegistrationOpen inclusive), nên phải dùng isAfter, không phải
+            // !isBefore — nếu không sẽ huỷ lớp ngay trong ngày cuối SV vẫn còn đăng ký được.
+            if (sem.getRegistrationEnd() != null && LocalDate.now().isAfter(sem.getRegistrationEnd())) {
                 List<CourseSection> openSections = courseSectionRepository.findBySemesterIdAndStatus(
                         sem.getId(), CourseSection.SectionStatus.OPEN);
                 

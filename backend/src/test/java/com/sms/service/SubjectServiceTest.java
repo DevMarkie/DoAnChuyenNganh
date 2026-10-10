@@ -96,6 +96,7 @@ public class SubjectServiceTest {
         Subject created = subjectService.create(request);
         assertNotNull(created);
         assertEquals(1, created.getId());
+        assertEquals("CS101", created.getSubjectCode()); // service map tu request, khong phai stub
         verify(subjectRepository).save(any(Subject.class));
     }
 

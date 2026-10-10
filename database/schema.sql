@@ -285,7 +285,7 @@ CREATE TABLE course_sections (
     base_tuition_rate DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     schedule       VARCHAR(200) NULL     COMMENT 'VD: Thứ 2 (7:30-9:30), Thứ 4 (7:30-9:30)',
     room           VARCHAR(50)  NULL,
-    status         ENUM('OPEN', 'CLOSED', 'CANCELLED') NOT NULL DEFAULT 'OPEN',
+    status         ENUM('OPEN', 'ACTIVE', 'CLOSED', 'CANCELLED', 'PENDING_FEE', 'LOCKED_BILLING') NOT NULL DEFAULT 'OPEN',
     created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_course_sections PRIMARY KEY (id),

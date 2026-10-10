@@ -40,6 +40,13 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .headers(headers -> headers
+                // HSTS: ép browser dùng HTTPS cho domain API (emit cả sau Cloudflare tunnel HTTP).
+                .httpStrictTransportSecurity(hsts -> hsts
+                        .requestMatcher(org.springframework.security.web.util.matcher.AnyRequestMatcher.INSTANCE)
+                        .maxAgeInSeconds(31536000))
+                .referrerPolicy(referrer -> referrer
+                        .policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
@@ -99,8 +106,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Restrict to known origin patterns instead of a blanket wildcard, which
-        // is unsafe together with allowCredentials(true).
+        // Restrict to known origin patterns. CORS credentials bị tắt (JWT ở header),
+        // nên dù pattern có wildcard thì cũng không lộ phiên theo cookie.
         List<String> origins = java.util.Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
@@ -109,7 +116,9 @@ public class SecurityConfig {
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Link", "X-Total-Count"));
-        config.setAllowCredentials(true);
+        // JWT đi trong header Authorization (không dùng cookie), nên không cần CORS credentials.
+        // Tắt để loại bỏ rủi ro origin-pattern mở (*.trycloudflare.com) + credentials.
+        config.setAllowCredentials(false);
         config.setMaxAge(3600L);
         return new UrlBasedCorsConfigurationSource() {{
             registerCorsConfiguration("/**", config);

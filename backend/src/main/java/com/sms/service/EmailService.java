@@ -55,9 +55,9 @@ public class EmailService {
                   <p style="font-size: 13px; color: #b45309;">⚠️ <em>Lưu ý: Vui lòng đăng nhập và đổi lại mật khẩu ngay trong lần truy cập đầu tiên.</em></p>
                 </div>
                 """.formatted(
-                    fullName,
+                    org.springframework.web.util.HtmlUtils.htmlEscape(fullName),
                     roleDisplay,
-                    username,
+                    org.springframework.web.util.HtmlUtils.htmlEscape(username),
                     newPassword,
                     java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
             );
@@ -99,7 +99,10 @@ public class EmailService {
                   <p>Nếu cần hỗ trợ thêm, vui lòng liên hệ trực tiếp Phòng Đào tạo hoặc Quản trị viên Hệ thống SMS.</p>
                 </body>
                 </html>
-                """.formatted(fullName, username, (reason != null && !reason.isBlank()) ? reason : "Thông tin xác minh không khớp.");
+                """.formatted(
+                    org.springframework.web.util.HtmlUtils.htmlEscape(fullName),
+                    org.springframework.web.util.HtmlUtils.htmlEscape(username),
+                    org.springframework.web.util.HtmlUtils.htmlEscape((reason != null && !reason.isBlank()) ? reason : "Thông tin xác minh không khớp."));
 
             helper.setText(htmlContent, true);
             mailSender.send(message);

@@ -6,10 +6,14 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: student_management
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      # App ket noi bang user rieng chi co quyen tren DB student_management (khong dung root).
+      # Image mysql tu tao MYSQL_USER voi ALL PRIVILEGES gioi han dung schema nay.
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_dev_pw}
+      MYSQL_USER: ${DB_USER:-sms_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-sms_dev_pw}
       TZ: Asia/Ho_Chi_Minh
     ports:
-      - "3308:3306"
+      - "127.0.0.1:3308:3306"
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -32,8 +36,8 @@ services:
     restart: always
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: ""
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-sms_app}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-sms_dev_pw}
       PORT: 8080
     ports:
       - "8080:8080"

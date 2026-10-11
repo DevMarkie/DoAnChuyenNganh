@@ -23,6 +23,13 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
+        // Dev-only: khi preview chạy cổng khác 5173 (vd 5174), backend chỉ allowlist
+        // 5173 nên trả 403 CORS. Giả Origin về 5173 cho qua. Không ảnh hưởng prod/build.
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            if (proxyReq.getHeader('origin')) proxyReq.setHeader('origin', 'http://localhost:5173');
+          });
+        },
       },
     },
   },

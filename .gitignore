@@ -86,6 +86,10 @@ drawio/
 /*.docx
 /*.pdf
 
+# Local-only tooling scratch (trình sinh báo cáo Word + cache Python — không commit)
+/report/
+/bao-cao/
+
 # Local docker-compose overrides (chứa secret cục bộ như JWT_SECRET — không commit)
 docker-compose.override.yml
 docker-compose.override.yaml

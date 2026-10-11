@@ -209,15 +209,19 @@ export default function PortalLoginPage({ portalType = 'student' }) {
     <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: 'var(--bg-app)' }}>
       {/* Left Column: Brand & Feature Panel — themed with portal color */}
       <div
-        className="login-brand-panel force-light-text"
+        className="login-brand-panel"
         style={{
           '--login-accent-gradient': config.accent,
+          '--text-main': '#ffffff',
+          '--text-muted': '#aebbd6',
+          '--text-secondary': '#c7d2e4',
+          '--text-light': '#9fb0d4',
           flex: '1 1 46%',
           padding: '56px 60px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          background: config.accentSoft,
+          background: '#172554',
           borderRight: '1px solid var(--border-color)',
         }}
       >
@@ -228,11 +232,8 @@ export default function PortalLoginPage({ portalType = 'student' }) {
             <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
               SMS University
             </div>
-            <div style={{
-              fontSize: '0.72rem', color: accent, textTransform: 'uppercase',
-              letterSpacing: '0.06em', fontWeight: 700,
-            }}>
-              {config.title}
+            <div style={{ fontSize: '0.74rem', color: '#9fb0d4', fontWeight: 500 }}>
+              Cổng thông tin đào tạo trực tuyến
             </div>
           </div>
         </div>
@@ -240,10 +241,11 @@ export default function PortalLoginPage({ portalType = 'student' }) {
         {/* Middle: Heading & Features */}
         <div style={{ margin: '48px 0' }}>
           <h1 style={{
-            fontSize: '2.1rem', fontWeight: 700, color: 'var(--text-main)',
-            lineHeight: 1.2, letterSpacing: '-0.035em', marginBottom: '14px',
+            fontFamily: "'Fraunces', Georgia, serif",
+            fontSize: '2.3rem', fontWeight: 600, color: 'var(--text-main)',
+            lineHeight: 1.1, letterSpacing: '-0.01em', marginBottom: '14px',
           }}>
-            {config.heading}
+            {config.title}
           </h1>
           <p style={{
             fontSize: '0.98rem', lineHeight: 1.6, color: 'var(--text-muted)', maxWidth: '460px',
@@ -273,8 +275,8 @@ export default function PortalLoginPage({ portalType = 'student' }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           fontSize: '0.8rem', color: 'var(--text-light)',
         }}>
-          <span>Phiên bản 2.0 • Chuẩn đào tạo tín chỉ</span>
-          <Link to="/login" style={{ color: accent, textDecoration: 'none', fontWeight: 600 }}>
+          <span>Chuẩn đào tạo tín chỉ, phiên bản 2.0</span>
+          <Link to="/login" style={{ color: '#c7d2e4', textDecoration: 'none', fontWeight: 600 }}>
             ← Tất cả các cổng
           </Link>
         </div>
@@ -312,8 +314,9 @@ export default function PortalLoginPage({ portalType = 'student' }) {
               Cổng {config.roleLabel}
             </span>
             <h2 style={{
-              fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)',
-              letterSpacing: '-0.025em', marginBottom: '6px', marginTop: '12px',
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: '1.55rem', fontWeight: 600, color: 'var(--text-main)',
+              letterSpacing: '-0.01em', marginBottom: '6px', marginTop: '12px',
             }}>
               {config.heading}
             </h2>
@@ -435,8 +438,8 @@ export default function PortalLoginPage({ portalType = 'student' }) {
           {/* Switch to Other Portals */}
           <div style={{ marginTop: '20px' }}>
             <div style={{
-              fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase',
-              color: 'var(--text-light)', marginBottom: '8px', letterSpacing: '0.05em',
+              fontSize: '0.8rem', fontWeight: 600,
+              color: 'var(--text-secondary)', marginBottom: '8px',
             }}>
               Chuyển sang cổng đăng nhập khác
             </div>
@@ -459,7 +462,6 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                     }} />
                     {link.label}
                   </span>
-                  <span style={{ color: 'var(--text-light)' }}>→</span>
                 </Link>
               ))}
             </div>

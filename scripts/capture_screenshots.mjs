@@ -83,7 +83,11 @@ async function captureViaCDP() {
             localStorage.setItem('user', ${JSON.stringify(JSON.stringify(authData))});
           `,
         });
-        await send('Page.navigate', { url });
+        // HashRouter + authStore reads the token once at boot, so re-navigating
+        // to the same hash is only a fragment change (no reload) and the store
+        // stays logged-out. A cache-bust query before the hash forces a full
+        // document load that re-reads the freshly-set token.
+        await send('Page.navigate', { url: url.replace('#', `?_=${Date.now()}#`) });
         await new Promise((r) => setTimeout(r, 2000));
       }
 
@@ -97,15 +101,15 @@ async function captureViaCDP() {
     };
 
     // Capture Portal Hub
-    await capturePage('http://localhost:5173/login', '1_portal_hub.png', false);
+    await capturePage('http://localhost:5173/#/login', '1_portal_hub.png', false);
     // Capture Student Login
-    await capturePage('http://localhost:5173/student/login', '2_student_login.png', false);
+    await capturePage('http://localhost:5173/#/student/login', '2_student_login.png', false);
     // Capture Student Dashboard
-    await capturePage('http://localhost:5173/student/dashboard', '3_student_dashboard.png', true);
+    await capturePage('http://localhost:5173/#/student/dashboard', '3_student_dashboard.png', true);
     // Capture Enroll Page
-    await capturePage('http://localhost:5173/student/enroll', '4_enroll_page.png', true);
+    await capturePage('http://localhost:5173/#/student/enroll', '4_enroll_page.png', true);
     // Capture My Enrollments Page
-    await capturePage('http://localhost:5173/student/my-enrollments', '5_my_enrollments.png', true);
+    await capturePage('http://localhost:5173/#/student/enrollments', '5_my_enrollments.png', true);
 
     ws.close();
   } finally {

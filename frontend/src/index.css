@@ -1157,82 +1157,17 @@ textarea.form-control {
 
 /* ——— Auth / Portal Hub — Themed Cards ——— */
 
-/* Each portal card gets a colored top-border gradient via ::before */
-.portal-card {
-  position: relative;
-  overflow: hidden;
-  transition: border-color var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-normal);
-}
-.portal-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 4px;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  background: var(--portal-gradient);
-  opacity: 0.85;
-  transition: height var(--transition-normal), opacity var(--transition-normal);
-}
-.portal-card:hover {
-  border-color: var(--portal-accent, var(--border-subtle));
-  box-shadow: 0 8px 32px -8px var(--portal-shadow, rgba(0,0,0,0.08));
-  transform: translateY(-3px);
-}
-.portal-card:hover::before {
-  height: 5px;
-  opacity: 1;
-}
-
-/* Portal color themes — applied via inline style / data-portal attribute */
-.portal-card[data-portal="student"] {
-  --portal-accent: #2563eb;
-  --portal-gradient: #2563eb;
-  --portal-shadow: rgba(37, 99, 235, 0.18);
-}
-.portal-card[data-portal="lecturer"] {
-  --portal-accent: #0d9488;
-  --portal-gradient: #0d9488;
-  --portal-shadow: rgba(13, 148, 136, 0.18);
-}
-.portal-card[data-portal="admin"] {
-  --portal-accent: #d97706;
-  --portal-gradient: #d97706;
-  --portal-shadow: rgba(217, 119, 6, 0.18);
-}
-
-/* Portal icon container in hub cards */
-.portal-icon-container {
-  width: 44px; height: 44px;
-  border-radius: var(--radius-md);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
-}
-.portal-card:hover .portal-icon-container {
-  transform: scale(1.08);
-  box-shadow: 0 4px 14px -3px var(--portal-shadow, rgba(0,0,0,0.12));
-}
-
 /* Portal role tag pill — small colored badge */
 .portal-role-tag {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   padding: 4px 12px;
   border-radius: var(--radius-full);
   line-height: 1;
-}
-
-/* Portal feature bullet */
-.portal-feature-bullet {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 7px;
 }
 
 /* Portal action button — colored per-portal */
@@ -1250,6 +1185,76 @@ textarea.form-control {
 }
 .portal-link-hover:hover {
   background-color: var(--bg-subtle);
+}
+
+/* ===== Portal hub — mặt tiền học vụ (academic masthead + door list) ===== */
+.hub { display: grid; grid-template-columns: minmax(320px, 40%) 1fr; min-height: 100vh; }
+
+.hub-mast {
+  background: #172554; color: #fff; padding: 56px 48px; min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 40px;
+}
+.hub-mast .mast-brand-name { font-weight: 700; font-size: 0.98rem; color: #fff; letter-spacing: -0.01em; }
+.hub-mast .mast-brand-sub { font-size: 0.75rem; color: #9fb0d4; }
+.hub-title {
+  font-family: 'Fraunces', Georgia, serif; font-weight: 600;
+  font-size: clamp(2.1rem, 3.4vw, 3rem); line-height: 1.06; letter-spacing: -0.01em;
+}
+.hub-sub { margin-top: 16px; color: #aebbd6; font-size: 1.02rem; line-height: 1.55; max-width: 34ch; }
+.hub-term { color: #aebbd6; font-size: 0.9rem; margin-bottom: 12px; }
+.hub-term b { color: #fff; font-weight: 600; }
+.hub-live {
+  display: inline-flex; align-items: center; gap: 7px; background: rgba(37, 99, 235, 0.18);
+  color: #bfdbfe; padding: 5px 11px; border-radius: 999px; font-size: 0.82rem; font-weight: 500;
+}
+.hub-live i { width: 7px; height: 7px; border-radius: 50%; background: #60a5fa; }
+
+.hub-entry {
+  background: var(--bg-app); padding: 56px 56px; min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.hub-head {
+  font-family: 'Fraunces', Georgia, serif; font-weight: 600;
+  font-size: clamp(1.7rem, 2.6vw, 2.25rem); letter-spacing: -0.01em; color: var(--text-main);
+}
+.hub-lead { margin-top: 12px; color: var(--text-muted); font-size: 1.02rem; line-height: 1.5; max-width: 52ch; }
+.hub-doors { margin-top: 34px; max-width: 620px; }
+
+.hub-door {
+  position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 20px;
+  padding: 26px 20px 26px 26px; border-top: 1px solid var(--border-color);
+  text-decoration: none; color: inherit; transition: background 0.2s;
+}
+.hub-door:last-child { border-bottom: 1px solid var(--border-color); }
+.hub-door::before {
+  content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 3px;
+  background: var(--role); transform: scaleY(0); transform-origin: center; transition: transform 0.25s ease;
+}
+.hub-door:hover, .hub-door:focus-visible { background: var(--bg-surface); outline: none; }
+.hub-door:hover::before, .hub-door:focus-visible::before { transform: scaleY(1); }
+.hub-door:focus-visible { box-shadow: 0 0 0 2px var(--role); }
+.hub-door .name { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 1.3rem; letter-spacing: -0.01em; color: var(--text-main); }
+.hub-door .desc { margin-top: 5px; color: var(--text-muted); font-size: 0.96rem; line-height: 1.45; }
+.hub-go {
+  color: var(--role); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%;
+  background: color-mix(in srgb, var(--role) 12%, transparent); transition: transform 0.25s ease;
+}
+.hub-door:hover .hub-go, .hub-door:focus-visible .hub-go { transform: translateX(5px); }
+
+.hub-foot { margin-top: 30px; color: var(--text-muted); font-size: 0.86rem; }
+.hub-foot a { color: var(--primary); font-weight: 500; }
+
+@media (max-width: 860px) {
+  .hub { grid-template-columns: 1fr; }
+  .hub-mast { min-height: auto; padding: 40px 28px; gap: 28px; }
+  .hub-entry { min-height: auto; padding: 40px 28px; }
+}
+
+@keyframes hubRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.hub-anim { opacity: 0; animation: hubRise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .hub-anim { animation: none; opacity: 1; }
+  .hub-door, .hub-go, .hub-door::before { transition: none; }
 }
 
 /* ——— Login Page — Brand Panel Stripe ——— */

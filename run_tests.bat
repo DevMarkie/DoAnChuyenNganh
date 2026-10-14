@@ -28,20 +28,29 @@ set /p TEST_CHOICE="Nhập lựa chọn [Mặc định: 1]: "
 
 if "%TEST_CHOICE%"=="" set TEST_CHOICE=1
 
-if "%TEST_CHOICE%"=="2" (
-    echo.
-    echo Đang chạy bộ kiểm thử áp lực quá tải (Overload & Stress Test)...
-    node "%~dp0tests\performance\overload_stress_test.js"
-) else if "%TEST_CHOICE%"=="3" (
-    echo.
-    echo Đang chạy bộ kiểm thử cơ bản (39 test cases)...
-    node "%~dp0tests\e2e\system_e2e_test.js"
-) else (
-    echo.
-    echo Đang chạy bộ kiểm thử toàn diện mọi trường hợp (56 test cases)...
-    node "%~dp0tests\e2e\comprehensive_system_test.js"
-)
+if "%TEST_CHOICE%"=="2" goto run_overload
+if "%TEST_CHOICE%"=="3" goto run_basic
+goto run_comprehensive
 
+:run_overload
+echo.
+echo Đang chạy bộ kiểm thử áp lực quá tải [Overload and Stress Test]...
+node "%~dp0tests\performance\overload_stress_test.js"
+goto finish
+
+:run_basic
+echo.
+echo Đang chạy bộ kiểm thử cơ bản [39 test cases]...
+node "%~dp0tests\e2e\system_e2e_test.js"
+goto finish
+
+:run_comprehensive
+echo.
+echo Đang chạy bộ kiểm thử toàn diện mọi trường hợp [56 test cases]...
+node "%~dp0tests\e2e\comprehensive_system_test.js"
+goto finish
+
+:finish
 echo.
 echo ======================================================================
 echo Báo cáo chi tiết đã lưu trong thư mục tests/reports/ và tests/results/

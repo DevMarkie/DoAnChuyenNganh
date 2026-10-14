@@ -25,6 +25,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
+    private final ObjectMapper objectMapper;
 
     /** Public endpoints that don't need JWT token parsing at all */
     private static final List<String> PUBLIC_PATHS = List.of(
@@ -41,8 +42,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     );
 
     private static final AntPathMatcher pathMatcher = new AntPathMatcher();
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
      * Skip JWT filter entirely for public endpoints — saves unnecessary
@@ -76,7 +75,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             // không dùng sendError (ra trang lỗi HTML của container).
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json;charset=UTF-8");
-                            MAPPER.writeValue(response.getWriter(),
+                            objectMapper.writeValue(response.getWriter(),
                                     ApiResponse.error("Bạn phải đổi mật khẩu mặc định trước khi sử dụng hệ thống"));
                             return;
                         }

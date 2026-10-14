@@ -1,7 +1,7 @@
-import React from 'react';
+import { Component } from 'react';
 import { AlertTriangle, RotateCcw, Home } from 'lucide-react';
 
-export default class ErrorBoundary extends React.Component {
+export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
@@ -21,7 +21,7 @@ export default class ErrorBoundary extends React.Component {
   };
 
   handleGoHome = () => {
-    window.location.hash = '#/';
+    window.location.href = '/';
   };
 
   render() {

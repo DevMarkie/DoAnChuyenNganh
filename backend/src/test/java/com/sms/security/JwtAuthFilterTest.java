@@ -23,6 +23,7 @@ class JwtAuthFilterTest {
 
     @Mock private JwtUtil jwtUtil;
     @Mock private UserDetailsServiceImpl userDetailsService;
+    @org.mockito.Spy private com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
     @InjectMocks private JwtAuthFilter filter;
 
     @AfterEach

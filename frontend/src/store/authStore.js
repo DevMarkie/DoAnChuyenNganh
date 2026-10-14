@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { authService } from '../services/dataService';
 
-const decodeJwt = (token) => JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+const decodeJwt = (token) => {
+  const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+};
 
 /**
  * Check if a JWT token is expired (with 60s buffer to avoid edge-case failures)

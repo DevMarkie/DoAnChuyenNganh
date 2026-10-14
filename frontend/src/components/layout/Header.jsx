@@ -3,6 +3,22 @@ import useAuthStore from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 import { LogOut, Sun, Moon, ChevronRight } from 'lucide-react';
 
+const BREADCRUMBS = [
+  ['dashboard',       'Tổng quan thống kê'],
+  ['students',        'Quản lý sinh viên'],
+  ['departments',     'Quản lý khoa đào tạo'],
+  ['classes',         'Quản lý lớp sinh hoạt'],
+  ['subjects',        'Quản lý môn học'],
+  ['lecturers',       'Quản lý giảng viên'],
+  ['semesters',       'Quản lý học kỳ'],
+  ['course-sections', 'Quản lý lớp học phần'],
+  ['grades',          'Quản lý bảng điểm'],
+  ['enrollments',     'Học phần đã đăng ký'],
+  ['enroll',          'Đăng ký học phần'],
+  ['transcript',      'Kết quả học tập & Bảng điểm'],
+  ['profile',         'Hồ sơ cá nhân'],
+];
+
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,24 +41,8 @@ export default function Header() {
     else navigate('/student/login');
   };
 
-  // Build breadcrumb label from pathname
-  const getBreadcrumb = () => {
-    const path = location.pathname;
-    if (path.includes('/dashboard')) return 'Tổng quan thống kê';
-    if (path.includes('/students')) return 'Quản lý sinh viên';
-    if (path.includes('/departments')) return 'Quản lý khoa đào tạo';
-    if (path.includes('/classes')) return 'Quản lý lớp sinh hoạt';
-    if (path.includes('/subjects')) return 'Quản lý môn học';
-    if (path.includes('/lecturers')) return 'Quản lý giảng viên';
-    if (path.includes('/semesters')) return 'Quản lý học kỳ';
-    if (path.includes('/course-sections')) return 'Quản lý lớp học phần';
-    if (path.includes('/grades')) return 'Quản lý bảng điểm';
-    if (path.includes('/enrollments')) return 'Học phần đã đăng ký';
-    if (path.includes('/enroll')) return 'Đăng ký học phần';
-    if (path.includes('/transcript')) return 'Kết quả học tập & Bảng điểm';
-    if (path.includes('/profile')) return 'Hồ sơ cá nhân';
-    return 'Cổng thông tin';
-  };
+  const getBreadcrumb = () =>
+    BREADCRUMBS.find(([k]) => location.pathname.includes(`/${k}`))?.[1] ?? 'Cổng thông tin';
 
   return (
     <header className="app-header">

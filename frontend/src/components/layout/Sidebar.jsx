@@ -41,7 +41,7 @@ const adminNavGroups = [
   {
     group: 'Hệ thống & Bảo mật',
     items: [
-      { path: '/admin/password-resets', icon: KeyRound, label: 'Yêu cầu cấp lại MK', badgeKey: 'resets' },
+      { path: '/admin/password-resets', icon: KeyRound, label: 'Yêu cầu cấp lại MK', showBadge: true },
     ]
   }
 ];
@@ -149,11 +149,11 @@ export default function Sidebar({ collapsed, onToggle }) {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  title={collapsed ? (item.badgeKey === 'resets' && pendingResets > 0 ? `${item.label} (${pendingResets} chờ)` : item.label) : ''}
+                  title={collapsed ? (item.showBadge && pendingResets > 0 ? `${item.label} (${pendingResets} chờ)` : item.label) : ''}
                 >
                   <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                     <item.icon size={18} className="nav-item-icon" />
-                    {collapsed && item.badgeKey === 'resets' && pendingResets > 0 && (
+                    {collapsed && item.showBadge && pendingResets > 0 && (
                       <span style={{
                         position: 'absolute',
                         top: -3,
@@ -166,7 +166,7 @@ export default function Sidebar({ collapsed, onToggle }) {
                     )}
                   </div>
                   {!collapsed && <span className="nav-item-text">{item.label}</span>}
-                  {!collapsed && item.badgeKey === 'resets' && pendingResets > 0 && (
+                  {!collapsed && item.showBadge && pendingResets > 0 && (
                     <span style={{
                       marginLeft: 'auto',
                       backgroundColor: '#ef4444',

@@ -24,7 +24,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @Value("${spring.servlet.multipart.max-file-size}")
+    @Value("${spring.servlet.multipart.max-file-size:5MB}")
     private String maxFileSize;
 
     @ExceptionHandler(ResourceNotFoundException.class)

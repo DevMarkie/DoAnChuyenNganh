@@ -9,6 +9,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    // Chỉ chạy unit test trong src; e2e/ là của Playwright, Vitest không chạy được.
+    include: ['src/**/*.{test,spec}.{js,jsx}'],
     // The project path contains a space; the default "forks" pool fails to spawn
     // workers under that path on Windows, so use the threads pool instead.
     pool: 'threads',

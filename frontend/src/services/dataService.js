@@ -45,9 +45,7 @@ export const studentService = {
   importPreview: (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/students/import-preview', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post('/students/import-preview', formData);
   },
   importCommit: (data) => api.post('/students/import-commit', data),
 };
@@ -56,7 +54,6 @@ export const lecturerService = {
   getAll: () => api.get('/lecturers'),
   getById: (id) => api.get(`/lecturers/${id}`),
   getMe: () => api.get('/lecturers/me'),
-  search: (keyword) => api.get(`/lecturers/search?keyword=${keyword}`),
   create: (data) => api.post('/lecturers', data),
   update: (id, data) => api.put(`/lecturers/${id}`, data),
   toggleActive: (id) => api.put(`/lecturers/${id}/toggle`),
@@ -65,7 +62,6 @@ export const lecturerService = {
 export const subjectService = {
   getAll: () => api.get('/subjects'),
   getById: (id) => api.get(`/subjects/${id}`),
-  search: (keyword) => api.get(`/subjects/search?keyword=${keyword}`),
   create: (data) => api.post('/subjects', data),
   update: (id, data) => api.put(`/subjects/${id}`, data),
   toggleActive: (id) => api.put(`/subjects/${id}/toggle`),
@@ -115,9 +111,7 @@ export const gradeService = {
   importPreview: (sectionId, file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post(`/grades/section/${sectionId}/import-preview`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    return api.post(`/grades/section/${sectionId}/import-preview`, formData);
   },
   importCommit: (sectionId, data) => api.put(`/grades/section/${sectionId}/import-commit`, data),
 };

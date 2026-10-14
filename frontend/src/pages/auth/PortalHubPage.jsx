@@ -56,6 +56,7 @@ export default function PortalHubPage() {
             <Link
               key={door.id}
               to={door.path}
+              data-portal={door.id}
               className="hub-door hub-anim"
               style={{ '--role': door.accent, animationDelay: `${0.26 + i * 0.07}s` }}
             >

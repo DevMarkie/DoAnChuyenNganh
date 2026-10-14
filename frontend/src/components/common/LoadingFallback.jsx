@@ -57,12 +57,6 @@ export default function LoadingFallback() {
         Tối ưu hóa tải trang thông minh
       </div>
 
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

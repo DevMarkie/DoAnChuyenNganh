@@ -42,6 +42,8 @@ class SpecialClassServiceTest {
     private FeeScaleRuleRepository feeScaleRuleRepository;
     @Mock
     private LecturerRepository lecturerRepository;
+    @Mock
+    private GradeRepository gradeRepository;
 
     @InjectMocks
     private SpecialClassService specialClassService;

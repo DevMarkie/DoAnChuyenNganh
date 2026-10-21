@@ -522,7 +522,7 @@ async function executeFullTest() {
   await testCase(
     "3. Data & Boundaries",
     "VAL-03",
-    "Môn học: Tín chỉ = 0 bị từ chối (Min = 1 TC theo BR-07)",
+    "Môn học: Tín chỉ = 0 bị từ chối (Min = 1 TC theo quy định môn học)",
     async () => {
       const res = await api("/subjects", {
         method: "POST",
@@ -730,7 +730,7 @@ async function executeFullTest() {
   await testCase(
     "4. Lecturer & Grades",
     "GRD-03",
-    "BR-07: Giảng viên 2 BỊ CHẶN khi nhập điểm cho lớp của Giảng viên 1",
+    "RBAC: Giảng viên 2 BỊ CHẶN khi nhập điểm cho lớp của Giảng viên 1",
     async () => {
       if (!sampleSectionId) throw new Error("Chưa có sampleSectionId");
       // Find an enrollment in sampleSectionId

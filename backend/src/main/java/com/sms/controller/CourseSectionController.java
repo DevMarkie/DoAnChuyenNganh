@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -61,6 +62,7 @@ public class CourseSectionController {
     }
 
     @GetMapping("/my-sections")
+    @PreAuthorize("hasRole('LECTURER')")
     public ResponseEntity<ApiResponse<List<CourseSection>>> getMySections(@AuthenticationPrincipal UserPrincipal user) {
         var lecturer = lecturerService.findByUserId(user.getId());
         return ResponseEntity.ok(ApiResponse.success(courseSectionService.findByLecturer(lecturer.getId())));

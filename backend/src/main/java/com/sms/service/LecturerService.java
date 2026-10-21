@@ -95,6 +95,20 @@ public class LecturerService {
         Department dept = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khoa"));
 
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String newEmail = request.getEmail().trim();
+            if (!newEmail.equalsIgnoreCase(lecturer.getEmail())) {
+                if (lecturerRepository.existsByEmail(newEmail)) {
+                    throw new BadRequestException("Email đã tồn tại: " + newEmail);
+                }
+                lecturer.setEmail(newEmail);
+                if (lecturer.getUser() != null) {
+                    lecturer.getUser().setEmail(newEmail);
+                    userRepository.save(lecturer.getUser());
+                }
+            }
+        }
+
         lecturer.setFullName(request.getFullName().trim());
         if (request.getDateOfBirth() != null && !request.getDateOfBirth().isEmpty()) {
             lecturer.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));

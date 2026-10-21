@@ -15,6 +15,9 @@ public class ClassRequest {
     @NotNull(message = "Khoa không được để trống")
     private Integer departmentId;
 
+    private Integer majorId;
+    private Integer cohortId;
+
     @NotBlank(message = "Khóa không được để trống")
     private String academicYear;
 }

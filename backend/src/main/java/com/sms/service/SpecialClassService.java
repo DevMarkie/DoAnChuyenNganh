@@ -23,6 +23,7 @@ public class SpecialClassService {
     private final EnrollmentRepository enrollmentRepository;
     private final FeeScaleRuleRepository feeScaleRuleRepository;
     private final LecturerRepository lecturerRepository;
+    private final GradeRepository gradeRepository;
 
     @Transactional
     public ClassOpeningRequest submitRequest(Long userId, Integer subjectId, Integer semesterId,
@@ -40,6 +41,15 @@ public class SpecialClassService {
         }
         if (requestRepository.existsByStudentIdAndSubjectIdAndSemesterId(student.getId(), subjectId, semesterId)) {
             throw new BadRequestException("Sinh viên chỉ được gửi một đơn cho môn học trong kỳ này");
+        }
+        if (subject.getPrerequisites() != null) {
+            for (Subject prerequisite : subject.getPrerequisites()) {
+                if (gradeRepository != null && !gradeRepository.existsPassedFinalizedByStudentAndSubject(student.getId(), prerequisite.getId())) {
+                    throw new BadRequestException("Không thể đề nghị mở lớp: môn học "
+                            + subject.getSubjectCode() + " yêu cầu hoàn thành môn tiên quyết "
+                            + prerequisite.getSubjectCode() + " - " + prerequisite.getSubjectName());
+                }
+            }
         }
         ClassOpeningRequest request = new ClassOpeningRequest();
         request.setStudent(student);
@@ -86,6 +96,14 @@ public class SpecialClassService {
         section.setStatus(CourseSection.SectionStatus.PENDING_FEE);
         CourseSection saved = sectionRepository.save(section);
         for (ClassOpeningRequest request : requests) {
+            if (subject.getPrerequisites() != null && gradeRepository != null) {
+                for (Subject prerequisite : subject.getPrerequisites()) {
+                    if (!gradeRepository.existsPassedFinalizedByStudentAndSubject(request.getStudent().getId(), prerequisite.getId())) {
+                        throw new BadRequestException("Sinh viên " + request.getStudent().getStudentCode()
+                                + " chưa hoàn thành môn tiên quyết " + prerequisite.getSubjectCode() + " cho môn học này");
+                    }
+                }
+            }
             if (enrollmentRepository.existsByStudentIdAndSectionSubjectIdAndSectionSemesterIdAndStatus(
                     request.getStudent().getId(), subjectId, semesterId, Enrollment.EnrollmentStatus.ENROLLED)) {
                 throw new BadRequestException("Sinh viên " + request.getStudent().getStudentCode()

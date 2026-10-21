@@ -18,6 +18,8 @@ public class ClassService {
 
     private final ClassRepository classRepository;
     private final DepartmentRepository departmentRepository;
+    private final com.sms.repository.MajorRepository majorRepository;
+    private final com.sms.repository.CohortRepository cohortRepository;
 
     public List<ClassEntity> findAll() {
         return classRepository.findAll();
@@ -47,6 +49,16 @@ public class ClassService {
         cls.setDepartment(dept);
         cls.setAcademicYear(request.getAcademicYear());
         cls.setIsActive(true);
+
+        if (request.getMajorId() != null) {
+            cls.setMajor(majorRepository.findById(request.getMajorId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chuyên ngành")));
+        }
+        if (request.getCohortId() != null) {
+            cls.setCohort(cohortRepository.findById(request.getCohortId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học")));
+        }
+
         return classRepository.save(cls);
     }
 
@@ -59,6 +71,16 @@ public class ClassService {
         cls.setName(request.getName());
         cls.setDepartment(dept);
         cls.setAcademicYear(request.getAcademicYear());
+
+        if (request.getMajorId() != null) {
+            cls.setMajor(majorRepository.findById(request.getMajorId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chuyên ngành")));
+        }
+        if (request.getCohortId() != null) {
+            cls.setCohort(cohortRepository.findById(request.getCohortId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học")));
+        }
+
         return classRepository.save(cls);
     }
 
@@ -79,23 +101,28 @@ public class ClassService {
                 : departmentRepository.findByIsActiveTrue();
 
         List<ClassEntity> created = new java.util.ArrayList<>();
-        String cohort = request.getCohort().trim().toUpperCase();
+        String cohortStr = request.getCohort().trim().toUpperCase();
         String academicYear = request.getAcademicYear().trim();
         int count = Math.max(1, request.getClassesPerDepartment());
 
+        com.sms.entity.Cohort cohortEntity = cohortRepository.findByCode(cohortStr).orElse(null);
+
         for (Department dept : departments) {
+            com.sms.entity.Major primaryMajor = majorRepository.findByDepartmentId(dept.getId()).stream().findFirst().orElse(null);
             for (int i = 1; i <= count; i++) {
-                String code = String.format("%s%02d-%s", dept.getCode().trim().toUpperCase(), i, cohort);
+                String code = String.format("%s%02d-%s", dept.getCode().trim().toUpperCase(), i, cohortStr);
                 if (classRepository.existsByCode(code)) {
                     continue;
                 }
-                String name = String.format("%s %d - %s", dept.getName().trim(), i, cohort);
+                String name = String.format("%s %d - %s", dept.getName().trim(), i, cohortStr);
                 ClassEntity cls = new ClassEntity();
                 cls.setCode(code);
                 cls.setName(name);
                 cls.setDepartment(dept);
                 cls.setAcademicYear(academicYear);
                 cls.setIsActive(true);
+                cls.setCohort(cohortEntity);
+                cls.setMajor(primaryMajor);
                 created.add(classRepository.save(cls));
             }
         }

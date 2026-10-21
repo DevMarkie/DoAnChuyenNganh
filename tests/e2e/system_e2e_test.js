@@ -476,7 +476,7 @@ async function runAllTests() {
     }
   });
 
-  await runTest('3. Lecturer Features', '3.6 Grade Locking (BR-07) & Lecturer Valid Score Entry', async () => {
+  await runTest('3. Lecturer Features', '3.6 Grade Locking (BR-09) & Lecturer Valid Score Entry', async () => {
     if (!testSectionId) throw new Error('No test section available');
     const enrollRes = await apiRequest(`/enrollments/section/${testSectionId}`, { token: lecturerToken });
     if (enrollRes.status === 200 && enrollRes.data.data?.length > 0) {

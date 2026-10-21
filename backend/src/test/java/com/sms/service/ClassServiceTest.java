@@ -30,6 +30,12 @@ public class ClassServiceTest {
     @Mock
     private DepartmentRepository departmentRepository;
 
+    @Mock
+    private com.sms.repository.MajorRepository majorRepository;
+
+    @Mock
+    private com.sms.repository.CohortRepository cohortRepository;
+
     @InjectMocks
     private ClassService classService;
 

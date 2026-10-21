@@ -16,4 +16,10 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
            "WHERE ar.enrollment.section.id = :sectionId AND ar.isPresent = false " +
            "GROUP BY ar.enrollment.id")
     List<Object[]> countAbsencesBySectionId(Long sectionId);
+
+    /** Số buổi vắng theo từng enrollment của một sinh viên, gộp 1 truy vấn (tránh N+1 ở trang cá nhân). */
+    @Query("SELECT ar.enrollment.id, COUNT(ar) FROM AttendanceRecord ar " +
+           "WHERE ar.enrollment.student.id = :studentId AND ar.isPresent = false " +
+           "GROUP BY ar.enrollment.id")
+    List<Object[]> countAbsencesByStudentId(Long studentId);
 }

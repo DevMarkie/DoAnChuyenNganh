@@ -103,6 +103,12 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("File tải lên quá lớn (tối đa " + maxFileSize + ")"));
     }
 
+    @ExceptionHandler(java.time.format.DateTimeParseException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDateTimeParseException(java.time.format.DateTimeParseException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Định dạng ngày giờ không hợp lệ"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
         log.error("Unhandled exception: ", ex);

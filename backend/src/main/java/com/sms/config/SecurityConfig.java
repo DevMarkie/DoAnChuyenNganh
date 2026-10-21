@@ -75,6 +75,7 @@ public class SecurityConfig {
 
                 // Student enrollment
                 .requestMatchers(HttpMethod.POST, "/api/enrollments/**").hasRole("STUDENT")
+                .requestMatchers(HttpMethod.DELETE, "/api/enrollments/**").hasRole("STUDENT")
 
                 // Grade entry — admin + lecturer
                 .requestMatchers(HttpMethod.PUT, "/api/grades/**").hasAnyRole("ADMIN", "LECTURER")

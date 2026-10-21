@@ -111,6 +111,20 @@ public class StudentService {
         ClassEntity cls = classRepository.findById(request.getClassId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp"));
 
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String newEmail = request.getEmail().trim();
+            if (!newEmail.equalsIgnoreCase(student.getEmail())) {
+                if (studentRepository.existsByEmail(newEmail)) {
+                    throw new BadRequestException("Email đã tồn tại: " + newEmail);
+                }
+                student.setEmail(newEmail);
+                if (student.getUser() != null) {
+                    student.getUser().setEmail(newEmail);
+                    userRepository.save(student.getUser());
+                }
+            }
+        }
+
         student.setFullName(request.getFullName().trim());
         student.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
         student.setGender(parseGender(request.getGender()));

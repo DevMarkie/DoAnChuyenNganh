@@ -47,7 +47,13 @@ public class EnrollmentService {
     private static final int MAX_CREDITS_PER_SEMESTER = 30;
 
     public List<Enrollment> findByStudent(Long studentId) {
-        return enrollmentRepository.findActiveByStudentId(studentId);
+        List<Enrollment> enrollments = enrollmentRepository.findActiveByStudentId(studentId);
+        if (!enrollments.isEmpty() && attendanceRecordRepository != null) {
+            Map<Long, Long> absences = attendanceRecordRepository.countAbsencesByStudentId(studentId).stream()
+                    .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
+            enrollments.forEach(e -> e.setAbsenceCount(absences.getOrDefault(e.getId(), 0L).intValue()));
+        }
+        return enrollments;
     }
 
     public List<Enrollment> findBySection(Long sectionId) {

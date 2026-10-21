@@ -44,6 +44,7 @@ public class EnrollmentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<Void>> cancel(@AuthenticationPrincipal UserPrincipal user,
                                                      @PathVariable Long id) {
         enrollmentService.cancelEnrollment(user.getId(), id);

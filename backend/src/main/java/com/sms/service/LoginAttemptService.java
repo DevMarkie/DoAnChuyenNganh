@@ -17,7 +17,7 @@ public class LoginAttemptService {
     private static final int MAX_ATTEMPTS = 5;
     private static final long LOCK_DURATION_SECONDS = 15 * 60; // 15 phút
 
-    private record AttemptInfo(int count, Instant lockedUntil) {}
+    private record AttemptInfo(int count, Instant lockedUntil, Instant lastAttemptAt) {}
 
     // ponytail: in-memory map; switch to Redis if multi-instance deployment
     private final ConcurrentHashMap<String, AttemptInfo> attempts = new ConcurrentHashMap<>();
@@ -33,25 +33,37 @@ public class LoginAttemptService {
      * Gọi khi đăng nhập thất bại — tăng bộ đếm và khoá nếu vượt ngưỡng.
      */
     public void loginFailed(String username) {
-        // Tránh phình to RAM khi bị spam hàng ngàn user ngẫu nhiên
+        Instant now = Instant.now();
+
+        // Tránh phình to RAM: chỉ dọn những mục đã hết hạn (quá 15 phút không có thao tác hoặc hết lock)
         if (attempts.size() > 1000) {
-            attempts.entrySet().removeIf(e -> e.getValue().lockedUntil() == null || Instant.now().isAfter(e.getValue().lockedUntil()));
+            attempts.entrySet().removeIf(e -> {
+                AttemptInfo a = e.getValue();
+                if (a.lockedUntil() != null) {
+                    return now.isAfter(a.lockedUntil());
+                }
+                return now.isAfter(a.lastAttemptAt().plusSeconds(LOCK_DURATION_SECONDS));
+            });
         }
 
         String key = username.toLowerCase();
-        AttemptInfo info = attempts.getOrDefault(key, new AttemptInfo(0, null));
+        AttemptInfo info = attempts.get(key);
 
-        // Nếu đã hết thời gian lock thì reset
-        if (info.lockedUntil() != null && Instant.now().isAfter(info.lockedUntil())) {
-            info = new AttemptInfo(0, null);
+        // Reset nếu đã hết thời gian khoá hoặc đã quá 15 phút kể từ lần nhập sai trước đó
+        if (info != null) {
+            boolean lockExpired = info.lockedUntil() != null && now.isAfter(info.lockedUntil());
+            boolean windowExpired = info.lockedUntil() == null && now.isAfter(info.lastAttemptAt().plusSeconds(LOCK_DURATION_SECONDS));
+            if (lockExpired || windowExpired) {
+                info = null;
+            }
         }
 
-        int newCount = info.count() + 1;
+        int newCount = (info == null ? 0 : info.count()) + 1;
         Instant newLock = newCount >= MAX_ATTEMPTS
-                ? Instant.now().plusSeconds(LOCK_DURATION_SECONDS)
+                ? now.plusSeconds(LOCK_DURATION_SECONDS)
                 : null;
 
-        attempts.put(key, new AttemptInfo(newCount, newLock));
+        attempts.put(key, new AttemptInfo(newCount, newLock, now));
 
         if (newLock != null) {
             log.warn("SECURITY: Tài khoản '{}' bị khoá {} phút do đăng nhập sai {} lần liên tiếp.",

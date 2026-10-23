@@ -7,6 +7,7 @@ import com.sms.exception.BadRequestException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.ClassRepository;
 import com.sms.repository.DepartmentRepository;
+import com.sms.repository.LecturerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,9 @@ public class ClassServiceTest {
 
     @Mock
     private com.sms.repository.CohortRepository cohortRepository;
+
+    @Mock
+    private LecturerRepository lecturerRepository;
 
     @InjectMocks
     private ClassService classService;

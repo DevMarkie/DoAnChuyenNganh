@@ -70,7 +70,6 @@ public class Semester {
      * The server is the source of truth for whether students may register.
      * A registration window must be configured for the active current term.
      */
-    @Transient
     @JsonProperty("registrationOpen")
     public boolean isRegistrationOpen() {
         if (!Boolean.TRUE.equals(isCurrent) || status != SemesterStatus.ACTIVE

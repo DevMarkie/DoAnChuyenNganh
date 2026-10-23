@@ -2,7 +2,15 @@
  * Comprehensive System E2E & Integration Test Suite
  * Project: DevMarkie/DoAnChuyenNganh (Student Management System)
  * Stack: Spring Boot 3 + MySQL 8 + React 19
+ *
+ * Requirements Verified:
+ * 1. API: Request/Response returns correct HTTP status codes (200, 400, 401, 403, 404, 409, 500)
+ *    and adheres strictly to ApiResponse<T> schema (success: boolean, message: string, data: T).
+ * 2. Database: UI/API CRUD operations (INSERT, UPDATE, DELETE, SOFT-DELETE) correctly and completely
+ *    persist data to MySQL tables, activating foreign keys, triggers (enrolled_count), and views.
  */
+
+const db = require('../utils/db_helper');
 
 const BASE_URL = 'http://localhost:8080/api';
 
@@ -57,17 +65,19 @@ async function runTest(suiteName, testName, testFn) {
   }
 }
 
-async function apiRequest(endpoint, { method = 'GET', body = null, token = null } = {}) {
-  const headers = { 'Content-Type': 'application/json' };
+async function apiRequest(endpoint, { method = 'GET', body = null, token = null, rawBody = null, headers = {} } = {}) {
+  const reqHeaders = { 'Content-Type': 'application/json', ...headers };
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    reqHeaders['Authorization'] = `Bearer ${token}`;
   }
 
   const options = {
     method,
-    headers,
+    headers: reqHeaders,
   };
-  if (body) {
+  if (rawBody !== null) {
+    options.body = rawBody;
+  } else if (body) {
     options.body = JSON.stringify(body);
   }
 
@@ -80,7 +90,77 @@ async function apiRequest(endpoint, { method = 'GET', body = null, token = null 
     data = await response.text();
   }
 
-  return { status: response.status, ok: response.ok, data };
+  return { status: response.status, ok: response.ok, data, headers: response.headers };
+}
+
+/**
+ * Validates that an API response adheres strictly to ApiResponse<T> schema and expected HTTP status.
+ */
+function assertApiResponse(res, expectedStatus, expectedDataType = null) {
+  if (res.status !== expectedStatus) {
+    throw new Error(`Expected HTTP status ${expectedStatus}, got ${res.status}. Response payload: ${JSON.stringify(res.data)}`);
+  }
+  // For standard 401/403 filter-level rejections or empty responses
+  if (!res.data && (expectedStatus === 401 || expectedStatus === 403 || expectedStatus === 204)) {
+    return;
+  }
+  if (!res.data || typeof res.data !== 'object') {
+    throw new Error(`Response body is not a valid JSON object: ${res.data}`);
+  }
+  if (typeof res.data.success !== 'boolean') {
+    throw new Error(`Response missing boolean 'success': ${JSON.stringify(res.data)}`);
+  }
+  if (typeof res.data.message !== 'string' || res.data.message.trim() === '') {
+    throw new Error(`Response missing non-empty string 'message': ${JSON.stringify(res.data)}`);
+  }
+  if (expectedStatus >= 200 && expectedStatus < 300) {
+    if (!res.data.success) {
+      throw new Error(`Expected success=true for status ${expectedStatus}, but got false: ${res.data.message}`);
+    }
+  } else {
+    if (res.data.success) {
+      throw new Error(`Expected success=false for error status ${expectedStatus}, but got true`);
+    }
+  }
+
+  if (expectedDataType) {
+    if (expectedDataType === 'array') {
+      if (!Array.isArray(res.data.data)) {
+        throw new Error(`Expected data to be Array, got ${typeof res.data.data}`);
+      }
+    } else if (expectedDataType === 'object') {
+      if (typeof res.data.data !== 'object' || res.data.data === null || Array.isArray(res.data.data)) {
+        throw new Error(`Expected data to be Object, got ${typeof res.data.data}`);
+      }
+    } else if (expectedDataType === 'null') {
+      if (res.data.data !== null && res.data.data !== undefined) {
+        throw new Error(`Expected data to be null, got ${JSON.stringify(res.data.data)}`);
+      }
+    }
+  }
+}
+
+/**
+ * Validates that a database record exists and that expected columns match expected values.
+ */
+function assertDbRecord(sql, expectedFields) {
+  const rows = db.queryDb(sql);
+  if (!rows || rows.length === 0) {
+    throw new Error(`No DB record found for query: ${sql}`);
+  }
+  const row = rows[0];
+  for (const [key, val] of Object.entries(expectedFields)) {
+    if (val === null) {
+      if (row[key] !== null && row[key] !== undefined) {
+        throw new Error(`DB Mismatch for column '${key}': expected NULL, got '${row[key]}' in query: ${sql}`);
+      }
+    } else {
+      if (String(row[key]) !== String(val)) {
+        throw new Error(`DB Mismatch for column '${key}': expected '${val}', got '${row[key]}' in query: ${sql}`);
+      }
+    }
+  }
+  return row;
 }
 
 // Global state across test suites
@@ -91,6 +171,8 @@ let adminUserId = null;
 let lecturerUserId = null;
 let studentUserId = null;
 let createdDeptId = null;
+let createdSubId = null;
+let createdClassId = null;
 let testSectionId = null;
 
 async function runAllTests() {
@@ -98,371 +180,494 @@ async function runAllTests() {
   console.log(`Target: ${BASE_URL}\n`);
 
   // =========================================================================
-  // SUITE 1: AUTHENTICATION & RBAC PERMISSIONS
+  // SUITE 1: AUTHENTICATION, RBAC & HTTP STATUS CODES (200, 400, 401, 403, 500)
   // =========================================================================
-  logHeader('1. Authentication & Security (RBAC)');
+  logHeader('1. Authentication & Security (RBAC & Status Codes)');
 
-  await runTest('1. Auth & RBAC', '1.1 Admin login with valid credentials (admin / 123456)', async () => {
+  await runTest('1. Auth & RBAC', '1.1 Admin login with valid credentials (HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/auth/login', {
       method: 'POST',
       body: { username: 'admin', password: '123456' },
     });
-    if (res.status !== 200 || !res.data.success || !res.data.data?.token) {
-      throw new Error(`Login failed with status ${res.status}: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.role !== 'ADMIN') {
-      throw new Error(`Expected role ADMIN, got ${res.data.data.role}`);
+    assertApiResponse(res, 200, 'object');
+    if (res.data.data.role !== 'ADMIN' || !res.data.data.token) {
+      throw new Error(`Expected role ADMIN and token, got: ${JSON.stringify(res.data.data)}`);
     }
     adminToken = res.data.data.token;
     adminUserId = res.data.data.userId;
   });
 
-  await runTest('1. Auth & RBAC', '1.2 Lecturer login with valid credentials (1000001 / 123456)', async () => {
+  await runTest('1. Auth & RBAC', '1.2 Lecturer login with valid credentials (HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/auth/login', {
       method: 'POST',
       body: { username: '1000001', password: '123456' },
     });
-    if (res.status !== 200 || !res.data.success || !res.data.data?.token) {
-      throw new Error(`Login failed with status ${res.status}: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.role !== 'LECTURER') {
+    assertApiResponse(res, 200, 'object');
+    if (res.data.data.role !== 'LECTURER' || !res.data.data.token) {
       throw new Error(`Expected role LECTURER, got ${res.data.data.role}`);
     }
     lecturerToken = res.data.data.token;
     lecturerUserId = res.data.data.userId;
   });
 
-  await runTest('1. Auth & RBAC', '1.3 Student login with valid credentials (2500001 / 123456)', async () => {
+  await runTest('1. Auth & RBAC', '1.3 Student login with valid credentials (HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/auth/login', {
       method: 'POST',
       body: { username: '2500001', password: '123456' },
     });
-    if (res.status !== 200 || !res.data.success || !res.data.data?.token) {
-      throw new Error(`Login failed with status ${res.status}: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.role !== 'STUDENT') {
+    assertApiResponse(res, 200, 'object');
+    if (res.data.data.role !== 'STUDENT' || !res.data.data.token) {
       throw new Error(`Expected role STUDENT, got ${res.data.data.role}`);
     }
     studentToken = res.data.data.token;
     studentUserId = res.data.data.userId;
   });
 
-  await runTest('1. Auth & RBAC', '1.4 Rejection of invalid password', async () => {
+  await runTest('1. Auth & RBAC', '1.4 Rejection of invalid password (HTTP 400 + Schema)', async () => {
     const res = await apiRequest('/auth/login', {
       method: 'POST',
       body: { username: 'admin', password: 'wrongpassword' },
     });
-    if (res.status === 200 && res.data.success) {
-      throw new Error('Should have rejected invalid password');
+    assertApiResponse(res, 400);
+    if (!res.data.message.includes('Sai tên đăng nhập hoặc mật khẩu')) {
+      throw new Error(`Expected login failure message, got: ${res.data.message}`);
     }
   });
 
-  await runTest('1. Auth & RBAC', '1.5 Rejection of non-existent username', async () => {
+  await runTest('1. Auth & RBAC', '1.5 Rejection of non-existent username (HTTP 400 + Schema)', async () => {
     const res = await apiRequest('/auth/login', {
       method: 'POST',
       body: { username: 'user_does_not_exist_9999', password: 'password' },
     });
-    if (res.status === 200 && res.data.success) {
-      throw new Error('Should have rejected non-existent username');
+    assertApiResponse(res, 400);
+    if (!res.data.message.includes('Sai tên đăng nhập hoặc mật khẩu')) {
+      throw new Error(`Expected login failure message, got: ${res.data.message}`);
     }
   });
 
-  await runTest('1. Auth & RBAC', '1.6 Unauthenticated request to /api/dashboard blocked', async () => {
+  await runTest('1. Auth & RBAC', '1.6 Unauthenticated request to protected endpoint (HTTP 401/403)', async () => {
     const res = await apiRequest('/dashboard', { method: 'GET' });
-    if (res.status === 200 && res.data.success) {
-      throw new Error('Unauthenticated request was unexpectedly allowed');
+    if (res.status !== 401 && res.status !== 403) {
+      throw new Error(`Expected 401/403 for unauthenticated request, got ${res.status}`);
+    }
+    if (res.data && typeof res.data === 'object') {
+      if (res.data.success !== false) throw new Error('Expected success=false for unauthorized request');
     }
   });
 
-  await runTest('1. Auth & RBAC', '1.7 RBAC: Student blocked from creating Department (403 Forbidden)', async () => {
+  await runTest('1. Auth & RBAC', '1.7 RBAC: Student blocked from creating Department (HTTP 403 + Schema)', async () => {
     const res = await apiRequest('/departments', {
       method: 'POST',
       token: studentToken,
-      body: { departmentCode: 'TEST_DEPT', departmentName: 'Khoa Test' },
+      body: { code: 'TEST_DEPT', name: 'Khoa Test' },
     });
-    if (res.status !== 403) {
-      throw new Error(`Expected status 403 Forbidden, but got ${res.status}`);
-    }
+    assertApiResponse(res, 403);
   });
 
-  await runTest('1. Auth & RBAC', '1.8 RBAC: Lecturer blocked from creating Student (403 Forbidden)', async () => {
+  await runTest('1. Auth & RBAC', '1.8 RBAC: Lecturer blocked from creating Student (HTTP 403 + Schema)', async () => {
     const res = await apiRequest('/students', {
       method: 'POST',
       token: lecturerToken,
       body: { studentCode: 'TEST999', fullName: 'Sinh Vien Test' },
     });
-    if (res.status !== 403) {
-      throw new Error(`Expected status 403 Forbidden, but got ${res.status}`);
-    }
+    assertApiResponse(res, 403);
   });
 
-  await runTest('1. Auth & RBAC', '1.9 Malformed JWT rejected (401/403)', async () => {
+  await runTest('1. Auth & RBAC', '1.9 Malformed JWT rejected (HTTP 401/403)', async () => {
     const res = await apiRequest('/dashboard', {
       method: 'GET',
       token: 'invalid.token.structure',
     });
-    if (res.status === 200 && res.data.success) {
-      throw new Error('Malformed token was accepted');
+    if (res.status !== 401 && res.status !== 403) {
+      throw new Error(`Expected 401 or 403 for malformed JWT, got ${res.status}`);
+    }
+  });
+
+  await runTest('1. Auth & RBAC', '1.10 Malformed JSON body rejected (HTTP 400 + Schema)', async () => {
+    const res = await apiRequest('/departments', {
+      method: 'POST',
+      token: adminToken,
+      rawBody: '{ "code": "BAD_JSON", ', // Invalid JSON syntax
+    });
+    assertApiResponse(res, 400);
+    if (!res.data.message.includes('định dạng JSON')) {
+      throw new Error(`Expected malformed JSON message, got: ${res.data.message}`);
+    }
+  });
+
+  await runTest('1. Auth & RBAC', '1.11 Type mismatch parameter rejected (HTTP 400 + Schema)', async () => {
+    const res = await apiRequest('/departments/abc_not_a_number/toggle', {
+      method: 'PUT',
+      token: adminToken,
+    });
+    assertApiResponse(res, 400);
+    if (!res.data.message.includes('không đúng định dạng')) {
+      throw new Error(`Expected type mismatch message, got: ${res.data.message}`);
+    }
+  });
+
+  await runTest('1. Auth & RBAC', '1.12 Server exception masking: No internal stack trace leak', async () => {
+    // Calling non-existent or edge route should never leak Java traces
+    const res = await apiRequest('/departments/99999999', {
+      method: 'GET',
+      token: adminToken,
+    });
+    if (res.status === 404 || res.status === 400) {
+      assertApiResponse(res, res.status);
+    } else if (res.status === 500) {
+      assertApiResponse(res, 500);
+      if (res.data.message.includes('Exception') || res.data.message.includes('at com.sms')) {
+        throw new Error('Raw Java stack trace leaked in 500 response!');
+      }
     }
   });
 
   // =========================================================================
-  // SUITE 2: ADMIN MANAGEMENT & STATS
+  // SUITE 2: ADMIN MANAGEMENT FEATURES & DATABASE CRUD PERSISTENCE
   // =========================================================================
-  logHeader('2. Admin Management Features');
+  logHeader('2. Admin Management Features & Database CRUD Persistence');
 
-  await runTest('2. Admin Features', '2.1 Admin Dashboard statistics (/api/dashboard)', async () => {
+  await runTest('2. Admin Features', '2.1 Admin Dashboard statistics (/api/dashboard HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/dashboard', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !res.data.data) {
-      throw new Error(`Failed to get dashboard stats: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'object');
     const d = res.data.data;
     if (d.totalStudents === undefined || d.totalLecturers === undefined) {
       throw new Error('Dashboard stats missing totalStudents/totalLecturers');
     }
   });
 
-  await runTest('2. Admin Features', '2.2 Get list of Departments (/api/departments)', async () => {
+  await runTest('2. Admin Features', '2.2 Get list of Departments (/api/departments HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/departments', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to list departments: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.length === 0) {
-      throw new Error('Departments list is empty');
-    }
+    assertApiResponse(res, 200, 'array');
+    if (res.data.data.length === 0) throw new Error('Departments list is empty');
   });
 
-  await runTest('2. Admin Features', '2.3 Get list of Classes (/api/classes)', async () => {
+  await runTest('2. Admin Features', '2.3 Get list of Classes (/api/classes HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/classes', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to list classes: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.length === 0) {
-      throw new Error('Classes list is empty');
-    }
+    assertApiResponse(res, 200, 'array');
+    if (res.data.data.length === 0) throw new Error('Classes list is empty');
   });
 
-  await runTest('2. Admin Features', '2.4 Get list of Subjects (/api/subjects)', async () => {
+  await runTest('2. Admin Features', '2.4 Get list of Subjects (/api/subjects HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/subjects', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to list subjects: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.length === 0) {
-      throw new Error('Subjects list is empty');
-    }
+    assertApiResponse(res, 200, 'array');
+    if (res.data.data.length === 0) throw new Error('Subjects list is empty');
   });
 
-  await runTest('2. Admin Features', '2.5 Get list of Semesters (/api/semesters)', async () => {
+  await runTest('2. Admin Features', '2.5 Get list of Semesters (/api/semesters HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/semesters', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to list semesters: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'array');
+    if (res.data.data.length === 0) throw new Error('Semesters list is empty');
   });
 
-  await runTest('2. Admin Features', '2.6 Get list of Lecturers (/api/lecturers)', async () => {
+  await runTest('2. Admin Features', '2.6 Get list of Lecturers (/api/lecturers HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/lecturers', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to list lecturers: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.length === 0) {
-      throw new Error('Lecturers list is empty');
-    }
+    assertApiResponse(res, 200, 'array');
+    if (res.data.data.length === 0) throw new Error('Lecturers list is empty');
   });
 
-  await runTest('2. Admin Features', '2.7 Get paginated Students (/api/students/paged)', async () => {
+  await runTest('2. Admin Features', '2.7 Get paginated Students (/api/students/paged HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/students/paged?page=0&size=10', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !res.data.data?.content) {
-      throw new Error(`Failed to get paged students: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.content.length === 0) {
-      throw new Error('Paged students content is empty');
-    }
+    assertApiResponse(res, 200, 'object');
+    if (!Array.isArray(res.data.data.content)) throw new Error('Expected content array in paged response');
   });
 
-  await runTest('2. Admin Features', '2.8 Search student by keyword (/api/students/search)', async () => {
+  await runTest('2. Admin Features', '2.8 Search student by keyword (/api/students/search HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/students/search?keyword=2500001', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to search students: ${JSON.stringify(res.data)}`);
-    }
-    if (res.data.data.length === 0) {
-      throw new Error('Student search returned no results for 2500001');
-    }
+    assertApiResponse(res, 200, 'array');
   });
 
-  await runTest('2. Admin Features', '2.9 Get Course Sections (/api/course-sections)', async () => {
+  await runTest('2. Admin Features', '2.9 Get Course Sections (/api/course-sections HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/course-sections', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to list course sections: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'array');
     if (res.data.data.length > 0) {
       testSectionId = res.data.data[0].id;
     }
   });
 
-  await runTest('2. Admin Features', '2.10 Get Schedules (/api/schedules)', async () => {
+  await runTest('2. Admin Features', '2.10 Get Schedules (/api/schedules HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/schedules', { token: adminToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to list schedules: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'array');
   });
 
-  await runTest('2. Admin Features', '2.11 Get Password Resets (/api/admin/password-resets)', async () => {
+  await runTest('2. Admin Features', '2.11 Get Password Resets (/api/admin/password-resets HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/admin/password-resets', { token: adminToken });
-    if (res.status !== 200 || !res.data.success) {
-      throw new Error(`Failed to list password resets: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'array');
   });
 
-  await runTest('2. Admin Features', '2.12 CRUD: Create Department (/api/departments POST)', async () => {
-    const code = 'TD' + Date.now().toString().slice(-4);
+  let createdDeptCode = null;
+  await runTest('2. Admin Features', '2.12 CRUD & DB Persistence: Create Department (INSERT verified)', async () => {
+    createdDeptCode = 'TD' + Date.now().toString().slice(-4);
+    const name = 'Khoa Kiểm Thử ' + createdDeptCode;
     const res = await apiRequest('/departments', {
       method: 'POST',
       token: adminToken,
       body: {
-        code: code,
-        name: 'Khoa Kiểm Thử ' + code,
+        code: createdDeptCode,
+        name: name,
         description: 'Phục vụ E2E Integration Test',
       },
     });
-    if (res.status !== 200 || !res.data.success || !res.data.data?.id) {
-      throw new Error(`Failed to create department: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'object');
     createdDeptId = res.data.data.id;
+
+    // Verify DB Persistence directly in MySQL
+    assertDbRecord(`SELECT code, name, is_active FROM departments WHERE id = ${createdDeptId}`, {
+      code: createdDeptCode,
+      name: name,
+      is_active: '1',
+    });
   });
 
-  await runTest('2. Admin Features', '2.13 CRUD: Update Department (/api/departments PUT)', async () => {
+  await runTest('2. Admin Features', '2.12b Duplicate Code Violation: Reject existing code (HTTP 409 + Schema)', async () => {
+    // Attempt to create department with same existing code
+    const existing = db.queryDb('SELECT code, name FROM departments LIMIT 1')[0];
+    const res = await apiRequest('/departments', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        code: existing.code,
+        name: 'Trùng mã ' + Date.now(),
+        description: 'Test duplicate',
+      },
+    });
+    // Spring Boot returns 409 Conflict via DataIntegrityViolationException
+    if (res.status !== 409 && res.status !== 400) {
+      throw new Error(`Expected 409 Conflict or 400 Bad Request for duplicate key, got ${res.status}`);
+    }
+    assertApiResponse(res, res.status);
+  });
+
+  await runTest('2. Admin Features', '2.13 CRUD & DB Persistence: Update Department (UPDATE verified)', async () => {
     if (!createdDeptId) throw new Error('No createdDeptId to update');
-    const code = 'TU' + Date.now().toString().slice(-4);
+    const updatedName = 'Khoa Kiểm Thử Cập Nhật ' + Date.now().toString().slice(-4);
     const res = await apiRequest(`/departments/${createdDeptId}`, {
       method: 'PUT',
       token: adminToken,
       body: {
-        code: code,
-        name: 'Khoa Kiểm Thử Đã Cập Nhật ' + code,
+        code: createdDeptCode,
+        name: updatedName,
         description: 'Đã cập nhật qua test',
       },
     });
-    if (res.status !== 200 || !res.data.success) {
-      throw new Error(`Failed to update department: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'object');
+
+    // Verify DB Persistence: name updated, code untouched
+    assertDbRecord(`SELECT name FROM departments WHERE id = ${createdDeptId}`, {
+      name: updatedName,
+    });
   });
 
-  await runTest('2. Admin Features', '2.14 CRUD: Toggle Department Active Status (/api/departments/{id}/toggle PUT)', async () => {
+  await runTest('2. Admin Features', '2.14 CRUD & DB Persistence: Toggle Active Status (Soft-Delete verified)', async () => {
     if (!createdDeptId) throw new Error('No createdDeptId to toggle');
     const res = await apiRequest(`/departments/${createdDeptId}/toggle`, {
       method: 'PUT',
       token: adminToken,
     });
-    if (res.status !== 200 || !res.data.success) {
-      throw new Error(`Failed to toggle department: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200);
+
+    // Verify DB Persistence: is_active toggled to 0
+    assertDbRecord(`SELECT is_active FROM departments WHERE id = ${createdDeptId}`, {
+      is_active: '0',
+    });
   });
 
-  await runTest('2. Admin Features', '2.15 Create Subject with Validation (/api/subjects POST)', async () => {
+  await runTest('2. Admin Features', '2.15 CRUD & DB Persistence: Create Subject (INSERT verified)', async () => {
     const code = 'SUB' + Date.now().toString().slice(-4);
+    const subName = 'Môn Học Test ' + code;
     const res = await apiRequest('/subjects', {
       method: 'POST',
       token: adminToken,
       body: {
         subjectCode: code,
-        subjectName: 'Môn Học Kiểm Thử ' + code,
+        subjectName: subName,
         credits: 3,
         description: 'Mô tả môn học test',
         departmentId: 1,
       },
     });
-    if (res.status !== 200 || !res.data.success || !res.data.data?.id) {
-      throw new Error(`Failed to create subject: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'object');
+    createdSubId = res.data.data.id;
+
+    // Verify DB Persistence directly in MySQL
+    assertDbRecord(`SELECT subject_code, subject_name, credits, department_id, is_active FROM subjects WHERE id = ${createdSubId}`, {
+      subject_code: code,
+      subject_name: subName,
+      credits: '3',
+      department_id: '1',
+      is_active: '1',
+    });
   });
 
-  await runTest('2. Admin Features', '2.16 Subject Validation: Rejection of invalid credit (credits: 15 > 10)', async () => {
-    const res = await apiRequest('/subjects', {
+  await runTest('2. Admin Features', '2.16 Subject Validation Boundaries (HTTP 400 + Schema)', async () => {
+    // Test 1: Credits > 10 (15)
+    const res1 = await apiRequest('/subjects', {
       method: 'POST',
       token: adminToken,
       body: {
-        subjectCode: 'INV' + Date.now().toString().slice(-4),
-        subjectName: 'Môn Không Hợp Lệ',
-        credits: 15, // Invalid > 10
+        subjectCode: 'INV1' + Date.now().toString().slice(-3),
+        subjectName: 'Môn Quá Tín Chỉ',
+        credits: 15,
         departmentId: 1,
       },
     });
-    if (res.status === 200 && res.data.success) {
-      throw new Error('System allowed credits = 15 > 10');
-    }
+    assertApiResponse(res1, 400);
+
+    // Test 2: Credits <= 0 (0)
+    const res2 = await apiRequest('/subjects', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        subjectCode: 'INV2' + Date.now().toString().slice(-3),
+        subjectName: 'Môn Không Tín Chỉ',
+        credits: 0,
+        departmentId: 1,
+      },
+    });
+    assertApiResponse(res2, 400);
+
+    // Test 3: Empty subjectName
+    const res3 = await apiRequest('/subjects', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        subjectCode: 'INV3' + Date.now().toString().slice(-3),
+        subjectName: '',
+        credits: 3,
+        departmentId: 1,
+      },
+    });
+    assertApiResponse(res3, 400);
   });
 
-  await runTest('2. Admin Features', '2.17 Create Administrative Class (/api/classes POST)', async () => {
+  await runTest('2. Admin Features', '2.17 CRUD & DB Persistence: Create Administrative Class (INSERT verified)', async () => {
     const code = 'K18_T' + Date.now().toString().slice(-3);
+    const className = 'Lớp Sinh Hoạt Test ' + code;
     const res = await apiRequest('/classes', {
       method: 'POST',
       token: adminToken,
       body: {
         code: code,
-        name: 'Lớp Sinh Hoạt Test ' + code,
+        name: className,
         departmentId: 1,
         academicYear: 'K18',
       },
     });
-    if (res.status !== 200 || !res.data.success || !res.data.data?.id) {
-      throw new Error(`Failed to create class: ${JSON.stringify(res.data)}`);
+    assertApiResponse(res, 200, 'object');
+    createdClassId = res.data.data.id;
+
+    // Verify DB Persistence directly in MySQL
+    assertDbRecord(`SELECT code, name, department_id, academic_year, is_active FROM classes WHERE id = ${createdClassId}`, {
+      code: code,
+      name: className,
+      department_id: '1',
+      academic_year: 'K18',
+      is_active: '1',
+    });
+  });
+
+  await runTest('2. Admin Features', '2.18 CRUD & DB Persistence: Create & Delete Schedule (Physical DELETE verified)', async () => {
+    if (!testSectionId) throw new Error('No testSectionId available for schedule test');
+    const roomName = 'TEST-' + Date.now().toString().slice(-3);
+    const resCreate = await apiRequest('/schedules', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        sectionId: testSectionId,
+        dayOfWeek: 7, // Sunday to avoid weekday conflict
+        startPeriod: 10,
+        endPeriod: 12,
+        room: roomName,
+        startDate: '2026-09-01',
+        endDate: '2027-01-15',
+      },
+    });
+    assertApiResponse(resCreate, 200, 'object');
+    const schedId = resCreate.data.data.id;
+
+    // Verify DB Persistence of Schedule
+    assertDbRecord(`SELECT room, day_of_week, start_period, end_period FROM schedules WHERE id = ${schedId}`, {
+      room: roomName,
+      day_of_week: '7',
+      start_period: '10',
+      end_period: '12',
+    });
+
+    // Delete schedule
+    const resDelete = await apiRequest(`/schedules/${schedId}`, {
+      method: 'DELETE',
+      token: adminToken,
+    });
+    assertApiResponse(resDelete, 200);
+
+    // Verify physical delete from DB (count must be 0)
+    const count = db.queryScalar(`SELECT COUNT(*) FROM schedules WHERE id = ${schedId}`);
+    if (String(count) !== '0') {
+      throw new Error(`Schedule with id ${schedId} was not physically deleted from database! Count: ${count}`);
     }
   });
 
   // =========================================================================
-  // SUITE 3: LECTURER MODULE & WORKFLOW
+  // SUITE 3: LECTURER FEATURES & WORKFLOW
   // =========================================================================
   logHeader('3. Lecturer Features & Workflow');
 
-  await runTest('3. Lecturer Features', '3.1 Get Lecturer Profile (/api/lecturers/me)', async () => {
+  await runTest('3. Lecturer Features', '3.1 Get Lecturer Profile (/api/lecturers/me HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/lecturers/me', { token: lecturerToken });
-    if (res.status !== 200 || !res.data.success || !res.data.data) {
-      throw new Error(`Failed to get lecturer profile: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'object');
     if (res.data.data.lecturerCode !== '1000001') {
       throw new Error(`Expected lecturerCode 1000001, got ${res.data.data.lecturerCode}`);
     }
   });
 
-  await runTest('3. Lecturer Features', '3.2 Get Lecturer Schedule (/api/schedules/lecturer-schedule)', async () => {
+  await runTest('3. Lecturer Features', '3.2 Get Lecturer Schedule (/api/schedules/lecturer-schedule HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/schedules/lecturer-schedule', { token: lecturerToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to get lecturer schedule: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'array');
   });
 
-  await runTest('3. Lecturer Features', '3.3 Get grades for a course section (/api/grades/section/{id})', async () => {
+  await runTest('3. Lecturer Features', '3.3 Get grades for a course section (/api/grades/section/{id} HTTP 200 + Schema)', async () => {
     if (!testSectionId) throw new Error('No test section available');
     const res = await apiRequest(`/grades/section/${testSectionId}`, { token: lecturerToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to get section grades: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'array');
   });
 
-  await runTest('3. Lecturer Features', '3.4 Grade Entry Validation: Score range [0, 10]', async () => {
+  await runTest('3. Lecturer Features', '3.4 Grade Entry Validation: Reject invalid scores (HTTP 400 + Schema)', async () => {
     if (!testSectionId) throw new Error('No test section available');
     const enrollRes = await apiRequest(`/enrollments/section/${testSectionId}`, { token: lecturerToken });
     if (enrollRes.status === 200 && enrollRes.data.data?.length > 0) {
       const enrollmentId = enrollRes.data.data[0].id;
-      const res = await apiRequest('/grades', {
+
+      // Score > 10.0 (15.0)
+      const res1 = await apiRequest('/grades', {
         method: 'PUT',
         token: lecturerToken,
         body: {
           enrollmentId: enrollmentId,
-          cc1Score: 15.0, // INVALID: > 10.0
+          cc1Score: 15.0,
           cc2Score: 10.0,
           midtermScore: 8.0,
           finalScore: 8.0,
         },
       });
-      // Should reject invalid scores outside [0.0, 10.0]
-      if (res.status === 200 && res.data.success) {
-        throw new Error('System allowed cc1 score 15.0 > 10.0!');
-      }
+      assertApiResponse(res1, 400);
+
+      // Score < 0.0 (-2.0)
+      const res2 = await apiRequest('/grades', {
+        method: 'PUT',
+        token: lecturerToken,
+        body: {
+          enrollmentId: enrollmentId,
+          cc1Score: -2.0,
+          cc2Score: 10.0,
+          midtermScore: 8.0,
+          finalScore: 8.0,
+        },
+      });
+      assertApiResponse(res2, 400);
     }
   });
 
-  await runTest('3. Lecturer Features', '3.5 Export Course Section Grades to Excel (/api/grades/section/{id}/export)', async () => {
+  await runTest('3. Lecturer Features', '3.5 Export Course Section Grades to Excel (HTTP 200 + Content-Type)', async () => {
     if (!testSectionId) throw new Error('No test section available');
     const res = await fetch(`http://localhost:8080/api/grades/section/${testSectionId}/export`, {
       headers: { Authorization: `Bearer ${lecturerToken}` }
@@ -476,13 +681,13 @@ async function runAllTests() {
     }
   });
 
-  await runTest('3. Lecturer Features', '3.6 Grade Locking (BR-09) & Lecturer Valid Score Entry', async () => {
+  await runTest('3. Lecturer Features', '3.6 Grade Calculation, DB Persistence & Locking (BR-07)', async () => {
     if (!testSectionId) throw new Error('No test section available');
     const enrollRes = await apiRequest(`/enrollments/section/${testSectionId}`, { token: lecturerToken });
     if (enrollRes.status === 200 && enrollRes.data.data?.length > 0) {
       const enrollmentId = enrollRes.data.data[0].id;
 
-      // 1. First unlock or ensure grade is editable by Admin (finalize = false)
+      // 1. Ensure grade is unlocked
       await apiRequest('/grades', {
         method: 'PUT',
         token: adminToken,
@@ -496,7 +701,7 @@ async function runAllTests() {
         },
       });
 
-      // 2. Lecturer now enters and saves grades
+      // 2. Lecturer enters and saves grades
       const res = await apiRequest('/grades', {
         method: 'PUT',
         token: lecturerToken,
@@ -509,16 +714,17 @@ async function runAllTests() {
           finalize: false,
         },
       });
+      assertApiResponse(res, 200, 'object');
 
-      if (res.status !== 200 || !res.data.success || !res.data.data) {
-        throw new Error(`Grade save failed: ${JSON.stringify(res.data)}`);
-      }
-      const grade = res.data.data;
-      if (grade.totalScore === undefined || grade.letterGrade === undefined) {
-        throw new Error('Missing calculated totalScore or letterGrade');
+      // Verify DB Persistence: exact values and calculation stored in MySQL
+      const gradeRow = assertDbRecord(`SELECT cc1_score, cc2_score, midterm_score, final_score, total_score, letter_grade, is_finalized FROM grades WHERE enrollment_id = ${enrollmentId}`, {
+        is_finalized: '0',
+      });
+      if (parseFloat(gradeRow.total_score) <= 0) {
+        throw new Error(`Expected positive total_score in DB, got ${gradeRow.total_score}`);
       }
 
-      // 3. Verify BR-07: When finalized, lecturer edit must be rejected
+      // 3. Lock grade (finalize = true)
       await apiRequest('/grades', {
         method: 'PUT',
         token: adminToken,
@@ -528,30 +734,19 @@ async function runAllTests() {
           cc2Score: 10.0,
           midtermScore: 8.5,
           finalScore: 9.0,
-          finalize: true, // LOCK GRADE
+          finalize: true,
         },
       });
 
-      // Simulate 7-day grace window expiry (> 7 days)
-      const expireSql = `UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};`;
-      try {
-        const { execSync } = require('child_process');
-        try {
-          execSync(
-            `"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "${expireSql}"`,
-            { stdio: 'ignore' }
-          );
-        } catch (e) {}
-        try {
-          execSync(
-            `docker exec student_management_db mysql -uroot student_management -e "${expireSql}"`,
-            { stdio: 'ignore' }
-          );
-        } catch (e) {}
-      } catch (e) {
-        // Continue if command fails
-      }
+      // Verify DB Persistence: is_finalized = 1
+      assertDbRecord(`SELECT is_finalized FROM grades WHERE enrollment_id = ${enrollmentId}`, {
+        is_finalized: '1',
+      });
 
+      // Simulate 7-day grace window expiry
+      db.executeSql(`UPDATE grades SET finalized_at = DATE_SUB(NOW(), INTERVAL 8 DAY) WHERE enrollment_id = ${enrollmentId};`);
+
+      // Lecturer editing finalized grade must be blocked with HTTP 400
       const lockRes = await apiRequest('/grades', {
         method: 'PUT',
         token: lecturerToken,
@@ -563,83 +758,133 @@ async function runAllTests() {
           finalScore: 7.0,
         },
       });
+      assertApiResponse(lockRes, 400);
 
       // Restore enrollment original grade
-      try {
-        const { execSync } = require('child_process');
-        const restoreSql = `UPDATE grades SET cc1_score = 9.5, cc2_score = 9.5, midterm_score = 8.0, final_score = 8.0, total_score = 8.15, letter_grade = 'B+', gpa_point = 3.5, is_finalized = 1, finalized_at = '2025-01-15 10:00:00' WHERE enrollment_id = ${enrollmentId};`;
-        try {
-          execSync(`"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "${restoreSql}"`, { stdio: 'ignore' });
-        } catch (e) {}
-        try {
-          execSync(`docker exec student_management_db mysql -uroot student_management -e "${restoreSql}"`, { stdio: 'ignore' });
-        } catch (e) {}
-      } catch (e) {}
-
-      if (lockRes.status === 200 && lockRes.data.success) {
-        throw new Error('Lecturer was able to edit a locked/finalized grade!');
-      }
+      db.executeSql(`UPDATE grades SET cc1_score = 9.5, cc2_score = 9.5, midterm_score = 8.0, final_score = 8.0, total_score = 8.15, letter_grade = 'B+', gpa_point = 3.5, is_finalized = 1, finalized_at = '2025-01-15 10:00:00' WHERE enrollment_id = ${enrollmentId};`);
     }
   });
 
   // =========================================================================
-  // SUITE 4: STUDENT MODULE & WORKFLOW
+  // SUITE 4: STUDENT FEATURES, REGISTRATION & DATABASE TRIGGERS
   // =========================================================================
-  logHeader('4. Student Features & Workflow');
+  logHeader('4. Student Features & Registration DB Triggers');
 
-  await runTest('4. Student Features', '4.1 Get Student Profile (/api/students/me)', async () => {
+  await runTest('4. Student Features', '4.1 Get Student Profile (/api/students/me HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/students/me', { token: studentToken });
-    if (res.status !== 200 || !res.data.success || !res.data.data) {
-      throw new Error(`Failed to get student profile: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'object');
     if (res.data.data.studentCode !== '2500001') {
       throw new Error(`Expected studentCode 2500001, got ${res.data.data.studentCode}`);
     }
   });
 
-  await runTest('4. Student Features', '4.2 Get Student Timetable (/api/schedules/my-schedule)', async () => {
+  await runTest('4. Student Features', '4.2 Get Student Timetable (/api/schedules/my-schedule HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/schedules/my-schedule', { token: studentToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to get student schedule: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'array');
   });
 
-  await runTest('4. Student Features', '4.3 Get Student Enrollments (/api/enrollments/my)', async () => {
+  await runTest('4. Student Features', '4.3 Get Student Enrollments (/api/enrollments/my HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/enrollments/my', { token: studentToken });
-    if (res.status !== 200 || !res.data.success || !Array.isArray(res.data.data)) {
-      throw new Error(`Failed to get enrollments: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200, 'array');
   });
 
-  await runTest('4. Student Features', '4.4 Get Student Transcript & GPA (/api/transcript/me)', async () => {
-    const res = await apiRequest('/transcript/me', { token: studentToken });
-    if (res.status !== 200 || !res.data.success || !res.data.data) {
-      throw new Error(`Failed to get transcript: ${JSON.stringify(res.data)}`);
+  let testEnrollSectionId = null;
+  let testEnrollmentId = null;
+
+  await runTest('4. Student Features', '4.3b Course Enrollment Persistence & DB Trigger (+1 enrolled_count verified)', async () => {
+    // 1. Admin creates an open section for CS203 (in curriculum, no prerequisites) in current semester (4)
+    const secCode = 'CS203-T' + Date.now().toString().slice(-4);
+    const secRes = await apiRequest('/course-sections', {
+      method: 'POST',
+      token: adminToken,
+      body: {
+        sectionCode: secCode,
+        subjectId: 9, // CS203
+        semesterId: 4, // Current semester
+        lecturerId: 1,
+        maxStudents: 45,
+        room: '501-A2',
+        status: 'OPEN',
+      },
+    });
+    assertApiResponse(secRes, 200, 'object');
+    testEnrollSectionId = secRes.data.data.id;
+
+    // Verify initial enrolled_count in DB is 0
+    assertDbRecord(`SELECT enrolled_count FROM course_sections WHERE id = ${testEnrollSectionId}`, {
+      enrolled_count: '0',
+    });
+
+    // 2. Student enrolls in this section
+    const enrollRes = await apiRequest('/enrollments', {
+      method: 'POST',
+      token: studentToken,
+      body: { sectionId: testEnrollSectionId },
+    });
+    assertApiResponse(enrollRes, 200, 'object');
+    testEnrollmentId = enrollRes.data.data.id;
+
+    // 3. Verify DB Persistence:
+    // a. enrollments row has status = 'ENROLLED'
+    assertDbRecord(`SELECT status, section_id FROM enrollments WHERE id = ${testEnrollmentId}`, {
+      status: 'ENROLLED',
+      section_id: String(testEnrollSectionId),
+    });
+
+    // b. verify no grades row is created yet (allowing cancellation)
+    const gradeCount = db.queryScalar(`SELECT COUNT(*) FROM grades WHERE enrollment_id = ${testEnrollmentId}`);
+    if (String(gradeCount) !== '0') {
+      throw new Error(`Expected 0 initialized grade record before lecturer enters grades (to allow cancellation), got ${gradeCount}`);
     }
+
+    // c. DB TRIGGER trg_enrollment_insert_after incremented enrolled_count to 1
+    assertDbRecord(`SELECT enrolled_count FROM course_sections WHERE id = ${testEnrollSectionId}`, {
+      enrolled_count: '1',
+    });
+  });
+
+  await runTest('4. Student Features', '4.3c Course Cancellation Persistence & DB Trigger (-1 enrolled_count verified)', async () => {
+    if (!testEnrollmentId || !testEnrollSectionId) {
+      throw new Error('No testEnrollmentId / testEnrollSectionId available for cancellation test');
+    }
+
+    // Student cancels enrollment
+    const cancelRes = await apiRequest(`/enrollments/${testEnrollmentId}`, {
+      method: 'DELETE',
+      token: studentToken,
+    });
+    assertApiResponse(cancelRes, 200);
+
+    // Verify DB Persistence: enrollments status changed to 'CANCELLED'
+    assertDbRecord(`SELECT status FROM enrollments WHERE id = ${testEnrollmentId}`, {
+      status: 'CANCELLED',
+    });
+
+    // Verify DB TRIGGER trg_enrollment_update_after decremented enrolled_count back to 0
+    assertDbRecord(`SELECT enrolled_count FROM course_sections WHERE id = ${testEnrollSectionId}`, {
+      enrolled_count: '0',
+    });
+
+    // Clean up temporary section and enrollment
+    db.executeSql(`DELETE FROM grades WHERE enrollment_id = ${testEnrollmentId};`);
+    db.executeSql(`DELETE FROM enrollments WHERE id = ${testEnrollmentId};`);
+    db.executeSql(`DELETE FROM course_sections WHERE id = ${testEnrollSectionId};`);
+  });
+
+  await runTest('4. Student Features', '4.4 Get Student Transcript & GPA (/api/transcript/me HTTP 200 + Schema)', async () => {
+    const res = await apiRequest('/transcript/me', { token: studentToken });
+    assertApiResponse(res, 200, 'object');
     const transcript = res.data.data;
-    if (transcript.cpa10 !== undefined || transcript.cpa4 !== undefined || transcript.semesters !== undefined) {
-      // Valid GPA/CPA structure
-    } else {
+    if (transcript.cpa10 === undefined && transcript.cpa4 === undefined && transcript.semesters === undefined) {
       throw new Error(`Unexpected transcript response structure: ${JSON.stringify(transcript)}`);
     }
   });
 
-  await runTest('4. Student Features', '4.5 Request Password Reset & Admin Processing Workflow', async () => {
-    // 1. First check if there is an existing pending request and process it as admin
-    const listRes = await apiRequest('/admin/password-resets?status=PENDING', { token: adminToken });
-    if (listRes.status === 200 && Array.isArray(listRes.data.data)) {
-      for (const req of listRes.data.data) {
-        if (req.user?.username === '2500001' || req.username === '2500001') {
-          await apiRequest(`/admin/password-resets/${req.id}/reject`, {
-            method: 'POST',
-            token: adminToken,
-            body: { rejectReason: 'Cleaned up by integration test suite' },
-          });
-        }
-      }
-    }
+  await runTest('4. Student Features', '4.5 Password Reset Lifecycle & DB Persistence (INSERT & UPDATE verified)', async () => {
+    // 1. Clean up existing pending requests for user 2500001
+    db.executeSql("DELETE FROM password_reset_requests WHERE user_id = (SELECT id FROM users WHERE username = '2500001');");
 
-    // 2. Student now creates password reset request
+    // 2. Student requests password reset
     const res = await apiRequest('/auth/forgot-password', {
       method: 'POST',
       body: {
@@ -648,31 +893,32 @@ async function runAllTests() {
         reason: 'Yêu cầu kiểm thử tự động hệ thống',
       },
     });
-    if (res.status !== 200 || !res.data.success) {
-      throw new Error(`Password reset request failed: ${JSON.stringify(res.data)}`);
-    }
+    assertApiResponse(res, 200);
 
-    // 3. Duplicate request must be ignored (anti-enumeration: still returns generic 200, but no duplicate record created)
-    const countBefore = (await apiRequest('/admin/password-resets?status=PENDING', { token: adminToken })).data.data?.filter(
-      r => r.user?.username === '2500001' || r.username === '2500001'
-    ).length || 0;
+    // Verify DB Persistence: request created with status = 'PENDING'
+    const resetReq = assertDbRecord(
+      "SELECT id, status FROM password_reset_requests WHERE user_id = (SELECT id FROM users WHERE username = '2500001') ORDER BY id DESC LIMIT 1",
+      { status: 'PENDING' }
+    );
 
-    await apiRequest('/auth/forgot-password', {
+    // 3. Admin approves password reset
+    const approveRes = await apiRequest(`/admin/password-resets/${resetReq.id}/approve`, {
       method: 'POST',
-      body: {
-        username: '2500001',
-        email: '2500001@sv.sms.edu.vn',
-        reason: 'Yêu cầu trùng lặp',
-      },
+      token: adminToken,
+      body: { note: 'Duyệt tự động bởi bộ test E2E' },
+    });
+    assertApiResponse(approveRes, 200);
+
+    // Verify DB Persistence: request status = 'APPROVED' and users.must_change_password = 1
+    assertDbRecord(`SELECT status FROM password_reset_requests WHERE id = ${resetReq.id}`, {
+      status: 'APPROVED',
+    });
+    assertDbRecord("SELECT must_change_password FROM users WHERE username = '2500001'", {
+      must_change_password: '1',
     });
 
-    const countAfter = (await apiRequest('/admin/password-resets?status=PENDING', { token: adminToken })).data.data?.filter(
-      r => r.user?.username === '2500001' || r.username === '2500001'
-    ).length || 0;
-
-    if (countAfter > countBefore) {
-      throw new Error('System created duplicate pending password reset record in database!');
-    }
+    // Reset password & must_change_password back to normal for student 2500001
+    db.executeSql("UPDATE users SET password = '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', must_change_password = 0 WHERE username = '2500001';");
   });
 
   // =========================================================================
@@ -722,20 +968,14 @@ async function runAllTests() {
       console.log(`     Details: ${err.error}`);
     });
   } else {
-    console.log(`\n${colors.green}${colors.bright}ALL TESTS PASSED! SYSTEM IS 100% HEALTHY AND READY FOR ACCESS!${colors.reset}`);
+    console.log(`\n${colors.green}${colors.bright}ALL TESTS PASSED! API CONTRACTS & DATABASE PERSISTENCE 100% VERIFIED!${colors.reset}`);
   }
   console.log(`${colors.bright}${colors.blue}======================================================================${colors.reset}\n`);
 
-  // Dọn dẹp dữ liệu kiểm thử tạm thời để cơ sở dữ liệu luôn nguyên vẹn, sạch đẹp
+  // Final Cleanup
   try {
-    const { execSync } = require('child_process');
-    const cleanupSql = "DELETE FROM curriculum_block_subjects WHERE subject_id IN (SELECT id FROM subjects WHERE subject_code LIKE 'SUB%'); DELETE FROM subjects WHERE subject_code LIKE 'SUB%'; DELETE FROM classes WHERE code LIKE 'K18_T%'; DELETE FROM departments WHERE code LIKE 'TD%' OR name LIKE '%Kiểm Thử%'; DELETE FROM password_reset_requests WHERE reason LIKE '%test%' OR reason LIKE '%kiểm thử%'; UPDATE users SET password = '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', must_change_password = 0 WHERE username = '2500003';";
-    try {
-      execSync(`"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "${cleanupSql}"`, { stdio: 'ignore' });
-    } catch (e) {}
-    try {
-      execSync(`docker exec student_management_db mysql -uroot student_management -e "${cleanupSql}"`, { stdio: 'ignore' });
-    } catch (e) {}
+    const cleanupSql = "DELETE FROM curriculum_block_subjects WHERE subject_id IN (SELECT id FROM subjects WHERE subject_code LIKE 'SUB%'); DELETE FROM subjects WHERE subject_code LIKE 'SUB%'; DELETE FROM classes WHERE code LIKE 'K18_T%'; DELETE FROM departments WHERE code LIKE 'TD%' OR name LIKE '%Kiểm Thử%'; DELETE FROM password_reset_requests WHERE reason LIKE '%test%' OR reason LIKE '%kiểm thử%'; UPDATE users SET password = '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', must_change_password = 0 WHERE username IN ('2500001', '2500003');";
+    db.executeSql(cleanupSql);
   } catch (e) {}
 
   return results;

@@ -74,6 +74,6 @@ public class GradeAppeal {
         updatedAt = LocalDateTime.now();
     }
 
-    public enum ScoreComponent { CC2, MIDTERM, FINAL, ALL }
+    public enum ScoreComponent { CC1, CC2, MIDTERM, FINAL, ALL }
     public enum AppealStatus { PENDING, IN_REVIEW, APPROVED, REJECTED }
 }

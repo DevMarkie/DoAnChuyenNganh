@@ -111,7 +111,9 @@ public class CourseSectionService {
         section.setSchedule(request.getSchedule());
         section.setRoom(request.getRoom());
         if (request.getStatus() != null) {
-            section.setStatus(parseStatus(request.getStatus(), section.getStatus()));
+            CourseSection.SectionStatus targetStatus = parseStatus(request.getStatus(), section.getStatus());
+            validateStateTransition(section.getStatus(), targetStatus);
+            section.setStatus(targetStatus);
         }
         CourseSection saved = courseSectionRepository.save(section);
         Long existingScheduleId = scheduleRepository.findBySectionId(id).stream()
@@ -169,6 +171,21 @@ public class CourseSectionService {
         schedule.setStartDate(startDate);
         schedule.setEndDate(endDate);
         scheduleRepository.save(schedule);
+    }
+
+    public static void validateStateTransition(CourseSection.SectionStatus current, CourseSection.SectionStatus target) {
+        if (current == target) return;
+        boolean valid = switch (current) {
+            case OPEN -> target == CourseSection.SectionStatus.CLOSED || target == CourseSection.SectionStatus.CANCELLED;
+            case CLOSED -> target == CourseSection.SectionStatus.ACTIVE || target == CourseSection.SectionStatus.OPEN || target == CourseSection.SectionStatus.CANCELLED || target == CourseSection.SectionStatus.COMPLETED;
+            case ACTIVE -> target == CourseSection.SectionStatus.COMPLETED || target == CourseSection.SectionStatus.CLOSED;
+            case COMPLETED -> target == CourseSection.SectionStatus.ACTIVE;
+            case CANCELLED -> false;
+            default -> true;
+        };
+        if (!valid) {
+            throw new BadRequestException("Không thể chuyển đổi trạng thái lớp học phần từ " + current + " sang " + target + ". Vi phạm luồng trạng thái.");
+        }
     }
 
     private CourseSection.SectionStatus parseStatus(String status, CourseSection.SectionStatus defaultStatus) {

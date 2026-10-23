@@ -9,6 +9,11 @@ import java.util.List;
 public interface GradeAppealRepository extends JpaRepository<GradeAppeal, Long> {
     @Query("SELECT a FROM GradeAppeal a JOIN FETCH a.enrollment e JOIN FETCH e.student " +
             "JOIN FETCH e.section cs JOIN FETCH cs.subject JOIN FETCH cs.semester " +
+            "LEFT JOIN FETCH a.reviewer WHERE a.id = :id")
+    java.util.Optional<GradeAppeal> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("SELECT a FROM GradeAppeal a JOIN FETCH a.enrollment e JOIN FETCH e.student " +
+            "JOIN FETCH e.section cs JOIN FETCH cs.subject JOIN FETCH cs.semester " +
             "LEFT JOIN FETCH a.reviewer WHERE a.student.id = :studentId ORDER BY a.createdAt DESC")
     List<GradeAppeal> findByStudentIdWithDetails(@Param("studentId") Long studentId);
 

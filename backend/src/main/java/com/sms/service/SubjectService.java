@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -86,10 +87,7 @@ public class SubjectService {
         }
 
         List<Subject> found = subjectRepository.findAllById(uniqueIds);
-        Set<Integer> foundIds = new HashSet<>();
-        for (Subject prerequisite : found) {
-            foundIds.add(prerequisite.getId());
-        }
+        Set<Integer> foundIds = found.stream().map(Subject::getId).collect(Collectors.toSet());
         if (foundIds.size() != uniqueIds.size()) {
             Set<Integer> missingIds = new LinkedHashSet<>(uniqueIds);
             missingIds.removeAll(foundIds);

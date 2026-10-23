@@ -8,10 +8,14 @@ import {
   CheckCircle2,
   Download,
   Lock,
+  Filter,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { courseSectionService, gradeService } from "../../services/dataService";
 import ImportExcelModal from "./ImportExcelModal";
+import GradeAnalyticsCard from "../../components/grades/GradeAnalyticsCard";
+import { GRADE_GROUPS } from "../../components/grades/gradeConstants";
 
 export default function GradeEntryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,6 +24,7 @@ export default function GradeEntryPage() {
     searchParams.get("sectionId") || "",
   );
   const [grades, setGrades] = useState([]);
+  const [groupFilter, setGroupFilter] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const saveInFlight = useRef(false);
@@ -52,6 +57,7 @@ export default function GradeEntryPage() {
       setLoading(true);
       const res = await gradeService.getBySection(sectionId);
       setGrades(res.data.data || []);
+      setGroupFilter(null);
     } catch {
       toast.error("Lỗi khi tải bảng điểm");
     } finally {
@@ -63,29 +69,33 @@ export default function GradeEntryPage() {
     const secId = e.target.value;
     setSelectedSection(secId);
     setSearchParams({ sectionId: secId });
+    setGroupFilter(null);
     loadGrades(secId);
   };
 
-  const handleScoreChange = (index, field, value) => {
+  const handleScoreChange = (enrollmentId, field, value) => {
     const val = value === "" ? "" : parseFloat(value);
-    const updated = [...grades];
-    updated[index] = {
-      ...updated[index],
-      [field]: val,
-    };
-    setGrades(updated);
+    setGrades((prev) =>
+      prev.map((g) =>
+        g.enrollment?.id === enrollmentId ? { ...g, [field]: val } : g
+      )
+    );
   };
 
   // Điểm đặc biệt (V = vắng thi, I = hoãn thi/chưa hoàn thành, M = miễn học phần).
   // Khi chọn V/I/M, điểm thành phần không còn ý nghĩa nên khoá các ô nhập số.
-  const handleSpecialChange = (index, value) => {
-    const updated = [...grades];
-    updated[index] = {
-      ...updated[index],
-      specialGrade: value,
-    };
-    setGrades(updated);
+  const handleSpecialChange = (enrollmentId, value) => {
+    setGrades((prev) =>
+      prev.map((g) =>
+        g.enrollment?.id === enrollmentId ? { ...g, specialGrade: value } : g
+      )
+    );
   };
+
+  const displayedGrades = useMemo(() => {
+    if (!groupFilter || !GRADE_GROUPS[groupFilter]) return grades;
+    return grades.filter((g) => GRADE_GROUPS[groupFilter].match(g));
+  }, [grades, groupFilter]);
 
   const handleExportExcel = async () => {
     try {
@@ -334,7 +344,7 @@ export default function GradeEntryPage() {
               alignItems: "center",
               gap: "12px",
               flex: 1,
-              minWidth: "320px",
+              minWidth: "min(100%, 260px)",
             }}
           >
             <Layers
@@ -389,8 +399,50 @@ export default function GradeEntryPage() {
         </div>
       </div>
 
+      {/* Grade Analytics & Quality Audit Card */}
+      {grades.length > 0 && (
+        <GradeAnalyticsCard
+          grades={grades}
+          selectedGroupFilter={groupFilter}
+          onSelectGroupFilter={setGroupFilter}
+          sectionTitle={currentSectionInfo ? `${currentSectionInfo.sectionCode} — ${currentSectionInfo.subject?.subjectName}` : ''}
+          initialExpanded={true}
+        />
+      )}
+
       {/* Table */}
       <div className="card">
+        {groupFilter && GRADE_GROUPS[groupFilter] && (
+          <div
+            style={{
+              padding: '10px 16px',
+              backgroundColor: GRADE_GROUPS[groupFilter].bg,
+              borderBottom: `1px solid ${GRADE_GROUPS[groupFilter].border}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+              fontSize: '0.88rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Filter size={14} style={{ color: GRADE_GROUPS[groupFilter].color }} />
+              <span>
+                Đang lọc nhóm: <strong style={{ color: GRADE_GROUPS[groupFilter].color }}>{GRADE_GROUPS[groupFilter].label}</strong> (Hiển thị <strong>{displayedGrades.length}</strong> / {grades.length} SV)
+              </span>
+            </div>
+            <button
+              type="button"
+              className="btn btn-outline"
+              style={{ padding: '3px 8px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              onClick={() => setGroupFilter(null)}
+            >
+              <RotateCcw size={12} />
+              <span>Bỏ lọc</span>
+            </button>
+          </div>
+        )}
+
         <div className="table-container">
           <table className="table">
             <thead>
@@ -444,90 +496,114 @@ export default function GradeEntryPage() {
                     Lớp học phần này hiện chưa có sinh viên nào đăng ký.
                   </td>
                 </tr>
-              ) : (
-                grades.map((g, idx) => (
-                  <tr key={g.id || idx}>
-                    <td
-                      style={{
-                        color: "var(--text-muted)",
-                        fontSize: "0.85rem",
-                        position: "sticky",
-                        left: 0,
-                        zIndex: 5,
-                        backgroundColor: "var(--bg-surface)"
-                      }}
+              ) : displayedGrades.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="13"
+                    style={{
+                      textAlign: "center",
+                      padding: "36px 20px",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    <p style={{ margin: "0 0 10px" }}>
+                      Không có sinh viên nào thuộc nhóm điểm này.
+                    </p>
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      onClick={() => setGroupFilter(null)}
                     >
-                      {idx + 1}
-                    </td>
-                    <td style={{ position: "sticky", left: "50px", zIndex: 5, backgroundColor: "var(--bg-surface)" }}>
-                      <span
+                      Xem toàn bộ danh sách
+                    </button>
+                  </td>
+                </tr>
+              ) : (
+                displayedGrades.map((g, idx) => {
+                  const enrollmentId = g.enrollment?.id;
+                  return (
+                    <tr key={g.id || idx}>
+                      <td
                         style={{
-                          display: "inline-block",
-                          fontFamily: "monospace",
-                          fontWeight: 700,
+                          color: "var(--text-muted)",
                           fontSize: "0.85rem",
-                          color: "var(--primary)",
-                          backgroundColor: "var(--primary-light)",
-                          padding: "3px 8px",
-                          borderRadius: "4px",
-                          border: "1px solid var(--primary-border)",
+                          position: "sticky",
+                          left: 0,
+                          zIndex: 5,
+                          backgroundColor: "var(--bg-surface)"
                         }}
                       >
-                        {g.enrollment?.student?.studentCode}
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: 600, color: "var(--text-main)", position: "sticky", left: "170px", zIndex: 5, backgroundColor: "var(--bg-surface)", boxShadow: "2px 0 5px -2px rgba(0,0,0,0.1)" }}>
-                      {g.enrollment?.student?.fullName}
-                    </td>
-                    <td style={{ color: "var(--text-secondary)" }}>
-                      {g.enrollment?.student?.classEntity?.code || "—"}
-                    </td>
-                    {["cc1Score", "cc2Score", "midtermScore", "finalScore"].map((field) => (
-                      <td key={field} style={{ textAlign: "center" }}>
-                        <input
-                          type="number"
-                          min="0"
-                          max="10"
-                          step="0.1"
-                          placeholder="0.0"
-                          value={g[field] ?? ""}
-                          onChange={(e) =>
-                            handleScoreChange(idx, field, e.target.value)
-                          }
-                          disabled={isLocked || hasSpecial(g)}
-                          className="form-control"
+                        {idx + 1}
+                      </td>
+                      <td style={{ position: "sticky", left: "50px", zIndex: 5, backgroundColor: "var(--bg-surface)" }}>
+                        <span
                           style={{
-                            width: "68px",
+                            display: "inline-block",
+                            fontFamily: "monospace",
+                            fontWeight: 700,
+                            fontSize: "0.85rem",
+                            color: "var(--primary)",
+                            backgroundColor: "var(--primary-light)",
+                            padding: "3px 8px",
+                            borderRadius: "4px",
+                            border: "1px solid var(--primary-border)",
+                          }}
+                        >
+                          {g.enrollment?.student?.studentCode}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 600, color: "var(--text-main)", position: "sticky", left: "170px", zIndex: 5, backgroundColor: "var(--bg-surface)", boxShadow: "2px 0 5px -2px rgba(0,0,0,0.1)" }}>
+                        {g.enrollment?.student?.fullName}
+                      </td>
+                      <td style={{ color: "var(--text-secondary)" }}>
+                        {g.enrollment?.student?.classEntity?.code || "—"}
+                      </td>
+                      {["cc1Score", "cc2Score", "midtermScore", "finalScore"].map((field) => (
+                        <td key={field} style={{ textAlign: "center" }}>
+                          <input
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.1"
+                            placeholder="0.0"
+                            value={g[field] ?? ""}
+                            onChange={(e) =>
+                              handleScoreChange(enrollmentId, field, e.target.value)
+                            }
+                            disabled={isLocked || hasSpecial(g)}
+                            className="form-control"
+                            style={{
+                              width: "68px",
+                              padding: "6px",
+                              textAlign: "center",
+                              margin: "0 auto",
+                              fontWeight: 600,
+                            }}
+                          />
+                        </td>
+                      ))}
+                      <td style={{ textAlign: "center" }}>
+                        <select
+                          value={g.specialGrade || "NONE"}
+                          onChange={(e) =>
+                            handleSpecialChange(enrollmentId, e.target.value)
+                          }
+                          disabled={isLocked}
+                          className="form-select"
+                          style={{
+                            width: "92px",
                             padding: "6px",
-                            textAlign: "center",
                             margin: "0 auto",
                             fontWeight: 600,
                           }}
-                        />
+                          title="V: vắng thi (tính 0 điểm) · I: hoãn thi / chưa hoàn thành · M: miễn học phần (đạt)"
+                        >
+                          <option value="NONE">—</option>
+                          <option value="V">V · Vắng thi</option>
+                          <option value="I">I · Hoãn thi</option>
+                          <option value="M">M · Miễn</option>
+                        </select>
                       </td>
-                    ))}
-                    <td style={{ textAlign: "center" }}>
-                      <select
-                        value={g.specialGrade || "NONE"}
-                        onChange={(e) =>
-                          handleSpecialChange(idx, e.target.value)
-                        }
-                        disabled={isLocked}
-                        className="form-select"
-                        style={{
-                          width: "92px",
-                          padding: "6px",
-                          margin: "0 auto",
-                          fontWeight: 600,
-                        }}
-                        title="V: vắng thi (tính 0 điểm) · I: hoãn thi / chưa hoàn thành · M: miễn học phần (đạt)"
-                      >
-                        <option value="NONE">—</option>
-                        <option value="V">V · Vắng thi</option>
-                        <option value="I">I · Hoãn thi</option>
-                        <option value="M">M · Miễn</option>
-                      </select>
-                    </td>
                     <td
                       style={{
                         textAlign: "center",
@@ -579,8 +655,9 @@ export default function GradeEntryPage() {
                       })()}
                     </td>
                   </tr>
-                ))
-              )}
+                );
+              })
+            )}
             </tbody>
           </table>
         </div>

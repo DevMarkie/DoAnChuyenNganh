@@ -99,6 +99,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearer) && bearer.startsWith("Bearer ")) {
             return bearer.substring(7);
         }
+        // Only allow query token for SSE streaming endpoint (/api/notifications/stream)
+        // because native EventSource cannot set custom Authorization headers.
+        // For all other REST endpoints, query token is rejected to prevent token leakage in URLs and logs.
+        String path = request.getServletPath();
+        if (path != null && path.endsWith("/notifications/stream")) {
+            String queryToken = request.getParameter("token");
+            if (StringUtils.hasText(queryToken)) {
+                return queryToken;
+            }
+        }
         return null;
     }
 }

@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer-core');
 const path = require('path');
 const fs = require('fs');
+const db = require('../utils/db_helper');
 
 const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const SCREENSHOT_DIR = path.join(__dirname, '..', 'test-results', 'devtools_screenshots');
@@ -220,6 +221,38 @@ async function runDevtoolsAudit() {
     // Quản lý Khoa / Viện
     await page.goto('http://localhost:5173/#/admin/departments', { waitUntil: 'networkidle2' });
     await auditPage('21_admin_departments');
+
+    // UI-to-DB CRUD Test: Thao tác tạo Khoa trên giao diện và đối soát trực tiếp MySQL
+    const testUiCode = 'UI' + Date.now().toString().slice(-4);
+    const testUiName = 'Khoa UI Thuc Nghiem ' + testUiCode;
+    console.log(`   👉 [UI-to-DB] Thử nghiệm tạo Khoa mới trên giao diện: ${testUiCode}...`);
+    const clickedAdd = await clickByText('button', 'Thêm khoa viện');
+    if (clickedAdd) {
+      await sleep(1000);
+      try {
+        await page.waitForSelector('input[required]', { timeout: 3000 });
+        const inputs = await page.$$('input[required]');
+        if (inputs.length >= 2) {
+          await inputs[0].type(testUiCode);
+          await inputs[1].type(testUiName);
+          await sleep(500);
+          await clickByText('button[type="submit"]', 'Tạo khoa');
+          await sleep(2000);
+
+          // Đối soát trực tiếp xuống MySQL
+          const savedRows = db.queryDb(`SELECT code, name, is_active FROM departments WHERE code = '${testUiCode}'`);
+          if (savedRows.length > 0 && savedRows[0].code === testUiCode) {
+            console.log(`   ✓ [UI-to-DB PASS] Thao tác trên giao diện đã lưu ĐÚNG & ĐỦ xuống MySQL: code=${savedRows[0].code}, is_active=${savedRows[0].is_active}`);
+          } else {
+            console.error(`   ✗ [UI-to-DB FAIL] Thao tác trên UI nhưng CSDL không tìm thấy bản ghi!`);
+          }
+          // Dọn dẹp bản ghi thử nghiệm
+          db.executeSql(`DELETE FROM departments WHERE code = '${testUiCode}'`);
+        }
+      } catch (errModal) {
+        console.warn('   ⚠️ Không mở được modal tạo khoa:', errModal.message);
+      }
+    }
 
     // Quản lý Lớp sinh hoạt
     await page.goto('http://localhost:5173/#/admin/classes', { waitUntil: 'networkidle2' });

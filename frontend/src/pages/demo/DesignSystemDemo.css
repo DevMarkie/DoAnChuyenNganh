@@ -1,0 +1,1123 @@
+/* ============================================================
+   PHENIKAA UNIVERSITY STUDENT MANAGEMENT SYSTEM (SMS)
+   DESIGN SYSTEM v2.5 - APPLE VISION & AURORA GLASSMORPHISM
+   Style Philosophy: Frosted Optical Glass + Aurora Mesh Glow + VisionOS Squircle
+   ============================================================ */
+
+.ds-wrapper {
+  --ds-font-sans: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ds-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Ambient Canvas & Aurora Glows (Light Mode) */
+  --ds-bg-app: #f1f5f9;
+  --ds-bg-canvas: #e2e8f0;
+  --ds-aurora-1: rgba(99, 102, 241, 0.14); /* Electric Iris */
+  --ds-aurora-2: rgba(6, 182, 212, 0.15);  /* Cyber Cyan */
+  --ds-aurora-3: rgba(244, 63, 94, 0.10);  /* Soft Rose */
+  --ds-aurora-4: rgba(16, 185, 129, 0.12); /* Luminous Emerald */
+
+  /* Optical Glass Material (Light) */
+  --ds-glass-bg: rgba(255, 255, 255, 0.72);
+  --ds-glass-bg-hover: rgba(255, 255, 255, 0.88);
+  --ds-glass-bg-subtle: rgba(248, 250, 252, 0.55);
+  --ds-glass-bg-active: rgba(226, 232, 240, 0.6);
+  --ds-glass-blur: blur(20px) saturate(180%);
+
+  /* Specular Light Borders & Insets */
+  --ds-glass-border: rgba(255, 255, 255, 0.65);
+  --ds-glass-border-subtle: rgba(226, 232, 240, 0.7);
+  --ds-glass-border-focus: #6366f1;
+  --ds-glass-inset-shine: inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
+
+  /* Typography Colors */
+  --ds-text-title: #0f172a;
+  --ds-text-body: #334155;
+  --ds-text-muted: #64748b;
+  --ds-text-subtle: #94a3b8;
+  --ds-text-inverse: #ffffff;
+
+  /* Vibrant Aurora Brand Colors (Goodbye Dull Navy!) */
+  --ds-primary: #6366f1;           /* Electric Indigo */
+  --ds-primary-rgb: 99, 102, 241;
+  --ds-primary-hover: #4f46e5;
+  --ds-primary-light: rgba(99, 102, 241, 0.12);
+  --ds-primary-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  --ds-aurora-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+
+  /* Accents & Neon Tints */
+  --ds-accent: #06b6d4;            /* Cyber Cyan */
+  --ds-accent-hover: #0891b2;
+  --ds-accent-light: rgba(6, 182, 212, 0.12);
+  --ds-highlight: #f59e0b;         /* Radiant Amber */
+  --ds-highlight-light: rgba(245, 158, 11, 0.12);
+
+  /* Academic Semantics */
+  --ds-success: #10b981;
+  --ds-success-bg: rgba(16, 185, 129, 0.12);
+  --ds-success-border: rgba(16, 185, 129, 0.28);
+  --ds-success-text: #047857;
+
+  --ds-warning: #f59e0b;
+  --ds-warning-bg: rgba(245, 158, 11, 0.12);
+  --ds-warning-border: rgba(245, 158, 11, 0.28);
+  --ds-warning-text: #b45309;
+
+  --ds-danger: #f43f5e;
+  --ds-danger-bg: rgba(244, 63, 94, 0.12);
+  --ds-danger-border: rgba(244, 63, 94, 0.28);
+  --ds-danger-text: #be123c;
+
+  --ds-info: #0284c7;
+  --ds-info-bg: rgba(2, 132, 199, 0.12);
+  --ds-info-border: rgba(2, 132, 199, 0.28);
+  --ds-info-text: #0369a1;
+
+  --ds-purple: #8b5cf6;
+  --ds-purple-bg: rgba(139, 92, 246, 0.12);
+  --ds-purple-border: rgba(139, 92, 246, 0.28);
+
+  /* Ethereal Floating Shadows */
+  --ds-shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --ds-shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 4px -1px rgba(15, 23, 42, 0.04);
+  --ds-shadow-glass: 0 10px 30px -5px rgba(31, 38, 135, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  --ds-shadow-glass-hover: 0 20px 40px -10px rgba(99, 102, 241, 0.18), 0 8px 16px -4px rgba(0, 0, 0, 0.06);
+  --ds-shadow-glow: 0 0 28px rgba(99, 102, 241, 0.35);
+
+  /* Apple VisionOS Squircle Radii */
+  --ds-radius-sm: 8px;
+  --ds-radius-md: 12px;
+  --ds-radius-lg: 18px;
+  --ds-radius-xl: 24px;
+  --ds-radius-full: 9999px;
+
+  /* Spacing */
+  --ds-space-xs: 4px;
+  --ds-space-sm: 8px;
+  --ds-space-md: 12px;
+  --ds-space-lg: 16px;
+  --ds-space-xl: 24px;
+  --ds-space-2xl: 32px;
+
+  font-family: var(--ds-font-sans);
+  color: var(--ds-text-body);
+  background-color: var(--ds-bg-app);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================================
+   DARK GLASS THEME (OLED Deep Space + Luminous Glass)
+   ============================================================ */
+.ds-wrapper[data-theme='dark'] {
+  --ds-bg-app: #080d1a;
+  --ds-bg-canvas: #0b1329;
+  --ds-aurora-1: rgba(99, 102, 241, 0.22);
+  --ds-aurora-2: rgba(6, 182, 212, 0.20);
+  --ds-aurora-3: rgba(236, 72, 153, 0.18);
+  --ds-aurora-4: rgba(16, 185, 129, 0.16);
+
+  /* Optical Glass Material (Dark) */
+  --ds-glass-bg: rgba(15, 23, 42, 0.65);
+  --ds-glass-bg-hover: rgba(22, 34, 61, 0.78);
+  --ds-glass-bg-subtle: rgba(15, 23, 42, 0.45);
+  --ds-glass-bg-active: rgba(30, 41, 59, 0.7);
+  --ds-glass-blur: blur(24px) saturate(190%);
+
+  /* Specular Light Borders & Insets */
+  --ds-glass-border: rgba(255, 255, 255, 0.12);
+  --ds-glass-border-subtle: rgba(255, 255, 255, 0.08);
+  --ds-glass-border-focus: #818cf8;
+  --ds-glass-inset-shine: inset 0 1px 1px 0 rgba(255, 255, 255, 0.18);
+
+  /* Typography */
+  --ds-text-title: #f8fafc;
+  --ds-text-body: #cbd5e1;
+  --ds-text-muted: #94a3b8;
+  --ds-text-subtle: #64748b;
+  --ds-text-inverse: #080d1a;
+
+  /* Brand Tints */
+  --ds-primary: #818cf8;
+  --ds-primary-hover: #a5b4fc;
+  --ds-primary-light: rgba(129, 140, 248, 0.18);
+  --ds-primary-gradient: linear-gradient(135deg, #818cf8 0%, #38bdf8 100%);
+  --ds-aurora-gradient: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+
+  --ds-accent: #38bdf8;
+  --ds-accent-hover: #7dd3fc;
+  --ds-accent-light: rgba(56, 189, 248, 0.18);
+  --ds-highlight: #fbbf24;
+  --ds-highlight-light: rgba(251, 191, 36, 0.18);
+
+  --ds-success: #34d399;
+  --ds-success-bg: rgba(52, 211, 153, 0.16);
+  --ds-success-border: rgba(52, 211, 153, 0.32);
+  --ds-success-text: #6ee7b7;
+
+  --ds-warning: #fbbf24;
+  --ds-warning-bg: rgba(251, 191, 36, 0.16);
+  --ds-warning-border: rgba(251, 191, 36, 0.32);
+  --ds-warning-text: #fde68a;
+
+  --ds-danger: #fb7185;
+  --ds-danger-bg: rgba(251, 113, 133, 0.16);
+  --ds-danger-border: rgba(251, 113, 133, 0.32);
+  --ds-danger-text: #fda4af;
+
+  --ds-shadow-glass: 0 12px 40px 0 rgba(0, 0, 0, 0.5), 0 4px 12px 0 rgba(0, 0, 0, 0.3);
+  --ds-shadow-glass-hover: 0 20px 50px -10px rgba(129, 140, 248, 0.3), 0 8px 20px rgba(0, 0, 0, 0.4);
+  --ds-shadow-glow: 0 0 35px rgba(129, 140, 248, 0.4);
+}
+
+/* ============================================================
+   AMBIENT AURORA MESH BACKGROUND ORBS
+   ============================================================ */
+.ds-aurora-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ds-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.85;
+  animation: dsFloatOrb 18s ease-in-out infinite alternate;
+}
+
+.ds-orb-1 {
+  width: 550px;
+  height: 550px;
+  background: var(--ds-aurora-1);
+  top: -100px;
+  left: 5%;
+}
+
+.ds-orb-2 {
+  width: 600px;
+  height: 600px;
+  background: var(--ds-aurora-2);
+  top: 20%;
+  right: -80px;
+  animation-duration: 22s;
+  animation-delay: -5s;
+}
+
+.ds-orb-3 {
+  width: 450px;
+  height: 450px;
+  background: var(--ds-aurora-3);
+  bottom: 10%;
+  left: 20%;
+  animation-duration: 25s;
+  animation-delay: -10s;
+}
+
+.ds-orb-4 {
+  width: 400px;
+  height: 400px;
+  background: var(--ds-aurora-4);
+  bottom: -50px;
+  right: 15%;
+  animation-duration: 20s;
+  animation-delay: -3s;
+}
+
+@keyframes dsFloatOrb {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(60px, 40px) scale(1.08);
+  }
+  100% {
+    transform: translate(-40px, 60px) scale(0.95);
+  }
+}
+
+/* ============================================================
+   ACCENT PALETTES
+   ============================================================ */
+.ds-wrapper[data-accent='cyan'] {
+  --ds-primary: #06b6d4;
+  --ds-primary-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  --ds-aurora-gradient: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+}
+.ds-wrapper[data-accent='emerald'] {
+  --ds-primary: #10b981;
+  --ds-primary-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  --ds-aurora-gradient: linear-gradient(135deg, #10b981 0%, #84cc16 100%);
+}
+.ds-wrapper[data-accent='magenta'] {
+  --ds-primary: #ec4899;
+  --ds-primary-gradient: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+  --ds-aurora-gradient: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+}
+
+/* ============================================================
+   FROSTED GLASS HEADER & TOP BAR
+   ============================================================ */
+.ds-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: var(--ds-glass-blur);
+  -webkit-backdrop-filter: var(--ds-glass-blur);
+  background: var(--ds-glass-bg);
+  border-bottom: 1px solid var(--ds-glass-border);
+  box-shadow: var(--ds-shadow-glass);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ds-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ds-logo-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-aurora-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: var(--ds-shadow-glow);
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.ds-brand-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ds-text-title);
+  margin: 0;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.4px;
+}
+
+.ds-version-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-primary-light);
+  color: var(--ds-primary);
+  border: 1px solid var(--ds-glass-border);
+  backdrop-filter: blur(8px);
+}
+
+.ds-brand-subtitle {
+  font-size: 12.5px;
+  color: var(--ds-text-muted);
+  margin: 2px 0 0 0;
+}
+
+.ds-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ============================================================
+   HERO / BANNER SECTION (APPLE AESTHETIC)
+   ============================================================ */
+.ds-hero-banner {
+  position: relative;
+  z-index: 10;
+  padding: 44px 28px 36px;
+  border-bottom: 1px solid var(--ds-glass-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+  backdrop-filter: blur(12px);
+}
+
+.ds-wrapper[data-theme='dark'] .ds-hero-banner {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.05) 100%);
+}
+
+.ds-hero-content {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.ds-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-glass-bg);
+  backdrop-filter: var(--ds-glass-blur);
+  border: 1px solid var(--ds-glass-border);
+  color: var(--ds-primary);
+  box-shadow: var(--ds-shadow-xs);
+  margin-bottom: 16px;
+}
+
+.ds-hero-title {
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--ds-text-title);
+  letter-spacing: -1.2px;
+  margin: 0 0 12px 0;
+  line-height: 1.18;
+}
+
+.ds-hero-title span {
+  background: var(--ds-aurora-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.ds-hero-desc {
+  font-size: 15.5px;
+  color: var(--ds-text-body);
+  max-width: 860px;
+  margin: 0 0 24px 0;
+  line-height: 1.65;
+}
+
+.ds-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.ds-stat-chip {
+  background: var(--ds-glass-bg);
+  backdrop-filter: var(--ds-glass-blur);
+  border: 1px solid var(--ds-glass-border);
+  box-shadow: var(--ds-shadow-glass), var(--ds-glass-inset-shine);
+  padding: 10px 18px;
+  border-radius: var(--ds-radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ds-stat-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ds-shadow-glass-hover);
+}
+
+.ds-stat-num {
+  font-size: 20px;
+  font-weight: 800;
+  background: var(--ds-primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: var(--ds-font-mono);
+}
+
+.ds-stat-label {
+  font-size: 12.5px;
+  color: var(--ds-text-muted);
+  font-weight: 600;
+}
+
+/* ============================================================
+   NAVIGATION TABS BAR (GLASS PILLS)
+   ============================================================ */
+.ds-nav-tabs-bar {
+  background: var(--ds-glass-bg-subtle);
+  backdrop-filter: var(--ds-glass-blur);
+  border-bottom: 1px solid var(--ds-glass-border);
+  position: sticky;
+  top: 73px;
+  z-index: 40;
+}
+
+.ds-nav-tabs-inner {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ds-nav-tabs-inner::-webkit-scrollbar {
+  display: none;
+}
+
+.ds-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--ds-radius-full);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.ds-tab-btn:hover {
+  color: var(--ds-text-title);
+  background: var(--ds-glass-bg);
+  border-color: var(--ds-glass-border-subtle);
+}
+
+.ds-tab-btn.active {
+  color: #ffffff;
+  background: var(--ds-primary-gradient);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================
+   MAIN CONTAINER & SECTIONS
+   ============================================================ */
+.ds-container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 32px 28px 72px;
+  position: relative;
+  z-index: 10;
+}
+
+.ds-section {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: dsFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.ds-section-header {
+  border-bottom: 1px solid var(--ds-glass-border);
+  padding-bottom: 18px;
+}
+
+.ds-section-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ds-text-title);
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: -0.5px;
+}
+
+.ds-section-desc {
+  font-size: 14.5px;
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+/* ============================================================
+   BENTO GRID SYSTEM WITH OPTICAL GLASS CARDS
+   ============================================================ */
+.ds-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+.ds-col-12 { grid-column: span 12; }
+.ds-col-8 { grid-column: span 8; }
+.ds-col-7 { grid-column: span 7; }
+.ds-col-6 { grid-column: span 6; }
+.ds-col-5 { grid-column: span 5; }
+.ds-col-4 { grid-column: span 4; }
+.ds-col-3 { grid-column: span 3; }
+
+.ds-card {
+  background: var(--ds-glass-bg);
+  backdrop-filter: var(--ds-glass-blur);
+  -webkit-backdrop-filter: var(--ds-glass-blur);
+  border: 1px solid var(--ds-glass-border);
+  box-shadow: var(--ds-shadow-glass), var(--ds-glass-inset-shine);
+  border-radius: var(--ds-radius-xl);
+  padding: 26px;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ds-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ds-shadow-glass-hover);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.ds-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.ds-card-title {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--ds-text-title);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.3px;
+}
+
+.ds-card-subtitle {
+  font-size: 12.5px;
+  color: var(--ds-text-muted);
+  margin: 3px 0 0 0;
+}
+
+/* ============================================================
+   COLOR SWATCHES (APPLE TRANSLUCENT)
+   ============================================================ */
+.ds-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+}
+
+.ds-swatch-card {
+  border: 1px solid var(--ds-glass-border);
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
+  background: var(--ds-glass-bg);
+  backdrop-filter: var(--ds-glass-blur);
+  box-shadow: var(--ds-shadow-xs), var(--ds-glass-inset-shine);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  padding: 0;
+}
+
+.ds-swatch-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--ds-shadow-glass-hover);
+  border-color: var(--ds-primary);
+}
+
+.ds-swatch-preview {
+  height: 64px;
+  width: 100%;
+  position: relative;
+}
+
+.ds-swatch-info {
+  padding: 10px 12px;
+}
+
+.ds-swatch-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ds-text-title);
+  margin: 0 0 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ds-swatch-hex {
+  font-size: 11px;
+  font-family: var(--ds-font-mono);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+/* ============================================================
+   TYPOGRAPHY SPECIMEN
+   ============================================================ */
+.ds-type-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 110px;
+  align-items: baseline;
+  gap: 20px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--ds-glass-border);
+}
+
+.ds-type-meta {
+  font-size: 11.5px;
+  font-family: var(--ds-font-mono);
+  color: var(--ds-text-muted);
+}
+
+.ds-type-sample {
+  color: var(--ds-text-title);
+  margin: 0;
+}
+
+/* ============================================================
+   BUTTONS (LIQUID GLASS & AURORA)
+   ============================================================ */
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--ds-font-sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.ds-btn:active {
+  transform: scale(0.97);
+}
+
+.ds-btn-primary {
+  background: var(--ds-primary-gradient);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.ds-btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+  transform: translateY(-1px);
+}
+
+.ds-btn-aurora {
+  background: var(--ds-aurora-gradient);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.35);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.ds-btn-aurora:hover {
+  box-shadow: 0 6px 24px rgba(236, 72, 153, 0.5);
+  transform: translateY(-1px);
+}
+
+.ds-btn-glass {
+  background: var(--ds-glass-bg);
+  backdrop-filter: var(--ds-glass-blur);
+  color: var(--ds-text-title);
+  border-color: var(--ds-glass-border);
+  box-shadow: var(--ds-shadow-xs), var(--ds-glass-inset-shine);
+}
+.ds-btn-glass:hover {
+  background: var(--ds-glass-bg-hover);
+  border-color: var(--ds-primary);
+  transform: translateY(-1px);
+}
+
+.ds-btn-ghost {
+  background: transparent;
+  color: var(--ds-text-title);
+}
+.ds-btn-ghost:hover {
+  background: var(--ds-glass-bg);
+}
+
+.ds-btn-danger {
+  background: var(--ds-danger-bg);
+  color: var(--ds-danger-text);
+  border-color: var(--ds-danger-border);
+}
+.ds-btn-danger:hover {
+  background: var(--ds-danger);
+  color: #ffffff;
+}
+
+.ds-btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.ds-btn-lg {
+  padding: 13px 24px;
+  font-size: 15px;
+  border-radius: var(--ds-radius-lg);
+}
+
+/* ============================================================
+   FORM INPUTS & SELECTS (FROSTED GLASS)
+   ============================================================ */
+.ds-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.ds-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ds-text-title);
+}
+
+.ds-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ds-input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--ds-text-subtle);
+  pointer-events: none;
+}
+
+.ds-input {
+  width: 100%;
+  font-family: var(--ds-font-sans);
+  font-size: 13.5px;
+  color: var(--ds-text-title);
+  background: var(--ds-glass-bg);
+  backdrop-filter: var(--ds-glass-blur);
+  border: 1px solid var(--ds-glass-border);
+  box-shadow: var(--ds-glass-inset-shine);
+  border-radius: var(--ds-radius-md);
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.ds-input.has-icon {
+  padding-left: 38px;
+}
+
+.ds-input:focus {
+  border-color: var(--ds-glass-border-focus);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+}
+
+.ds-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+}
+
+/* ============================================================
+   STATUS BADGES & CHIPS (NEON GLASS PILLS)
+   ============================================================ */
+.ds-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--ds-radius-full);
+  line-height: 1.3;
+  backdrop-filter: blur(8px);
+}
+
+.ds-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.ds-badge-success {
+  background: var(--ds-success-bg);
+  color: var(--ds-success-text);
+  border: 1px solid var(--ds-success-border);
+}
+.ds-badge-success .ds-badge-dot {
+  background: var(--ds-success);
+  box-shadow: 0 0 6px var(--ds-success);
+}
+
+.ds-badge-warning {
+  background: var(--ds-warning-bg);
+  color: var(--ds-warning-text);
+  border: 1px solid var(--ds-warning-border);
+}
+.ds-badge-warning .ds-badge-dot {
+  background: var(--ds-warning);
+  box-shadow: 0 0 6px var(--ds-warning);
+}
+
+.ds-badge-danger {
+  background: var(--ds-danger-bg);
+  color: var(--ds-danger-text);
+  border: 1px solid var(--ds-danger-border);
+}
+.ds-badge-danger .ds-badge-dot {
+  background: var(--ds-danger);
+  box-shadow: 0 0 6px var(--ds-danger);
+}
+
+.ds-badge-info {
+  background: var(--ds-info-bg);
+  color: var(--ds-info-text);
+  border: 1px solid var(--ds-info-border);
+}
+.ds-badge-info .ds-badge-dot {
+  background: var(--ds-info);
+  box-shadow: 0 0 6px var(--ds-info);
+}
+
+.ds-badge-purple {
+  background: var(--ds-purple-bg);
+  color: var(--ds-purple);
+  border: 1px solid var(--ds-purple-border);
+}
+.ds-badge-purple .ds-badge-dot {
+  background: var(--ds-purple);
+  box-shadow: 0 0 6px var(--ds-purple);
+}
+
+/* ============================================================
+   DATA TABLES (GLASS ROW STRIPING & HOVER GLOW)
+   ============================================================ */
+.ds-table-container {
+  border: 1px solid var(--ds-glass-border);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+  background: var(--ds-glass-bg);
+  backdrop-filter: var(--ds-glass-blur);
+  box-shadow: var(--ds-shadow-glass), var(--ds-glass-inset-shine);
+}
+
+.ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.ds-table th {
+  background: var(--ds-glass-bg-subtle);
+  color: var(--ds-text-title);
+  font-weight: 750;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--ds-glass-border);
+  white-space: nowrap;
+}
+
+.ds-table td {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--ds-glass-border-subtle);
+  color: var(--ds-text-body);
+  transition: background-color 0.15s ease;
+}
+
+.ds-table tr:hover td {
+  background-color: var(--ds-glass-bg-hover);
+}
+
+.ds-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ds-code-cell {
+  font-family: var(--ds-font-mono);
+  font-weight: 700;
+  color: var(--ds-primary);
+  font-size: 12px;
+}
+
+/* ============================================================
+   KPI BENTO CARDS (FROSTED GLASS + ACCENT GLOW)
+   ============================================================ */
+.ds-kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.ds-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.ds-kpi-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--ds-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--ds-glass-border);
+}
+
+.ds-kpi-value {
+  font-size: 30px;
+  font-weight: 850;
+  color: var(--ds-text-title);
+  font-family: var(--ds-font-mono);
+  letter-spacing: -0.6px;
+  margin: 0 0 6px 0;
+}
+
+.ds-kpi-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--ds-text-muted);
+  font-weight: 700;
+  margin: 0;
+}
+
+/* ============================================================
+   BEFORE & AFTER COMPARISON (GLASS BOX)
+   ============================================================ */
+.ds-compare-box {
+  border: 1px solid var(--ds-glass-border);
+  border-radius: var(--ds-radius-xl);
+  overflow: hidden;
+  background: var(--ds-glass-bg);
+  backdrop-filter: var(--ds-glass-blur);
+  box-shadow: var(--ds-shadow-glass);
+}
+
+.ds-compare-toolbar {
+  padding: 14px 22px;
+  background: var(--ds-glass-bg-subtle);
+  border-bottom: 1px solid var(--ds-glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ds-compare-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.ds-compare-side {
+  padding: 26px;
+}
+
+.ds-compare-side.legacy {
+  background: rgba(241, 245, 249, 0.45);
+  border-right: 1px dashed var(--ds-glass-border);
+}
+
+.ds-wrapper[data-theme='dark'] .ds-compare-side.legacy {
+  background: rgba(11, 19, 41, 0.5);
+}
+
+.ds-compare-side.modern {
+  background: var(--ds-glass-bg);
+}
+
+.ds-side-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 10px;
+  border-radius: var(--ds-radius-full);
+  margin-bottom: 16px;
+}
+
+.ds-side-tag.legacy-tag {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.ds-side-tag.modern-tag {
+  background: var(--ds-aurora-gradient);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(236, 72, 153, 0.35);
+}
+
+/* ============================================================
+   CODE EXPORT
+   ============================================================ */
+.ds-code-block {
+  background: #090d1a;
+  color: #e2e8f0;
+  padding: 20px 24px;
+  border-radius: var(--ds-radius-lg);
+  font-family: var(--ds-font-mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--ds-shadow-glass);
+}
+
+/* ============================================================
+   RESPONSIVENESS
+   ============================================================ */
+@media (max-width: 1024px) {
+  .ds-col-8, .ds-col-7, .ds-col-6, .ds-col-5, .ds-col-4, .ds-col-3 {
+    grid-column: span 12;
+  }
+  .ds-compare-split {
+    grid-template-columns: 1fr;
+  }
+  .ds-compare-side.legacy {
+    border-right: none;
+    border-bottom: 1px dashed var(--ds-glass-border);
+  }
+}
+
+@media (max-width: 768px) {
+  .ds-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ds-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .ds-hero-title {
+    font-size: 26px;
+  }
+  .ds-container {
+    padding: 18px 14px 48px;
+  }
+}

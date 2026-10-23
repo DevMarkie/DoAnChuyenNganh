@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
+  Award,
   AlertCircle,
   BookOpen,
   Briefcase,
@@ -197,6 +198,38 @@ export default function CurriculumRoadmapPage() {
               Còn lại: <strong>{progress.remainingCredits} TC</strong>
             </span>
           </div>
+        </div>
+
+        {/* Graduation Condition Status */}
+        <div
+          style={{
+            marginTop: '16px',
+            padding: '10px 14px',
+            borderRadius: '8px',
+            fontSize: '0.875rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            backgroundColor: progress.completedCredits >= progress.requiredCredits ? 'var(--success-bg, #ecfdf5)' : 'var(--bg-subtle, #f8fafc)',
+            border: `1px solid ${progress.completedCredits >= progress.requiredCredits ? 'var(--success-border, #a7f3d0)' : 'var(--border, #e2e8f0)'}`,
+            color: progress.completedCredits >= progress.requiredCredits ? 'var(--success-text, #065f46)' : 'var(--text-secondary, #475569)'
+          }}
+        >
+          {progress.completedCredits >= progress.requiredCredits ? (
+            <>
+              <Award size={18} style={{ color: 'var(--success, #10b981)', flexShrink: 0 }} />
+              <div>
+                <strong>Đủ điều kiện xét tốt nghiệp:</strong> Sinh viên đã tích lũy đủ {progress.completedCredits}/{progress.requiredCredits} tín chỉ của chương trình đào tạo.
+              </div>
+            </>
+          ) : (
+            <>
+              <Clock size={16} style={{ color: 'var(--primary, #2563eb)', flexShrink: 0 }} />
+              <div>
+                <strong>Tiến độ xét tốt nghiệp:</strong> Chưa đủ điều kiện tốt nghiệp do mới tích lũy <strong>{progress.completedCredits}/{progress.requiredCredits} tín chỉ</strong> ({completionPercent}%). Cần tích lũy thêm tối thiểu <strong>{progress.remainingCredits} tín chỉ</strong> và đạt CPA ≥ 2.00 để được xét tốt nghiệp.
+              </div>
+            </>
+          )}
         </div>
       </div>
 

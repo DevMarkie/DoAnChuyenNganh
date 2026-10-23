@@ -6,7 +6,7 @@ import SmsLogo from '../common/SmsLogo';
 import {
   LayoutDashboard, Users, Building2, BookOpen, UserCog,
   CalendarDays, Calendar, Layers, ClipboardList, BookMarked, School, Award, AlertTriangle, Menu,
-  ChevronLeft, KeyRound, UserPlus
+  ChevronLeft, KeyRound, UserPlus, X
 } from 'lucide-react';
 
 const adminNavGroups = [
@@ -85,7 +85,7 @@ const studentNavGroups = [
   }
 ];
 
-export default function Sidebar({ collapsed, onToggle }) {
+export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile }) {
   const { user } = useAuthStore();
   const role = user?.role;
   const [pendingResets, setPendingResets] = useState(0);
@@ -117,43 +117,58 @@ export default function Sidebar({ collapsed, onToggle }) {
   const groups = role === 'ADMIN' ? adminNavGroups : role === 'LECTURER' ? lecturerNavGroups : studentNavGroups;
 
   return (
-    <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       {/* Brand Header */}
       <div className="sidebar-header">
-        {!collapsed && (
-          <div className="sidebar-brand">
-            <SmsLogo size={32} />
+        <div className="sidebar-brand">
+          <SmsLogo size={32} />
+          {(!collapsed || mobileOpen) && (
             <div className="sidebar-brand-text">
               <span className="brand-name">SMS Portal</span>
               <span className="brand-sub">Quản lý đào tạo</span>
             </div>
-          </div>
-        )}
-        <button
-          className="btn-icon btn-toggle-sidebar"
-          onClick={onToggle}
-          title={collapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
-        >
-          {collapsed ? <Menu size={18} /> : <ChevronLeft size={18} />}
-        </button>
+          )}
+        </div>
+
+        {/* Nút đóng / thu gọn: trên desktop thì toggle collapse, trên mobile drawer thì close */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {mobileOpen && (
+            <button
+              className="btn-icon mobile-close-btn"
+              onClick={onCloseMobile}
+              title="Đóng menu"
+              aria-label="Đóng menu"
+            >
+              <X size={18} />
+            </button>
+          )}
+          <button
+            className="btn-icon btn-toggle-sidebar"
+            onClick={onToggle}
+            title={collapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+          >
+            {collapsed ? <Menu size={18} /> : <ChevronLeft size={18} />}
+          </button>
+        </div>
       </div>
 
       {/* Navigation Menu */}
       <nav className="sidebar-nav">
         {groups.map((grp, gIdx) => (
           <div key={gIdx} className="nav-group">
-            {!collapsed && <div className="nav-group-title">{grp.group}</div>}
+            {(!collapsed || mobileOpen) && <div className="nav-group-title">{grp.group}</div>}
             <div className="nav-group-items">
               {grp.items.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={() => onCloseMobile?.()}
                   className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  title={collapsed ? (item.showBadge && pendingResets > 0 ? `${item.label} (${pendingResets} chờ)` : item.label) : ''}
+                  title={collapsed && !mobileOpen ? (item.showBadge && pendingResets > 0 ? `${item.label} (${pendingResets} chờ)` : item.label) : ''}
                 >
                   <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                     <item.icon size={18} className="nav-item-icon" />
-                    {collapsed && item.showBadge && pendingResets > 0 && (
+                    {collapsed && !mobileOpen && item.showBadge && pendingResets > 0 && (
                       <span style={{
                         position: 'absolute',
                         top: -3,
@@ -165,8 +180,8 @@ export default function Sidebar({ collapsed, onToggle }) {
                       }} />
                     )}
                   </div>
-                  {!collapsed && <span className="nav-item-text">{item.label}</span>}
-                  {!collapsed && item.showBadge && pendingResets > 0 && (
+                  {(!collapsed || mobileOpen) && <span className="nav-item-text">{item.label}</span>}
+                  {(!collapsed || mobileOpen) && item.showBadge && pendingResets > 0 && (
                     <span style={{
                       marginLeft: 'auto',
                       backgroundColor: '#ef4444',
@@ -188,7 +203,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       </nav>
 
       {/* Sidebar Footer Info */}
-      {!collapsed && (
+      {(!collapsed || mobileOpen) && (
         <div className="sidebar-footer">
           <div className="system-version">
             <span>Hệ Thống Quản Lý Đào Tạo</span>

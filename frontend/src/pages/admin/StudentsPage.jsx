@@ -23,6 +23,7 @@ export default function StudentsPage() {
   const [searchInput, setSearchInput] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedCohort, setSelectedCohort] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -69,6 +70,7 @@ export default function StudentsPage() {
     setSearchInput('');
     setSelectedClass('');
     setSelectedDepartment('');
+    setSelectedCohort('');
     setSelectedStatus('');
   };
 
@@ -80,19 +82,31 @@ export default function StudentsPage() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // When changing department, filter class dropdown
-  const filteredClasses = selectedDepartment
-    ? classes.filter((c) => c.department?.id === parseInt(selectedDepartment))
-    : classes;
+  // Extract distinct cohorts (e.g., K16, K17, K18, K19) from classes
+  const availableCohorts = useMemo(() => {
+    const set = new Set();
+    classes.forEach((c) => {
+      if (c.academicYear) set.add(c.academicYear);
+    });
+    return Array.from(set).sort();
+  }, [classes]);
 
-  // Reset class filter if current selection is invalid after dept change
+  // When changing department or cohort, filter class dropdown
+  const filteredClasses = useMemo(() => {
+    return classes.filter((c) => {
+      if (selectedDepartment && c.department?.id !== parseInt(selectedDepartment)) return false;
+      if (selectedCohort && c.academicYear !== selectedCohort) return false;
+      return true;
+    });
+  }, [classes, selectedDepartment, selectedCohort]);
+
+  // Reset class filter if current selection is invalid after dept or cohort change
   useEffect(() => {
-    if (selectedDepartment && selectedClass) {
+    if (selectedClass) {
       const isValid = filteredClasses.some((c) => c.id === parseInt(selectedClass));
       if (!isValid) setSelectedClass('');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDepartment]);
+  }, [selectedDepartment, selectedCohort, filteredClasses, selectedClass]);
 
   // Real-time instant filtering of all students
   const filteredStudents = useMemo(() => {
@@ -110,11 +124,15 @@ export default function StudentsPage() {
       if (selectedDepartment && s.classEntity?.department?.id !== parseInt(selectedDepartment)) {
         return false;
       }
-      // 3. Class
+      // 3. Cohort / Academic Year (K16, K17, K18, K19...)
+      if (selectedCohort && s.classEntity?.academicYear !== selectedCohort) {
+        return false;
+      }
+      // 4. Class
       if (selectedClass && s.classEntity?.id !== parseInt(selectedClass)) {
         return false;
       }
-      // 4. Status
+      // 5. Status
       if (selectedStatus) {
         if (selectedStatus === 'ACTIVE') {
           if (s.status !== 'ACTIVE' && s.status !== 'STUDYING') return false;
@@ -124,7 +142,7 @@ export default function StudentsPage() {
       }
       return true;
     });
-  }, [students, search, selectedDepartment, selectedClass, selectedStatus]);
+  }, [students, search, selectedDepartment, selectedCohort, selectedClass, selectedStatus]);
 
   const handleOpenModal = (student = null) => {
     if (student) {
@@ -177,8 +195,8 @@ export default function StudentsPage() {
       toast.success(`Đã đổi trạng thái SV ${student.fullName} sang: ${statusLabels[newStatus] || newStatus}`);
       // Optimistically update local state for instant UI update
       setStudents(prev => prev.map(s => s.id === student.id ? { ...s, status: newStatus } : s));
-    } catch {
-      toast.error('Cập nhật trạng thái thất bại');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Cập nhật trạng thái thất bại');
       loadData();
     }
   };
@@ -207,8 +225,8 @@ export default function StudentsPage() {
       await studentService.updateStatus(student.id, newStatus);
       toast.success(`Đã cập nhật trạng thái sang: ${newStatus === 'ACTIVE' ? 'Đang học' : 'Tạm đình chỉ'}`);
       setStudents(prev => prev.map(s => s.id === student.id ? { ...s, status: newStatus } : s));
-    } catch {
-      toast.error('Cập nhật trạng thái thất bại');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Cập nhật trạng thái thất bại');
       loadData();
     }
   };
@@ -219,7 +237,7 @@ export default function StudentsPage() {
     if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
-  const hasActiveFilters = search || selectedClass || selectedDepartment || selectedStatus;
+  const hasActiveFilters = search || selectedCohort || selectedClass || selectedDepartment || selectedStatus;
 
   const handleExportExcel = () => {
     if (!filteredStudents || filteredStudents.length === 0) {
@@ -231,9 +249,10 @@ export default function StudentsPage() {
       'STT': index + 1,
       'Mã SV': s.studentCode,
       'Họ và tên': s.fullName,
-      'Lớp': s.className || '',
-      'Khoa/Ngành': s.departmentName || '',
-      'Ngày sinh': new Date(s.dateOfBirth).toLocaleDateString('vi-VN'),
+      'Khóa': s.classEntity?.academicYear || '—',
+      'Lớp': s.className || s.classEntity?.name || s.classEntity?.code || '',
+      'Khoa/Ngành': s.departmentName || s.classEntity?.department?.name || '',
+      'Ngày sinh': s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString('vi-VN') : '',
       'Giới tính': genderLabel(s.gender),
       'SĐT': s.phone || '',
       'Email': s.email || '',
@@ -252,7 +271,8 @@ export default function StudentsPage() {
     const blob = new Blob(["\uFEFF" + headers + "\n" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", `Danh_Sach_Sinh_Vien_${new Date().getTime()}.csv`);
+    const cohortPrefix = selectedCohort ? `${selectedCohort}_` : '';
+    link.setAttribute("download", `Danh_Sach_Sinh_Vien_${cohortPrefix}${new Date().getTime()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -318,6 +338,20 @@ export default function StudentsPage() {
               <Filter size={14} />
               <span>Bộ lọc:</span>
             </div>
+
+            {/* Cohort / Khóa học Filter */}
+            <select
+              value={selectedCohort}
+              onChange={(e) => setSelectedCohort(e.target.value)}
+              className="form-select"
+              style={{ width: 'auto', minWidth: '150px', fontSize: '0.85rem', padding: '6px 10px' }}
+              title="Lọc theo Khóa học"
+            >
+              <option value="">Tất cả Khóa học</option>
+              {availableCohorts.map((cohort) => (
+                <option key={cohort} value={cohort}>Khóa {cohort}</option>
+              ))}
+            </select>
 
             {/* Department Filter */}
             <select
@@ -493,9 +527,20 @@ export default function StudentsPage() {
                         </span>
                       </td>
 
-                      {/* Class */}
+                      {/* Class & Cohort Badge */}
                       <td style={{ fontWeight: 500 }}>
-                        {s.classEntity?.name || s.classEntity?.code || '—'}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <span>{s.classEntity?.name || s.classEntity?.code || '—'}</span>
+                          {s.classEntity?.academicYear && (
+                            <span
+                              className="badge badge-info"
+                              style={{ fontSize: '0.72rem', padding: '1px 6px', fontWeight: 600 }}
+                              title={`Khóa đào tạo: ${s.classEntity.academicYear}`}
+                            >
+                              {s.classEntity.academicYear}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Department */}

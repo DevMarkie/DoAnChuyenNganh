@@ -113,6 +113,40 @@ export default function MyEnrollmentsPage() {
             >
               {totalCredits} Tín chỉ
             </span>
+            {totalCredits < 12 ? (
+              <span className="badge badge-warning" style={{ fontSize: "0.8rem", marginLeft: "6px" }}>
+                Chưa đủ tối thiểu 12 TC (Quy chế: 12 - 24 TC)
+              </span>
+            ) : totalCredits <= 24 ? (
+              <span className="badge badge-success" style={{ fontSize: "0.8rem", marginLeft: "6px" }}>
+                Đạt quy chuẩn tín chỉ (12 - 24 TC)
+              </span>
+            ) : (
+              <span className="badge badge-danger" style={{ fontSize: "0.8rem", marginLeft: "6px" }}>
+                Vượt quá tối đa 24 TC
+              </span>
+            )}
+          </div>
+          <div
+            style={{
+              width: "1px",
+              height: "20px",
+              backgroundColor: "var(--border-color)",
+            }}
+          />
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+              Học phí tạm tính:
+            </span>
+            <span
+              style={{
+                fontWeight: 800,
+                fontSize: "1.05rem",
+                color: "var(--primary)",
+              }}
+            >
+              {(totalCredits * 450000).toLocaleString("vi-VN")} đ
+            </span>
           </div>
         </div>
       </div>

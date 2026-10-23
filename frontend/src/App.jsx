@@ -41,6 +41,7 @@ const MyEnrollmentsPage = lazy(() => import('./pages/student/MyEnrollmentsPage')
 const TranscriptPage = lazy(() => import('./pages/student/TranscriptPage'));
 const StudentProfilePage = lazy(() => import('./pages/student/StudentProfilePage'));
 const CurriculumRoadmapPage = lazy(() => import('./pages/student/CurriculumRoadmapPage'));
+const DesignSystemDemo = lazy(() => import('./pages/demo/DesignSystemDemo'));
 
 function ProtectedRoute({ children, allowedRoles, fallbackLoginPath }) {
   const { isAuthenticated, user } = useAuthStore();
@@ -90,6 +91,9 @@ export default function App() {
           <Route path="/admin/login" element={
             isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalLoginPage portalType="admin" />
           } />
+
+          {/* Design System Demo Showcase */}
+          <Route path="/design-system" element={<DesignSystemDemo />} />
 
           {/* Admin Routes */}
           <Route element={

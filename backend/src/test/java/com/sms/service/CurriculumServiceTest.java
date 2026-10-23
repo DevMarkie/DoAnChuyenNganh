@@ -1,6 +1,7 @@
 package com.sms.service;
 
 import com.sms.dto.response.CurriculumResponse;
+import com.sms.dto.response.GraduationEligibilityResponse;
 import com.sms.entity.ClassEntity;
 import com.sms.entity.Cohort;
 import com.sms.entity.CourseSection;
@@ -71,28 +72,38 @@ public class CurriculumServiceTest {
         major = new Major();
         major.setId(1);
         major.setCode("IT");
+        major.setName("Công nghệ thông tin");
 
         cohort = new Cohort();
         cohort.setId(1);
         cohort.setCode("K16");
+        cohort.setName("Khóa 16");
 
         classEntity = new ClassEntity();
         classEntity.setId(1);
+        classEntity.setName("K16-SE1");
         classEntity.setMajor(major);
         classEntity.setCohort(cohort);
 
         student = new Student();
         student.setId(1L);
+        student.setStudentCode("STU001");
+        student.setFullName("Nguyen Van A");
+        student.setStatus(Student.StudentStatus.ACTIVE);
         student.setClassEntity(classEntity);
 
         program = new CurriculumProgram();
         program.setId(1L);
+        program.setCode("IT-K16");
+        program.setName("CTĐT CNTT K16");
         program.setMajor(major);
         program.setCohort(cohort);
         program.setTotalCredits(120);
 
         block = new CurriculumBlock();
         block.setId(1L);
+        block.setName("Khối cơ sở");
+        block.setCode("BLOCK1");
         block.setProgram(program);
         block.setBlockType(CurriculumBlock.BlockType.COMPULSORY);
         block.setRequiredCredits(3);
@@ -100,6 +111,7 @@ public class CurriculumServiceTest {
         subject = new Subject();
         subject.setId(1);
         subject.setSubjectCode("CS101");
+        subject.setSubjectName("Nhập môn CNTT");
         subject.setCredits(3);
         subject.setPrerequisites(new LinkedHashSet<>());
 
@@ -169,5 +181,55 @@ public class CurriculumServiceTest {
         when(programRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> curriculumService.getMyCurriculum(1L));
+    }
+
+    @Test
+    void checkGraduationEligibility_Ineligible_NotEnoughCredits() {
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(programRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.of(program));
+        when(gradeRepository.findFinalizedByStudentId(1L)).thenReturn(List.of(grade));
+        when(enrollmentRepository.findActiveByStudentId(1L)).thenReturn(List.of(enrollment));
+        when(blockRepository.findByProgramIdOrdered(1L)).thenReturn(List.of(block));
+        when(blockSubjectRepository.findByBlockIdWithSubject(1L)).thenReturn(List.of(link));
+
+        GraduationEligibilityResponse resp = curriculumService.checkGraduationEligibility(1L);
+
+        assertNotNull(resp);
+        assertFalse(resp.isEligible());
+        assertEquals(3, resp.getCompletedCredits());
+        assertEquals(120, resp.getRequiredCredits());
+        assertTrue(resp.getUnsatisfiedReasons().stream().anyMatch(r -> r.contains("Chưa tích lũy đủ số tín chỉ tốt nghiệp")));
+    }
+
+    @Test
+    void checkGraduationEligibility_Eligible_MeetsAllCriteria() {
+        program.setTotalCredits(3); // 3 credits required, matches 3 completed
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(programRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.of(program));
+        when(gradeRepository.findFinalizedByStudentId(1L)).thenReturn(List.of(grade));
+        when(enrollmentRepository.findActiveByStudentId(1L)).thenReturn(List.of(enrollment));
+        when(blockRepository.findByProgramIdOrdered(1L)).thenReturn(List.of(block));
+        when(blockSubjectRepository.findByBlockIdWithSubject(1L)).thenReturn(List.of(link));
+
+        GraduationEligibilityResponse resp = curriculumService.checkGraduationEligibility(1L);
+
+        assertNotNull(resp);
+        assertTrue(resp.isEligible());
+        assertEquals(3, resp.getCompletedCredits());
+        assertEquals(3, resp.getRequiredCredits());
+        assertTrue(resp.getUnsatisfiedReasons().isEmpty());
+    }
+
+    @Test
+    void validateGraduationEligibility_ThrowsWhenIneligible() {
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(programRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.of(program));
+        when(gradeRepository.findFinalizedByStudentId(1L)).thenReturn(List.of(grade));
+        when(enrollmentRepository.findActiveByStudentId(1L)).thenReturn(List.of(enrollment));
+        when(blockRepository.findByProgramIdOrdered(1L)).thenReturn(List.of(block));
+        when(blockSubjectRepository.findByBlockIdWithSubject(1L)).thenReturn(List.of(link));
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> curriculumService.validateGraduationEligibility(1L));
+        assertTrue(ex.getMessage().contains("chưa đủ điều kiện tốt nghiệp"));
     }
 }

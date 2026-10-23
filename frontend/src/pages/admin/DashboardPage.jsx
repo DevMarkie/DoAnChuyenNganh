@@ -6,7 +6,18 @@ import {
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, CartesianGrid, Legend } from 'recharts';
 import { dashboardService } from '../../services/dataService';
 
-const CHART_COLORS = ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899'];
+const CHART_COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#38bdf8', '#34d399'];
+
+const CARD_THEMES = [
+  { bg: 'rgba(99, 102, 241, 0.08)', border: 'rgba(99, 102, 241, 0.25)', iconGrad: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)', shadow: 'rgba(99, 102, 241, 0.4)' },
+  { bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.25)', iconGrad: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)', shadow: 'rgba(16, 185, 129, 0.4)' },
+  { bg: 'rgba(6, 182, 212, 0.08)', border: 'rgba(6, 182, 212, 0.25)', iconGrad: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)', shadow: 'rgba(6, 182, 212, 0.4)' },
+  { bg: 'rgba(139, 92, 246, 0.08)', border: 'rgba(139, 92, 246, 0.25)', iconGrad: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)', shadow: 'rgba(139, 92, 246, 0.4)' },
+  { bg: 'rgba(245, 158, 11, 0.08)', border: 'rgba(245, 158, 11, 0.25)', iconGrad: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)', shadow: 'rgba(245, 158, 11, 0.4)' },
+  { bg: 'rgba(59, 130, 246, 0.08)', border: 'rgba(59, 130, 246, 0.25)', iconGrad: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)', shadow: 'rgba(59, 130, 246, 0.4)' },
+  { bg: 'rgba(236, 72, 153, 0.08)', border: 'rgba(236, 72, 153, 0.25)', iconGrad: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', shadow: 'rgba(236, 72, 153, 0.4)' },
+  { bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.25)', iconGrad: 'linear-gradient(135deg, #10b981 0%, #84cc16 100%)', shadow: 'rgba(16, 185, 129, 0.4)' },
+];
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);
@@ -93,26 +104,42 @@ export default function DashboardPage() {
 
       {/* KPI Cards Grid */}
       <div className="stats-grid">
-        {statCards.map((c, i) => (
-          <div key={i} className="stat-card">
+        {statCards.map((c, i) => {
+          const theme = CARD_THEMES[i % CARD_THEMES.length];
+          return (
             <div
-              className="stat-icon-wrapper"
-              style={{ background: 'var(--bg-subtle)', color: 'var(--text-secondary)' }}
+              key={i}
+              className="stat-card"
+              style={{
+                position: 'relative',
+                overflow: 'hidden',
+                background: `linear-gradient(135deg, ${theme.bg} 0%, var(--bg-surface) 100%)`,
+                borderColor: theme.border,
+              }}
             >
-              <c.icon size={22} />
+              <div
+                className="stat-icon-wrapper"
+                style={{
+                  background: theme.iconGrad,
+                  color: '#ffffff',
+                  boxShadow: `0 4px 14px 0 ${theme.shadow}`,
+                }}
+              >
+                <c.icon size={22} />
+              </div>
+              <div>
+                <div className="stat-value">{c.val}</div>
+                <div className="stat-label">{c.label}</div>
+              </div>
             </div>
-            <div>
-              <div className="stat-value">{c.val}</div>
-              <div className="stat-label">{c.label}</div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Charts Grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 460px), 1fr))',
         gap: '20px',
         marginTop: '24px'
       }}>
@@ -128,6 +155,12 @@ export default function DashboardPage() {
             {deptData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={deptData} margin={{ top: 20, right: 20, left: -10, bottom: 25 }}>
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.7} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                   <XAxis
                     dataKey="name"
@@ -145,15 +178,17 @@ export default function DashboardPage() {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'var(--bg-surface)',
+                      backdropFilter: 'var(--glass-blur)',
+                      WebkitBackdropFilter: 'var(--glass-blur)',
                       borderColor: 'var(--border-color)',
-                      borderRadius: '8px',
-                      boxShadow: 'var(--shadow-md)',
+                      borderRadius: '12px',
+                      boxShadow: 'var(--shadow-md), var(--glass-inset-shine)',
                       color: 'var(--text-main)',
                       fontSize: '0.85rem'
                     }}
                     cursor={{ fill: 'var(--bg-subtle)' }}
                   />
-                  <Bar dataKey="count" fill="var(--primary)" radius={[6, 6, 0, 0]} barSize={38} />
+                  <Bar dataKey="count" fill="url(#barGradient)" radius={[8, 8, 0, 0]} barSize={38} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -194,9 +229,11 @@ export default function DashboardPage() {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'var(--bg-surface)',
+                      backdropFilter: 'var(--glass-blur)',
+                      WebkitBackdropFilter: 'var(--glass-blur)',
                       borderColor: 'var(--border-color)',
-                      borderRadius: '8px',
-                      boxShadow: 'var(--shadow-md)',
+                      borderRadius: '12px',
+                      boxShadow: 'var(--shadow-md), var(--glass-inset-shine)',
                       color: 'var(--text-main)',
                       fontSize: '0.85rem'
                     }}

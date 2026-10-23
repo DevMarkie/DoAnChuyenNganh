@@ -88,7 +88,7 @@ public class CourseSection {
     }
 
     public enum SectionStatus {
-        OPEN, ACTIVE, CLOSED, CANCELLED, PENDING_FEE, LOCKED_BILLING
+        OPEN, ACTIVE, CLOSED, CANCELLED, PENDING_FEE, LOCKED_BILLING, COMPLETED
     }
 
     public enum SectionType {

@@ -108,7 +108,12 @@ async function main() {
       console.log('PASS: Attendance session saved successfully:', saveAtt.data?.message);
 
       console.log('\n=== TEST 5: Verify Absence Count Synchronized to Student View ===');
-      const verifyStuRes = await request(`/enrollments/section/${teachSec.id}`, { token: stuToken });
+      const targetStuLogin = await request('/auth/login', {
+        method: 'POST',
+        body: { username: targetEnrollment.student.studentCode, password: '123456' }
+      });
+      const targetStuToken = targetStuLogin.data?.data?.token;
+      const verifyStuRes = await request(`/enrollments/section/${teachSec.id}`, { token: targetStuToken });
       if (!verifyStuRes.ok) {
         console.error('FAIL: Student failed to retrieve section after attendance update');
         process.exit(1);

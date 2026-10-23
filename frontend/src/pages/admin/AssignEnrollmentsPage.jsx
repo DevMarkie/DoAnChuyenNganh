@@ -302,7 +302,7 @@ export default function AssignEnrollmentsPage() {
           </div>
 
           {/* Hai cách xếp lớp */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '20px', marginBottom: '20px' }}>
             {/* Xếp từng sinh viên */}
             <div className="card">
               <div className="card-body" style={{ padding: '18px 20px' }}>

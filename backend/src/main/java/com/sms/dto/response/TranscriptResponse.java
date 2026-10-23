@@ -19,6 +19,27 @@ public class TranscriptResponse {
     private int totalCredits;
     private int completedCourses;
     private List<SemesterGrade> semesters;
+    private AdvisorContact advisorContact;
+
+    @Getter @Setter @Builder
+    @NoArgsConstructor @AllArgsConstructor
+    public static class AdvisorContact {
+        private String advisorName;
+        private String advisorCode;
+        private String advisorEmail;
+        private String advisorPhone;
+        private String advisorDegree;
+        private String specialization;
+        private String consultationHours;
+        private String advisorOffice;
+        private String departmentName;
+        private String departmentCode;
+        private String assistantName;
+        private String assistantEmail;
+        private String assistantPhone;
+        private String departmentOffice;
+        private String studentSupportNotes;
+    }
 
     @Getter @Setter @Builder
     @NoArgsConstructor @AllArgsConstructor

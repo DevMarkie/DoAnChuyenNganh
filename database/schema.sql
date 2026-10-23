@@ -285,7 +285,7 @@ CREATE TABLE course_sections (
     base_tuition_rate DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     schedule       VARCHAR(200) NULL     COMMENT 'VD: Thứ 2 (7:30-9:30), Thứ 4 (7:30-9:30)',
     room           VARCHAR(50)  NULL,
-    status         ENUM('OPEN', 'ACTIVE', 'CLOSED', 'CANCELLED', 'PENDING_FEE', 'LOCKED_BILLING') NOT NULL DEFAULT 'OPEN',
+    status         ENUM('OPEN', 'ACTIVE', 'CLOSED', 'CANCELLED', 'PENDING_FEE', 'LOCKED_BILLING', 'COMPLETED') NOT NULL DEFAULT 'OPEN',
     created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_course_sections PRIMARY KEY (id),
@@ -339,10 +339,16 @@ CREATE TABLE student_invoices (
 CREATE TABLE notifications (
     id BIGINT NOT NULL AUTO_INCREMENT,
     student_id BIGINT NOT NULL,
-    message VARCHAR(500) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message VARCHAR(1000) NOT NULL,
+    type VARCHAR(50) NOT NULL DEFAULT 'GRADE_UPDATED',
+    related_id BIGINT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_notifications PRIMARY KEY (id),
-    CONSTRAINT fk_notifications_student FOREIGN KEY (student_id) REFERENCES students (id)
+    CONSTRAINT fk_notifications_student FOREIGN KEY (student_id) REFERENCES students (id),
+    INDEX idx_notifications_student_read (student_id, is_read),
+    INDEX idx_notifications_student_created (student_id, created_at DESC)
 );
 
 -- ============================================================

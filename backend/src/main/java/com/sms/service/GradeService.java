@@ -16,6 +16,7 @@ import com.sms.entity.Enrollment;
 import com.sms.entity.Grade;
 import com.sms.entity.Lecturer;
 import com.sms.exception.BadRequestException;
+import org.springframework.security.access.AccessDeniedException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
@@ -35,6 +36,7 @@ public class GradeService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseSectionRepository courseSectionRepository;
     private final LecturerRepository lecturerRepository;
+    private final NotificationService notificationService;
 
     public List<Grade> findBySection(Long sectionId) {
         List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(sectionId);
@@ -70,7 +72,7 @@ public class GradeService {
         CourseSection section = courseSectionRepository.findById(sectionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
         if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
-            throw new BadRequestException("Bạn không có quyền xem bảng điểm của lớp học phần này");
+            throw new AccessDeniedException("Bạn không có quyền xem bảng điểm của lớp học phần này");
         }
     }
 
@@ -96,20 +98,31 @@ public class GradeService {
 
         // Activity #14: chỉ được chốt khi cả lớp học phần đã có điểm đầy đủ (100%).
         if (Boolean.TRUE.equals(request.getFinalize())) {
+            CourseSection section = enrollment.getSection();
+            if (section.getStatus() != CourseSection.SectionStatus.ACTIVE && section.getStatus() != CourseSection.SectionStatus.CLOSED) {
+                throw new BadRequestException("Chỉ có thể chốt điểm khi lớp học phần đang ở trạng thái CLOSED hoặc ACTIVE");
+            }
             if (grade.getTotalScore() == null && grade.getSpecialGrade() == Grade.SpecialGrade.NONE) {
                 throw new BadRequestException("Không thể chốt điểm khi chưa nhập đủ điểm thành phần");
             }
-            verifyAllStudentsGraded(enrollment.getSection().getId(),
+            verifyAllStudentsGraded(section.getId(),
                     Map.of(enrollment.getId(), grade));
             grade.setIsFinalized(true);
             // Đặt mốc ân hạn ở lần chốt đầu tiên; sửa trong cửa sổ không được gia hạn thêm.
             if (grade.getFinalizedAt() == null) {
                 grade.setFinalizedAt(LocalDateTime.now());
             }
+            section.setStatus(CourseSection.SectionStatus.COMPLETED);
+            courseSectionRepository.save(section);
             log.info("AUDIT: userId={} finalized grade for enrollmentId={} (section={})",
-                    userId, enrollment.getId(), enrollment.getSection().getSectionCode());
+                    userId, enrollment.getId(), section.getSectionCode());
         }
-        return gradeRepository.save(grade);
+        Grade saved = gradeRepository.save(grade);
+        if (enrollment.getSection() != null) {
+            boolean isFinalized = Boolean.TRUE.equals(request.getFinalize());
+            notificationService.notifySectionGradeEvent(enrollment.getSection().getId(), isFinalized);
+        }
+        return saved;
     }
 
     /**
@@ -168,7 +181,17 @@ public class GradeService {
         // điểm tổng kết. Kiểm tra đủ 100% trước khi khoá bảng điểm.
         if (!finalizeSectionIds.isEmpty()) {
             for (Long sectionId : finalizeSectionIds) {
-                verifyAllStudentsGraded(sectionId, gradesByEnrollmentId);
+                CourseSection section = courseSectionRepository.findById(sectionId).orElse(null);
+                if (section != null) {
+                    if (section.getStatus() != CourseSection.SectionStatus.ACTIVE && section.getStatus() != CourseSection.SectionStatus.CLOSED) {
+                        throw new BadRequestException("Chỉ có thể chốt điểm khi lớp học phần đang ở trạng thái CLOSED hoặc ACTIVE");
+                    }
+                    verifyAllStudentsGraded(sectionId, gradesByEnrollmentId);
+                    section.setStatus(CourseSection.SectionStatus.COMPLETED);
+                    courseSectionRepository.save(section);
+                } else {
+                    verifyAllStudentsGraded(sectionId, gradesByEnrollmentId);
+                }
             }
             LocalDateTime now = LocalDateTime.now();
             toSave.stream()
@@ -184,6 +207,16 @@ public class GradeService {
         }
 
         gradeRepository.saveAll(toSave);
+
+        // Phát thông báo đẩy thời gian thực cho sinh viên trong các lớp học phần có cập nhật điểm
+        java.util.Set<Long> affectedSectionIds = toSave.stream()
+                .map(g -> g.getEnrollment().getSection().getId())
+                .collect(Collectors.toSet());
+
+        for (Long sectionId : affectedSectionIds) {
+            boolean isFinalized = finalizeSectionIds.contains(sectionId);
+            notificationService.notifySectionGradeEvent(sectionId, isFinalized);
+        }
     }
 
     /**
@@ -223,11 +256,18 @@ public class GradeService {
      */
     private void applyScores(Long userId, GradeRequest request, Enrollment enrollment,
                              Grade grade, Lecturer lecturer) {
+        CourseSection section = enrollment.getSection();
+        if (section.getStatus() == CourseSection.SectionStatus.OPEN) {
+            throw new BadRequestException("Lớp học phần đang mở đăng ký (OPEN), chưa được phép nhập điểm");
+        }
+        if (section.getStatus() == CourseSection.SectionStatus.CANCELLED) {
+            throw new BadRequestException("Lớp học phần đã bị hủy (CANCELLED), không thể nhập điểm");
+        }
+
         // BR-07: Check lecturer authorization
         if (lecturer != null) {
-            CourseSection section = enrollment.getSection();
             if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
-                throw new BadRequestException("Bạn không có quyền nhập điểm cho học phần này");
+                throw new AccessDeniedException("Bạn không có quyền nhập điểm cho học phần này");
             }
         }
 
@@ -287,6 +327,10 @@ public class GradeService {
         if (lecturer == null && Boolean.FALSE.equals(request.getFinalize())) {
             grade.setIsFinalized(false);
             grade.setFinalizedAt(null);
+            if (section.getStatus() == CourseSection.SectionStatus.COMPLETED) {
+                section.setStatus(CourseSection.SectionStatus.ACTIVE);
+                courseSectionRepository.save(section);
+            }
             log.info("AUDIT: adminUserId={} unlocked grade for enrollmentId={}", userId, enrollment.getId());
         }
     }

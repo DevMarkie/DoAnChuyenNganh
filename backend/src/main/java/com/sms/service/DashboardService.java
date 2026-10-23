@@ -28,14 +28,9 @@ public class DashboardService {
         long suspended = studentRepository.countByStatus(Student.StudentStatus.SUSPENDED);
 
         // Students by department — dùng query JOIN để tránh N+1 query
-        List<Object[]> byDept = studentRepository.countByDepartmentWithName();
-        List<Map<String, Object>> studentsByDept = new ArrayList<>();
-        for (Object[] row : byDept) {
-            Map<String, Object> item = new HashMap<>();
-            item.put("name", row[0]);
-            item.put("count", row[1]);
-            studentsByDept.add(item);
-        }
+        List<Map<String, Object>> studentsByDept = studentRepository.countByDepartmentWithName().stream()
+                .map(row -> Map.<String, Object>of("name", row[0], "count", row[1]))
+                .toList();
 
         // Students by status
         List<Map<String, Object>> studentsByStatus = List.of(

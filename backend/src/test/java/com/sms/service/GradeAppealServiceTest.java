@@ -170,6 +170,33 @@ public class GradeAppealServiceTest {
     }
 
     @Test
+    void create_CC1_Success() {
+        grade.setCc1Score(BigDecimal.valueOf(8));
+        GradeAppealRequest req = new GradeAppealRequest();
+        req.setEnrollmentId(1L);
+        req.setScoreComponent(GradeAppeal.ScoreComponent.CC1);
+        req.setDesiredScore(BigDecimal.valueOf(10));
+        req.setReason("Em di hoc du tat ca cac buoi nhung bi ghi nham vang 1 buoi");
+
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.of(grade));
+        when(appealRepository.countByStudentIdAndEnrollmentSectionSubjectIdAndStatus(
+                anyLong(), anyInt(), any())).thenReturn(0L);
+        when(appealRepository.save(any())).thenReturn(appeal);
+
+        GradeAppeal result = appealService.create(1L, req);
+
+        ArgumentCaptor<GradeAppeal> captor = ArgumentCaptor.forClass(GradeAppeal.class);
+        verify(appealRepository).save(captor.capture());
+        GradeAppeal built = captor.getValue();
+        assertEquals(0, BigDecimal.valueOf(8).compareTo(built.getCurrentScore()));
+        assertEquals(GradeAppeal.ScoreComponent.CC1, built.getScoreComponent());
+        assertEquals(GradeAppeal.AppealStatus.PENDING, built.getStatus());
+        assertNotNull(result);
+    }
+
+    @Test
     void create_Expired_Throws() {
         grade.setFinalizedAt(LocalDateTime.now().minusDays(10)); // expired
         GradeAppealRequest req = new GradeAppealRequest();

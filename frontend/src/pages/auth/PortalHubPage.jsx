@@ -69,7 +69,38 @@ export default function PortalHubPage() {
           ))}
         </div>
 
-        <p className="hub-foot hub-anim" style={{ animationDelay: '0.47s' }}>
+        <div className="hub-anim" style={{ animationDelay: '0.45s', marginTop: '16px' }}>
+          <Link
+            to="/design-system"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 18px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, rgba(30, 58, 95, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%)',
+              border: '1px solid rgba(37, 99, 235, 0.3)',
+              textDecoration: 'none',
+              color: 'inherit',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e3a5f', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🎨 Khám phá Bản Demo Design System v2.0
+                <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: '#2563eb', color: '#ffffff', fontWeight: 600 }}>
+                  UI/UX Pro Max
+                </span>
+              </div>
+              <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
+                Xem trước giao diện chuẩn Swiss Modernism 2.0 & Bento Grid trước khi triển khai code
+              </div>
+            </div>
+            <span style={{ color: '#2563eb', fontWeight: 700, fontSize: '0.9rem' }}>→</span>
+          </Link>
+        </div>
+
+        <p className="hub-foot hub-anim" style={{ animationDelay: '0.52s' }}>
           Quên mật khẩu? Mở cổng tương ứng rồi chọn “Gửi yêu cầu cấp lại” để Phòng đào tạo xử lý.
         </p>
       </section>

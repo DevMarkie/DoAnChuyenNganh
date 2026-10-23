@@ -2,6 +2,7 @@ package com.sms.controller;
 
 import com.sms.dto.ApiResponse;
 import com.sms.dto.request.StudentRequest;
+import com.sms.dto.response.GraduationEligibilityResponse;
 import com.sms.dto.response.StudentImportRow;
 import com.sms.entity.Student;
 import com.sms.security.UserPrincipal;
@@ -47,10 +48,11 @@ public class StudentController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer departmentId,
             @RequestParam(required = false) Integer classId,
+            @RequestParam(required = false) String academicYear,
             @RequestParam(required = false) String status
     ) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("studentCode").ascending());
-        Page<Student> result = studentService.findPaged(keyword, departmentId, classId, status, pageable);
+        Page<Student> result = studentService.findPaged(keyword, departmentId, classId, academicYear, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
@@ -63,6 +65,19 @@ public class StudentController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<Student>> getMyProfile(@AuthenticationPrincipal UserPrincipal user) {
         return ResponseEntity.ok(ApiResponse.success(studentService.findByUserId(user.getId())));
+    }
+
+    @GetMapping("/{id}/graduation-eligibility")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<GraduationEligibilityResponse>> getGraduationEligibility(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(studentService.getGraduationEligibility(id)));
+    }
+
+    @GetMapping("/me/graduation-eligibility")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<GraduationEligibilityResponse>> getMyGraduationEligibility(@AuthenticationPrincipal UserPrincipal user) {
+        Student student = studentService.findByUserId(user.getId());
+        return ResponseEntity.ok(ApiResponse.success(studentService.getGraduationEligibility(student.getId())));
     }
 
     @GetMapping("/search")

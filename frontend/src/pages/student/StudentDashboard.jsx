@@ -58,30 +58,49 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Stats */}
+      {/* Stats Bento Grid */}
       <div className="stats-grid">
-        <div className="stat-card">
+        <div className="stat-card" style={{
+          position: 'relative',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, var(--bg-surface) 100%)',
+          borderColor: 'rgba(99, 102, 241, 0.25)',
+        }}>
           <div
             className="stat-icon-wrapper"
             style={{
-              backgroundColor: 'var(--bg-subtle)',
-              color: 'var(--text-secondary)',
+              background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
+              color: '#ffffff',
+              boxShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.4)',
             }}
           >
             <Award size={22} />
           </div>
           <div>
-            <div className="stat-value">{gpa} <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-muted)' }}>/ 4.0</span></div>
+            <div className="stat-value" style={{
+              background: 'linear-gradient(135deg, var(--text-main) 60%, var(--primary) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontSize: '1.85rem',
+            }}>
+              {gpa} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)', WebkitTextFillColor: 'var(--text-muted)' }}>/ 4.0</span>
+            </div>
             <div className="stat-label">Điểm TB tích lũy (GPA)</div>
           </div>
         </div>
 
-        <div className="stat-card">
+        <div className="stat-card" style={{
+          position: 'relative',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-surface) 100%)',
+          borderColor: 'rgba(16, 185, 129, 0.25)',
+        }}>
           <div
             className="stat-icon-wrapper"
             style={{
-              backgroundColor: 'var(--bg-subtle)',
-              color: 'var(--text-secondary)',
+              background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+              color: '#ffffff',
+              boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.4)',
             }}
           >
             <BookOpen size={22} />
@@ -92,12 +111,18 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        <div className="stat-card">
+        <div className="stat-card" style={{
+          position: 'relative',
+          overflow: 'hidden',
+          background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, var(--bg-surface) 100%)',
+          borderColor: 'rgba(6, 182, 212, 0.25)',
+        }}>
           <div
             className="stat-icon-wrapper"
             style={{
-              backgroundColor: 'var(--bg-subtle)',
-              color: 'var(--text-secondary)',
+              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+              color: '#ffffff',
+              boxShadow: '0 4px 14px 0 rgba(6, 182, 212, 0.4)',
             }}
           >
             <Layers size={22} />

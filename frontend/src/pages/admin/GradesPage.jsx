@@ -1,17 +1,22 @@
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Layers,
   Save,
   Download,
+  Filter,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { courseSectionService, gradeService } from "../../services/dataService";
+import GradeAnalyticsCard from "../../components/grades/GradeAnalyticsCard";
+import { GRADE_GROUPS } from "../../components/grades/gradeConstants";
 
 export default function AdminGradesPage() {
   const [sections, setSections] = useState([]);
   const [selectedSection, setSelectedSection] = useState("");
   const [grades, setGrades] = useState([]);
+  const [groupFilter, setGroupFilter] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const saveInFlight = useRef(false);
@@ -40,6 +45,7 @@ export default function AdminGradesPage() {
       setLoading(true);
       const res = await gradeService.getBySection(sectionId);
       setGrades(res.data.data || []);
+      setGroupFilter(null);
     } catch {
       toast.error("Lỗi khi tải bảng điểm");
     } finally {
@@ -50,18 +56,23 @@ export default function AdminGradesPage() {
   const handleSectionChange = (e) => {
     const secId = e.target.value;
     setSelectedSection(secId);
+    setGroupFilter(null);
     loadGrades(secId);
   };
 
-  const handleScoreChange = (index, field, value) => {
+  const handleScoreChange = (enrollmentId, field, value) => {
     const val = value === "" ? "" : parseFloat(value);
-    const updated = [...grades];
-    updated[index] = {
-      ...updated[index],
-      [field]: val,
-    };
-    setGrades(updated);
+    setGrades((prev) =>
+      prev.map((g) =>
+        g.enrollment?.id === enrollmentId ? { ...g, [field]: val } : g
+      )
+    );
   };
+
+  const displayedGrades = useMemo(() => {
+    if (!groupFilter || !GRADE_GROUPS[groupFilter]) return grades;
+    return grades.filter((g) => GRADE_GROUPS[groupFilter].match(g));
+  }, [grades, groupFilter]);
 
   const handleSaveAll = async () => {
     if (saveInFlight.current) return;
@@ -235,8 +246,50 @@ export default function AdminGradesPage() {
         </div>
       </div>
 
+      {/* Grade Analytics & Distribution Card */}
+      {grades.length > 0 && (
+        <GradeAnalyticsCard
+          grades={grades}
+          selectedGroupFilter={groupFilter}
+          onSelectGroupFilter={setGroupFilter}
+          sectionTitle={activeSection ? `${activeSection.sectionCode} — ${activeSection.subject?.subjectName}` : ''}
+          initialExpanded={true}
+        />
+      )}
+
       {/* Grade Table */}
       <div className="card">
+        {groupFilter && GRADE_GROUPS[groupFilter] && (
+          <div
+            style={{
+              padding: '10px 16px',
+              backgroundColor: GRADE_GROUPS[groupFilter].bg,
+              borderBottom: `1px solid ${GRADE_GROUPS[groupFilter].border}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '10px',
+              fontSize: '0.88rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Filter size={14} style={{ color: GRADE_GROUPS[groupFilter].color }} />
+              <span>
+                Đang lọc nhóm: <strong style={{ color: GRADE_GROUPS[groupFilter].color }}>{GRADE_GROUPS[groupFilter].label}</strong> (Hiển thị <strong>{displayedGrades.length}</strong> / {grades.length} SV)
+              </span>
+            </div>
+            <button
+              type="button"
+              className="btn btn-outline"
+              style={{ padding: '3px 8px', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+              onClick={() => setGroupFilter(null)}
+            >
+              <RotateCcw size={12} />
+              <span>Bỏ lọc</span>
+            </button>
+          </div>
+        )}
+
         <div className="table-container">
           <table className="table">
             <thead>
@@ -281,109 +334,133 @@ export default function AdminGradesPage() {
                     Chưa có sinh viên nào đăng ký lớp học phần này.
                   </td>
                 </tr>
+              ) : displayedGrades.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="10"
+                    style={{
+                      textAlign: "center",
+                      padding: "36px 20px",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    <p style={{ margin: "0 0 10px" }}>
+                      Không có sinh viên nào thuộc nhóm điểm này.
+                    </p>
+                    <button
+                      type="button"
+                      className="btn btn-outline"
+                      onClick={() => setGroupFilter(null)}
+                    >
+                      Xem toàn bộ danh sách
+                    </button>
+                  </td>
+                </tr>
               ) : (
-                grades.map((g, idx) => (
-                  <tr key={g.id || idx}>
-                    <td>
-                      <span
-                        style={{
-                          display: "inline-block",
-                          fontFamily: "monospace",
-                          fontWeight: 700,
-                          fontSize: "0.85rem",
-                          color: "var(--primary)",
-                          backgroundColor: "var(--primary-light)",
-                          padding: "3px 8px",
-                          borderRadius: "4px",
-                          border: "1px solid var(--primary-border)",
-                        }}
-                      >
-                        {g.enrollment?.student?.studentCode}
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: 600, color: "var(--text-main)" }}>
-                      {g.enrollment?.student?.fullName}
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        value={g.cc1Score ?? ""}
-                        onChange={(e) =>
-                          handleScoreChange(idx, "cc1Score", e.target.value)
-                        }
-                        className="form-control"
-                        style={{
-                          width: "68px",
-                          padding: "6px",
-                          textAlign: "center",
-                          margin: "0 auto",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        value={g.cc2Score ?? ""}
-                        onChange={(e) =>
-                          handleScoreChange(idx, "cc2Score", e.target.value)
-                        }
-                        className="form-control"
-                        style={{
-                          width: "68px",
-                          padding: "6px",
-                          textAlign: "center",
-                          margin: "0 auto",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        value={g.midtermScore ?? ""}
-                        onChange={(e) =>
-                          handleScoreChange(idx, "midtermScore", e.target.value)
-                        }
-                        className="form-control"
-                        style={{
-                          width: "68px",
-                          padding: "6px",
-                          textAlign: "center",
-                          margin: "0 auto",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      <input
-                        type="number"
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        value={g.finalScore ?? ""}
-                        onChange={(e) =>
-                          handleScoreChange(idx, "finalScore", e.target.value)
-                        }
-                        className="form-control"
-                        style={{
-                          width: "68px",
-                          padding: "6px",
-                          textAlign: "center",
-                          margin: "0 auto",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </td>
+                displayedGrades.map((g, idx) => {
+                  const enrollmentId = g.enrollment?.id;
+                  return (
+                    <tr key={g.id || idx}>
+                      <td>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            fontFamily: "monospace",
+                            fontWeight: 700,
+                            fontSize: "0.85rem",
+                            color: "var(--primary)",
+                            backgroundColor: "var(--primary-light)",
+                            padding: "3px 8px",
+                            borderRadius: "4px",
+                            border: "1px solid var(--primary-border)",
+                          }}
+                        >
+                          {g.enrollment?.student?.studentCode}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 600, color: "var(--text-main)" }}>
+                        {g.enrollment?.student?.fullName}
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.1"
+                          value={g.cc1Score ?? ""}
+                          onChange={(e) =>
+                            handleScoreChange(enrollmentId, "cc1Score", e.target.value)
+                          }
+                          className="form-control"
+                          style={{
+                            width: "68px",
+                            padding: "6px",
+                            textAlign: "center",
+                            margin: "0 auto",
+                            fontWeight: 600,
+                          }}
+                        />
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.1"
+                          value={g.cc2Score ?? ""}
+                          onChange={(e) =>
+                            handleScoreChange(enrollmentId, "cc2Score", e.target.value)
+                          }
+                          className="form-control"
+                          style={{
+                            width: "68px",
+                            padding: "6px",
+                            textAlign: "center",
+                            margin: "0 auto",
+                            fontWeight: 600,
+                          }}
+                        />
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.1"
+                          value={g.midtermScore ?? ""}
+                          onChange={(e) =>
+                            handleScoreChange(enrollmentId, "midtermScore", e.target.value)
+                          }
+                          className="form-control"
+                          style={{
+                            width: "68px",
+                            padding: "6px",
+                            textAlign: "center",
+                            margin: "0 auto",
+                            fontWeight: 600,
+                          }}
+                        />
+                      </td>
+                      <td style={{ textAlign: "center" }}>
+                        <input
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.1"
+                          value={g.finalScore ?? ""}
+                          onChange={(e) =>
+                            handleScoreChange(enrollmentId, "finalScore", e.target.value)
+                          }
+                          className="form-control"
+                          style={{
+                            width: "68px",
+                            padding: "6px",
+                            textAlign: "center",
+                            margin: "0 auto",
+                            fontWeight: 600,
+                          }}
+                        />
+                      </td>
                     <td
                       style={{
                         textAlign: "center",
@@ -434,8 +511,9 @@ export default function AdminGradesPage() {
                       )}
                     </td>
                   </tr>
-                ))
-              )}
+                );
+              })
+            )}
             </tbody>
           </table>
         </div>

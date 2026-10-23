@@ -6,6 +6,7 @@ import com.sms.entity.Department;
 import com.sms.exception.*;
 import com.sms.repository.ClassRepository;
 import com.sms.repository.DepartmentRepository;
+import com.sms.repository.LecturerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ public class ClassService {
     private final DepartmentRepository departmentRepository;
     private final com.sms.repository.MajorRepository majorRepository;
     private final com.sms.repository.CohortRepository cohortRepository;
+    private final LecturerRepository lecturerRepository;
 
     public List<ClassEntity> findAll() {
         return classRepository.findAll();
@@ -58,6 +60,10 @@ public class ClassService {
             cls.setCohort(cohortRepository.findById(request.getCohortId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học")));
         }
+        if (request.getAdvisorId() != null) {
+            cls.setAdvisor(lecturerRepository.findById(request.getAdvisorId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy giảng viên cố vấn")));
+        }
 
         return classRepository.save(cls);
     }
@@ -79,6 +85,10 @@ public class ClassService {
         if (request.getCohortId() != null) {
             cls.setCohort(cohortRepository.findById(request.getCohortId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học")));
+        }
+        if (request.getAdvisorId() != null) {
+            cls.setAdvisor(lecturerRepository.findById(request.getAdvisorId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy giảng viên cố vấn")));
         }
 
         return classRepository.save(cls);

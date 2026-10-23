@@ -15,7 +15,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ApiSerializationTests {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
+            .registerModule(new com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module());
 
     @Test
     void enrollmentAndScheduleUseTheFrontendPropertyNames() throws Exception {
@@ -53,7 +55,7 @@ class ApiSerializationTests {
     }
 
     @Test
-    void registrationIsOnlyOpenForTheActiveCurrentSemesterWithinItsWindow() {
+    void registrationIsOnlyOpenForTheActiveCurrentSemesterWithinItsWindow() throws Exception {
         Semester semester = new Semester();
         semester.setIsCurrent(true);
         semester.setStatus(Semester.SemesterStatus.ACTIVE);
@@ -61,6 +63,9 @@ class ApiSerializationTests {
         semester.setRegistrationEnd(LocalDate.now().plusDays(1));
 
         assertThat(semester.isRegistrationOpen()).isTrue();
+
+        JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(semester));
+        assertThat(json.path("registrationOpen").asBoolean()).isTrue();
 
         semester.setStatus(Semester.SemesterStatus.COMPLETED);
         assertThat(semester.isRegistrationOpen()).isFalse();

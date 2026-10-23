@@ -82,16 +82,20 @@ export default function EnrollPage() {
     }
   };
 
-  const { enrolledSectionIds, enrolledSubjectIds } = useMemo(() => {
+  const { enrolledSectionIds, enrolledSubjectIds, totalEnrolledCredits } = useMemo(() => {
     const secIds = new Set();
     const subIds = new Set();
+    let credits = 0;
     myEnrollments.forEach((e) => {
       if (e.status === "ENROLLED") {
         if (e.courseSection?.id) secIds.add(e.courseSection.id);
-        if (e.courseSection?.subject?.id) subIds.add(e.courseSection.subject.id);
+        if (e.courseSection?.subject?.id) {
+          subIds.add(e.courseSection.subject.id);
+          credits += (e.courseSection.subject.credits || 0);
+        }
       }
     });
-    return { enrolledSectionIds: secIds, enrolledSubjectIds: subIds };
+    return { enrolledSectionIds: secIds, enrolledSubjectIds: subIds, totalEnrolledCredits: credits };
   }, [myEnrollments]);
 
   const filtered = availableSections.filter((s) => {
@@ -148,6 +152,69 @@ export default function EnrollPage() {
           </div>
         </div>
       )}
+
+      {/* KPI Credit & Tuition Summary Banner */}
+      <div className="card" style={{ marginBottom: "20px" }}>
+        <div
+          className="card-body"
+          style={{
+            padding: "16px 20px",
+            display: "flex",
+            gap: "24px",
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+              Khối lượng đã chọn:
+            </span>
+            <span
+              className="badge badge-info"
+              style={{ fontSize: "0.9rem", padding: "4px 10px", fontWeight: 700 }}
+            >
+              {totalEnrolledCredits} / 24 Tín chỉ
+            </span>
+            {totalEnrolledCredits < 12 ? (
+              <span className="badge badge-warning" style={{ fontSize: "0.8rem", marginLeft: "6px" }}>
+                Chưa đạt tối thiểu 12 TC (Quy chế: 12 - 24 TC)
+              </span>
+            ) : totalEnrolledCredits <= 24 ? (
+              <span className="badge badge-success" style={{ fontSize: "0.8rem", marginLeft: "6px" }}>
+                Đạt chuẩn tín chỉ kỳ chính (12 - 24 TC)
+              </span>
+            ) : (
+              <span className="badge badge-danger" style={{ fontSize: "0.8rem", marginLeft: "6px" }}>
+                Vượt quá giới hạn tối đa 24 TC
+              </span>
+            )}
+          </div>
+          <div
+            style={{
+              width: "1px",
+              height: "20px",
+              backgroundColor: "var(--border-color)",
+            }}
+          />
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+              Học phí tạm tính:
+            </span>
+            <span
+              style={{
+                fontWeight: 800,
+                fontSize: "1.05rem",
+                color: "var(--primary)",
+              }}
+            >
+              {(totalEnrolledCredits * 450000).toLocaleString("vi-VN")} đ
+            </span>
+            <span style={{ fontSize: "0.75rem", color: "var(--text-light)" }}>
+              (450.000 đ / TC)
+            </span>
+          </div>
+        </div>
+      </div>
 
       {/* Search Toolbar */}
       <div className="card" style={{ marginBottom: "20px" }}>

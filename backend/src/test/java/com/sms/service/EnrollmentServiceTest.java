@@ -438,7 +438,7 @@ class EnrollmentServiceTest {
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> enrollmentService.assertCanViewSection(userId, sectionId))
-                .isInstanceOf(BadRequestException.class)
+                .isInstanceOf(org.springframework.security.access.AccessDeniedException.class)
                 .hasMessageContaining("không có quyền");
     }
 

@@ -17,7 +17,7 @@ export const departmentService = {
   create: (data) => api.post('/departments', data),
   update: (id, data) => api.put(`/departments/${id}`, data),
   toggleActive: (id) => api.put(`/departments/${id}/toggle`),
-  search: (keyword) => api.get(`/departments/search?keyword=${keyword}`),
+  search: (keyword) => api.get('/departments/search', { params: { keyword } }),
 };
 
 export const classService = {
@@ -37,10 +37,12 @@ export const studentService = {
   getById: (id) => api.get(`/students/${id}`),
   getMe: () => api.get('/students/me'),
   getByClass: (classId) => api.get(`/students/class/${classId}`),
-  search: (keyword) => api.get(`/students/search?keyword=${keyword}`),
+  search: (keyword) => api.get('/students/search', { params: { keyword } }),
   create: (data) => api.post('/students', data),
   update: (id, data) => api.put(`/students/${id}`, data),
   updateStatus: (id, status) => api.put(`/students/${id}/status?status=${status}`),
+  getGraduationEligibility: (id) => api.get(`/students/${id}/graduation-eligibility`),
+  getMyGraduationEligibility: () => api.get('/students/me/graduation-eligibility'),
   downloadImportTemplate: () => api.get('/students/import-template', { responseType: 'blob' }),
   importPreview: (file) => {
     const formData = new FormData();
@@ -157,4 +159,11 @@ export const passwordResetService = {
   reject: (id, data) => api.post(`/admin/password-resets/${id}/reject`, data),
   batchApprove: (requestIds) => api.post('/admin/password-resets/batch-approve', requestIds),
   batchReject: (data) => api.post('/admin/password-resets/batch-reject', data),
+};
+
+export const notificationService = {
+  getMyNotifications: (limit = 30) => api.get(`/notifications?limit=${limit}`),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllAsRead: () => api.put('/notifications/read-all'),
 };

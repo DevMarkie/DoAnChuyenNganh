@@ -7,6 +7,7 @@ import com.sms.security.UserPrincipal;
 import com.sms.service.ScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +58,7 @@ public class ScheduleController {
      * Thời khóa biểu cá nhân của sinh viên
      */
     @GetMapping("/my-schedule")
+    @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<List<Schedule>>> getMySchedule(
             @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(required = false) Long semesterId
@@ -68,6 +70,7 @@ public class ScheduleController {
      * Lịch giảng dạy cá nhân của giảng viên
      */
     @GetMapping("/lecturer-schedule")
+    @PreAuthorize("hasRole('LECTURER')")
     public ResponseEntity<ApiResponse<List<Schedule>>> getLecturerSchedule(
             @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(required = false) Long semesterId

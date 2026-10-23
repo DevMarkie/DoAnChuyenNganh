@@ -1,4 +1,4 @@
-/* ——— Header Styles ——— */
+/* ——— Header Styles (Apple Vision Frosted Glass) ——— */
 .app-header {
   position: fixed;
   top: 0;
@@ -6,6 +6,8 @@
   left: var(--sidebar-width);
   height: var(--header-height);
   background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -13,14 +15,14 @@
   padding: 0 28px;
   z-index: 90;
   transition: left var(--transition-normal);
-  box-shadow: var(--shadow-xs);
+  box-shadow: var(--shadow-xs), var(--glass-inset-shine);
 }
 
 .main-content.collapsed .app-header {
   left: var(--sidebar-collapsed);
 }
 
-/* ——— Sidebar Styles ——— */
+/* ——— Sidebar Styles (Optical Glass Panel) ——— */
 .sidebar {
   position: fixed;
   top: 0;
@@ -28,12 +30,15 @@
   width: var(--sidebar-width);
   height: 100vh;
   background: var(--bg-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   z-index: 100;
   transition: width var(--transition-normal);
   user-select: none;
+  box-shadow: var(--shadow-sm), var(--glass-inset-shine);
 }
 
 .sidebar.collapsed {
@@ -56,15 +61,15 @@
 }
 
 .sidebar-brand-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-md);
   background: var(--primary-gradient);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.35);
   flex-shrink: 0;
 }
 
@@ -107,22 +112,23 @@
 .nav-group-title {
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: normal;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--text-muted);
-  padding: 4px 10px 6px;
+  padding: 4px 12px 6px;
 }
 
 .nav-group-items {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 9px 14px;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-size: 0.875rem;
@@ -133,14 +139,16 @@
 }
 
 .nav-item:hover {
-  background: var(--bg-subtle);
+  background: var(--bg-hover);
   color: var(--text-main);
+  transform: translateX(2px);
 }
 
 .nav-item.active {
   background: var(--primary-light);
   color: var(--primary);
   font-weight: 600;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.15), var(--glass-inset-shine);
 }
 
 .nav-item.active::before {
@@ -149,9 +157,10 @@
   left: 0;
   top: 6px;
   bottom: 6px;
-  width: 3px;
-  background: var(--primary);
+  width: 3.5px;
+  background: var(--primary-gradient);
   border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 10px var(--primary);
 }
 
 .nav-item-icon {
@@ -167,7 +176,7 @@
 .sidebar-footer {
   padding: 14px 16px;
   border-top: 1px solid var(--border-color);
-  background: var(--bg-surface);
+  background: transparent;
 }
 
 .system-version {
@@ -182,4 +191,94 @@
   font-size: 0.68rem;
   font-weight: 600;
   color: var(--primary);
+}
+
+/* ——— Mobile Off-Canvas Drawer & Responsive Shell ——— */
+.sidebar-backdrop {
+  display: none;
+}
+
+.mobile-menu-toggle {
+  display: none !important;
+}
+
+.mobile-close-btn {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  /* 1. Header takes 100% width on mobile */
+  .app-header {
+    left: 0 !important;
+    padding: 0 12px !important;
+  }
+
+  .main-content.collapsed .app-header {
+    left: 0 !important;
+  }
+
+  /* 2. Main content takes full screen, no fixed margin */
+  .main-content,
+  .main-content.collapsed {
+    margin-left: 0 !important;
+  }
+
+  /* 3. Sidebar becomes off-canvas drawer */
+  .sidebar {
+    width: 280px !important;
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    z-index: 250;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* 4. Backdrop overlay */
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 240;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-normal);
+  }
+
+  .sidebar-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* 5. Mobile header buttons */
+  .mobile-menu-toggle {
+    display: inline-flex !important;
+  }
+
+  .mobile-close-btn {
+    display: inline-flex !important;
+  }
+
+  .btn-toggle-sidebar {
+    display: none !important;
+  }
+
+  /* 6. Compact header text to prevent horizontal overflow */
+  .breadcrumb-root,
+  .breadcrumb-separator {
+    display: none !important;
+  }
+
+  .user-pill-text {
+    display: none !important;
+  }
+
+  .logout-text {
+    display: none !important;
+  }
 }

@@ -64,12 +64,14 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
                OR LOWER(s.email) LIKE LOWER(CONCAT('%', :keyword, '%')))
         AND (:departmentId IS NULL OR s.classEntity.department.id = :departmentId)
         AND (:classId IS NULL OR s.classEntity.id = :classId)
+        AND (:academicYear IS NULL OR :academicYear = '' OR s.classEntity.academicYear = :academicYear)
         AND (:status IS NULL OR s.status = :status)
     """)
     Page<Student> findPaged(
             @Param("keyword") String keyword,
             @Param("departmentId") Integer departmentId,
             @Param("classId") Integer classId,
+            @Param("academicYear") String academicYear,
             @Param("status") Student.StudentStatus status,
             Pageable pageable
     );

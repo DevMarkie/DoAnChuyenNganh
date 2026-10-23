@@ -3,13 +3,16 @@ package com.sms.service;
 import com.sms.dto.response.TranscriptResponse;
 import com.sms.entity.ClassEntity;
 import com.sms.entity.CourseSection;
+import com.sms.entity.Department;
 import com.sms.entity.Enrollment;
 import com.sms.entity.Grade;
+import com.sms.entity.Lecturer;
 import com.sms.entity.Semester;
 import com.sms.entity.Student;
 import com.sms.entity.Subject;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.GradeRepository;
+import com.sms.repository.LecturerRepository;
 import com.sms.repository.StudentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +35,8 @@ public class TranscriptServiceTest {
     private StudentRepository studentRepository;
     @Mock
     private GradeRepository gradeRepository;
+    @Mock
+    private LecturerRepository lecturerRepository;
 
     @InjectMocks
     private TranscriptService transcriptService;
@@ -43,8 +48,14 @@ public class TranscriptServiceTest {
 
     @BeforeEach
     void setUp() {
+        Department dept = new Department();
+        dept.setId(1);
+        dept.setCode("CNTT");
+        dept.setName("Khoa Công nghệ Thông tin & Máy tính");
+
         ClassEntity cls = new ClassEntity();
         cls.setName("SE01");
+        cls.setDepartment(dept);
 
         student = new Student();
         student.setId(1L);
@@ -110,6 +121,11 @@ public class TranscriptServiceTest {
         assertEquals(BigDecimal.valueOf(4.0).setScale(2), response.getSemesters().get(0).getSemesterGpa());
         assertEquals(3, response.getSemesters().get(0).getSemesterCredits());
         assertFalse(response.getSemesters().get(0).isSemesterWarning());
+
+        // Check advisor contact is built
+        assertNotNull(response.getAdvisorContact());
+        assertNotNull(response.getAdvisorContact().getAdvisorName());
+        assertNotNull(response.getAdvisorContact().getDepartmentName());
     }
 
     @Test
@@ -201,5 +217,60 @@ public class TranscriptServiceTest {
         assertEquals(BigDecimal.valueOf(4.0).setScale(2), result.get(0).getCumulativeGpa());
         assertEquals("SV02", result.get(1).getStudentCode());
         assertEquals(0, BigDecimal.valueOf(0.00).compareTo(result.get(1).getCumulativeGpa()));
+    }
+
+    @Test
+    void buildAdvisorContact_withAssignedAdvisor() {
+        Lecturer advisor = new Lecturer();
+        advisor.setId(5L);
+        advisor.setFullName("TS. Nguyen Hoang Long");
+        advisor.setLecturerCode("1000001");
+        advisor.setEmail("long.nh@sms.edu.vn");
+        advisor.setPhone("0912345001");
+        advisor.setDegree("TS");
+        advisor.setSpecialization("Software Engineering");
+        advisor.setIsActive(true);
+
+        student.getClassEntity().setAdvisor(advisor);
+
+        TranscriptResponse.AdvisorContact contact = transcriptService.buildAdvisorContact(student, 1);
+        assertNotNull(contact);
+        assertEquals("TS. Nguyen Hoang Long", contact.getAdvisorName());
+        assertEquals("1000001", contact.getAdvisorCode());
+        assertEquals("long.nh@sms.edu.vn", contact.getAdvisorEmail());
+        assertEquals("0912345001", contact.getAdvisorPhone());
+        assertEquals("TS", contact.getAdvisorDegree());
+        assertTrue(contact.getStudentSupportNotes().contains("Cảnh báo học vụ Mức 1"));
+    }
+
+    @Test
+    void buildAdvisorContact_fallbackToDepartmentLecturer() {
+        student.getClassEntity().setAdvisor(null);
+
+        Lecturer deptLecturer = new Lecturer();
+        deptLecturer.setId(6L);
+        deptLecturer.setFullName("ThS. Tran Thi Mai");
+        deptLecturer.setLecturerCode("1000002");
+        deptLecturer.setEmail("mai.tt@sms.edu.vn");
+        deptLecturer.setIsActive(true);
+
+        when(lecturerRepository.findByDepartmentId(1)).thenReturn(List.of(deptLecturer));
+
+        TranscriptResponse.AdvisorContact contact = transcriptService.buildAdvisorContact(student, 2);
+        assertNotNull(contact);
+        assertEquals("ThS. Tran Thi Mai", contact.getAdvisorName());
+        assertEquals("1000002", contact.getAdvisorCode());
+        assertTrue(contact.getStudentSupportNotes().contains("Cảnh báo học vụ Mức 2"));
+    }
+
+    @Test
+    void buildAdvisorContact_nullClass_usesDefaultFallback() {
+        Student noClassStudent = new Student();
+        noClassStudent.setId(50L);
+
+        TranscriptResponse.AdvisorContact contact = transcriptService.buildAdvisorContact(noClassStudent, 0);
+        assertNotNull(contact);
+        assertNotNull(contact.getAdvisorName());
+        assertNotNull(contact.getDepartmentName());
     }
 }

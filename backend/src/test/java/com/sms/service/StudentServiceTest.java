@@ -1,6 +1,7 @@
 package com.sms.service;
 
 import com.sms.dto.request.StudentRequest;
+import com.sms.dto.response.GraduationEligibilityResponse;
 import com.sms.entity.ClassEntity;
 import com.sms.entity.Role;
 import com.sms.entity.Student;
@@ -43,6 +44,9 @@ public class StudentServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private CurriculumService curriculumService;
+
     @InjectMocks
     private StudentService studentService;
 
@@ -65,6 +69,7 @@ public class StudentServiceTest {
         student.setId(1L);
         student.setStudentCode("STU001");
         student.setFullName("Test Student");
+        student.setStatus(Student.StudentStatus.ACTIVE);
         student.setClassEntity(classEntity);
 
         request = new StudentRequest();
@@ -124,6 +129,19 @@ public class StudentServiceTest {
     }
 
     @Test
+    void create_MismatchedCohort_ThrowsBadRequestException() {
+        request.setStudentCode("2600081");
+        classEntity.setAcademicYear("K16");
+        classEntity.setName("Kỹ thuật phần mềm 1 - K16");
+        when(studentRepository.existsByStudentCode(request.getStudentCode())).thenReturn(false);
+        lenient().when(userRepository.existsByUsername(request.getStudentCode())).thenReturn(false);
+        when(classRepository.findById(request.getClassId())).thenReturn(Optional.of(classEntity));
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> studentService.create(request));
+        assertTrue(ex.getMessage().contains("không phù hợp với khóa K16"));
+    }
+
+    @Test
     void update_Success() {
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(classRepository.findById(request.getClassId())).thenReturn(Optional.of(classEntity));
@@ -145,6 +163,47 @@ public class StudentServiceTest {
 
         assertEquals(Student.StudentStatus.ACTIVE, student.getStatus());
         verify(studentRepository).save(student);
+    }
+
+    @Test
+    void updateStatus_Graduated_Success() {
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+        when(studentRepository.save(any(Student.class))).thenReturn(student);
+        doNothing().when(curriculumService).validateGraduationEligibility(1L);
+
+        studentService.updateStatus(1L, "GRADUATED");
+
+        assertEquals(Student.StudentStatus.GRADUATED, student.getStatus());
+        verify(curriculumService).validateGraduationEligibility(1L);
+        verify(studentRepository).save(student);
+    }
+
+    @Test
+    void updateStatus_Graduated_Ineligible_ThrowsException() {
+        when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
+        doThrow(new BadRequestException("Sinh viên chưa đủ điều kiện tốt nghiệp"))
+                .when(curriculumService).validateGraduationEligibility(1L);
+
+        assertThrows(BadRequestException.class, () -> studentService.updateStatus(1L, "GRADUATED"));
+        verify(curriculumService).validateGraduationEligibility(1L);
+        verify(studentRepository, never()).save(any(Student.class));
+    }
+
+    @Test
+    void getGraduationEligibility_ReturnsEligibility() {
+        GraduationEligibilityResponse mockResp = GraduationEligibilityResponse.builder()
+                .studentId(1L)
+                .studentCode("STU001")
+                .eligible(false)
+                .completedCredits(30)
+                .requiredCredits(145)
+                .build();
+        when(curriculumService.checkGraduationEligibility(1L)).thenReturn(mockResp);
+
+        GraduationEligibilityResponse result = studentService.getGraduationEligibility(1L);
+        assertNotNull(result);
+        assertFalse(result.isEligible());
+        assertEquals(30, result.getCompletedCredits());
     }
 
     @Test

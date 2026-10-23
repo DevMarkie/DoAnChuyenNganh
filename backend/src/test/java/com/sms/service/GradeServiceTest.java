@@ -7,6 +7,7 @@ import com.sms.entity.Grade;
 import com.sms.entity.Lecturer;
 import com.sms.entity.Student;
 import com.sms.exception.BadRequestException;
+import org.springframework.security.access.AccessDeniedException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
@@ -40,6 +41,8 @@ public class GradeServiceTest {
     private CourseSectionRepository courseSectionRepository;
     @Mock
     private LecturerRepository lecturerRepository;
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private GradeService gradeService;
@@ -60,6 +63,7 @@ public class GradeServiceTest {
         courseSection.setId(1L);
         courseSection.setLecturer(lecturer);
         courseSection.setSectionCode("SE01");
+        courseSection.setStatus(CourseSection.SectionStatus.ACTIVE);
 
         student = new Student();
         student.setId(1L);
@@ -118,7 +122,7 @@ public class GradeServiceTest {
         when(lecturerRepository.findByUserId(2L)).thenReturn(Optional.of(otherLecturer));
         when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(courseSection));
 
-        assertThrows(BadRequestException.class, () -> gradeService.assertCanViewSection(2L, 1L));
+        assertThrows(AccessDeniedException.class, () -> gradeService.assertCanViewSection(2L, 1L));
     }
 
     @Test
@@ -229,6 +233,7 @@ public class GradeServiceTest {
     void saveImportedGrades_rejectsEnrollmentFromAnotherSection() {
         CourseSection selectedSection = new CourseSection();
         selectedSection.setId(999L);
+        selectedSection.setStatus(CourseSection.SectionStatus.ACTIVE);
         when(courseSectionRepository.findById(999L)).thenReturn(Optional.of(selectedSection));
         when(enrollmentRepository.findByIdInWithSection(anyList()))
                 .thenReturn(List.of(enrollment));

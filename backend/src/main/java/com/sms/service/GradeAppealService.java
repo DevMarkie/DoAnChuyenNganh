@@ -4,6 +4,7 @@ import com.sms.dto.request.GradeAppealRequest;
 import com.sms.dto.request.GradeAppealReviewRequest;
 import com.sms.entity.*;
 import com.sms.exception.BadRequestException;
+import org.springframework.security.access.AccessDeniedException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -48,10 +49,13 @@ public class GradeAppealService {
     public GradeAppeal create(Long userId, GradeAppealRequest request) {
         Student student = studentRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
+        if (student.getStatus() != Student.StudentStatus.ACTIVE) {
+            throw new BadRequestException("Tài khoản sinh viên đang trong trạng thái Bảo lưu / Thôi học, không được phép nộp đơn phúc khảo");
+        }
         Enrollment enrollment = enrollmentRepository.findById(request.getEnrollmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đăng ký học phần"));
         if (!student.getId().equals(enrollment.getStudent().getId())) {
-            throw new BadRequestException("Bạn không có quyền gửi phúc khảo cho đăng ký này");
+            throw new AccessDeniedException("Bạn không có quyền gửi phúc khảo cho đăng ký này");
         }
 
         Grade grade = gradeRepository.findByEnrollmentId(enrollment.getId())
@@ -79,12 +83,16 @@ public class GradeAppealService {
         appeal.setDesiredScore(request.getDesiredScore());
         appeal.setReason(request.getReason().trim());
         appeal.setStatus(GradeAppeal.AppealStatus.PENDING);
+        if (enrollment.getSection() != null && enrollment.getSection().getSemester() != null) {
+            enrollment.getSection().getSemester().getSemesterName();
+        }
         return appealRepository.save(appeal);
     }
 
     @Transactional
     public GradeAppeal review(Long reviewerUserId, Long appealId, GradeAppealReviewRequest request) {
-        GradeAppeal appeal = appealRepository.findById(appealId)
+        GradeAppeal appeal = appealRepository.findByIdWithDetails(appealId)
+                .or(() -> appealRepository.findById(appealId))
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn phúc khảo"));
         if (appeal.getStatus() != GradeAppeal.AppealStatus.PENDING
                 && appeal.getStatus() != GradeAppeal.AppealStatus.IN_REVIEW) {
@@ -95,7 +103,7 @@ public class GradeAppealService {
         if (lecturer != null) {
             var sectionLecturer = appeal.getEnrollment().getSection().getLecturer();
             if (sectionLecturer == null || !lecturer.getId().equals(sectionLecturer.getId())) {
-                throw new BadRequestException("Bạn không phụ trách học phần của đơn phúc khảo này");
+                throw new AccessDeniedException("Bạn không phụ trách học phần của đơn phúc khảo này");
             }
         }
         User reviewer = userRepository.findById(reviewerUserId)
@@ -129,6 +137,7 @@ public class GradeAppealService {
 
     private BigDecimal readScore(Grade grade, GradeAppeal.ScoreComponent component) {
         return switch (component) {
+            case CC1 -> grade.getCc1Score();
             case CC2 -> grade.getCc2Score();
             case MIDTERM -> grade.getMidtermScore();
             case FINAL -> grade.getFinalScore();
@@ -141,6 +150,7 @@ public class GradeAppealService {
         // drives the published total score and is the only single score accepted
         // by the review contract.
         switch (component) {
+            case CC1 -> grade.setCc1Score(newScore);
             case CC2 -> grade.setCc2Score(newScore);
             case MIDTERM -> grade.setMidtermScore(newScore);
             case FINAL, ALL -> grade.setFinalScore(newScore);

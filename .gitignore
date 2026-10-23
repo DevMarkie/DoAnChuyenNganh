@@ -112,7 +112,8 @@ tests/*_result.json
 tests/*.json
 tests/reports/
 tests/results/
-tests/utils/
+tests/utils/*
+!tests/utils/health_check.js
 tests/test-results/
 tests/performance/simulate_600_enrollment.js
 

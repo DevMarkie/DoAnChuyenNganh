@@ -29,7 +29,8 @@ public class SemesterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học kỳ với ID: " + id));
     }
 
-    @Cacheable(value = "semesters", key = "'current'")
+    // NOTE: Do NOT cache this — registrationOpen is @Transient and computed from LocalDate.now().
+    // Caching would freeze the registration window status until the next eviction.
     public Semester findCurrent() {
         return semesterRepository.findByIsCurrentTrue()
                 .orElseThrow(() -> new ResourceNotFoundException("Không có học kỳ hiện tại"));

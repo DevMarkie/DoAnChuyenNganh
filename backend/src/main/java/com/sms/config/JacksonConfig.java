@@ -12,6 +12,8 @@ public class JacksonConfig {
         Hibernate6Module module = new Hibernate6Module();
         // Skip uninitialized proxies (serialize as null) instead of throwing exception
         module.configure(Hibernate6Module.Feature.FORCE_LAZY_LOADING, false);
+        // Do not suppress fields/methods annotated with @Transient if they have @JsonProperty
+        module.configure(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION, false);
         return module;
     }
 }

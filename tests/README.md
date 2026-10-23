@@ -9,14 +9,17 @@ Thư mục `tests/` quản lý các kịch bản kiểm thử tự động đa t
 
 ```text
 tests/
-├── e2e/                             # Kiểm thử End-to-End người dùng & luồng nghiệp vụ
-│   ├── comprehensive_system_test.js # Bộ 56 test cases: Bảo mật (RBAC, SQLi, XSS) & Quy tắc nghiệp vụ
+├── smoke/                           # 💨 Kiểm thử khói (Sanity Gate - Fail Fast < 30s)
+│   └── smoke_test.js                # 10 Test cases cốt lõi: Auth, DB, Dashboard, Catalog, SPA
+├── e2e/                             # 🛡️ Kiểm thử hồi quy toàn diện End-to-End
+│   ├── comprehensive_system_test.js # Bộ 56 test cases: Bảo mật (RBAC, SQLi, XSS) & Quy chế đào tạo
 │   ├── system_e2e_test.js           # Bộ 39 test cases: Kiểm tra chức năng các phân hệ chính
 │   └── user_experience_journey_test.js # Kiểm thử hành trình trải nghiệm người dùng xuyên suốt
-├── performance/                     # Kiểm thử hiệu năng, áp lực & tải đồng thời
+├── performance/                     # ⚡ Kiểm thử hiệu năng, áp lực & tải đồng thời
+│   ├── simulate_600_enrollment.js   # Mô phỏng 600 sinh viên đồng thời tranh chấp đăng ký tín chỉ
 │   ├── enrollment_load_test.js      # Kiểm thử tranh chấp đăng ký tín chỉ đồng thời (Concurrency)
 │   └── overload_stress_test.js      # Benchmark chịu tải kết nối: HikariCP, Tomcat thread pool
-├── integration/                     # Kiểm thử tích hợp tính năng & kiểm toán kỹ thuật
+├── integration/                     # 🧩 Kiểm thử tích hợp tính năng & kiểm toán kỹ thuật
 │   ├── test_attendance_feature.js   # Kiểm thử quy trình điểm danh sinh viên theo lớp học phần
 │   ├── test_excel_import_flow.js    # Kiểm thử luồng nhập điểm tự động từ tệp Excel
 │   ├── phase1_verification_test.js  # Kiểm thử xác thực tích hợp giai đoạn 1
@@ -33,15 +36,27 @@ Từ thư mục gốc của dự án, chạy lệnh:
 ```cmd
 run_tests.bat
 ```
-* **Lựa chọn [1]:** Chạy bộ kiểm thử toàn diện 56 Test Cases (`comprehensive_system_test.js`).
-* **Lựa chọn [2]:** Chạy kiểm thử áp lực & quá tải hệ thống (`overload_stress_test.js`).
-* **Lựa chọn [3]:** Chạy bộ kiểm thử hệ thống 39 Test Cases (`system_e2e_test.js`).
+* **Lựa chọn [1]:** 💨 Chạy Smoke Test siêu tốc (< 30s, kiểm tra liveness & luồng chính sau deploy).
+* **Lựa chọn [2]:** 🛡️ Chạy Regression Test toàn diện 56 Test Cases (`comprehensive_system_test.js`).
+* **Lựa chọn [3]:** ⚡ Chạy Performance Regression (Kiểm thử tranh chấp tải 600 sinh viên).
+* **Lựa chọn [4]:** 🚀 Chạy trọn vẹn chu kỳ Release (Smoke Test Gate $\rightarrow$ Regression Test Suite).
+* **Lựa chọn [5]:** 📋 Chạy kiểm thử nghiệp vụ cơ bản 39 Test Cases (`system_e2e_test.js`).
 
 ---
 
 ### 2. Chạy trực tiếp từng kịch bản bằng Node.js CLI
 
 Đảm bảo môi trường Backend (cổng `8080`) và Frontend (cổng `5173`) đang hoạt động trước khi chạy:
+
+#### 🔹 1. Smoke Test siêu tốc (< 30s)
+```bash
+node tests/smoke/smoke_test.js
+```
+
+#### 🔹 2. Regression Test E2E Toàn diện (56 Cases)
+```bash
+node tests/e2e/comprehensive_system_test.js
+```
 
 #### 🔹 Kiểm thử E2E Toàn diện (56 Cases)
 ```bash

@@ -17,6 +17,7 @@ import com.sms.entity.Semester;
 import com.sms.entity.Student;
 import com.sms.entity.Subject;
 import com.sms.exception.BadRequestException;
+import org.springframework.security.access.AccessDeniedException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
@@ -44,7 +45,7 @@ public class EnrollmentService {
     private final CurriculumProgramRepository curriculumProgramRepository;
     private final CurriculumBlockSubjectRepository curriculumBlockSubjectRepository;
     private final AttendanceRecordRepository attendanceRecordRepository;
-    private static final int MAX_CREDITS_PER_SEMESTER = 30;
+    private static final int MAX_CREDITS_PER_SEMESTER = 24;
 
     public List<Enrollment> findByStudent(Long studentId) {
         List<Enrollment> enrollments = enrollmentRepository.findActiveByStudentId(studentId);
@@ -75,7 +76,7 @@ public class EnrollmentService {
             CourseSection section = courseSectionRepository.findById(sectionId)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
             if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
-                throw new BadRequestException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
+                throw new AccessDeniedException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
             }
             return;
         }
@@ -88,7 +89,7 @@ public class EnrollmentService {
             boolean enrolled = enrollmentRepository
                     .findByStudentIdAndSectionId(student.getId(), sectionId).isPresent();
             if (!enrolled) {
-                throw new BadRequestException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
+                throw new AccessDeniedException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
             }
             return;
         }
@@ -103,6 +104,17 @@ public class EnrollmentService {
     public Enrollment enroll(Long userId, Long sectionId) {
         Student student = studentRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
+
+        // BR-STATE-01: Chặn sinh viên không ở trạng thái ACTIVE (Bảo lưu hoặc Buộc thôi học)
+        if (student.getStatus() != Student.StudentStatus.ACTIVE) {
+            if (student.getStatus() == Student.StudentStatus.SUSPENDED) {
+                throw new BadRequestException("Tài khoản sinh viên đang trong trạng thái Bảo lưu, không được phép đăng ký học phần");
+            } else if (student.getStatus() == Student.StudentStatus.INACTIVE) {
+                throw new BadRequestException("Tài khoản sinh viên đang trong trạng thái Buộc thôi học / Ngừng học, bị khóa toàn bộ quyền đăng ký môn học");
+            } else {
+                throw new BadRequestException("Sinh viên không ở trạng thái đang học (ACTIVE), không thể đăng ký học phần");
+            }
+        }
 
         // Serialize changes to a section's capacity so the final slot cannot
         // be granted to more than one student at once.
@@ -221,7 +233,7 @@ public class EnrollmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đăng ký"));
 
         if (!enrollment.getStudent().getId().equals(student.getId())) {
-            throw new BadRequestException("Không có quyền hủy đăng ký này");
+            throw new AccessDeniedException("Bạn không có quyền hủy đăng ký này");
         }
 
         if (enrollment.getStatus() != Enrollment.EnrollmentStatus.ENROLLED) {

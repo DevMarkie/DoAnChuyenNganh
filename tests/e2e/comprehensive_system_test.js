@@ -282,6 +282,9 @@ async function executeFullTest() {
     "SEC-11",
     "Phát hiện & Từ chối JWT Token bị sửa đổi Payload (Tampered Signature)",
     async () => {
+      if (!adminToken) {
+        throw new Error("Không thể kiểm thử: Chưa có adminToken (SEC-01 đăng nhập Admin thất bại)");
+      }
       // Modify payload part of admin token
       const parts = adminToken.split(".");
       const fakePayload = Buffer.from(
@@ -692,6 +695,9 @@ async function executeFullTest() {
     "GRD-01",
     "Lấy danh sách lớp học phần đang mở trong hệ thống",
     async () => {
+      if (!adminToken) {
+        throw new Error("Chưa có adminToken (SEC-01 đăng nhập Admin thất bại)");
+      }
       const res = await api("/course-sections", { token: adminToken });
       if (
         !res.ok ||
@@ -1009,6 +1015,9 @@ async function executeFullTest() {
     "ENR-01",
     "Sinh viên tra cứu các học phần đã đăng ký (/api/enrollments/my)",
     async () => {
+      if (!studentToken) {
+        throw new Error("Chưa có studentToken (SEC-04 đăng nhập Sinh viên 1 thất bại)");
+      }
       const res = await api("/enrollments/my", { token: studentToken });
       if (!res.ok || !Array.isArray(res.data.data))
         throw new Error("Không lấy được danh sách học phần");
@@ -1020,6 +1029,9 @@ async function executeFullTest() {
     "ENR-02",
     "Sinh viên xem thời khóa biểu cá nhân theo tuần (/api/schedules/my-schedule)",
     async () => {
+      if (!studentToken) {
+        throw new Error("Chưa có studentToken (SEC-04 đăng nhập Sinh viên 1 thất bại)");
+      }
       const res = await api("/schedules/my-schedule", { token: studentToken });
       if (!res.ok || !Array.isArray(res.data.data))
         throw new Error("Không lấy được TKB cá nhân");
@@ -1098,6 +1110,9 @@ async function executeFullTest() {
     "TRA-01",
     "Sinh viên xem bảng điểm cá nhân (/api/transcript/me)",
     async () => {
+      if (!studentToken) {
+        throw new Error("Chưa có studentToken (SEC-04 đăng nhập Sinh viên 1 thất bại)");
+      }
       const res = await api("/transcript/me", { token: studentToken });
       if (!res.ok || !res.data.success || !res.data.data)
         throw new Error("Không lấy được bảng điểm");
@@ -1112,6 +1127,9 @@ async function executeFullTest() {
     "TRA-02",
     "Admin xem bảng điểm của bất kỳ sinh viên nào (/api/transcript/student/{id})",
     async () => {
+      if (!adminToken) {
+        throw new Error("Chưa có adminToken (SEC-01 đăng nhập Admin thất bại)");
+      }
       const res = await api("/transcript/student/1", { token: adminToken });
       if (!res.ok || !res.data.success)
         throw new Error("Admin không xem được bảng điểm sinh viên 1");
@@ -1123,6 +1141,9 @@ async function executeFullTest() {
     "TRA-03",
     "Xem bảng điểm của sinh viên không tồn tại (ID: 9999999) trả về 404",
     async () => {
+      if (!adminToken) {
+        throw new Error("Chưa có adminToken (SEC-01 đăng nhập Admin thất bại)");
+      }
       const res = await api("/transcript/student/9999999", {
         token: adminToken,
       });

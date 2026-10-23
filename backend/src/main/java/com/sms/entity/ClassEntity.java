@@ -37,6 +37,11 @@ public class ClassEntity {
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
     private Cohort cohort;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "advisor_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer"})
+    private Lecturer advisor;
+
     @Column(name = "academic_year", nullable = false, length = 10)
     private String academicYear;
 

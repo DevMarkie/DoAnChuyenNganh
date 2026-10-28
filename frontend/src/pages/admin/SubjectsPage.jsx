@@ -1,6 +1,7 @@
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, CheckCircle, XCircle, X, BookOpen, Filter, RotateCcw } from 'lucide-react';
+import { Plus, Search, Edit2, CheckCircle, XCircle, X, Filter, RotateCcw } from 'lucide-react';
+import { SubjectsIcon } from '../../components/icons';
 import { toast } from 'react-toastify';
 import { subjectService, departmentService } from '../../services/dataService';
 
@@ -257,7 +258,7 @@ export default function SubjectsPage() {
                             flexShrink: 0
                           }}
                         >
-                          <BookOpen size={16} />
+                          <SubjectsIcon size={16} />
                         </div>
                         <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{s.subjectName}</span>
                       </div>

@@ -7,6 +7,7 @@ import {
   X,
   Search,
   RotateCcw,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -24,6 +25,7 @@ export default function CourseSectionsPage() {
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [search, setSearch] = useState("");
+  const [filterUnderMin, setFilterUnderMin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSec, setEditingSec] = useState(null);
@@ -33,6 +35,7 @@ export default function CourseSectionsPage() {
     subjectId: "",
     lecturerId: "",
     semesterId: "",
+    minStudents: 15,
     maxStudents: 50,
     schedule: "Thứ 2 (07:00 - 11:30)",
     room: "P.302-A2",
@@ -80,6 +83,7 @@ export default function CourseSectionsPage() {
         subjectId: sec.subject?.id || "",
         lecturerId: sec.lecturer?.id || "",
         semesterId: sec.semester?.id || "",
+        minStudents: sec.minStudents || 15,
         maxStudents: sec.maxStudents || 50,
         schedule: sec.schedule || "",
         room: sec.room || "",
@@ -97,6 +101,7 @@ export default function CourseSectionsPage() {
         subjectId: subjects[0]?.id || "",
         lecturerId: lecturers[0]?.id || "",
         semesterId: selectedSemester || semesters[0]?.id || "",
+        minStudents: 15,
         maxStudents: 50,
         schedule: "Thứ 2 (07:00 - 11:30)",
         room: "P.302-A2",
@@ -129,6 +134,10 @@ export default function CourseSectionsPage() {
     }
   };
 
+  const underMinCount = sections.filter(
+    (s) => (s.currentStudents || 0) < (s.minStudents || 15)
+  ).length;
+
   const filtered = sections.filter((s) => {
     const matchSem = selectedSemester
       ? s.semester?.id === parseInt(selectedSemester)
@@ -141,7 +150,10 @@ export default function CourseSectionsPage() {
         s.subject?.subjectName?.toLowerCase().includes(search.toLowerCase()) ||
         s.lecturer?.fullName?.toLowerCase().includes(search.toLowerCase())
       : true;
-    return matchSem && matchSubject && matchSearch;
+    const matchUnderMin = filterUnderMin
+      ? (s.currentStudents || 0) < (s.minStudents || 15)
+      : true;
+    return matchSem && matchSubject && matchSearch && matchUnderMin;
   });
 
   return (
@@ -268,6 +280,61 @@ export default function CourseSectionsPage() {
         </div>
       </div>
 
+      {/* Under-enrolled Advisory Banner */}
+      {underMinCount > 0 && (
+        <div
+          style={{
+            marginBottom: "16px",
+            padding: "12px 18px",
+            backgroundColor: "#fffbeb",
+            borderRadius: "8px",
+            border: "1px solid #fde68a",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "10px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              color: "#92400e",
+              fontSize: "0.88rem",
+            }}
+          >
+            <AlertTriangle
+              size={18}
+              style={{ color: "#d97706", flexShrink: 0 }}
+            />
+            <span>
+              Cảnh báo: Phát hiện <strong>{underMinCount}</strong> lớp học phần
+              chưa đạt sĩ số tối thiểu (minStudents). Phòng Đào tạo có thể chủ
+              động rà soát để duyệt tiếp, gộp lớp hoặc gia hạn thời gian ĐKHP.
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-outline"
+            style={{
+              padding: "4px 10px",
+              fontSize: "0.8rem",
+              color: "#b45309",
+              borderColor: "#fde68a",
+              backgroundColor: filterUnderMin ? "#fde68a" : "transparent",
+              fontWeight: 600,
+            }}
+            onClick={() => setFilterUnderMin((prev) => !prev)}
+          >
+            {filterUnderMin
+              ? "Hiển thị tất cả"
+              : `Lọc ${underMinCount} lớp chưa đạt min`}
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div className="card">
         <div className="table-container">
@@ -304,9 +371,11 @@ export default function CourseSectionsPage() {
               ) : (
                 filtered.map((s) => {
                   const currentCount = s.currentStudents || 0;
+                  const minCount = s.minStudents || 15;
                   const maxCount = s.maxStudents || 50;
                   const isOverCapacity = currentCount > maxCount;
                   const isFull = currentCount === maxCount;
+                  const isUnderMin = currentCount < minCount;
 
                   return (
                     <tr key={s.id}>
@@ -353,7 +422,8 @@ export default function CourseSectionsPage() {
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: "8px",
+                            gap: "6px",
+                            flexWrap: "wrap",
                           }}
                         >
                           <span
@@ -364,14 +434,17 @@ export default function CourseSectionsPage() {
                                 ? "var(--danger)"
                                 : "var(--text-main)",
                             }}
+                            title={`Hiện tại: ${currentCount} / Tối thiểu: ${minCount} / Tối đa: ${maxCount}`}
                           >
-                            {currentCount} / {maxCount}
+                            {currentCount} / <small style={{ color: 'var(--text-muted)' }}>{minCount}</small> / {maxCount}
                           </span>
-                          {(isFull || isOverCapacity) && (
-                            <span className="badge badge-danger">
-                              {isOverCapacity ? "Vượt sĩ số" : "Đầy"}
-                            </span>
-                          )}
+                          {isOverCapacity ? (
+                            <span className="badge badge-danger">Vượt sĩ số</span>
+                          ) : isFull ? (
+                            <span className="badge badge-warning">Đầy</span>
+                          ) : isUnderMin && currentCount > 0 ? (
+                            <span className="badge badge-neutral" style={{ fontSize: '0.72rem' }}>Chưa đạt min</span>
+                          ) : null}
                         </div>
                       </td>
                       <td>
@@ -506,7 +579,26 @@ export default function CourseSectionsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="form-label">Sĩ số tối đa</label>
+                  <label className="form-label">Sĩ số tối thiểu (Slot Min) *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    required
+                    value={formData.minStudents}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        minStudents: parseInt(e.target.value) || 1,
+                      })
+                    }
+                    className="form-control"
+                    placeholder="VD: 15"
+                  />
+                  <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Mức sĩ số tối thiểu để duy trì mở lớp</small>
+                </div>
+                <div>
+                  <label className="form-label">Sĩ số tối đa (Slot Max) *</label>
                   <input
                     type="number"
                     min="10"
@@ -516,11 +608,13 @@ export default function CourseSectionsPage() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        maxStudents: parseInt(e.target.value),
+                        maxStudents: parseInt(e.target.value) || 50,
                       })
                     }
                     className="form-control"
+                    placeholder="VD: 50"
                   />
+                  <small style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Giới hạn chỗ tối đa khi sinh viên đăng ký</small>
                 </div>
                 <div>
                   <label className="form-label">Phòng học</label>

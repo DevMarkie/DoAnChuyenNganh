@@ -51,35 +51,58 @@ public class SecurityConfig {
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/api-docs", "/v3/api-docs/**", "/v3/api-docs", "/swagger-ui.html").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()
 
-                // Admin only
+                // Grade Audit Logs (Admin, Cán bộ Đào tạo, Khảo thí tra cứu kiểm toán điểm)
+                .requestMatchers("/api/admin/grade-audit-logs/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF", "EXAMINATION_OFFICER")
+
+                // Admin only (Kỹ thuật hệ thống, cấu hình, audit log, sao lưu CSDL)
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/students/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/students/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/departments/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/departments/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/departments/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/classes/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/classes/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/subjects/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/subjects/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/lecturers/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/lecturers/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/semesters/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/semesters/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/course-sections/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/course-sections/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/schedules/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/schedules/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/schedules/**").hasRole("ADMIN")
 
-                // Student enrollment & notifications
+                // Graduation Assessment Algorithm (Cán bộ Đào tạo thực thi & xuất quyết định, ADMIN Không)
+                .requestMatchers("/api/graduation/**").hasAnyRole("ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+
+                // Academic Staff & Admin (Quản trị Đào tạo, CTĐT, Khoa, Môn học, Lớp SH)
+                .requestMatchers("/api/staff/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/students/me/contact").hasRole("STUDENT")
+                .requestMatchers(HttpMethod.POST, "/api/students/**").hasAnyRole("ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/students/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.POST, "/api/departments/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/departments/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.DELETE, "/api/departments/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.POST, "/api/classes/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/classes/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.POST, "/api/subjects/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/subjects/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.POST, "/api/lecturers/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/lecturers/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.POST, "/api/semesters/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/semesters/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+
+                // Mở lớp học phần & Phân công (Cán bộ Đào tạo & Quản trị viên)
+                .requestMatchers(HttpMethod.POST, "/api/course-sections/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/course-sections/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.POST, "/api/schedules/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/schedules/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.DELETE, "/api/schedules/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+
+                // Lecturer & Attendance
+                .requestMatchers("/api/lecturer/**").hasRole("LECTURER")
+
+                // Exam sessions & rooms (Khảo thí, Admin, Cán bộ đào tạo, Giảng viên)
+                .requestMatchers("/api/exam-sessions/**", "/api/exam-rooms/**").hasAnyRole("ADMIN", "EXAMINATION_OFFICER", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF", "LECTURER")
+
+                // Enrollment overrides & actions
+                .requestMatchers(HttpMethod.POST, "/api/enrollments/override").hasAnyRole("ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.DELETE, "/api/enrollments/*/override").hasAnyRole("ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.PUT, "/api/enrollments/*/status").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/enrollments/**").hasRole("STUDENT")
                 .requestMatchers(HttpMethod.DELETE, "/api/enrollments/**").hasRole("STUDENT")
-                .requestMatchers("/api/notifications/**").hasRole("STUDENT")
+                .requestMatchers("/api/student/**").hasRole("STUDENT")
+                .requestMatchers("/api/notifications/**").authenticated()
 
-                // Grade entry — admin + lecturer
-                .requestMatchers(HttpMethod.PUT, "/api/grades/**").hasAnyRole("ADMIN", "LECTURER")
+                // Grade entry & submission — admin (kiểm toán) + academic staff (mở/khóa) + lecturer (nhập điểm)
+                .requestMatchers(HttpMethod.PUT, "/api/grades/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF", "LECTURER")
 
                 // Read access — authenticated users
                 .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
@@ -131,8 +154,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

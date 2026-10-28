@@ -26,6 +26,7 @@ public class SemesterRequest {
 
     private String registrationStart;
     private String registrationEnd;
+    private String tuitionDeadline;
     private Boolean isCurrent;
     private String status;
 }

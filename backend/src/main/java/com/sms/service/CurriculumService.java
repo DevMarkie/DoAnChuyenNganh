@@ -2,7 +2,9 @@ package com.sms.service;
 
 import com.sms.dto.response.CurriculumResponse;
 import com.sms.dto.response.CurriculumResponse.SubjectStatus;
+import com.sms.dto.response.DegreeAuditResponse;
 import com.sms.dto.response.GraduationEligibilityResponse;
+import com.sms.dto.response.PrerequisiteGraphResponse;
 import com.sms.entity.*;
 import com.sms.exception.BadRequestException;
 import com.sms.exception.ResourceNotFoundException;
@@ -27,6 +29,8 @@ public class CurriculumService {
     private final CurriculumBlockSubjectRepository blockSubjectRepository;
     private final GradeRepository gradeRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final PrerequisiteGraphEngine prerequisiteGraphEngine;
+    private final DegreeAuditEngine degreeAuditEngine;
 
     public CurriculumResponse getMyCurriculum(Long userId) {
         Student student = studentRepository.findByUserId(userId)
@@ -90,16 +94,17 @@ public class CurriculumService {
                     .subjects(subjects).build());
         }
 
-        int completedCredits = blocks.stream().flatMap(block -> block.getSubjects().stream())
-                .filter(subject -> subject.getStatus() == SubjectStatus.PASSED)
-                .collect(Collectors.toMap(CurriculumResponse.SubjectSummary::getId,
-                        CurriculumResponse.SubjectSummary::getCredits, (first, duplicate) -> first)).values().stream()
-                .mapToInt(Integer::intValue).sum();
-        int inProgressCredits = blocks.stream().flatMap(block -> block.getSubjects().stream())
-                .filter(subject -> subject.getStatus() == SubjectStatus.ENROLLED)
-                .collect(Collectors.toMap(CurriculumResponse.SubjectSummary::getId,
-                        CurriculumResponse.SubjectSummary::getCredits, (first, duplicate) -> first)).values().stream()
-                .mapToInt(Integer::intValue).sum();
+        int completedCredits = 0;
+        int inProgressCredits = 0;
+        Set<Integer> countedSubjects = new HashSet<>();
+        for (CurriculumResponse.BlockSummary b : blocks) {
+            for (CurriculumResponse.SubjectSummary s : b.getSubjects()) {
+                if (countedSubjects.add(s.getId())) {
+                    if (s.getStatus() == SubjectStatus.PASSED) completedCredits += s.getCredits();
+                    else if (s.getStatus() == SubjectStatus.ENROLLED) inProgressCredits += s.getCredits();
+                }
+            }
+        }
         int requiredCredits = Optional.ofNullable(program.getTotalCredits()).orElse(0);
         BigDecimal percent = requiredCredits == 0 ? BigDecimal.ZERO
                 : BigDecimal.valueOf(completedCredits * 100.0 / requiredCredits).setScale(1, RoundingMode.HALF_UP);
@@ -118,78 +123,120 @@ public class CurriculumService {
     }
 
     /**
+     * Get the Prerequisite DAG Graph for the current student.
+     */
+    public PrerequisiteGraphResponse getPrerequisiteGraphByUserId(Long userId) {
+        Student student = studentRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
+        return getPrerequisiteGraph(student);
+    }
+
+    /**
+     * Get the Prerequisite DAG Graph for any student (Admin / Academic Affairs).
+     */
+    public PrerequisiteGraphResponse getPrerequisiteGraphByStudentId(Long studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên với ID: " + studentId));
+        return getPrerequisiteGraph(student);
+    }
+
+    public PrerequisiteGraphResponse getPrerequisiteGraph(Student student) {
+        ClassEntity classEntity = student.getClassEntity();
+        if (classEntity == null || classEntity.getMajor() == null || classEntity.getCohort() == null) {
+            throw new BadRequestException("Sinh viên chưa được gán chuyên ngành và khóa học");
+        }
+        CurriculumProgram program = programRepository.findActiveByMajorAndCohort(
+                        classEntity.getMajor().getId(), classEntity.getCohort().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chương trình đào tạo của sinh viên"));
+
+        List<CurriculumBlock> blocks = blockRepository.findByProgramIdOrdered(program.getId());
+        List<CurriculumBlockSubject> blockSubjects = new ArrayList<>();
+        for (CurriculumBlock b : blocks) {
+            blockSubjects.addAll(blockSubjectRepository.findByBlockIdWithSubject(b.getId()));
+        }
+
+        List<Grade> finalizedGrades = gradeRepository.findFinalizedByStudentId(student.getId());
+        Map<Integer, Grade> bestGrades = bestGradesBySubject(finalizedGrades);
+        Map<Integer, Enrollment> activeEnrollments = enrollmentRepository.findActiveByStudentId(student.getId()).stream()
+                .filter(enrollment -> enrollment.getSection().getSubject() != null
+                        && enrollment.getSection().getSemester() != null
+                        && Boolean.TRUE.equals(enrollment.getSection().getSemester().getIsCurrent()))
+                .collect(Collectors.toMap(e -> e.getSection().getSubject().getId(), Function.identity(), (first, second) -> first));
+
+        return prerequisiteGraphEngine.buildGraph(student, program, blocks, blockSubjects, bestGrades, activeEnrollments);
+    }
+
+    /**
+     * Get Degree Audit according to BR-CUR-04 for the current student.
+     */
+    public DegreeAuditResponse getDegreeAuditByUserId(Long userId) {
+        Student student = studentRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
+        return getDegreeAudit(student);
+    }
+
+    /**
+     * Get Degree Audit according to BR-CUR-04 for any student (Admin / Academic Affairs).
+     */
+    public DegreeAuditResponse getDegreeAuditByStudentId(Long studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên với ID: " + studentId));
+        return getDegreeAudit(student);
+    }
+
+    public DegreeAuditResponse getDegreeAudit(Student student) {
+        ClassEntity classEntity = student.getClassEntity();
+        if (classEntity == null || classEntity.getMajor() == null || classEntity.getCohort() == null) {
+            throw new BadRequestException("Sinh viên chưa được gán chuyên ngành và khóa học");
+        }
+        CurriculumProgram program = programRepository.findActiveByMajorAndCohort(
+                        classEntity.getMajor().getId(), classEntity.getCohort().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chương trình đào tạo của sinh viên"));
+
+        List<CurriculumBlock> blocks = blockRepository.findByProgramIdOrdered(program.getId());
+        List<CurriculumBlockSubject> blockSubjects = new ArrayList<>();
+        for (CurriculumBlock b : blocks) {
+            blockSubjects.addAll(blockSubjectRepository.findByBlockIdWithSubject(b.getId()));
+        }
+
+        List<Grade> finalizedGrades = gradeRepository.findFinalizedByStudentId(student.getId());
+        Map<Integer, Grade> bestGrades = bestGradesBySubject(finalizedGrades);
+
+        return degreeAuditEngine.auditStudent(student, program, blocks, blockSubjects, bestGrades);
+    }
+
+    /**
      * BR-GRADUATION: Kiểm tra toàn diện điều kiện xét tốt nghiệp của sinh viên theo quy chế đào tạo tín chỉ:
-     * 1. Hoàn thành toàn bộ số tín chỉ yêu cầu của CTĐT (completedCredits >= requiredCredits).
-     * 2. Hoàn thành tất cả các khối học phần bắt buộc (COMPULSORY).
-     * 3. Điểm trung bình chung tích lũy (CPA) toàn khóa đạt từ 2.00 trở lên (thang điểm 4).
-     * 4. Không trong thời gian bị kỷ luật đình chỉ học tập (SUSPENDED).
+     * Sử dụng DegreeAuditEngine (BR-CUR-04) để tách biệt Bắt buộc/Tự chọn và tối ưu hóa CPA.
      */
     public GraduationEligibilityResponse checkGraduationEligibility(Long studentId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên với ID: " + studentId));
 
-        CurriculumResponse curriculum = getCurriculumByStudent(student);
-        int completedCredits = curriculum.getProgress().getCompletedCredits();
-        int requiredCredits = curriculum.getProgress().getRequiredCredits();
-        BigDecimal completionPercent = curriculum.getProgress().getCompletionPercent();
+        DegreeAuditResponse audit = getDegreeAudit(student);
 
-        List<Grade> finalizedGrades = gradeRepository.findFinalizedByStudentId(student.getId());
-        Map<Integer, Grade> bestGrades = bestGradesBySubject(finalizedGrades);
+        String className = student.getClassEntity() != null ? student.getClassEntity().getName() : "";
+        String programName = audit.getMajorName() + " - " + audit.getCohortName();
 
-        BigDecimal cpaWeighted = BigDecimal.ZERO;
-        int gpaCredits = 0;
-        for (Grade grade : bestGrades.values()) {
-            if (grade.getGpaPoint() == null) continue;
-            int credits = grade.getEnrollment().getSection().getSubject().getCredits();
-            cpaWeighted = cpaWeighted.add(grade.getGpaPoint().multiply(BigDecimal.valueOf(credits)));
-            gpaCredits += credits;
-        }
-        BigDecimal cumulativeGpa = gpaCredits > 0
-                ? cpaWeighted.divide(BigDecimal.valueOf(gpaCredits), 2, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO;
-
-        List<String> unsatisfiedReasons = new ArrayList<>();
-
-        // 1. Kiểm tra tổng tín chỉ tích lũy
-        if (completedCredits < requiredCredits) {
-            unsatisfiedReasons.add(String.format("Chưa tích lũy đủ số tín chỉ tốt nghiệp: Đạt %d/%d tín chỉ (còn thiếu %d TC)",
-                    completedCredits, requiredCredits, requiredCredits - completedCredits));
-        }
-
-        // 2. Kiểm tra các khối kiến thức bắt buộc
-        for (CurriculumResponse.BlockSummary block : curriculum.getBlocks()) {
-            if ("COMPULSORY".equalsIgnoreCase(block.getType()) && !block.isCompleted()) {
-                unsatisfiedReasons.add(String.format("Chưa hoàn thành khối bắt buộc '%s' (Đạt %d/%d TC)",
-                        block.getName(), block.getCompletedCredits(), block.getRequiredCredits()));
-            }
-        }
-
-        // 3. Kiểm tra CPA tích lũy
-        if (cumulativeGpa.compareTo(new BigDecimal("2.00")) < 0) {
-            unsatisfiedReasons.add(String.format("Điểm trung bình tích lũy toàn khóa chưa đạt chuẩn (CPA: %s < 2.00)",
-                    cumulativeGpa.toPlainString()));
-        }
-
-        // 4. Kiểm tra kỷ luật đình chỉ
-        if (student.getStatus() == Student.StudentStatus.SUSPENDED) {
-            unsatisfiedReasons.add("Sinh viên đang trong thời gian bị tạm đình chỉ học tập");
-        }
-
-        boolean eligible = unsatisfiedReasons.isEmpty();
+        int completedCredits = audit.getTotalCompletedCredits();
+        int requiredCredits = audit.getTotalRequiredCredits();
+        int remainingCredits = Math.max(0, requiredCredits - completedCredits);
+        BigDecimal completionPercent = requiredCredits == 0 ? BigDecimal.ZERO
+                : BigDecimal.valueOf(completedCredits * 100.0 / requiredCredits).setScale(1, RoundingMode.HALF_UP);
 
         return GraduationEligibilityResponse.builder()
                 .studentId(student.getId())
                 .studentCode(student.getStudentCode())
                 .studentName(student.getFullName())
-                .className(student.getClassEntity() != null ? student.getClassEntity().getName() : null)
-                .programName(curriculum.getProgram() != null ? curriculum.getProgram().getName() : null)
-                .eligible(eligible)
+                .className(className)
+                .programName(programName)
+                .eligible(audit.getIsGraduationEligible())
                 .completedCredits(completedCredits)
                 .requiredCredits(requiredCredits)
-                .remainingCredits(Math.max(0, requiredCredits - completedCredits))
+                .remainingCredits(remainingCredits)
                 .completionPercent(completionPercent)
-                .cumulativeGpa(cumulativeGpa)
-                .unsatisfiedReasons(unsatisfiedReasons)
+                .cumulativeGpa(audit.getAuditCpa())
+                .unsatisfiedReasons(audit.getUnsatisfiedReasons())
                 .build();
     }
 

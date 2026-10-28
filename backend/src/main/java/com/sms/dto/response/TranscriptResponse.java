@@ -14,10 +14,14 @@ public class TranscriptResponse {
     private String className;
     private BigDecimal cumulativeGpa;
     private String academicStanding;
-    private int warningLevel;
+    private int warningLevel; // 0: Bình thường, 1: Mức 1, 2: Mức 2, 3: Buộc thôi học
     private String warningNotice;
+    private Integer maxAllowedCredits; // Hạn mức tín chỉ đăng ký kỳ sau (24, 14, 10, 0)
     private int totalCredits;
     private int completedCourses;
+    private int debtCredits; // Tổng số tín chỉ nợ môn trượt F chưa trả
+    private Boolean isLockedDueToTuition; // Bảng điểm bị khóa do nợ học phí
+    private String lockReason; // Lý do khóa bảng điểm
     private List<SemesterGrade> semesters;
     private AdvisorContact advisorContact;
 
@@ -47,6 +51,7 @@ public class TranscriptResponse {
         private Integer semesterId;
         private String semesterName;
         private String academicYear;
+        private Integer semesterNumber;
         private BigDecimal semesterGpa;
         private String semesterClassification;
         private boolean isSemesterWarning;
@@ -58,7 +63,11 @@ public class TranscriptResponse {
     @NoArgsConstructor @AllArgsConstructor
     public static class CourseGrade {
         private Long enrollmentId;
+        private Long sectionId;
+        private String sectionCode;
         private LocalDateTime finalizedAt;
+        private LocalDateTime publishedAt;
+        private Boolean canAppeal;
         private String subjectCode;
         private String subjectName;
         private int credits;
@@ -69,5 +78,9 @@ public class TranscriptResponse {
         private BigDecimal totalScore;
         private String letterGrade;
         private BigDecimal gpaPoint;
+        private Boolean isFinalized;
+        private String status;
+        private String attendanceStatus;
+        private Boolean isDisqualified;
     }
 }

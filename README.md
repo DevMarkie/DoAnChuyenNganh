@@ -20,7 +20,7 @@ Hệ thống **SMS (Student Management System)** chuẩn hóa và tự động h
 
 * **🧑‍💼 Phòng Đào Tạo (Admin):** Quản lý danh mục (Khoa, Ngành, Khóa), thiết lập Khung CTĐT 5 khối kiến thức, mở lớp học phần, xếp TKB, rà soát cảnh báo học vụ tự động và xét tốt nghiệp.
 * **👨‍🏫 Giảng Viên:** Theo dõi lịch giảng dạy tuần, quản lý điểm sinh viên (nhập trực tiếp hoặc import Excel theo công thức CC1 5% · CC2 5% · GK 30% · CK 60%), khóa sổ điểm với cơ chế ân hạn 7 ngày.
-* **🎓 Sinh Viên:** Cổng đăng ký tín chỉ thông minh (ràng buộc 10–24 TC, tự động chặn trùng lịch và kiểm tra tiên quyết), tra cứu TKB tuần, theo dõi GPA/CPA thời gian thực và nộp đơn phúc khảo.
+* **🎓 Sinh Viên:** Cổng đăng ký tín chỉ thông minh (ràng buộc 12–24 TC, tự động chặn trùng lịch và kiểm tra tiên quyết), tra cứu TKB tuần, theo dõi GPA/CPA thời gian thực và nộp đơn phúc khảo.
 
 ---
 
@@ -29,7 +29,7 @@ Hệ thống **SMS (Student Management System)** chuẩn hóa và tự động h
 | Tầng | Công nghệ & Thư viện | Vai trò |
 | :--- | :--- | :--- |
 | **Backend** | Java 23, Spring Boot 3.5.6, Spring Security, JWT, JPA/Hibernate | REST API bảo mật, xử lý nghiệp vụ, kiểm tra ràng buộc logic |
-| **Frontend** | React 19, Vite, Tailwind CSS, Zustand, Axios, Lucide Icons | Giao diện SPA hiện đại, tối ưu UX, hỗ trợ Dark/Light mode |
+| **Frontend** | React 19, Vite, Tailwind CSS, Zustand, Native Fetch Client (Zero Dep), Lucide Icons | Giao diện SPA hiện đại, tối ưu UX, hỗ trợ Dark/Light mode |
 | **Database** | MySQL 8.0, Database Views (`v_student_transcript`, `v_student_gpa`) | Lưu trữ toàn vẹn quan hệ, khử truy vấn N+1, tối ưu Composite Index |
 | **DevOps & QA**| Docker, Docker Compose, JUnit 5, Mockito, Vitest | Container hóa môi trường, kiểm thử tự động đa tầng |
 
@@ -63,7 +63,7 @@ flowchart LR
 - **Cổng đăng ký tín chỉ:** Kiểm tra tức thời điều kiện tiên quyết, giới hạn tín chỉ (10–24 TC), ngăn chặn 100% trùng lịch học.
 - **Thời khóa biểu trực quan:** Ma trận lịch học theo tuần dạng Grid, hỗ trợ lọc theo học kỳ.
 - **Tra cứu kết quả học tập:** Bảng điểm chi tiết theo kỳ, tự động lấy điểm cao nhất khi học cải thiện, tiến độ tích lũy CTĐT.
-- **Bảo mật cá nhân:** Đổi mật khẩu có thanh đo độ mạnh (Password Strength Meter), tự động thu hồi phiên đăng nhập cũ.
+- **Bảo mật cá nhân:** Đổi mật khẩu có thanh đo độ mạnh (Password Strength Meter), bắt buộc đổi mật khẩu khi cấp mới và mã hóa an toàn BCrypt.
 
 ---
 

@@ -12,7 +12,7 @@ tests/
 ├── smoke/                           # 💨 Kiểm thử khói (Sanity Gate - Fail Fast < 30s)
 │   └── smoke_test.js                # 10 Test cases cốt lõi: Auth, DB, Dashboard, Catalog, SPA
 ├── e2e/                             # 🛡️ Kiểm thử hồi quy toàn diện End-to-End
-│   ├── comprehensive_system_test.js # Bộ 56 test cases: Bảo mật (RBAC, SQLi, XSS) & Quy chế đào tạo
+│   ├── comprehensive_system_test.js # Bộ 65+ test cases: Bảo mật, RBAC, Học phí, Điểm danh, Phúc khảo, Lớp riêng
 │   ├── system_e2e_test.js           # Bộ 39 test cases: Kiểm tra chức năng các phân hệ chính
 │   └── user_experience_journey_test.js # Kiểm thử hành trình trải nghiệm người dùng xuyên suốt
 ├── performance/                     # ⚡ Kiểm thử hiệu năng, áp lực & tải đồng thời
@@ -37,7 +37,7 @@ Từ thư mục gốc của dự án, chạy lệnh:
 run_tests.bat
 ```
 * **Lựa chọn [1]:** 💨 Chạy Smoke Test siêu tốc (< 30s, kiểm tra liveness & luồng chính sau deploy).
-* **Lựa chọn [2]:** 🛡️ Chạy Regression Test toàn diện 56 Test Cases (`comprehensive_system_test.js`).
+* **Lựa chọn [2]:** 🛡️ Chạy Regression Test toàn diện 65+ Test Cases (`comprehensive_system_test.js`).
 * **Lựa chọn [3]:** ⚡ Chạy Performance Regression (Kiểm thử tranh chấp tải 600 sinh viên).
 * **Lựa chọn [4]:** 🚀 Chạy trọn vẹn chu kỳ Release (Smoke Test Gate $\rightarrow$ Regression Test Suite).
 * **Lựa chọn [5]:** 📋 Chạy kiểm thử nghiệp vụ cơ bản 39 Test Cases (`system_e2e_test.js`).

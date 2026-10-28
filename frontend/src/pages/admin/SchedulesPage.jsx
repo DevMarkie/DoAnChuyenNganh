@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
   Calendar, Clock, MapPin, User, Plus, Trash2, Edit2, Search,
-  AlertTriangle, School, Grid, List, RefreshCw
+  AlertTriangle, Grid, List, RefreshCw
+
 } from 'lucide-react';
+import { ClassesIcon } from '../../components/icons';
 import { toast } from 'react-toastify';
 import {
   scheduleService,
@@ -219,7 +221,7 @@ export default function SchedulesPage() {
       {/* KPI Stats */}
       <div className="stats-grid" style={{ marginBottom: '20px' }}>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'var(--info-bg)', color: 'var(--info)' }}>
+          <div className="stat-icon-wrapper stat-icon--info">
             <Calendar size={24} />
           </div>
           <div>
@@ -229,7 +231,7 @@ export default function SchedulesPage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'var(--success-bg)', color: 'var(--success)' }}>
+          <div className="stat-icon-wrapper stat-icon--success">
             <MapPin size={24} />
           </div>
           <div>
@@ -239,7 +241,7 @@ export default function SchedulesPage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'rgba(124, 58, 237, 0.15)', color: '#8b5cf6' }}>
+          <div className="stat-icon-wrapper stat-icon--purple">
             <User size={24} />
           </div>
           <div>
@@ -249,7 +251,7 @@ export default function SchedulesPage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: 'var(--warning-bg)', color: 'var(--warning)' }}>
+          <div className="stat-icon-wrapper stat-icon--warning">
             <AlertTriangle size={24} />
           </div>
           <div>
@@ -593,7 +595,7 @@ export default function SchedulesPage() {
                     <td>
                       {s.administrativeClass ? (
                         <span className="badge badge-neutral">
-                          <School size={12} /> {s.administrativeClass.code}
+                          <ClassesIcon size={12} /> {s.administrativeClass.code}
                         </span>
                       ) : (
                         <span style={{ color: 'var(--text-light)' }}>-</span>

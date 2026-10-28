@@ -6,10 +6,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.sms.service.RedisLockService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,12 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * GAP-03: Server-side Rate Limiter cho API enrollment.
  * <p>
- * Sử dụng thuật toán Sliding Window Counter trong bộ nhớ.
- * Giới hạn mỗi user (theo JWT principal) tối đa {@code MAX_REQUESTS}
- * request POST enrollment trong {@code WINDOW_MS} mili-giây.
- * <p>
- * Cơ chế này chặn auto-click tool và bot gọi API trực tiếp
- * mà frontend guard (useRef) không bắt được.
+ * Phối hợp giữa Redis Distributed Rate Limiter và Sliding Window Counter dự phòng trong bộ nhớ.
+ * Giới hạn mỗi user (theo JWT username) tối đa {@code ENROLLMENT_MAX_REQUESTS}
+ * request POST/DELETE enrollment trong {@code ENROLLMENT_WINDOW_MS} mili-giây.
+ * TUYỆT ĐỐI KHÔNG CHẶN THEO IP cho các thao tác đăng ký môn của sinh viên.
  */
 @Slf4j
 @Component
@@ -39,7 +40,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final int FORGOT_PASSWORD_MAX_REQUESTS = 5;
     private static final long FORGOT_PASSWORD_WINDOW_MS = 60_000L;
 
-    /** In-memory sliding window counters, keyed by username. */
+    @Autowired(required = false)
+    private RedisLockService redisLockService;
+
+    /** In-memory sliding window counters, keyed by username (dự phòng). */
     private final Map<String, SlidingWindowBucket> enrollmentBuckets = new ConcurrentHashMap<>();
 
     /** In-memory sliding window counters for forgot-password, keyed by client IP. */
@@ -99,9 +103,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
-        SlidingWindowBucket bucket = enrollmentBuckets.computeIfAbsent(
-                username, k -> new SlidingWindowBucket(ENROLLMENT_MAX_REQUESTS, ENROLLMENT_WINDOW_MS));
-        if (!bucket.tryConsume()) {
+        boolean allowed = true;
+        if (redisLockService != null) {
+            allowed = redisLockService.tryConsumeUserRateLimit(username, ENROLLMENT_MAX_REQUESTS, ENROLLMENT_WINDOW_MS / 1000);
+        } else {
+            SlidingWindowBucket bucket = enrollmentBuckets.computeIfAbsent(
+                    username, k -> new SlidingWindowBucket(ENROLLMENT_MAX_REQUESTS, ENROLLMENT_WINDOW_MS));
+            allowed = bucket.tryConsume();
+        }
+
+        if (!allowed) {
             log.warn("RATE_LIMIT: user='{}' exceeded {} enrollment requests in {}s",
                     username, ENROLLMENT_MAX_REQUESTS, ENROLLMENT_WINDOW_MS / 1000);
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
@@ -148,7 +159,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             this.windowMs = windowMs;
         }
 
-        boolean tryConsume() {
+        synchronized boolean tryConsume() {
             long now = System.currentTimeMillis();
             long start = windowStart.get();
 

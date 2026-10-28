@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, User, X, Mail, Phone, CheckCircle, GraduationCap, BookOpen, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Lock, User, X, Mail, Phone, CheckCircle, Eye, EyeOff, KeyRound, Sparkles, ArrowRight } from 'lucide-react';
+import { PortalStudentIcon, PortalLecturerIcon, PortalAdminIcon } from '../../components/icons';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
@@ -13,7 +14,7 @@ const PORTAL_CONFIG = {
     accentHover: '#1d4ed8',
     accentSoft: '#eff6ff',
     accentBorder: '#bfdbfe',
-    Icon: GraduationCap,
+    Icon: PortalStudentIcon,
     roleLabel: 'Sinh viên',
     title: 'Cổng thông tin sinh viên',
     heading: 'Đăng nhập Cổng Sinh viên',
@@ -32,6 +33,7 @@ const PORTAL_CONFIG = {
     profilePath: '/student/profile',
     otherLinks: [
       { label: 'Cổng Cán bộ & Giảng viên', path: '/lecturer/login', color: '#0d9488' },
+      { label: 'Cổng Cán bộ Đào tạo', path: '/academic/login', color: '#7c3aed' },
       { label: 'Cổng Quản trị hệ thống', path: '/admin/login', color: '#d97706' },
     ],
   },
@@ -41,7 +43,7 @@ const PORTAL_CONFIG = {
     accentHover: '#0f766e',
     accentSoft: '#f0fdfa',
     accentBorder: '#99f6e4',
-    Icon: BookOpen,
+    Icon: PortalLecturerIcon,
     roleLabel: 'Giảng viên',
     title: 'Cổng cán bộ & giảng viên',
     heading: 'Đăng nhập Cổng Giảng viên',
@@ -53,13 +55,42 @@ const PORTAL_CONFIG = {
     rejectMsg: 'Từ chối truy cập: Tài khoản không thuộc phân hệ Giảng viên! Vui lòng đăng nhập đúng cổng.',
     features: [
       'Theo dõi lịch giảng dạy và danh sách lớp học phần phân công',
-      'Nhập điểm chuyên cần, giữa kỳ, thi cuối kỳ & khóa sổ điểm',
+      'Nhập điểm chuyên cần, giữa kỳ, thi cuối kỳ & đề xuất điểm phúc khảo',
       'Báo cáo kết quả đánh giá học phần theo thang điểm chuẩn tín chỉ',
     ],
     redirectPath: '/lecturer/dashboard',
     profilePath: '/lecturer/profile',
     otherLinks: [
       { label: 'Cổng Thông tin Sinh viên', path: '/student/login', color: '#2563eb' },
+      { label: 'Cổng Cán bộ Đào tạo', path: '/academic/login', color: '#7c3aed' },
+      { label: 'Cổng Quản trị hệ thống', path: '/admin/login', color: '#d97706' },
+    ],
+  },
+  academic: {
+    role: ['ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF'],
+    accent: '#7c3aed',
+    accentHover: '#6d28d9',
+    accentSoft: '#f5f3ff',
+    accentBorder: '#ddd6fe',
+    Icon: PortalAdminIcon,
+    roleLabel: 'Cán bộ Đào tạo',
+    title: 'Cổng cán bộ đào tạo',
+    heading: 'Đăng nhập Cổng Đào tạo',
+    subheading: 'Quản lý hồ sơ sinh viên, khung chương trình, mở lớp và xét tốt nghiệp',
+    userLabel: 'Tài khoản Cán bộ Đào tạo',
+    userPlaceholder: 'VD: daotao',
+    defaultUser: 'daotao',
+    defaultPass: 'Daotao@2026!',
+    rejectMsg: 'Từ chối truy cập: Tài khoản không thuộc phân hệ Cán bộ Đào tạo! Vui lòng đăng nhập đúng cổng.',
+    features: [
+      'Quản lý hồ sơ sinh viên, khung chương trình đào tạo & khối kiến thức',
+      'Mở lớp học phần, phân công giảng viên & xử lý ngoại lệ đăng ký tín chỉ',
+      'Chạy thuật toán xét tốt nghiệp chuẩn hóa & phê duyệt đơn phúc khảo điểm',
+    ],
+    redirectPath: '/academic/dashboard',
+    otherLinks: [
+      { label: 'Cổng Thông tin Sinh viên', path: '/student/login', color: '#2563eb' },
+      { label: 'Cổng Giảng viên', path: '/lecturer/login', color: '#0d9488' },
       { label: 'Cổng Quản trị hệ thống', path: '/admin/login', color: '#d97706' },
     ],
   },
@@ -69,25 +100,26 @@ const PORTAL_CONFIG = {
     accentHover: '#b45309',
     accentSoft: '#fffbeb',
     accentBorder: '#fde68a',
-    Icon: ShieldCheck,
+    Icon: PortalAdminIcon,
     roleLabel: 'Quản trị viên',
     title: 'Cổng quản trị viên hệ thống',
     heading: 'Đăng nhập Quản trị Trung tâm',
-    subheading: 'Phân hệ quản trị đào tạo, người dùng & cấu hình hệ thống cấp cao',
+    subheading: 'Phân hệ cấu hình hệ thống, phân quyền, kiểm toán và bảo mật cấp cao',
     userLabel: 'Tài khoản Quản trị viên',
     userPlaceholder: 'VD: admin',
     defaultUser: 'admin',
     defaultPass: '123456',
-    rejectMsg: 'Cảnh báo bảo mật: Tài khoản của bạn không có quyền Quản trị viên hệ thống!',
+    rejectMsg: 'Cảnh báo: Tài khoản của bạn không có quyền Quản trị viên hệ thống!',
     features: [
-      'Quản lý hồ sơ đào tạo: Khoa, Ngành, Môn học & Lớp học phần',
-      'Quản lý người dùng, phân quyền RBAC và cấu hình đợt đăng ký tín chỉ',
-      'Giám sát hệ thống toàn diện, tra cứu & xuất báo cáo thống kê KPI',
+      'Cấu hình hệ thống, quản trị tài khoản & cấp lại mật khẩu bảo mật',
+      'Quản lý cổng thu ngân học phí, kiểm soát luồng giao dịch tài chính',
+      'Giám sát kiểm toán điều chỉnh điểm, log can thiệp và an toàn CSDL',
     ],
     redirectPath: '/admin/dashboard',
     otherLinks: [
       { label: 'Cổng Thông tin Sinh viên', path: '/student/login', color: '#2563eb' },
-      { label: 'Cổng Cán bộ & Giảng viên', path: '/lecturer/login', color: '#0d9488' },
+      { label: 'Cổng Cán bộ Đào tạo', path: '/academic/login', color: '#7c3aed' },
+      { label: 'Cổng Giảng viên', path: '/lecturer/login', color: '#0d9488' },
     ],
   },
 };
@@ -113,42 +145,81 @@ export default function PortalLoginPage({ portalType = 'student' }) {
     setShowPassword(false);
   }
 
-  // Forgot password modal states
+  // Forgot password OTP states
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
-  const [forgotForm, setForgotForm] = useState({
-    username: '',
-    email: '',
-    phone: '',
-    reason: '',
-  });
+  const [forgotStep, setForgotStep] = useState(1); // 1: nhập username, 2: nhập OTP & mật khẩu mới
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [forgotMaskedEmail, setForgotMaskedEmail] = useState('');
+  const [forgotDevOtp, setForgotDevOtp] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
-  const [forgotSubmitted, setForgotSubmitted] = useState(false);
 
   const handleOpenForgotModal = () => {
     const curUser = username.trim() || config.defaultUser;
-    setForgotForm({
-      username: curUser,
-      email: `${curUser}@sms.edu.vn`,
-      phone: '',
-      reason: 'Tôi bị quên mật khẩu tài khoản, xin vui lòng cấp lại mật khẩu mới qua Gmail.',
-    });
-    setForgotSubmitted(false);
+    setForgotUsername(curUser);
+    setForgotOtp('');
+    setForgotNewPassword('');
+    setForgotConfirmPassword('');
+    setForgotMaskedEmail('');
+    setForgotDevOtp('');
+    setForgotStep(1);
     setIsForgotModalOpen(true);
   };
 
-  const handleForgotSubmit = async (e) => {
-    e.preventDefault();
-    if (!forgotForm.username.trim() || !forgotForm.email.trim()) {
-      toast.warning('Vui lòng nhập đầy đủ mã tài khoản và email nhận mật khẩu');
+  const handleSendOtp = async (e) => {
+    e?.preventDefault();
+    if (!forgotUsername.trim()) {
+      toast.warning('Vui lòng nhập mã sinh viên hoặc tên đăng nhập');
       return;
     }
     try {
       setForgotLoading(true);
-      const res = await authService.forgotPassword(forgotForm);
-      toast.success(res.data.message || 'Đã gửi yêu cầu cấp lại mật khẩu tới Ban Quản trị!');
-      setForgotSubmitted(true);
+      const res = await authService.sendResetOtp({ username: forgotUsername.trim() });
+      const data = res.data?.data || {};
+      setForgotMaskedEmail(data.maskedEmail || '');
+      setForgotDevOtp(data.devOtp || '');
+      setForgotStep(2);
+      toast.success(res.data?.message || 'Mã OTP đã được gửi đến email đăng ký của bạn!');
+      if (data.devOtp) {
+        toast.info(`[Demo/Dev] Mã OTP của bạn là: ${data.devOtp}`, { autoClose: 12000 });
+      }
     } catch (err) {
-      const msg = err.response?.data?.message || 'Không thể gửi yêu cầu. Vui lòng kiểm tra lại thông tin!';
+      const msg = err.response?.data?.message || 'Không thể gửi mã OTP. Vui lòng kiểm tra lại mã tài khoản!';
+      toast.error(msg);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e?.preventDefault();
+    if (!forgotOtp.trim()) {
+      toast.warning('Vui lòng nhập mã OTP 6 số');
+      return;
+    }
+    if (!forgotNewPassword.trim() || forgotNewPassword.length < 6) {
+      toast.warning('Mật khẩu mới phải có tối thiểu 6 ký tự');
+      return;
+    }
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      toast.warning('Mật khẩu xác nhận không khớp');
+      return;
+    }
+    try {
+      setForgotLoading(true);
+      const res = await authService.verifyResetOtp({
+        username: forgotUsername.trim(),
+        otp: forgotOtp.trim(),
+        newPassword: forgotNewPassword.trim(),
+      });
+      toast.success(res.data?.message || 'Đặt lại mật khẩu thành công! Hãy đăng nhập với mật khẩu mới.');
+      setIsForgotModalOpen(false);
+      setUsername(forgotUsername.trim());
+      setPassword(forgotNewPassword.trim());
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Xác thực OTP thất bại. Vui lòng kiểm tra lại!';
       toast.error(msg);
     } finally {
       setForgotLoading(false);
@@ -168,7 +239,8 @@ export default function PortalLoginPage({ portalType = 'student' }) {
       const data = res.data.data;
 
       // STRICT ROLE ENFORCEMENT: Reject if user does not match the portal's designated role!
-      if (data.role !== config.role) {
+      const allowedRoles = Array.isArray(config.role) ? config.role : [config.role];
+      if (!allowedRoles.includes(data.role)) {
         toast.error(config.rejectMsg);
         setLoading(false);
         return;
@@ -199,10 +271,12 @@ export default function PortalLoginPage({ portalType = 'student' }) {
     }
   };
 
-  const handleQuickFill = () => {
+  const handleQuickFill = (userOverride) => {
+    const val = typeof userOverride === 'string' ? userOverride : config.defaultUser;
     setUsername(config.defaultUser);
     setPassword(config.defaultPass);
-    toast.info(`Đã điền tài khoản mẫu: ${config.defaultUser}`);
+    setUsername(val);
+    toast.info(`Đã điền tài khoản mẫu: ${val}`);
   };
 
   return (
@@ -335,17 +409,17 @@ export default function PortalLoginPage({ portalType = 'student' }) {
             marginBottom: '20px', fontSize: '0.8rem',
           }}>
             <span style={{ color: 'var(--text-muted)' }}>
-              Tài khoản mẫu: <strong style={{ color: 'var(--text-secondary)' }}>{config.defaultUser}</strong>
+              Tài khoản mẫu: <strong style={{ color: 'var(--text-secondary)' }}>{config.defaultUser}</strong>{portalType === 'admin' && <> / <strong style={{ color: 'var(--text-secondary)' }}>staff</strong></>}
             </span>
             <button
               type="button"
-              onClick={handleQuickFill}
+              onClick={() => handleQuickFill(config.defaultUser)}
               style={{
                 background: 'none', border: 'none', color: accent,
                 fontWeight: 600, cursor: 'pointer', padding: '2px 6px', borderRadius: '4px',
               }}
             >
-              Điền nhanh
+              {portalType === 'admin' ? 'Admin' : 'Điền nhanh'}
             </button>
           </div>
 
@@ -483,9 +557,12 @@ export default function PortalLoginPage({ portalType = 'student' }) {
             {/* Modal Header */}
             <div className="modal-header">
               <div>
-                <h3 style={{ margin: 0 }}>Yêu cầu cấp lại mật khẩu</h3>
+                <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <KeyRound size={20} style={{ color: accent }} />
+                  Đặt lại mật khẩu qua OTP
+                </h3>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  {config.title}
+                  {forgotStep === 1 ? 'Bước 1: Xác nhận tài khoản & Nhận mã OTP' : 'Bước 2: Xác thực mã OTP & Đặt mật khẩu mới'}
                 </div>
               </div>
               <button type="button" onClick={() => setIsForgotModalOpen(false)} className="btn-icon">
@@ -495,44 +572,21 @@ export default function PortalLoginPage({ portalType = 'student' }) {
 
             {/* Modal Content */}
             <div className="modal-body">
-              {forgotSubmitted ? (
-                <div style={{ textAlign: 'center', padding: '12px 8px' }}>
-                  <div style={{
-                    width: '48px', height: '48px', borderRadius: 'var(--radius-full)',
-                    backgroundColor: 'var(--success-bg)', color: 'var(--success)',
-                    border: '1px solid var(--success-border)',
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    marginBottom: '16px',
-                  }}>
-                    <CheckCircle size={26} />
-                  </div>
-                  <h4 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '8px' }}>
-                    Yêu cầu đã được gửi
-                  </h4>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '20px' }}>
-                    Thông tin yêu cầu đã được chuyển tới Ban Quản trị Đào tạo. Sau khi xác minh, Quản trị viên sẽ cấp mật khẩu mới và gửi tới hòm thư:
-                    <br />
-                    <strong style={{ color: 'var(--text-main)' }}>{forgotForm.email}</strong>
-                  </p>
-                  <button type="button" onClick={() => setIsForgotModalOpen(false)} className="btn btn-primary">
-                    Đã hiểu & Đóng
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleForgotSubmit}>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '18px' }}>
-                    Điền thông tin tài khoản của bạn. Yêu cầu sẽ được gửi tới Ban Quản trị để xét duyệt và cấp lại mật khẩu mới qua Gmail.
+              {forgotStep === 1 ? (
+                <form onSubmit={handleSendOtp}>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '16px' }}>
+                    Nhập mã số sinh viên hoặc tên tài khoản. Hệ thống sẽ tự động gửi mã OTP xác thực (6 số) tới email đã đăng ký của bạn.
                   </p>
 
-                  <div className="form-group" style={{ marginBottom: '14px' }}>
+                  <div className="form-group" style={{ marginBottom: '18px' }}>
                     <label className="form-label">{config.userLabel} *</label>
                     <div style={{ position: 'relative' }}>
                       <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                       <input
                         type="text"
                         required
-                        value={forgotForm.username}
-                        onChange={(e) => setForgotForm({ ...forgotForm, username: e.target.value })}
+                        value={forgotUsername}
+                        onChange={(e) => setForgotUsername(e.target.value)}
                         placeholder={config.userPlaceholder}
                         className="form-control"
                         style={{ paddingLeft: '36px' }}
@@ -540,30 +594,69 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                     </div>
                   </div>
 
-                  <div className="form-group" style={{ marginBottom: '14px' }}>
-                    <label className="form-label">Gmail nhận mật khẩu mới *</label>
-                    <div style={{ position: 'relative' }}>
-                      <Mail size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
-                      <input
-                        type="email"
-                        required
-                        value={forgotForm.email}
-                        onChange={(e) => setForgotForm({ ...forgotForm, email: e.target.value })}
-                        placeholder="VD: sinhvien@sms.edu.vn hoặc gmail của bạn"
-                        className="form-control"
-                        style={{ paddingLeft: '36px' }}
-                      />
-                    </div>
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                    <button type="button" disabled={forgotLoading} onClick={() => setIsForgotModalOpen(false)} className="btn btn-outline">
+                      Huỷ bỏ
+                    </button>
+                    <button type="submit" disabled={forgotLoading} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      {forgotLoading ? 'Đang gửi...' : 'Gửi mã OTP qua Email'}
+                      <ArrowRight size={16} />
+                    </button>
                   </div>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyOtp}>
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--bg-subtle)',
+                    border: '1px solid var(--border)',
+                    marginBottom: '16px',
+                    fontSize: '0.85rem',
+                  }}>
+                    Mã OTP 6 số đã được gửi tới email: <strong>{forgotMaskedEmail || 'email trên hồ sơ'}</strong>
+                    {forgotDevOtp && (
+                      <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--success)', fontWeight: 600 }}>
+                          [Demo OTP]: {forgotDevOtp}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-xs btn-outline"
+                          onClick={() => setForgotOtp(forgotDevOtp)}
+                          style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                        >
+                          Dán mã OTP demo
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="form-group" style={{ marginBottom: '14px' }}>
-                    <label className="form-label">Số điện thoại liên hệ (để Admin xác minh)</label>
+                    <label className="form-label">Mã xác thực OTP (6 số) *</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      value={forgotOtp}
+                      onChange={(e) => setForgotOtp(e.target.value)}
+                      placeholder="VD: 123456"
+                      className="form-control"
+                      style={{ fontSize: '1.15rem', letterSpacing: '4px', textAlign: 'center', fontWeight: 700 }}
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '14px' }}>
+                    <label className="form-label">Mật khẩu mới (tối thiểu 6 ký tự) *</label>
                     <div style={{ position: 'relative' }}>
-                      <Phone size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                      <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                       <input
-                        type="tel"
-                        value={forgotForm.phone}
-                        onChange={(e) => setForgotForm({ ...forgotForm, phone: e.target.value })}
-                        placeholder="VD: 0912345678"
+                        type="password"
+                        required
+                        minLength={6}
+                        value={forgotNewPassword}
+                        onChange={(e) => setForgotNewPassword(e.target.value)}
+                        placeholder="Nhập mật khẩu mới"
                         className="form-control"
                         style={{ paddingLeft: '36px' }}
                       />
@@ -571,28 +664,31 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '20px' }}>
-                    <label className="form-label">Lý do / Ghi chú gửi Ban Quản trị</label>
-                    <textarea
-                      rows="2"
-                      value={forgotForm.reason}
-                      onChange={(e) => setForgotForm({ ...forgotForm, reason: e.target.value })}
-                      placeholder="VD: Em quên mật khẩu, xin thầy/cô cấp lại giúp em."
-                      className="form-control"
-                      style={{ resize: 'vertical' }}
-                    />
+                    <label className="form-label">Nhập lại mật khẩu mới *</label>
+                    <div style={{ position: 'relative' }}>
+                      <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                      <input
+                        type="password"
+                        required
+                        minLength={6}
+                        value={forgotConfirmPassword}
+                        onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                        placeholder="Xác nhận lại mật khẩu mới"
+                        className="form-control"
+                        style={{ paddingLeft: '36px' }}
+                      />
+                    </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                    <button type="button" disabled={forgotLoading} onClick={() => setIsForgotModalOpen(false)} className="btn btn-outline">
-                      Huỷ bỏ
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between' }}>
+                    <button type="button" disabled={forgotLoading} onClick={() => setForgotStep(1)} className="btn btn-outline">
+                      Quay lại
                     </button>
                     <button type="submit" disabled={forgotLoading} className="btn btn-primary">
-                      {forgotLoading ? 'Đang gửi yêu cầu...' : 'Gửi yêu cầu tới Admin'}
+                      {forgotLoading ? 'Đang xử lý...' : 'Xác nhận & Đặt lại mật khẩu'}
                     </button>
                   </div>
-
                 </form>
-
               )}
             </div>
           </div>

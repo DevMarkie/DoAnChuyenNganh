@@ -32,6 +32,20 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Yêu cầu cấp lại mật khẩu đã được gửi thành công đến Ban Quản trị. Vui lòng kiểm tra Gmail sau khi yêu cầu được xử lý."));
     }
 
+    @PostMapping("/forgot-password/send-otp")
+    public ResponseEntity<ApiResponse<com.sms.dto.response.SendOtpResponse>> sendOtp(
+            @Valid @RequestBody com.sms.dto.request.SendOtpRequest request) {
+        com.sms.dto.response.SendOtpResponse response = passwordResetService.sendOtp(request);
+        return ResponseEntity.ok(ApiResponse.success(response.getMessage(), response));
+    }
+
+    @PostMapping("/forgot-password/verify-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyOtpAndReset(
+            @Valid @RequestBody com.sms.dto.request.VerifyOtpResetRequest request) {
+        passwordResetService.verifyOtpAndReset(request);
+        return ResponseEntity.ok(ApiResponse.success("Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay với mật khẩu mới."));
+    }
+
     @PutMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @AuthenticationPrincipal UserPrincipal user,

@@ -593,29 +593,10 @@ export default function PasswordResetsPage() {
       {/* APPROVE MODAL */}
       {approvingItem && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1000,
-            backgroundColor: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-          }}
+          className="modal-backdrop"
+          onClick={(e) => { if (e.target === e.currentTarget) setApprovingItem(null); }}
         >
-          <div
-            style={{
-              backgroundColor: 'var(--bg-surface)',
-              borderRadius: '16px',
-              maxWidth: '520px',
-              width: '100%',
-              boxShadow: 'var(--shadow-xl)',
-              border: '1px solid var(--border-color)',
-              overflow: 'hidden'
-            }}
-          >
+          <div className="modal-content" style={{ maxWidth: '520px' }}>
             <div style={{
               padding: '20px 24px',
               borderBottom: '1px solid var(--border-color)',
@@ -853,29 +834,10 @@ export default function PasswordResetsPage() {
       {/* REJECT MODAL */}
       {rejectingItem && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1000,
-            backgroundColor: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-          }}
+          className="modal-backdrop"
+          onClick={(e) => { if (e.target === e.currentTarget) setRejectingItem(null); }}
         >
-          <div
-            style={{
-              backgroundColor: 'var(--bg-surface)',
-              borderRadius: '16px',
-              maxWidth: '480px',
-              width: '100%',
-              boxShadow: 'var(--shadow-xl)',
-              border: '1px solid var(--border-color)',
-              overflow: 'hidden'
-            }}
-          >
+          <div className="modal-content" style={{ maxWidth: '480px' }}>
             <div style={{
               padding: '20px 24px',
               borderBottom: '1px solid var(--border-color)',

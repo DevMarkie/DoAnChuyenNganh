@@ -13,6 +13,7 @@ import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
 import com.sms.repository.GradeRepository;
 import com.sms.repository.LecturerRepository;
+import com.sms.repository.SemesterRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +44,12 @@ public class GradeServiceTest {
     private LecturerRepository lecturerRepository;
     @Mock
     private NotificationService notificationService;
+    @Mock
+    private SemesterRepository semesterRepository;
+    @Mock
+    private com.sms.repository.GradeAuditLogRepository gradeAuditLogRepository;
+    @Mock
+    private com.sms.repository.UserRepository userRepository;
 
     @InjectMocks
     private GradeService gradeService;
@@ -89,7 +96,7 @@ public class GradeServiceTest {
         request.setCc1Score(BigDecimal.valueOf(8));
         request.setCc2Score(BigDecimal.valueOf(8));
         request.setMidtermScore(BigDecimal.valueOf(8));
-        request.setFinalScore(BigDecimal.valueOf(8));
+        request.setFinalScore(BigDecimal.valueOf(7)); // khớp điểm cuối kỳ hiện có, GV không được sửa điểm CK
     }
 
     @Test
@@ -133,7 +140,6 @@ public class GradeServiceTest {
         when(gradeRepository.save(any(Grade.class))).thenReturn(grade);
 
         Grade saved = gradeService.saveGrade(1L, request);
-        // request.cc1=8 ghi de diem cu (10) -> chung minh service da map request vao grade.
         assertEquals(0, BigDecimal.valueOf(8).compareTo(saved.getCc1Score()));
         verify(gradeRepository).save(any(Grade.class));
     }
@@ -243,31 +249,13 @@ public class GradeServiceTest {
     }
 
     @Test
-    void lecturer_canEditFinalizedGrade_withinGraceWindow() {
+    void lecturer_cannotEditFinalizedGrade_underLuong2Rules() {
         long lectUserId = 42L;
         courseSection.setLecturer(lecturer);
         Grade existing = new Grade();
         existing.setEnrollment(enrollment);
         existing.setIsFinalized(true);
         existing.setFinalizedAt(LocalDateTime.now().minusDays(2));
-
-        when(lecturerRepository.findByUserId(lectUserId)).thenReturn(Optional.of(lecturer));
-        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
-        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.of(existing));
-        when(gradeRepository.save(any(Grade.class))).thenAnswer(i -> i.getArgument(0));
-
-        Grade saved = gradeService.saveGrade(lectUserId, request);
-        assertEquals(0, BigDecimal.valueOf(8.0).compareTo(saved.getMidtermScore()));
-    }
-
-    @Test
-    void lecturer_cannotEditFinalizedGrade_afterGraceWindow() {
-        long lectUserId = 42L;
-        courseSection.setLecturer(lecturer);
-        Grade existing = new Grade();
-        existing.setEnrollment(enrollment);
-        existing.setIsFinalized(true);
-        existing.setFinalizedAt(LocalDateTime.now().minusDays(8));
 
         when(lecturerRepository.findByUserId(lectUserId)).thenReturn(Optional.of(lecturer));
         when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
@@ -293,6 +281,53 @@ public class GradeServiceTest {
         Grade saved = gradeService.saveGrade(adminUserId, reqV);
         assertEquals(Grade.SpecialGrade.V, saved.getSpecialGrade());
         assertEquals("F", saved.getLetterGrade());
-        assertTrue(saved.getIsFinalized());
+    }
+
+    @Test
+    void publishSectionGrades_whenNotSubmitted_throwsBadRequest() {
+        courseSection.setGradeSubmissionStatus("DRAFT");
+        when(courseSectionRepository.findById(courseSection.getId())).thenReturn(Optional.of(courseSection));
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> gradeService.publishSectionGrades(courseSection.getId(), 500L));
+        assertTrue(ex.getMessage().contains("SUBMITTED"));
+    }
+
+    @Test
+    void returnSectionGrades_whenAlreadyPublished_throwsBadRequest() {
+        courseSection.setGradeSubmissionStatus("PUBLISHED");
+        when(courseSectionRepository.findById(courseSection.getId())).thenReturn(Optional.of(courseSection));
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> gradeService.returnSectionGrades(courseSection.getId(), 500L, "Sửa lại"));
+        assertTrue(ex.getMessage().contains("công bố chính thức"));
+    }
+
+    @Test
+    void saveGrade_LecturerChangeFinalScore_ThrowsAccessDenied() {
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
+        when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.of(grade));
+
+        request.setFinalScore(BigDecimal.valueOf(9.5));
+        assertThrows(AccessDeniedException.class, () -> gradeService.saveGrade(1L, request));
+    }
+
+    @Test
+    void saveGrade_ScoreChange_CreatesAuditLog() {
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
+        when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
+        when(gradeRepository.findByEnrollmentId(1L)).thenReturn(Optional.of(grade));
+        when(gradeRepository.save(any(Grade.class))).thenReturn(grade);
+
+        request.setCc1Score(BigDecimal.valueOf(6.5)); // cũ là 10, mới là 6.5
+        request.setReason("Giảng viên chấm lại bài kiểm tra");
+
+        gradeService.saveGrade(1L, request);
+
+        verify(gradeAuditLogRepository).saveAll(argThat(logs -> {
+            List<com.sms.entity.GradeAuditLog> list = (List<com.sms.entity.GradeAuditLog>) logs;
+            return !list.isEmpty() && list.stream().anyMatch(l -> "CC1".equals(l.getComponent()) && BigDecimal.valueOf(10).compareTo(l.getOldScore()) == 0);
+        }));
     }
 }

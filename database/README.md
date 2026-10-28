@@ -32,7 +32,7 @@ Cơ sở dữ liệu được thiết kế theo chuẩn hóa bậc 3 (3NF), tuâ
 
 ```
 database/
-├── schema.sql                 # Schema chuẩn (Canonical DDL) chứa toàn bộ 18 bảng, views, triggers, indexes
+├── schema.sql                 # Schema chuẩn (Canonical DDL) chứa toàn bộ 18 bảng, views, indexes (quản lý sĩ số atomic qua Spring Boot)
 ├── seed.sql                   # Bộ dữ liệu mẫu chuẩn (Khoa, ngành, môn học, khung CTĐT, tài khoản demo)
 ├── migrations/                # Lịch sử các bản vá cấu trúc CSDL theo từng giai đoạn
 │   ├── migration_academic_structure.sql        # Nâng cấp cấu trúc Khoa - Ngành - Khóa - CTĐT chuẩn

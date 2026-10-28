@@ -11,17 +11,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sms.dto.request.GradeRequest;
+import com.sms.dto.response.SectionGradeOverviewDto;
 import com.sms.entity.CourseSection;
 import com.sms.entity.Enrollment;
 import com.sms.entity.Grade;
+import com.sms.entity.GradeAuditLog;
 import com.sms.entity.Lecturer;
+import com.sms.entity.Semester;
+import com.sms.entity.User;
 import com.sms.exception.BadRequestException;
 import org.springframework.security.access.AccessDeniedException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
+import com.sms.repository.GradeAuditLogRepository;
 import com.sms.repository.GradeRepository;
 import com.sms.repository.LecturerRepository;
+import com.sms.repository.SemesterRepository;
+import com.sms.repository.UserRepository;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import jakarta.servlet.http.HttpServletRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +46,10 @@ public class GradeService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseSectionRepository courseSectionRepository;
     private final LecturerRepository lecturerRepository;
+    private final SemesterRepository semesterRepository;
     private final NotificationService notificationService;
+    private final GradeAuditLogRepository gradeAuditLogRepository;
+    private final UserRepository userRepository;
 
     public List<Grade> findBySection(Long sectionId) {
         List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(sectionId);
@@ -86,6 +99,7 @@ public class GradeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đăng ký"));
 
         Lecturer lecturer = lecturerRepository.findByUserId(userId).orElse(null);
+        User currentUser = (userRepository != null && userId != null) ? userRepository.findById(userId).orElse(null) : null;
 
         Grade grade = gradeRepository.findByEnrollmentId(enrollment.getId())
                 .orElseGet(() -> {
@@ -94,7 +108,8 @@ public class GradeService {
                     return g;
                 });
 
-        applyScores(userId, request, enrollment, grade, lecturer);
+        List<GradeAuditLog> auditLogs = new ArrayList<>();
+        applyScores(userId, request, enrollment, grade, lecturer, currentUser, auditLogs);
 
         // Activity #14: chỉ được chốt khi cả lớp học phần đã có điểm đầy đủ (100%).
         if (Boolean.TRUE.equals(request.getFinalize())) {
@@ -118,6 +133,10 @@ public class GradeService {
                     userId, enrollment.getId(), section.getSectionCode());
         }
         Grade saved = gradeRepository.save(grade);
+        if (gradeAuditLogRepository != null && !auditLogs.isEmpty()) {
+            auditLogs.forEach(l -> l.setGrade(saved));
+            gradeAuditLogRepository.saveAll(auditLogs);
+        }
         if (enrollment.getSection() != null) {
             boolean isFinalized = Boolean.TRUE.equals(request.getFinalize());
             notificationService.notifySectionGradeEvent(enrollment.getSection().getId(), isFinalized);
@@ -138,6 +157,8 @@ public class GradeService {
 
         // Resolve the lecturer once — userId is constant for the whole batch.
         Lecturer lecturer = lecturerRepository.findByUserId(userId).orElse(null);
+        User currentUser = (userRepository != null && userId != null) ? userRepository.findById(userId).orElse(null) : null;
+        List<GradeAuditLog> allAuditLogs = new ArrayList<>();
 
         List<Long> enrollmentIds = requests.stream()
                 .map(GradeRequest::getEnrollmentId)
@@ -173,7 +194,7 @@ public class GradeService {
                 g.setEnrollment(enrollment);
                 return g;
             });
-            applyScores(userId, request, enrollment, grade, lecturer);
+            applyScores(userId, request, enrollment, grade, lecturer, currentUser, allAuditLogs);
             toSave.add(grade);
         }
 
@@ -181,17 +202,14 @@ public class GradeService {
         // điểm tổng kết. Kiểm tra đủ 100% trước khi khoá bảng điểm.
         if (!finalizeSectionIds.isEmpty()) {
             for (Long sectionId : finalizeSectionIds) {
-                CourseSection section = courseSectionRepository.findById(sectionId).orElse(null);
-                if (section != null) {
-                    if (section.getStatus() != CourseSection.SectionStatus.ACTIVE && section.getStatus() != CourseSection.SectionStatus.CLOSED) {
-                        throw new BadRequestException("Chỉ có thể chốt điểm khi lớp học phần đang ở trạng thái CLOSED hoặc ACTIVE");
-                    }
-                    verifyAllStudentsGraded(sectionId, gradesByEnrollmentId);
-                    section.setStatus(CourseSection.SectionStatus.COMPLETED);
-                    courseSectionRepository.save(section);
-                } else {
-                    verifyAllStudentsGraded(sectionId, gradesByEnrollmentId);
+                CourseSection section = courseSectionRepository.findById(sectionId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+                if (section.getStatus() != CourseSection.SectionStatus.ACTIVE && section.getStatus() != CourseSection.SectionStatus.CLOSED) {
+                    throw new BadRequestException("Chỉ có thể chốt điểm khi lớp học phần đang ở trạng thái CLOSED hoặc ACTIVE");
                 }
+                verifyAllStudentsGraded(sectionId, gradesByEnrollmentId);
+                section.setStatus(CourseSection.SectionStatus.COMPLETED);
+                courseSectionRepository.save(section);
             }
             LocalDateTime now = LocalDateTime.now();
             toSave.stream()
@@ -207,6 +225,9 @@ public class GradeService {
         }
 
         gradeRepository.saveAll(toSave);
+        if (gradeAuditLogRepository != null && !allAuditLogs.isEmpty()) {
+            gradeAuditLogRepository.saveAll(allAuditLogs);
+        }
 
         // Phát thông báo đẩy thời gian thực cho sinh viên trong các lớp học phần có cập nhật điểm
         java.util.Set<Long> affectedSectionIds = toSave.stream()
@@ -255,8 +276,14 @@ public class GradeService {
      * explicitly reopen (unlock) a finalized grade by sending finalize=false.
      */
     private void applyScores(Long userId, GradeRequest request, Enrollment enrollment,
-                             Grade grade, Lecturer lecturer) {
+                             Grade grade, Lecturer lecturer, User currentUser,
+                             List<GradeAuditLog> auditLogs) {
         CourseSection section = enrollment.getSection();
+        // BR-07: Check lecturer authorization first
+        if (lecturer != null && (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId()))) {
+            throw new AccessDeniedException("Bạn không có quyền nhập điểm cho học phần này");
+        }
+
         if (section.getStatus() == CourseSection.SectionStatus.OPEN) {
             throw new BadRequestException("Lớp học phần đang mở đăng ký (OPEN), chưa được phép nhập điểm");
         }
@@ -264,36 +291,124 @@ public class GradeService {
             throw new BadRequestException("Lớp học phần đã bị hủy (CANCELLED), không thể nhập điểm");
         }
 
-        // BR-07: Check lecturer authorization
+        // Luồng 2: Kiểm tra trạng thái khóa sổ đối với Giảng viên
         if (lecturer != null) {
-            if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
-                throw new AccessDeniedException("Bạn không có quyền nhập điểm cho học phần này");
+            String submissionStatus = section.getGradeSubmissionStatus();
+            if ("SUBMITTED".equalsIgnoreCase(submissionStatus)) {
+                throw new BadRequestException("Bảng điểm đã được gửi duyệt & khóa sổ. Giảng viên không thể tự ý sửa điểm.");
+            }
+            if ("PUBLISHED".equalsIgnoreCase(submissionStatus) || Boolean.TRUE.equals(grade.getIsFinalized())) {
+                throw new BadRequestException("Bảng điểm đã được Phòng Đào tạo phát hành chính thức. Giảng viên không thể tự ý sửa điểm.");
+            }
+
+            // BR-Exam02: Giảng viên chỉ nhập điểm quá trình, không được nhập/sửa điểm thi kết thúc học phần
+            if (request.getFinalScore() != null &&
+                    (grade.getFinalScore() == null || grade.getFinalScore().compareTo(request.getFinalScore()) != 0)) {
+                throw new AccessDeniedException("Giảng viên không có quyền nhập/sửa điểm thi kết thúc học phần (BR-Exam02). Điểm thi do Phòng Khảo thí nạp theo phòng thi.");
             }
         }
 
-        // Sau khi chốt, giảng viên VẪN sửa được trong cửa sổ ân hạn (EDIT_GRACE_DAYS
-        // ngày). Hết hạn thì khoá cứng — chỉ Quản trị viên mở lại được. Admin không bị chặn.
-        if (lecturer != null && grade.isEditWindowExpired()) {
-            throw new BadRequestException("Đã quá " + Grade.EDIT_GRACE_DAYS
-                    + " ngày kể từ khi chốt nên bảng điểm đã khoá, không thể sửa. "
-                    + "Vui lòng liên hệ Quản trị viên để mở lại.");
+        String clientIp = getClientIp();
+        String defaultReason = lecturer != null ? "Giảng viên cập nhật điểm quá trình" : "Điều chỉnh điểm số";
+        String reason = (request.getReason() != null && !request.getReason().isBlank()) ? request.getReason() : defaultReason;
+
+        // BR-Grade09 Audit: CC1
+        if (request.getCc1Score() != null) {
+            java.math.BigDecimal oldScore = grade.getCc1Score();
+            java.math.BigDecimal newScore = request.getCc1Score();
+            if (oldScore != null && oldScore.compareTo(newScore) != 0) {
+                auditLogs.add(GradeAuditLog.builder()
+                        .student(enrollment.getStudent())
+                        .grade(grade)
+                        .component("CC1")
+                        .oldScore(oldScore)
+                        .newScore(newScore)
+                        .reason(reason)
+                        .changedBy(currentUser)
+                        .ipAddress(clientIp)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+            }
+            grade.setCc1Score(newScore);
         }
 
-        if (request.getCc1Score() != null) {
-            grade.setCc1Score(request.getCc1Score());
-        }
+        // BR-Grade09 Audit: CC2
         if (request.getCc2Score() != null) {
-            grade.setCc2Score(request.getCc2Score());
+            java.math.BigDecimal oldScore = grade.getCc2Score();
+            java.math.BigDecimal newScore = request.getCc2Score();
+            if (oldScore != null && oldScore.compareTo(newScore) != 0) {
+                auditLogs.add(GradeAuditLog.builder()
+                        .student(enrollment.getStudent())
+                        .grade(grade)
+                        .component("CC2")
+                        .oldScore(oldScore)
+                        .newScore(newScore)
+                        .reason(reason)
+                        .changedBy(currentUser)
+                        .ipAddress(clientIp)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+            }
+            grade.setCc2Score(newScore);
         }
+
+        // BR-Grade09 Audit: MIDTERM
         if (request.getMidtermScore() != null) {
-            grade.setMidtermScore(request.getMidtermScore());
+            java.math.BigDecimal oldScore = grade.getMidtermScore();
+            java.math.BigDecimal newScore = request.getMidtermScore();
+            if (oldScore != null && oldScore.compareTo(newScore) != 0) {
+                auditLogs.add(GradeAuditLog.builder()
+                        .student(enrollment.getStudent())
+                        .grade(grade)
+                        .component("MIDTERM")
+                        .oldScore(oldScore)
+                        .newScore(newScore)
+                        .reason(reason)
+                        .changedBy(currentUser)
+                        .ipAddress(clientIp)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+            }
+            grade.setMidtermScore(newScore);
         }
-        if (request.getFinalScore() != null) {
-            grade.setFinalScore(request.getFinalScore());
+
+        // BR-Grade09 Audit: FINAL (chỉ áp dụng khi non-lecturer cập nhật)
+        if (request.getFinalScore() != null && lecturer == null) {
+            java.math.BigDecimal oldScore = grade.getFinalScore();
+            java.math.BigDecimal newScore = request.getFinalScore();
+            if (oldScore != null && oldScore.compareTo(newScore) != 0) {
+                auditLogs.add(GradeAuditLog.builder()
+                        .student(enrollment.getStudent())
+                        .grade(grade)
+                        .component("FINAL")
+                        .oldScore(oldScore)
+                        .newScore(newScore)
+                        .reason(reason)
+                        .changedBy(currentUser)
+                        .ipAddress(clientIp)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+            }
+            grade.setFinalScore(newScore);
         }
 
         if (request.getSpecialGrade() != null) {
-            grade.setSpecialGrade(request.getSpecialGrade());
+            Grade.SpecialGrade oldSpecial = grade.getSpecialGrade();
+            Grade.SpecialGrade newSpecial = request.getSpecialGrade();
+            if (oldSpecial != null && oldSpecial != newSpecial && oldSpecial != Grade.SpecialGrade.NONE) {
+                auditLogs.add(GradeAuditLog.builder()
+                        .student(enrollment.getStudent())
+                        .grade(grade)
+                        .component("SPECIAL")
+                        .oldSpecialGrade(oldSpecial)
+                        .newSpecialGrade(newSpecial)
+                        .reason(reason)
+                        .changedBy(currentUser)
+                        .ipAddress(clientIp)
+                        .createdAt(LocalDateTime.now())
+                        .build());
+            }
+            grade.setSpecialGrade(newSpecial);
         }
 
         // Auto-calculate total score
@@ -335,6 +450,31 @@ public class GradeService {
         }
     }
 
+    public List<GradeAuditLog> getSectionAuditLogs(Long sectionId) {
+        return gradeAuditLogRepository.findBySectionIdOrderByCreatedAtDesc(sectionId);
+    }
+
+    public List<GradeAuditLog> getGradeAuditLogs(Long gradeId) {
+        return gradeAuditLogRepository.findByGradeIdOrderByCreatedAtDesc(gradeId);
+    }
+
+    private String getClientIp() {
+        try {
+            ServletRequestAttributes attrs =
+                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null) {
+                HttpServletRequest req = attrs.getRequest();
+                String ip = req.getHeader("X-Forwarded-For");
+                if (ip == null || ip.isBlank()) {
+                    ip = req.getRemoteAddr();
+                }
+                return ip;
+            }
+        } catch (Exception ignored) {
+        }
+        return "127.0.0.1";
+    }
+
     /**
      * Activity #14 precondition: every non-cancelled enrollment in the section must
      * already have a complete total score before the sheet can be finalized. Grades
@@ -344,11 +484,16 @@ public class GradeService {
     private void verifyAllStudentsGraded(Long sectionId, Map<Long, Grade> pending) {
         List<Enrollment> active = enrollmentRepository.findActiveBySectionId(sectionId);
         List<String> ungraded = new ArrayList<>();
+        List<Long> missingEnrollmentIds = active.stream()
+                .map(Enrollment::getId)
+                .filter(id -> !pending.containsKey(id))
+                .toList();
+        Map<Long, Grade> dbGrades = missingEnrollmentIds.isEmpty() ? Map.of() :
+                gradeRepository.findByEnrollmentIdIn(missingEnrollmentIds).stream()
+                        .collect(Collectors.toMap(g -> g.getEnrollment().getId(), Function.identity(), (a, b) -> a));
+
         for (Enrollment e : active) {
-            Grade g = pending.get(e.getId());
-            if (g == null) {
-                g = gradeRepository.findByEnrollmentId(e.getId()).orElse(null);
-            }
+            Grade g = pending.getOrDefault(e.getId(), dbGrades.get(e.getId()));
             if (g == null || (g.getTotalScore() == null && g.getSpecialGrade() == Grade.SpecialGrade.NONE)) {
                 ungraded.add(e.getStudent().getStudentCode());
             }
@@ -359,5 +504,177 @@ public class GradeService {
                     + String.join(", ", ungraded) + "). Vui lòng hoàn tất nhập điểm cho tất cả "
                     + "sinh viên trước khi chốt & công bố.");
         }
+    }
+
+    public List<SectionGradeOverviewDto> getSectionsGradeOverview(Integer semesterId) {
+        List<CourseSection> sections;
+        if (semesterId != null) {
+            sections = courseSectionRepository.findBySemesterId(semesterId);
+        } else {
+            Semester current = semesterRepository.findByIsCurrentTrue()
+                    .orElseGet(() -> semesterRepository.findAllByOrderByStartDateDesc().stream().findFirst().orElse(null));
+            if (current == null) return List.of();
+            sections = courseSectionRepository.findBySemesterId(current.getId());
+        }
+
+        List<SectionGradeOverviewDto> result = new ArrayList<>();
+        if (sections.isEmpty()) return result;
+
+        List<Long> sectionIds = sections.stream().map(CourseSection::getId).toList();
+        Map<Long, List<Enrollment>> enrollmentsBySection = enrollmentRepository.findActiveBySectionIdIn(sectionIds).stream()
+                .collect(Collectors.groupingBy(e -> e.getSection().getId()));
+        Map<Long, List<Grade>> gradesBySection = gradeRepository.findBySectionIdIn(sectionIds).stream()
+                .collect(Collectors.groupingBy(g -> g.getEnrollment().getSection().getId()));
+
+        for (CourseSection s : sections) {
+            List<Enrollment> enrollments = enrollmentsBySection.getOrDefault(s.getId(), List.of());
+            int enrolledCount = enrollments.size();
+            List<Grade> grades = gradesBySection.getOrDefault(s.getId(), List.of());
+            Map<Long, Grade> gradeByEnrollmentId = grades.stream()
+                    .filter(x -> x.getEnrollment() != null)
+                    .collect(Collectors.toMap(x -> x.getEnrollment().getId(), Function.identity(), (a, b) -> a));
+
+            int gradedCount = 0;
+            boolean allFinalized = enrolledCount > 0;
+            LocalDateTime publishedAt = null;
+
+            for (Enrollment e : enrollments) {
+                Grade g = gradeByEnrollmentId.get(e.getId());
+                if (g != null && (g.getTotalScore() != null || g.getSpecialGrade() != Grade.SpecialGrade.NONE)) {
+                    gradedCount++;
+                    if (Boolean.TRUE.equals(g.getIsFinalized())) {
+                        if (publishedAt == null && g.getFinalizedAt() != null) {
+                            publishedAt = g.getFinalizedAt();
+                        }
+                    } else {
+                        allFinalized = false;
+                    }
+                } else {
+                    allFinalized = false;
+                }
+            }
+
+            double rate = enrolledCount > 0 ? Math.round(((double) gradedCount / enrolledCount) * 1000.0) / 10.0 : 0.0;
+            String status = "NOT_GRADED";
+            String subStatus = s.getGradeSubmissionStatus();
+            if ("PUBLISHED".equalsIgnoreCase(subStatus) || (enrolledCount > 0 && allFinalized && gradedCount == enrolledCount)) {
+                status = "PUBLISHED";
+            } else if ("SUBMITTED".equalsIgnoreCase(subStatus)) {
+                status = "SUBMITTED";
+            } else if ("RETURNED".equalsIgnoreCase(subStatus)) {
+                status = "RETURNED";
+            } else if (gradedCount > 0) {
+                status = "IN_PROGRESS";
+            }
+
+            if (s.getPublishedAt() != null) {
+                publishedAt = s.getPublishedAt();
+            }
+
+            result.add(SectionGradeOverviewDto.builder()
+                    .sectionId(s.getId())
+                    .sectionCode(s.getSectionCode())
+                    .subjectCode(s.getSubject() != null ? s.getSubject().getSubjectCode() : "")
+                    .subjectName(s.getSubject() != null ? s.getSubject().getSubjectName() : "")
+                    .credits(s.getSubject() != null ? s.getSubject().getCredits() : 0)
+                    .lecturerName(s.getLecturer() != null ? s.getLecturer().getFullName() : "Chưa phân công")
+                    .semesterId(s.getSemester() != null ? s.getSemester().getId() : null)
+                    .semesterName(s.getSemester() != null ? s.getSemester().getSemesterName() : "")
+                    .enrolledCount(enrolledCount)
+                    .gradedCount(gradedCount)
+                    .completionRate(rate)
+                    .gradeStatus(status)
+                    .isPublished("PUBLISHED".equals(status))
+                    .publishedAt(publishedAt)
+                    .gradeReturnReason(s.getGradeReturnReason())
+                    .build());
+        }
+        return result;
+    }
+
+    @Transactional
+    public void publishSectionGrades(Long sectionId, Long adminUserId) {
+        CourseSection section = courseSectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+
+        if (!"SUBMITTED".equalsIgnoreCase(section.getGradeSubmissionStatus())) {
+            throw new BadRequestException("Chỉ có thể công bố bảng điểm khi giảng viên đã nộp và khóa sổ (SUBMITTED)");
+        }
+
+        List<Enrollment> active = enrollmentRepository.findActiveBySectionId(sectionId);
+        if (active.isEmpty()) {
+            throw new BadRequestException("Lớp học phần chưa có sinh viên nào đăng ký");
+        }
+
+        verifyAllStudentsGraded(sectionId, Map.of());
+
+        LocalDateTime now = LocalDateTime.now();
+        List<Grade> grades = gradeRepository.findBySectionId(sectionId);
+        for (Grade g : grades) {
+            g.setIsFinalized(true);
+            if (g.getFinalizedAt() == null) {
+                g.setFinalizedAt(now);
+            }
+        }
+        gradeRepository.saveAll(grades);
+
+        section.setStatus(CourseSection.SectionStatus.COMPLETED);
+        section.setGradeSubmissionStatus("PUBLISHED");
+        section.setPublishedAt(now);
+        section.setGradeReturnReason(null);
+        courseSectionRepository.save(section);
+
+        notificationService.notifySectionGradeEvent(sectionId, true);
+        log.info("AUDIT: adminUserId={} published entire grade sheet for section={}", adminUserId, section.getSectionCode());
+    }
+
+    @Transactional
+    public void submitSectionGrades(Long sectionId, Long lecturerUserId) {
+        CourseSection section = courseSectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+
+        assertCanViewSection(lecturerUserId, sectionId);
+
+        List<Enrollment> active = enrollmentRepository.findActiveBySectionId(sectionId);
+        if (active.isEmpty()) {
+            throw new BadRequestException("Lớp học phần chưa có sinh viên nào đăng ký");
+        }
+
+        verifyAllStudentsGraded(sectionId, java.util.Map.of());
+
+        section.setGradeSubmissionStatus("SUBMITTED");
+        courseSectionRepository.save(section);
+
+        log.info("AUDIT: lecturerUserId={} submitted official grade sheet for section={}", lecturerUserId, section.getSectionCode());
+    }
+
+    @Transactional
+    public void returnSectionGrades(Long sectionId, Long adminUserId, String reason) {
+        CourseSection section = courseSectionRepository.findById(sectionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
+
+        if ("PUBLISHED".equalsIgnoreCase(section.getGradeSubmissionStatus())) {
+            throw new BadRequestException("Bảng điểm đã được công bố chính thức, không thể trả về. Mọi thay đổi điểm phải qua luồng phúc khảo hoặc sửa điểm.");
+        }
+
+        List<Grade> grades = gradeRepository.findBySectionId(sectionId);
+        grades.forEach(g -> {
+            g.setIsFinalized(false);
+            g.setFinalizedAt(null);
+        });
+        gradeRepository.saveAll(grades);
+
+        section.setStatus(CourseSection.SectionStatus.ACTIVE);
+        section.setGradeSubmissionStatus("RETURNED");
+        section.setGradeReturnReason(reason != null ? reason.trim() : "Phòng Đào tạo yêu cầu chỉnh sửa lại bảng điểm");
+        courseSectionRepository.save(section);
+
+        log.info("AUDIT: adminUserId={} returned grade sheet for section={} (reason: {})",
+                adminUserId, section.getSectionCode(), reason);
+    }
+
+    @Transactional
+    public void unpublishSectionGrades(Long sectionId, Long adminUserId, String reason) {
+        returnSectionGrades(sectionId, adminUserId, reason);
     }
 }

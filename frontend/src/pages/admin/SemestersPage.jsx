@@ -3,12 +3,14 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, Star, X, CalendarDays } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { semesterService } from '../../services/dataService';
+import RegistrationWavesModal from './RegistrationWavesModal';
 
 export default function SemestersPage() {
   const [semesters, setSemesters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSem, setEditingSem] = useState(null);
+  const [wavesModal, setWavesModal] = useState({ isOpen: false, semester: null });
 
   const [formData, setFormData] = useState({
     semesterCode: '',
@@ -206,6 +208,7 @@ export default function SemestersPage() {
                       </span>
                     </td>
                     <td style={{ textAlign: 'right' }}>
+                      <button className="btn btn-outline" style={{ padding: "4px 8px", fontSize: "0.75rem", color: "#2563eb", borderColor: "#bfdbfe", marginRight: "6px" }} onClick={() => setWavesModal({ isOpen: true, semester: s })} title="Quản lý các đợt đăng ký theo Khóa/Khoa"><CalendarDays size={13} style={{ marginRight: "4px" }} /> Đợt ĐK</button>
                       <button className="btn-icon" title="Sửa" onClick={() => handleOpenModal(s)}>
                         <Edit2 size={15} />
                       </button>
@@ -337,6 +340,7 @@ export default function SemestersPage() {
           </div>
         </div>
       )}
+      <RegistrationWavesModal isOpen={wavesModal.isOpen} onClose={() => setWavesModal({ isOpen: false, semester: null })} semester={wavesModal.semester} />
     </div>
   );
 }

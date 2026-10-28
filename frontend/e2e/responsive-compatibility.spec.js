@@ -128,7 +128,7 @@ test.describe('Responsive & Cross-Browser Compatibility (UI/UX)', () => {
     await page.waitForURL(/student\/dashboard/, { timeout: 10_000 });
 
     // Target nút theme trên header-right
-    const themeToggleBtn = page.locator('.header-right .btn-icon').first();
+    const themeToggleBtn = page.locator('[data-testid="theme-toggle-btn"], button[title*="chế độ"]').first();
     await expect(themeToggleBtn).toBeVisible();
 
     // Lấy theme ban đầu

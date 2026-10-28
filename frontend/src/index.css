@@ -10,68 +10,68 @@
 /* ——— CSS Custom Properties / Design Tokens ——— */
 :root {
   /* Fonts */
-  --font-sans: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Colors — Light Mode (Apple Vision Frosted Glass) */
-  --bg-app: #f1f5f9;
-  --bg-surface: rgba(255, 255, 255, 0.75);
-  --bg-glass: rgba(255, 255, 255, 0.75);
-  --bg-subtle: rgba(241, 245, 249, 0.65);
-  --bg-muted: rgba(226, 232, 240, 0.65);
-  --bg-hover: rgba(255, 255, 255, 0.9);
-  --bg-active: rgba(226, 232, 240, 0.75);
+  /* Colors — Light Mode (Clean Academic Minimalist) */
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-glass: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --bg-muted: #e2e8f0;
+  --bg-hover: #f1f5f9;
+  --bg-active: #e2e8f0;
 
-  /* Optical Glass & Specular Borders */
-  --border-color: rgba(255, 255, 255, 0.65);
-  --border-subtle: rgba(226, 232, 240, 0.75);
-  --border-focus: #6366f1;
-  --glass-blur: blur(20px) saturate(180%);
-  --glass-inset-shine: inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
+  /* High-Clarity Borders & Surfaces */
+  --border-color: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --border-focus: #2563eb;
+  --glass-blur: none;
+  --glass-inset-shine: none;
 
-  /* Primary — Luminous Electric Iris */
-  --primary: #6366f1;
-  --primary-rgb: 99, 102, 241;
-  --primary-hover: #4f46e5;
-  --primary-light: rgba(99, 102, 241, 0.12);
-  --primary-border: rgba(99, 102, 241, 0.28);
-  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
-  --aurora-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  /* Primary — University Navy & Brand Action Blue */
+  --primary: #1e3a8a;
+  --primary-rgb: 30, 58, 138;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --primary-border: #bfdbfe;
+  --primary-gradient: #1e3a8a;
+  --aurora-gradient: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
 
-  /* Neutral & Gradient Action Ink */
-  --btn-primary-bg: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  /* Neutral & Solid Action Ink */
+  --btn-primary-bg: #2563eb;
   --btn-primary-fg: #ffffff;
-  --btn-primary-hover: linear-gradient(135deg, #4f46e5 0%, #0891b2 100%);
+  --btn-primary-hover: #1d4ed8;
 
-  /* Secondary / Cyber Cyan */
-  --secondary: #06b6d4;
-  --secondary-hover: #0891b2;
-  --secondary-light: rgba(6, 182, 212, 0.12);
+  /* Secondary / Action Cyan */
+  --secondary: #0284c7;
+  --secondary-hover: #0369a1;
+  --secondary-light: #f0f9ff;
 
   /* Semantics */
-  --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.12);
-  --success-border: rgba(16, 185, 129, 0.28);
-  --success-text: #047857;
+  --success: #15803d;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --success-text: #15803d;
 
-  --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.12);
-  --warning-border: rgba(245, 158, 11, 0.28);
+  --warning: #b45309;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
   --warning-text: #b45309;
 
-  --danger: #f43f5e;
-  --danger-bg: rgba(244, 63, 94, 0.12);
-  --danger-border: rgba(244, 63, 94, 0.28);
-  --danger-text: #be123c;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --danger-text: #b91c1c;
 
-  --info: #0284c7;
-  --info-bg: rgba(2, 132, 199, 0.12);
-  --info-border: rgba(2, 132, 199, 0.28);
+  --info: #0369a1;
+  --info-bg: #f0f9ff;
+  --info-border: #bae6fd;
   --info-text: #0369a1;
 
-  --purple: #8b5cf6;
-  --purple-bg: rgba(139, 92, 246, 0.12);
-  --purple-border: rgba(139, 92, 246, 0.28);
+  --purple: #7c3aed;
+  --purple-bg: #f5f3ff;
+  --purple-border: #ddd6fe;
 
   /* Typography Colors */
   --text-main: #0f172a;
@@ -80,99 +80,99 @@
   --text-light: #94a3b8;
   --text-inverse: #ffffff;
 
-  /* Shadows — Apple Vision Floating Glass */
-  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 4px -1px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 10px 30px -5px rgba(31, 38, 135, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 20px 40px -10px rgba(99, 102, 241, 0.18), 0 8px 16px -4px rgba(0, 0, 0, 0.06);
-  --shadow-dropdown: 0 14px 34px -8px rgba(31, 38, 135, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
-  --shadow-glow: 0 0 28px rgba(99, 102, 241, 0.35);
+  /* Shadows — Clean Elevation */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-dropdown: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  --shadow-glow: none;
 
   /* Layout Dimensions */
   --sidebar-width: 260px;
   --sidebar-collapsed: 72px;
   --header-height: 64px;
 
-  /* Apple VisionOS Squircle Radii */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  /* Balanced Modern Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-normal: 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ——— OLED Deep Space + Luminous Glass Dark Mode ——— */
 [data-theme='dark'] {
-  --bg-app: #080d1a;
-  --bg-surface: rgba(15, 23, 42, 0.68);
-  --bg-glass: rgba(15, 23, 42, 0.68);
-  --bg-subtle: rgba(15, 23, 42, 0.45);
-  --bg-muted: rgba(30, 41, 59, 0.65);
-  --bg-hover: rgba(22, 34, 61, 0.8);
-  --bg-active: rgba(30, 41, 59, 0.85);
+  --bg-app: #0b1120;
+  --bg-surface: #131c31;
+  --bg-glass: #131c31;
+  --bg-subtle: #1e293b;
+  --bg-muted: #334155;
+  --bg-hover: #1e293b;
+  --bg-active: #334155;
 
-  --border-color: rgba(255, 255, 255, 0.12);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: #818cf8;
-  --glass-blur: blur(24px) saturate(190%);
-  --glass-inset-shine: inset 0 1px 1px 0 rgba(255, 255, 255, 0.18);
+  --border-color: #1e293b;
+  --border-subtle: #172033;
+  --border-focus: #3b82f6;
+  --glass-blur: none;
+  --glass-inset-shine: none;
 
-  --primary: #818cf8;
-  --primary-rgb: 129, 140, 248;
-  --primary-hover: #a5b4fc;
-  --primary-light: rgba(129, 140, 248, 0.18);
-  --primary-border: rgba(129, 140, 248, 0.32);
-  --primary-gradient: linear-gradient(135deg, #818cf8 0%, #38bdf8 100%);
-  --aurora-gradient: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+  --primary: #3b82f6;
+  --primary-rgb: 59, 130, 246;
+  --primary-hover: #60a5fa;
+  --primary-light: rgba(59, 130, 246, 0.12);
+  --primary-border: rgba(59, 130, 246, 0.25);
+  --primary-gradient: #3b82f6;
+  --aurora-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
 
-  --btn-primary-bg: linear-gradient(135deg, #818cf8 0%, #38bdf8 100%);
+  --btn-primary-bg: #3b82f6;
   --btn-primary-fg: #ffffff;
-  --btn-primary-hover: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%);
+  --btn-primary-hover: #2563eb;
 
   --secondary: #38bdf8;
-  --secondary-hover: #7dd3fc;
-  --secondary-light: rgba(56, 189, 248, 0.18);
+  --secondary-hover: #0ea5e9;
+  --secondary-light: rgba(56, 189, 248, 0.14);
 
   --success: #34d399;
-  --success-bg: rgba(52, 211, 153, 0.16);
-  --success-border: rgba(52, 211, 153, 0.32);
-  --success-text: #6ee7b7;
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.25);
+  --success-text: #34d399;
 
   --warning: #fbbf24;
-  --warning-bg: rgba(251, 191, 36, 0.16);
-  --warning-border: rgba(251, 191, 36, 0.32);
-  --warning-text: #fde68a;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.25);
+  --warning-text: #fbbf24;
 
-  --danger: #fb7185;
-  --danger-bg: rgba(251, 113, 133, 0.16);
-  --danger-border: rgba(251, 113, 133, 0.32);
-  --danger-text: #fda4af;
+  --danger: #f87171;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.25);
+  --danger-text: #f87171;
 
   --info: #38bdf8;
-  --info-bg: rgba(56, 189, 248, 0.16);
-  --info-border: rgba(56, 189, 248, 0.32);
-  --info-text: #7dd3fc;
+  --info-bg: rgba(56, 189, 248, 0.12);
+  --info-border: rgba(56, 189, 248, 0.25);
+  --info-text: #38bdf8;
 
-  --purple: #c084fc;
-  --purple-bg: rgba(192, 132, 252, 0.16);
-  --purple-border: rgba(192, 132, 252, 0.32);
+  --purple: #a78bfa;
+  --purple-bg: rgba(167, 139, 250, 0.14);
+  --purple-border: rgba(167, 139, 250, 0.25);
 
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --text-secondary: #cbd5e1;
   --text-light: #64748b;
-  --text-inverse: #080d1a;
+  --text-inverse: #0b1120;
 
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 12px 40px 0 rgba(0, 0, 0, 0.55), 0 4px 12px 0 rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 20px 50px -10px rgba(129, 140, 248, 0.3), 0 8px 20px rgba(0, 0, 0, 0.4);
-  --shadow-dropdown: 0 16px 40px -8px rgba(0, 0, 0, 0.7);
-  --shadow-glow: 0 0 35px rgba(129, 140, 248, 0.4);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+  --shadow-dropdown: 0 12px 30px rgba(0, 0, 0, 0.7);
+  --shadow-glow: none;
 }
 
 /* Force light mode text variables for areas with hardcoded bright backgrounds */
@@ -228,6 +228,20 @@
   padding: 0;
 }
 
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
 html {
   font-size: 14px;
   font-family: 'Work Sans', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -275,33 +289,11 @@ p {
 
 /* Ambient Aurora Mesh Glow Orbs */
 .app-container::before {
-  content: '';
-  position: fixed;
-  width: 650px;
-  height: 650px;
-  top: -120px;
-  left: -120px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.14) 0%, rgba(6, 182, 212, 0.08) 50%, transparent 70%);
-  filter: blur(85px);
-  pointer-events: none;
-  z-index: 0;
-  animation: auroraFloat1 22s ease-in-out infinite alternate;
+  display: none;
 }
 
 .app-container::after {
-  content: '';
-  position: fixed;
-  width: 550px;
-  height: 550px;
-  bottom: -100px;
-  right: -100px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 70%);
-  filter: blur(95px);
-  pointer-events: none;
-  z-index: 0;
-  animation: auroraFloat2 26s ease-in-out infinite alternate;
+  display: none;
 }
 
 [data-theme='dark'] .app-container::before {
@@ -335,7 +327,6 @@ p {
   transition: margin-left var(--transition-normal);
   background-color: transparent;
   position: relative;
-  z-index: 1;
 }
 
 .main-content.collapsed {
@@ -349,7 +340,6 @@ p {
   max-width: 1440px;
   margin: 0 auto;
   position: relative;
-  z-index: 1;
 }
 
 /* ——— Page Header ——— */
@@ -364,12 +354,9 @@ p {
 
 .page-header h1 {
   font-size: 1.65rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-main);
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, var(--text-main) 60%, var(--primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
 }
 
 .page-header p {
@@ -390,17 +377,15 @@ p {
   max-width: 100%;
   min-width: 0;
   background: var(--bg-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm), var(--glass-inset-shine);
-  transition: box-shadow var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .card:hover {
-  border-color: rgba(99, 102, 241, 0.35);
-  box-shadow: var(--shadow-md), var(--glass-inset-shine);
+  border-color: var(--primary-border);
+  box-shadow: var(--shadow-md);
 }
 
 .card-header {
@@ -433,53 +418,131 @@ p {
 
 .stat-card {
   background: var(--bg-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 20px;
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: var(--shadow-sm), var(--glass-inset-shine);
+  box-shadow: var(--shadow-sm);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md), var(--glass-inset-shine);
-  border-color: rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-border);
 }
 
-.stat-icon-wrapper {
+/* ——— Unified Icon Badge System (Design System v2.5 / Optical Glass Squircles) ——— */
+.stat-icon-wrapper,
+.stat-icon {
   width: 48px;
   height: 48px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm), var(--glass-inset-shine);
 }
 
-/* Curriculum roadmap stat icons use the same soft status tints as the rest of the app. */
+.stat-card:hover .stat-icon-wrapper,
+.stat-card:hover .stat-icon {
+  transform: scale(1.08) translateY(-1px);
+}
+
+/* 1. Primary / CPA (Electric Iris & Cyber Cyan) */
+.stat-icon--primary,
+.stat-icon--cpa,
 .curriculum-stat-icon--total {
-  background-color: var(--primary-light);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(6, 182, 212, 0.14) 100%);
   color: var(--primary);
+  border: 1px solid var(--primary-border);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.22), var(--glass-inset-shine);
+}
+[data-theme='dark'] .stat-icon--primary,
+[data-theme='dark'] .stat-icon--cpa,
+[data-theme='dark'] .curriculum-stat-icon--total {
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.24) 0%, rgba(56, 189, 248, 0.18) 100%);
+  color: #a5b4fc;
+  border-color: rgba(129, 140, 248, 0.35);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35), var(--glass-inset-shine);
 }
 
+/* 2. Success / Credits (Luminous Emerald) */
+.stat-icon--success,
+.stat-icon--credits,
 .curriculum-stat-icon--completed {
-  background-color: var(--success-bg);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(6, 182, 212, 0.14) 100%);
   color: var(--success);
+  border: 1px solid var(--success-border);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.22), var(--glass-inset-shine);
+}
+[data-theme='dark'] .stat-icon--success,
+[data-theme='dark'] .stat-icon--credits,
+[data-theme='dark'] .curriculum-stat-icon--completed {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.24) 0%, rgba(56, 189, 248, 0.16) 100%);
+  color: #6ee7b7;
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35), var(--glass-inset-shine);
 }
 
-.curriculum-stat-icon--in-progress {
-  background-color: var(--warning-bg);
-  color: var(--warning);
-}
-
+/* 3. Info / Courses (Cyber Cyan & Sky Blue) */
+.stat-icon--info,
+.stat-icon--courses,
 .curriculum-stat-icon--remaining {
-  background-color: var(--bg-subtle);
-  color: var(--text-muted);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.18) 0%, rgba(59, 130, 246, 0.14) 100%);
+  color: var(--info);
+  border: 1px solid var(--info-border);
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.22), var(--glass-inset-shine);
+}
+[data-theme='dark'] .stat-icon--info,
+[data-theme='dark'] .stat-icon--courses,
+[data-theme='dark'] .curriculum-stat-icon--remaining {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.24) 0%, rgba(99, 102, 241, 0.16) 100%);
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 4px 20px rgba(6, 182, 212, 0.35), var(--glass-inset-shine);
+}
+
+/* 4. Warning / Academic Standing & Honors (Radiant Amber & Rose) */
+.stat-icon--warning,
+.stat-icon--standing,
+.curriculum-stat-icon--in-progress {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(244, 63, 94, 0.14) 100%);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.22), var(--glass-inset-shine);
+}
+[data-theme='dark'] .stat-icon--warning,
+[data-theme='dark'] .stat-icon--standing,
+[data-theme='dark'] .curriculum-stat-icon--in-progress {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.24) 0%, rgba(251, 113, 133, 0.16) 100%);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.35);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.35), var(--glass-inset-shine);
+}
+
+/* 5. Purple / Department & Specialization (Electric Violet) */
+.stat-icon--purple,
+.stat-icon--lecturer {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(236, 72, 153, 0.14) 100%);
+  color: var(--purple);
+  border: 1px solid var(--purple-border);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.22), var(--glass-inset-shine);
+}
+[data-theme='dark'] .stat-icon--purple,
+[data-theme='dark'] .stat-icon--lecturer {
+  background: linear-gradient(135deg, rgba(192, 132, 252, 0.24) 0%, rgba(244, 114, 182, 0.16) 100%);
+  color: #e9d5ff;
+  border-color: rgba(192, 132, 252, 0.35);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35), var(--glass-inset-shine);
 }
 
 /* ——— Curriculum Roadmap Styles ——— */
@@ -924,12 +987,12 @@ p {
   background: var(--btn-primary-bg);
   color: var(--btn-primary-fg);
   border: none;
-  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.35);
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-primary:hover {
   background: var(--btn-primary-hover);
-  box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.5);
+  box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
 }
 
@@ -940,11 +1003,9 @@ p {
 
 .btn-secondary {
   background: var(--bg-surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-xs), var(--glass-inset-shine);
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-secondary:hover {
@@ -1030,14 +1091,12 @@ p {
 
 .table thead th {
   background: var(--bg-subtle);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--text-muted);
   font-weight: 700;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 13px 18px;
+  padding: 12px 18px;
   border-bottom: 1px solid var(--border-color);
   white-space: nowrap;
   position: sticky;
@@ -1187,13 +1246,13 @@ textarea.form-control {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   padding: 20px;
   animation: fadeIn 0.15s ease-out;
 }

@@ -101,12 +101,12 @@ async function runExperience() {
   }
 
   // Tra cứu bảng điểm sinh viên
-  const transcriptRes = await request('/transcripts/my', {
+  const transcriptRes = await request('/transcript/me', {
     headers: { Authorization: `Bearer ${stuToken}` }
   });
   if (transcriptRes.ok) {
     const trData = transcriptRes.data.data;
-    console.log(`✅ Tra cứu bảng điểm cá nhân mượt mà: GPA=${trData?.cumulativeGpa || 'N/A'}, Tín chỉ tích lũy=${trData?.totalCreditsEarned || 'N/A'}`);
+    console.log(`✅ Tra cứu bảng điểm cá nhân mượt mà: GPA=${trData?.cumulativeGpa || 'N/A'}, Tín chỉ tích lũy=${trData?.totalCredits || 'N/A'}`);
     report.positives.push('Bảng điểm cá nhân tính toán GPA/CPA chuẩn xác theo thang điểm 4 và chữ A-B-C-D-F.');
   }
 
@@ -241,28 +241,10 @@ async function runExperience() {
     headers: { Authorization: `Bearer ${adminToken}` }
   });
   const allStudents = studentsRes.data.data || [];
-  if (allStudents.length > 0 && adminSections.length > 0) {
-    const sampleStu = allStudents[allStudents.length - 1]; // Chọn SV cuối để tránh trùng
-    const sampleSec = adminSections[0];
-    console.log(`   Thử gán SV ${sampleStu.studentCode} (${sampleStu.fullName}) vào lớp ${sampleSec.sectionCode}...`);
 
-    const assignRes = await request(`/admin/enrollments/assign?studentId=${sampleStu.id}&sectionId=${sampleSec.id}&forceOverride=false`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${adminToken}` }
-    });
-    console.log(`   Kết quả gán trực tiếp: ${assignRes.data.message || (assignRes.ok ? 'Thành công' : 'Lỗi')}`);
-    // Thu hồi việc gán để trả lại sĩ số và không làm dở dang bảng điểm
-    if (assignRes.ok && assignRes.data?.data?.id) {
-      await request(`/enrollments/${assignRes.data.data.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${adminToken}` }
-      });
-    }
-    report.positives.push('Tính năng Admin gán sinh viên vào lớp học phần hoạt động tốt, kiểm soát trùng lịch, tiên quyết và sĩ số tối đa.');
-  }
 
   // Dashboard thống kê
-  const dashRes = await request('/dashboard/stats', {
+  const dashRes = await request('/dashboard', {
     headers: { Authorization: `Bearer ${adminToken}` }
   });
   if (dashRes.ok) {

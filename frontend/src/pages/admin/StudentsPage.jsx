@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Search, Edit2, UserX, UserCheck, X, Filter, RotateCcw, Download } from 'lucide-react';
+import { Plus, Search, Edit2, UserX, UserCheck, X, Filter, RotateCcw, Download, KeyRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { studentService, classService, departmentService } from '../../services/dataService';
 import { genderLabel } from '../../utils/labels';
@@ -9,6 +9,7 @@ import StudentImportModal from './StudentImportModal';
 const STATUS_OPTIONS = [
   { value: '', label: 'Tất cả trạng thái' },
   { value: 'ACTIVE', label: 'Đang học' },
+  { value: 'RESERVED', label: 'Bảo lưu' },
   { value: 'GRADUATED', label: 'Tốt nghiệp' },
   { value: 'SUSPENDED', label: 'Tạm đình chỉ' },
   { value: 'INACTIVE', label: 'Thôi học' },
@@ -30,12 +31,17 @@ export default function StudentsPage() {
 
   const [formData, setFormData] = useState({
     studentCode: '',
+    citizenId: '',
     fullName: '',
     dateOfBirth: '',
     gender: 'Nam',
     email: '',
     phone: '',
     address: '',
+    hometown: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelationship: 'Bố/Mẹ',
     classId: '',
     status: 'ACTIVE',
     password: '',
@@ -154,12 +160,17 @@ export default function StudentsPage() {
 
       setFormData({
         studentCode: student.studentCode || '',
+        citizenId: student.citizenId || '',
         fullName: student.fullName || '',
         dateOfBirth: student.dateOfBirth ? student.dateOfBirth.substring(0, 10) : '',
         gender: mappedGender,
         email: student.email || '',
         phone: student.phone || '',
         address: student.address || '',
+        hometown: student.hometown || '',
+        emergencyContactName: student.emergencyContactName || '',
+        emergencyContactPhone: student.emergencyContactPhone || '',
+        emergencyContactRelationship: student.emergencyContactRelationship || 'Bố/Mẹ',
         classId: student.classEntity?.id || (classes[0]?.id || ''),
         status: mappedStatus,
         password: '',
@@ -168,12 +179,17 @@ export default function StudentsPage() {
       setEditingStudent(null);
       setFormData({
         studentCode: '',
+        citizenId: '',
         fullName: '',
         dateOfBirth: '',
         gender: 'Nam',
         email: '',
         phone: '',
         address: '',
+        hometown: '',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        emergencyContactRelationship: 'Bố/Mẹ',
         classId: classes[0]?.id || '',
         status: 'ACTIVE',
         password: '',
@@ -186,6 +202,7 @@ export default function StudentsPage() {
     if (!newStatus || newStatus === student.status) return;
     const statusLabels = {
       ACTIVE: 'Đang học',
+      RESERVED: 'Bảo lưu',
       GRADUATED: 'Tốt nghiệp',
       SUSPENDED: 'Tạm đình chỉ',
       INACTIVE: 'Thôi học'
@@ -228,6 +245,18 @@ export default function StudentsPage() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Cập nhật trạng thái thất bại');
       loadData();
+    }
+  };
+
+  const handleResetPassword = async (student) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn cấp lại mật khẩu mặc định (123456) cho sinh viên ${student.fullName} (${student.studentCode})?`)) {
+      return;
+    }
+    try {
+      await studentService.resetPassword(student.id);
+      toast.success(`Đã cấp lại mật khẩu mặc định "123456" cho SV ${student.fullName}!`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Có lỗi khi cấp lại mật khẩu');
     }
   };
 
@@ -587,16 +616,28 @@ export default function StudentsPage() {
                           }}
                           title="Nhấp vào để đổi trạng thái sinh viên ngay lập tức"
                         >
-                          <option value="ACTIVE" style={{ background: '#fff', color: '#10b981' }}>🟢 Đang học</option>
-                          <option value="GRADUATED" style={{ background: '#fff', color: '#3b82f6' }}>🎓 Tốt nghiệp</option>
-                          <option value="SUSPENDED" style={{ background: '#fff', color: '#f59e0b' }}>🟡 Tạm đình chỉ</option>
-                          <option value="INACTIVE" style={{ background: '#fff', color: '#ef4444' }}>🔴 Thôi học</option>
+                          <option value="ACTIVE" style={{ background: 'var(--bg-surface)', color: '#10b981' }}>🟢 Đang học</option>
+                          <option value="GRADUATED" style={{ background: 'var(--bg-surface)', color: '#3b82f6' }}>🎓 Tốt nghiệp</option>
+                          <option value="SUSPENDED" style={{ background: 'var(--bg-surface)', color: '#f59e0b' }}>🟡 Tạm đình chỉ</option>
+                          <option value="INACTIVE" style={{ background: 'var(--bg-surface)', color: '#ef4444' }}>🔴 Thôi học</option>
                         </select>
                       </td>
 
                       {/* Actions */}
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                          <button
+                            className="btn-icon"
+                            title="Cấp lại mật khẩu mặc định (123456) tại quầy"
+                            style={{
+                              color: '#b45309',
+                              backgroundColor: 'var(--bg-subtle)',
+                              border: '1px solid var(--border-color)',
+                            }}
+                            onClick={() => handleResetPassword(s)}
+                          >
+                            <KeyRound size={15} />
+                          </button>
                           <button
                             className="btn-icon"
                             title="Chỉnh sửa toàn bộ hồ sơ sinh viên"
@@ -675,6 +716,18 @@ export default function StudentsPage() {
                       value={formData.studentCode}
                       onChange={(e) => setFormData({ ...formData, studentCode: e.target.value })}
                       disabled={!!editingStudent}
+                      className="form-control"
+                    />
+                  </div>
+
+                  {/* CCCD / Số định danh */}
+                  <div className="form-group">
+                    <label className="form-label">Số CCCD / CMND</label>
+                    <input
+                      type="text"
+                      placeholder="VD: 001203001234"
+                      value={formData.citizenId}
+                      onChange={(e) => setFormData({ ...formData, citizenId: e.target.value })}
                       className="form-control"
                     />
                   </div>
@@ -769,10 +822,63 @@ export default function StudentsPage() {
                       className="form-select"
                     >
                       <option value="ACTIVE">Đang học</option>
+                      <option value="RESERVED">Bảo lưu</option>
                       <option value="GRADUATED">Tốt nghiệp</option>
                       <option value="SUSPENDED">Tạm đình chỉ</option>
                       <option value="INACTIVE">Thôi học</option>
                     </select>
+                  </div>
+
+                  {/* Quê quán */}
+                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <label className="form-label">Quê Quán / Nguyên Quán</label>
+                    <input
+                      type="text"
+                      placeholder="VD: Ba Đình, Hà Nội"
+                      value={formData.hometown}
+                      onChange={(e) => setFormData({ ...formData, hometown: e.target.value })}
+                      className="form-control"
+                    />
+                  </div>
+
+                  {/* Phần thông tin liên lạc khẩn cấp */}
+                  <div style={{ gridColumn: 'span 2', borderTop: '1px dashed var(--border-color)', paddingTop: '12px', marginTop: '4px' }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: '8px', fontSize: '0.9rem' }}>
+                      🚨 Thông Tin Liên Lạc Khẩn Cấp (Gia Đình / Phụ Huynh)
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Người Liên Hệ Khẩn Cấp</label>
+                    <input
+                      type="text"
+                      placeholder="Họ tên phụ huynh / người giám hộ"
+                      value={formData.emergencyContactName}
+                      onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Số ĐT Khẩn Cấp</label>
+                    <input
+                      type="tel"
+                      placeholder="0987654321"
+                      value={formData.emergencyContactPhone}
+                      onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <label className="form-label">Mối Quan Hệ</label>
+                    <input
+                      type="text"
+                      placeholder="VD: Bố, Mẹ, Anh/Chị, Người giám hộ"
+                      value={formData.emergencyContactRelationship}
+                      onChange={(e) => setFormData({ ...formData, emergencyContactRelationship: e.target.value })}
+                      className="form-control"
+                    />
                   </div>
 
                   {/* Mật khẩu khởi tạo */}

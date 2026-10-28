@@ -11,6 +11,15 @@ import org.springframework.data.repository.query.Param;
 import com.sms.entity.Enrollment;
 
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
+    @Query("SELECT e FROM Enrollment e " +
+           "JOIN FETCH e.section cs " +
+           "JOIN FETCH cs.subject " +
+           "JOIN FETCH cs.semester " +
+           "LEFT JOIN FETCH cs.lecturer " +
+           "WHERE e.student.id = :studentId " +
+           "ORDER BY e.enrolledAt DESC")
+    List<Enrollment> findAllByStudentIdWithDetails(@Param("studentId") Long studentId);
+
     List<Enrollment> findByStudentId(Long studentId);
     List<Enrollment> findBySectionId(Long sectionId);
     Optional<Enrollment> findByStudentIdAndSectionId(Long studentId, Long sectionId);
@@ -48,6 +57,27 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
            "JOIN FETCH e.student s " +
            "WHERE e.section.id = :sectionId AND e.status != 'CANCELLED'")
     List<Enrollment> findActiveBySectionId(@Param("sectionId") Long sectionId);
+
+    @Query("SELECT e FROM Enrollment e " +
+           "JOIN FETCH e.student s " +
+           "WHERE e.section.id IN :sectionIds AND e.status != 'CANCELLED'")
+    List<Enrollment> findActiveBySectionIdIn(@Param("sectionIds") List<Long> sectionIds);
+
+    @Query("SELECT e FROM Enrollment e " +
+           "JOIN FETCH e.student s " +
+           "JOIN FETCH e.section cs " +
+           "JOIN FETCH cs.subject sub " +
+           "WHERE cs.semester.id = :semesterId AND e.status = com.sms.entity.Enrollment.EnrollmentStatus.ENROLLED")
+    List<Enrollment> findActiveBySemesterId(@Param("semesterId") Integer semesterId);
+
+    @Query("SELECT e FROM Enrollment e " +
+           "JOIN FETCH e.student s " +
+           "LEFT JOIN FETCH s.classEntity " +
+           "JOIN FETCH e.section cs " +
+           "WHERE cs.semester.id = :semesterId AND cs.subject.id = :subjectId " +
+           "AND e.status != com.sms.entity.Enrollment.EnrollmentStatus.CANCELLED " +
+           "ORDER BY s.studentCode ASC")
+    List<Enrollment> findActiveBySemesterIdAndSubjectId(@Param("semesterId") Integer semesterId, @Param("subjectId") Integer subjectId);
 
     @Query("SELECT COALESCE(SUM(cs.subject.credits), 0) FROM Enrollment e " +
            "JOIN e.section cs " +

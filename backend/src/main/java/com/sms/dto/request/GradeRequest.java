@@ -38,4 +38,9 @@ public class GradeRequest {
     private Boolean finalize;
 
     private Grade.SpecialGrade specialGrade;
+
+    /**
+     * Lý do sửa điểm (BR-Grade09 - phục vụ Grade Audit Log)
+     */
+    private String reason;
 }

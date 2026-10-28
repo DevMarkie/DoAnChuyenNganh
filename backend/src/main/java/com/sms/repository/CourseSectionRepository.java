@@ -3,6 +3,7 @@ package com.sms.repository;
 import com.sms.entity.CourseSection;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
@@ -38,17 +39,31 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
     );
 
     @Override
-    @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
+    @EntityGraph(attributePaths = {"subject", "subject.prerequisites", "lecturer", "semester"})
     @NonNull Optional<CourseSection> findById(@NonNull Long id);
 
     /**
-     * Serialize changes to a section's capacity. Without this lock, two
-     * requests that both see the last remaining slot could both enroll.
+     * Legacy lock: Khóa bi quan cũ. Giữ lại để đảm bảo tương thích ngược nếu cần.
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
+    @EntityGraph(attributePaths = {"subject", "subject.prerequisites", "lecturer", "semester"})
     @Query("SELECT cs FROM CourseSection cs WHERE cs.id = :id")
     Optional<CourseSection> findByIdForEnrollment(@Param("id") Long id);
+
+    /**
+     * Tăng sĩ số nguyên tử trực tiếp trong Database, không giữ SELECT FOR UPDATE lock dài.
+     * Trả về số dòng cập nhật (1 nếu còn chỗ và tăng thành công, 0 nếu lớp đã đầy).
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE CourseSection cs SET cs.currentStudents = cs.currentStudents + 1 WHERE cs.id = :id AND cs.currentStudents < cs.maxStudents")
+    int incrementCurrentStudentsAtomic(@Param("id") Long id);
+
+    /**
+     * Giảm sĩ số nguyên tử trực tiếp trong Database khi hủy môn.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE CourseSection cs SET cs.currentStudents = cs.currentStudents - 1 WHERE cs.id = :id AND cs.currentStudents > 0")
+    int decrementCurrentStudentsAtomic(@Param("id") Long id);
 
     @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
     Optional<CourseSection> findBySectionCode(String sectionCode);

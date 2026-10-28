@@ -9,6 +9,8 @@ public class StudentRequest {
     @NotBlank(message = "Mã sinh viên không được để trống")
     private String studentCode;
 
+    private String citizenId;
+
     @NotBlank(message = "Họ tên không được để trống")
     private String fullName;
 
@@ -24,6 +26,10 @@ public class StudentRequest {
 
     private String phone;
     private String address;
+    private String hometown;
+    private String emergencyContactName;
+    private String emergencyContactPhone;
+    private String emergencyContactRelationship;
 
     @NotNull(message = "Lớp không được để trống")
     private Integer classId;

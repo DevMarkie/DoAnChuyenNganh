@@ -241,4 +241,40 @@ public class PasswordResetServiceTest {
         assertNull(req);
         verify(resetRepository, never()).save(any());
     }
+
+    @Test
+    void sendOtp_and_verifyOtpAndReset_flowSuccess() {
+        Role role = new Role();
+        role.setName("STUDENT");
+        User user = new User();
+        user.setId(25L);
+        user.setUsername("2500001");
+        user.setEmail("sv2500001@st.phenikaa-uni.edu.vn");
+        user.setRole(role);
+
+        when(userRepository.findByUsername("2500001")).thenReturn(Optional.of(user));
+        when(userRepository.findById(25L)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("newPassword123")).thenReturn("encodedPassword");
+
+        com.sms.dto.request.SendOtpRequest sendReq = new com.sms.dto.request.SendOtpRequest("2500001");
+        com.sms.dto.response.SendOtpResponse sendRes = passwordResetService.sendOtp(sendReq);
+
+        assertNotNull(sendRes);
+        assertNotNull(sendRes.getDevOtp());
+        assertEquals(6, sendRes.getDevOtp().length());
+        verify(emailService, times(1)).sendOtpEmail(anyString(), anyString(), eq("2500001"), eq(sendRes.getDevOtp()));
+
+        // Verify with wrong OTP -> throws
+        com.sms.dto.request.VerifyOtpResetRequest wrongReq = new com.sms.dto.request.VerifyOtpResetRequest(
+                "2500001", "000000", "newPassword123");
+        assertThrows(BadRequestException.class, () -> passwordResetService.verifyOtpAndReset(wrongReq));
+
+        // Verify with correct OTP -> resets password
+        com.sms.dto.request.VerifyOtpResetRequest correctReq = new com.sms.dto.request.VerifyOtpResetRequest(
+                "2500001", sendRes.getDevOtp(), "newPassword123");
+        assertDoesNotThrow(() -> passwordResetService.verifyOtpAndReset(correctReq));
+        assertEquals("encodedPassword", user.getPassword());
+        assertFalse(user.getMustChangePassword());
+        verify(userRepository, times(1)).save(user);
+    }
 }

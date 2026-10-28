@@ -28,6 +28,11 @@ public class Department {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "head_lecturer_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "user", "department"})
+    private Lecturer headLecturer;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

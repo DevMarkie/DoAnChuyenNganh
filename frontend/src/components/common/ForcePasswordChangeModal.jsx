@@ -74,20 +74,12 @@ export default function ForcePasswordChangeModal() {
 
   return (
     <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 2000,
-        backgroundColor: 'rgba(15, 23, 42, 0.75)',
-        backdropFilter: 'blur(4px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px',
-      }}
+      role="dialog"
+      aria-modal="true"
+      className="modal-backdrop"
+      style={{ zIndex: 10000 }}
     >
-      <div
-        style={{
-          backgroundColor: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)',
-          maxWidth: '480px', width: '100%', border: '1px solid var(--border-color)',
-          boxShadow: 'var(--shadow-xl)', overflow: 'hidden',
-        }}
-      >
+      <div className="modal-content" style={{ maxWidth: '480px' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
             width: '42px', height: '42px', borderRadius: 'var(--radius-md)', flexShrink: 0,

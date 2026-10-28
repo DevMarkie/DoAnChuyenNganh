@@ -30,10 +30,10 @@ public class TranscriptController {
     }
 
     /**
-     * Admin xem bảng điểm bất kỳ sinh viên
+     * Admin và Phòng Đào tạo xem bảng điểm bất kỳ sinh viên
      */
     @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
     public ResponseEntity<ApiResponse<TranscriptResponse>> getStudentTranscript(@PathVariable Long studentId) {
         return ResponseEntity.ok(ApiResponse.success(transcriptService.getTranscript(studentId)));
     }

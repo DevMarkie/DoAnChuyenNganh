@@ -31,6 +31,9 @@ public class AcademicSchedulerTest {
     @Mock
     private EnrollmentRepository enrollmentRepository;
 
+    @Mock
+    private com.sms.service.rule.CrossCuttingRuleEngine crossCuttingRuleEngine;
+
     @InjectMocks
     private AcademicScheduler academicScheduler;
 
@@ -55,6 +58,7 @@ public class AcademicSchedulerTest {
         sectionUnderEnrolled.setSemester(activeSemester);
         sectionUnderEnrolled.setStatus(CourseSection.SectionStatus.OPEN);
         sectionUnderEnrolled.setMaxStudents(30);
+        sectionUnderEnrolled.setMinStudents(15);
         sectionUnderEnrolled.setCurrentStudents(10); // Less than 15
 
         sectionOk = new CourseSection();
@@ -63,6 +67,7 @@ public class AcademicSchedulerTest {
         sectionOk.setSemester(activeSemester);
         sectionOk.setStatus(CourseSection.SectionStatus.OPEN);
         sectionOk.setMaxStudents(30);
+        sectionOk.setMinStudents(15);
         sectionOk.setCurrentStudents(20); // More than 15
     }
 
@@ -93,6 +98,15 @@ public class AcademicSchedulerTest {
         academicScheduler.autoCancelUnderEnrolledSections();
 
         verify(courseSectionRepository, never()).findBySemesterIdAndStatus(anyInt(), any());
+    }
+
+    @Test
+    void autoApplyFinancialHolds_ShouldDelegateToRuleEngine() {
+        when(crossCuttingRuleEngine.evaluateFinancialHolds()).thenReturn(3);
+
+        academicScheduler.autoApplyFinancialHolds();
+
+        verify(crossCuttingRuleEngine, times(1)).evaluateFinancialHolds();
     }
 
 }

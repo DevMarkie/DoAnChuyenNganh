@@ -14,13 +14,13 @@ import java.util.Optional;
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @Override
-    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
+    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "classEntity.major", "classEntity.cohort", "user"})
     @NonNull List<Student> findAll();
 
-    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
+    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "classEntity.major", "classEntity.cohort", "user"})
     Optional<Student> findByStudentCode(String studentCode);
 
-    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
+    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "classEntity.major", "classEntity.cohort", "user"})
     Optional<Student> findByUserId(Long userId);
 
     boolean existsByStudentCode(String studentCode);
@@ -31,6 +31,11 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
     @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
     List<Student> findByStatus(Student.StudentStatus status);
+
+    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
+    List<Student> findByFinancialHoldTrue();
+
+    long countByFinancialHoldTrue();
 
     @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
     @Query("SELECT s FROM Student s WHERE " +

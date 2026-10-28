@@ -76,6 +76,7 @@ public class Notification {
     }
 
     public enum NotificationType {
+        GRADE_UPDATE,
         GRADE_UPDATED,
         GRADE_FINALIZED,
         ATTENDANCE_WARNING,

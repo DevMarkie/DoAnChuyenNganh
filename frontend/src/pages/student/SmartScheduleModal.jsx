@@ -209,31 +209,10 @@ export default function SmartScheduleModal({
     <div
       role="dialog"
       aria-modal="true"
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 2000,
-        backgroundColor: "rgba(15, 23, 42, 0.75)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "20px",
-      }}
+      className="modal-backdrop"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div
-        style={{
-          backgroundColor: "var(--bg-surface)",
-          borderRadius: "var(--radius-lg)",
-          maxWidth: "850px",
-          width: "100%",
-          maxHeight: "90vh",
-          border: "1px solid var(--border-color)",
-          boxShadow: "var(--shadow-xl)",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <div className="modal-content" style={{ maxWidth: "850px" }}>
         {/* Header */}
         <div
           style={{

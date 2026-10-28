@@ -59,4 +59,11 @@ public class LecturerController {
         lecturerService.toggleActive(id);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái thành công"));
     }
+
+    @PostMapping("/{id}/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@PathVariable Long id) {
+        lecturerService.resetPassword(id);
+        return ResponseEntity.ok(ApiResponse.success("Cấp lại mật khẩu thành công! Mật khẩu mặc định là 123456"));
+    }
 }

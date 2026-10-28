@@ -2,6 +2,12 @@ package com.sms.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import com.sms.entity.Cohort;
+import com.sms.entity.CourseSection;
+import com.sms.entity.Enrollment;
+import com.sms.entity.Enrollment.AttendanceStatus;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -44,6 +50,8 @@ public class TranscriptService {
     private final StudentRepository studentRepository;
     private final GradeRepository gradeRepository;
     private final LecturerRepository lecturerRepository;
+    private final TuitionService tuitionService;
+    private final SystemConfigService systemConfigService;
 
     /**
      * Lấy bảng điểm tổng hợp của sinh viên
@@ -52,7 +60,31 @@ public class TranscriptService {
     public TranscriptResponse getTranscript(Long studentId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
-        return buildTranscript(student, gradeRepository.findFinalizedByStudentId(studentId));
+        TranscriptResponse response = buildTranscript(student, gradeRepository.findAllByStudentId(studentId));
+
+        // BR-Tuition & Quy tắc liên thông B: Nếu sinh viên bị FINANCIAL_HOLD hoặc nợ học phí quá hạn quy định: không hiển thị bảng điểm thi kết thúc học kỳ
+        if (student.isFinancialHold() || (tuitionService != null && tuitionService.isTuitionOverdue(studentId))) {
+            response.setIsLockedDueToTuition(true);
+            response.setLockReason("Bảng điểm kết thúc học kỳ bị tạm khóa (FINANCIAL HOLD) do sinh viên chưa hoàn thành nghĩa vụ học phí. Vui lòng liên hệ Phòng Kế hoạch - Tài chính để mở khóa tra cứu.");
+            if (response.getSemesters() != null) {
+                for (TranscriptResponse.SemesterGrade sem : response.getSemesters()) {
+                    sem.setSemesterGpa(null);
+                    sem.setSemesterClassification("Tạm khóa do nợ học phí");
+                    if (sem.getCourses() != null) {
+                        for (TranscriptResponse.CourseGrade course : sem.getCourses()) {
+                            course.setFinalScore(null);
+                            course.setTotalScore(null);
+                            course.setLetterGrade("Đã khóa");
+                            course.setGpaPoint(null);
+                            course.setStatus("LOCKED_DEBT");
+                        }
+                    }
+                }
+            }
+            response.setCumulativeGpa(null);
+            response.setAcademicStanding("Tạm khóa do nợ học phí");
+        }
+        return response;
     }
 
     /** Bảng điểm cho nhiều SV trong 2 truy vấn thay vì N+1 (màn cảnh báo học vụ). */
@@ -86,26 +118,36 @@ public class TranscriptService {
 
             for (Grade grade : semGrades) {
                 Subject subject = grade.getEnrollment().getSection().getSubject();
+                CourseSection section = grade.getEnrollment().getSection();
                 int credits = subject.getCredits();
+                boolean isFinalized = Boolean.TRUE.equals(grade.getIsFinalized());
+                LocalDateTime pubAt = section.getPublishedAt() != null ? section.getPublishedAt() : grade.getFinalizedAt();
+                boolean appealWindowValid = isFinalized && pubAt != null && pubAt.plusDays(7).isAfter(LocalDateTime.now());
 
                 courseGrades.add(TranscriptResponse.CourseGrade.builder()
                         .enrollmentId(grade.getEnrollment().getId())
-                        .finalizedAt(grade.getFinalizedAt())
+                        .sectionId(section != null ? section.getId() : null)
+                        .sectionCode(section != null ? section.getSectionCode() : null)
+                        .finalizedAt(isFinalized ? grade.getFinalizedAt() : null)
+                        .publishedAt(pubAt)
+                        .canAppeal(appealWindowValid)
                         .subjectCode(subject.getSubjectCode())
                         .subjectName(subject.getSubjectName())
                         .credits(credits)
                         .cc1Score(grade.getCc1Score())
                         .cc2Score(grade.getCc2Score())
                         .midtermScore(grade.getMidtermScore())
-                        .finalScore(grade.getFinalScore())
-                        .totalScore(grade.getTotalScore())
-                        .letterGrade(grade.getLetterGrade())
-                        .gpaPoint(grade.getGpaPoint())
+                        .finalScore(isFinalized ? grade.getFinalScore() : null)
+                        .totalScore(isFinalized ? grade.getTotalScore() : null)
+                        .letterGrade(isFinalized ? grade.getLetterGrade() : "Đang học / Chưa công bố")
+                        .gpaPoint(isFinalized ? grade.getGpaPoint() : null)
+                        .isFinalized(isFinalized)
+                        .status(isFinalized ? "PUBLISHED" : "IN_PROGRESS")
+                        .attendanceStatus(grade.getEnrollment() != null && grade.getEnrollment().getAttendanceStatus() != null ? grade.getEnrollment().getAttendanceStatus().name() : "QUALIFIED")
+                        .isDisqualified(grade.getEnrollment() != null && grade.getEnrollment().getAttendanceStatus() == AttendanceStatus.DISQUALIFIED)
                         .build());
 
-                // Semester GPA includes every graded attempt of that term
-                // (an F counts as 0.0 here — that is a correct semester GPA).
-                if (grade.getGpaPoint() != null) {
+                if (isFinalized && grade.getGpaPoint() != null) {
                     semWeightedGpa = semWeightedGpa.add(
                             grade.getGpaPoint().multiply(BigDecimal.valueOf(credits)));
                     semCredits += credits;
@@ -118,13 +160,17 @@ public class TranscriptService {
                     ? semWeightedGpa.divide(BigDecimal.valueOf(semCredits), 2, RoundingMode.HALF_UP)
                     : null;
 
+            boolean isFirst = (semesterGrades.isEmpty());
+            boolean isWarning = isSemesterWarning(semesterGpa, isFirst);
+
             semesterGrades.add(TranscriptResponse.SemesterGrade.builder()
                     .semesterId(semester.getId())
                     .semesterName(semester.getSemesterName())
                     .academicYear(semester.getAcademicYear())
+                    .semesterNumber(semester.getSemesterNumber())
                     .semesterGpa(semesterGpa)
                     .semesterClassification(classifyAcademicStanding(semesterGpa))
-                    .isSemesterWarning(isSemesterWarning(semesterGpa))
+                    .isSemesterWarning(isWarning)
                     .semesterCredits(semCredits)
                     .courses(courseGrades)
                     .build());
@@ -133,31 +179,52 @@ public class TranscriptService {
         // Sort by semester
         semesterGrades.sort(Comparator.comparing(TranscriptResponse.SemesterGrade::getSemesterId));
 
-        // BA-03 — Quy chế học lại: bảng điểm tích luỹ lấy LẦN THI CÓ ĐIỂM CAO NHẤT
-        // cho mỗi môn (không phải lần mới nhất), nên học lại luôn có lợi và một lần
-        // rớt về sau không làm mất tín chỉ đã đạt. Nếu quy chế trường khác (ví dụ
-        // "lấy lần mới nhất"), chỉ cần đổi điều kiện so sánh bên dưới.
+        // BR-Grade04 — Khử trùng lặp khi tính CPA:
+        // Cấu hình qua system_configs: HIGHEST_SCORE (mặc định) hoặc LATEST_ATTEMPT (lần thi gần nhất)
+        String deduplicationStrategy = "HIGHEST_SCORE";
+        if (systemConfigService != null) {
+            deduplicationStrategy = systemConfigService.getValue("cpa_deduplication_strategy", "HIGHEST_SCORE");
+        }
+        boolean isLatestAttempt = "LATEST_ATTEMPT".equalsIgnoreCase(deduplicationStrategy);
+
         Map<String, Grade> bestBySubject = new LinkedHashMap<>();
         for (Grade grade : grades) {
+            // BA-03 & Security: Chỉ tính điểm đã chính thức chốt/khóa sổ (isFinalized=true)
+            // vào điểm tích lũy CPA và tín chỉ tích luỹ; không để điểm nháp rò rỉ.
+            if (!Boolean.TRUE.equals(grade.getIsFinalized())) continue;
             if (grade.getGpaPoint() == null) continue;
             Subject subject = grade.getEnrollment().getSection().getSubject();
             Grade current = bestBySubject.get(subject.getSubjectCode());
-            if (current == null
-                    || grade.getGpaPoint().compareTo(current.getGpaPoint()) > 0) {
+            if (current == null) {
                 bestBySubject.put(subject.getSubjectCode(), grade);
+            } else if (isLatestAttempt) {
+                Integer currentSemId = current.getEnrollment().getSection().getSemester().getId();
+                Integer gradeSemId = grade.getEnrollment().getSection().getSemester().getId();
+                if (gradeSemId >= currentSemId) {
+                    bestBySubject.put(subject.getSubjectCode(), grade);
+                }
+            } else {
+                if (grade.getGpaPoint().compareTo(current.getGpaPoint()) > 0) {
+                    bestBySubject.put(subject.getSubjectCode(), grade);
+                }
             }
         }
 
         BigDecimal cpaWeighted = BigDecimal.ZERO;
-        int gpaCredits = 0; // Mẫu số CPA — lần thi tốt nhất; nếu vẫn F thì tính 0.0
+        int gpaCredits = 0; // Mẫu số CPA — chỉ tính các môn ĐẠT (>= 1.0) theo chuẩn tín chỉ
+        int debtCredits = 0; // Tổng tín chỉ nợ trượt chưa trả
+
         for (Grade grade : bestBySubject.values()) {
             int credits = grade.getEnrollment().getSection().getSubject().getCredits();
-            cpaWeighted = cpaWeighted.add(grade.getGpaPoint().multiply(BigDecimal.valueOf(credits)));
-            gpaCredits += credits;
-            // Tín chỉ tích luỹ tính từ D (1.0/4.0) trở lên; F vẫn không đạt.
+            // Quy tắc nghiệp vụ Mục 5: Điểm tích lũy CPA chỉ tính trên các môn đạt hoặc các môn lấy điểm cao nhất khi học cải thiện
             if (grade.getGpaPoint().compareTo(new BigDecimal("1.0")) >= 0) {
+                cpaWeighted = cpaWeighted.add(grade.getGpaPoint().multiply(BigDecimal.valueOf(credits)));
+                gpaCredits += credits;
                 totalCredits += credits;
                 completedCourses++;
+            } else {
+                // Điểm cao nhất của môn vẫn < 1.0 (tức F / trượt) -> tính vào tổng nợ tín chỉ
+                debtCredits += credits;
             }
         }
 
@@ -165,10 +232,22 @@ public class TranscriptService {
                 ? cpaWeighted.divide(BigDecimal.valueOf(gpaCredits), 2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
-        int warningLevel = calculateWarningLevel(semesterGrades, cumulativeGpa);
+        int warningLevel = calculateWarningLevel(student, semesterGrades, cumulativeGpa, debtCredits);
+        TranscriptResponse.SemesterGrade latestCompletedSemester = semesterGrades.stream()
+                .filter(s -> s.getSemesterGpa() != null)
+                .reduce((first, second) -> second)
+                .orElse(semesterGrades.isEmpty() ? null : semesterGrades.get(semesterGrades.size() - 1));
+
         String warningNotice = warningLevel > 0
-                ? buildWarningNotice(semesterGrades.get(semesterGrades.size() - 1), warningLevel, cumulativeGpa)
+                ? buildWarningNotice(student, latestCompletedSemester, warningLevel, cumulativeGpa, debtCredits)
                 : null;
+
+        int maxAllowedCredits = switch (warningLevel) {
+            case 3 -> 0; // Buộc thôi học / Khóa học vụ
+            case 2 -> 10; // Cảnh báo mức 2: tối đa 10 TC
+            case 1 -> 14; // Cảnh báo mức 1: tối đa 14 TC
+            default -> 24; // Bình thường: tối đa 24 TC
+        };
 
         return TranscriptResponse.builder()
                 .studentId(student.getId())
@@ -179,8 +258,12 @@ public class TranscriptService {
                 .academicStanding(classifyAcademicStanding(cumulativeGpa))
                 .warningLevel(warningLevel)
                 .warningNotice(warningNotice)
+                .maxAllowedCredits(maxAllowedCredits)
                 .totalCredits(totalCredits)
                 .completedCourses(completedCourses)
+                .debtCredits(debtCredits)
+                .isLockedDueToTuition(false)
+                .lockReason(null)
                 .semesters(semesterGrades)
                 .advisorContact(buildAdvisorContact(student, warningLevel))
                 .build();
@@ -295,37 +378,124 @@ public class TranscriptService {
                 .build();
     }
 
-    private static boolean isSemesterWarning(BigDecimal semesterGpa) {
-        return semesterGpa != null && semesterGpa.compareTo(BigDecimal.ONE) < 0;
+    public static boolean isSemesterWarning(BigDecimal semesterGpa, boolean isFirstSemester) {
+        if (semesterGpa == null) return false;
+        if (isFirstSemester) {
+            return semesterGpa.compareTo(BigDecimal.ONE) < 0;
+        } else {
+            return semesterGpa.compareTo(new BigDecimal("1.20")) < 0;
+        }
     }
 
-    private static int calculateWarningLevel(List<TranscriptResponse.SemesterGrade> semesters,
-                                             BigDecimal cumulativeGpa) {
-        if (semesters.isEmpty()) return 0;
-        int consecutiveWarnings = 0;
-        for (int index = semesters.size() - 1; index >= 0; index--) {
-            TranscriptResponse.SemesterGrade semester = semesters.get(index);
-            if (!Boolean.TRUE.equals(semester.isSemesterWarning())) break;
-            consecutiveWarnings++;
+    public static boolean isExceededMaxDuration(Student student) {
+        if (student == null || student.getClassEntity() == null) return false;
+        Integer admissionYear = null;
+        int standardYears = 4;
+
+        if (student.getClassEntity().getCohort() != null) {
+            Cohort cohort = student.getClassEntity().getCohort();
+            admissionYear = cohort.getAdmissionYear();
+            if (cohort.getGraduationYear() != null && cohort.getGraduationYear() > admissionYear) {
+                standardYears = cohort.getGraduationYear() - admissionYear;
+            }
+        } else if (student.getClassEntity().getAcademicYear() != null) {
+            try {
+                String acYear = student.getClassEntity().getAcademicYear();
+                String firstPart = acYear.split("[-_]")[0].trim();
+                admissionYear = Integer.parseInt(firstPart);
+            } catch (Exception ignored) {}
         }
-        // CPA < 2.0 is applicable from the second recorded semester onward.
-        boolean cpaWarning = semesters.size() >= 2
-                && cumulativeGpa != null
-                && cumulativeGpa.compareTo(new BigDecimal("2.00")) < 0;
-        if (cpaWarning) {
-            consecutiveWarnings = Math.max(consecutiveWarnings, 1);
+
+        if (admissionYear != null) {
+            int maxYear = admissionYear + standardYears + 2;
+            int currentYear = LocalDate.now().getYear();
+            return currentYear > maxYear;
         }
-        return Math.min(consecutiveWarnings, 3);
+        return false;
     }
 
-    private static String buildWarningNotice(TranscriptResponse.SemesterGrade semester,
-                                             int level, BigDecimal cumulativeGpa) {
-        boolean lowSemesterGpa = semester.getSemesterGpa() != null
-                && semester.getSemesterGpa().compareTo(BigDecimal.ONE) < 0;
-        boolean lowCpa = cumulativeGpa != null && cumulativeGpa.compareTo(new BigDecimal("2.00")) < 0;
-        String reason = lowSemesterGpa && lowCpa
-                ? "GPA học kỳ < 1.0 và CPA tích lũy < 2.0"
-                : lowSemesterGpa ? "GPA học kỳ < 1.0" : "CPA tích lũy < 2.0 từ học kỳ thứ 2";
-        return "Cảnh báo học vụ mức " + level + " do " + reason;
+    /**
+     * Quy tắc nghiệp vụ Cảnh báo học vụ (Mục 5):
+     * - Mức 1: Điểm trung bình học kỳ < 1.0 (kỳ đầu) hoặc < 1.2 (kỳ hai trở đi), hoặc nợ quá 24 tín chỉ.
+     * - Mức 2: Bị cảnh báo mức 1 liên tiếp 2 học kỳ chính.
+     * - Buộc thôi học (Mức 3): Bị cảnh báo mức 2 không tiến bộ hoặc vượt quá thời gian đào tạo tối đa (N + 2 năm tùy ngành).
+     */
+    public static int calculateWarningLevel(Student student,
+                                            List<TranscriptResponse.SemesterGrade> semesters,
+                                            BigDecimal cumulativeGpa,
+                                            int debtCredits) {
+        if (isExceededMaxDuration(student)) {
+            return 3;
+        }
+
+        // Lọc các học kỳ chính (semesterNumber == 1 hoặc 2, bỏ qua hè) đã có điểm
+        List<TranscriptResponse.SemesterGrade> mainSemesters = semesters.stream()
+                .filter(s -> s.getSemesterGpa() != null)
+                .filter(s -> s.getSemesterNumber() == null || s.getSemesterNumber() == 1 || s.getSemesterNumber() == 2)
+                .toList();
+
+        if (mainSemesters.isEmpty()) {
+            return debtCredits > 24 ? 1 : 0;
+        }
+
+        int consecutiveMainWarnings = 0;
+        for (int i = 0; i < mainSemesters.size(); i++) {
+            TranscriptResponse.SemesterGrade sem = mainSemesters.get(i);
+            BigDecimal gpa = sem.getSemesterGpa();
+            boolean isFirst = (i == 0);
+            boolean isLowGpa = (isFirst && gpa.compareTo(BigDecimal.ONE) < 0)
+                    || (!isFirst && gpa.compareTo(new BigDecimal("1.20")) < 0);
+
+            if (isLowGpa) {
+                consecutiveMainWarnings++;
+            } else {
+                consecutiveMainWarnings = 0;
+            }
+        }
+
+        boolean debtWarning = debtCredits > 24;
+
+        if (consecutiveMainWarnings >= 3) {
+            return 3; // Mức 2 tiếp tục không tiến bộ -> Buộc thôi học
+        } else if (consecutiveMainWarnings == 2) {
+            return 2; // Cảnh báo mức 1 liên tiếp 2 kỳ chính
+        } else if (consecutiveMainWarnings == 1 || debtWarning) {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    public static String buildWarningNotice(Student student,
+                                            TranscriptResponse.SemesterGrade semester,
+                                            int level, BigDecimal cumulativeGpa, int debtCredits) {
+        if (isExceededMaxDuration(student)) {
+            return "Buộc thôi học: Đã vượt quá thời gian đào tạo tối đa (N + 2 năm theo quy chế)";
+        }
+        if (level == 3) {
+            return "Buộc thôi học: Bị cảnh báo học vụ Mức 2 không tiến bộ trong các học kỳ chính liên tiếp";
+        }
+        if (level == 2) {
+            return "Cảnh báo học vụ Mức 2: Bị cảnh báo Mức 1 trong 2 học kỳ chính liên tiếp";
+        }
+        if (level == 1) {
+            List<String> reasons = new ArrayList<>();
+            if (semester != null && semester.getSemesterGpa() != null) {
+                boolean isFirstSem = (semester.getSemesterNumber() != null && semester.getSemesterNumber() == 1);
+                if (semester.getSemesterGpa().compareTo(BigDecimal.ONE) < 0) {
+                    reasons.add("GPA học kỳ < 1.0 (" + semester.getSemesterGpa() + ")");
+                } else if (semester.getSemesterGpa().compareTo(new BigDecimal("1.20")) < 0) {
+                    reasons.add("GPA học kỳ < 1.2 (" + semester.getSemesterGpa() + ")");
+                }
+            }
+            if (debtCredits > 24) {
+                reasons.add("Nợ quá 24 tín chỉ học phần (hiện nợ " + debtCredits + " TC)");
+            }
+            if (reasons.isEmpty()) {
+                reasons.add("Kết quả học tập dưới chuẩn quy chế đào tạo tín chỉ");
+            }
+            return "Cảnh báo học vụ Mức 1: " + String.join(", ", reasons);
+        }
+        return "Bình thường";
     }
 }

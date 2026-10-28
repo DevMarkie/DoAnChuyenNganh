@@ -6,6 +6,7 @@ import com.sms.entity.Enrollment;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.EnrollmentRepository;
 import com.sms.repository.SemesterRepository;
+import com.sms.service.rule.CrossCuttingRuleEngine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,6 +27,8 @@ public class AcademicScheduler {
     private final SemesterRepository semesterRepository;
     private final CourseSectionRepository courseSectionRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final CrossCuttingRuleEngine crossCuttingRuleEngine;
+    private final com.sms.service.AcademicWarningService academicWarningService;
 
     /**
      * GAP-04: Auto-cancel lớp thiếu sĩ số.
@@ -53,7 +56,7 @@ public class AcademicScheduler {
                         continue;
                     }
                     int maxStudents = section.getMaxStudents() == null ? 40 : section.getMaxStudents();
-                    int minStudents = (int) Math.ceil(maxStudents * 2.0 / 3.0);
+                    int minStudents = (section.getMinStudents() != null && section.getMinStudents() > 0) ? section.getMinStudents() : (int) Math.ceil(maxStudents * 2.0 / 3.0);
                     section.setMinStudents(minStudents);
                     if (section.getCurrentStudents() < minStudents) {
                         log.warn("Section {} ({}) has only {} students. Cancelling...", 
@@ -73,4 +76,25 @@ public class AcademicScheduler {
         }
     }
 
+    /**
+     * QUY TẮC LIÊN THÔNG B: Hạn học phí -> Đóng băng dịch vụ học vụ (FINANCIAL_HOLD)
+     * Chạy mỗi ngày lúc 00:01 AM. Tự động quét và khóa các sinh viên còn nợ học phí quá hạn.
+     */
+    @Scheduled(cron = "0 1 0 * * ?")
+    @Transactional
+    public void autoApplyFinancialHolds() {
+        log.info("Starting auto-apply financial holds job (Rule B)...");
+        int count = crossCuttingRuleEngine.evaluateFinancialHolds();
+        log.info("Finished auto-apply financial holds job. Applied to {} students.", count);
+    }
+
+    /**
+     * QUY TẮC LIÊN THÔNG C: Quét xử lý học vụ tự động cuối kỳ
+     * Chạy mỗi ngày lúc 2:00 AM. Kiểm tra các học kỳ kết thúc để quét học vụ và siết hạn mức tín chỉ.
+     */
+    @Scheduled(cron = "0 0 2 * * ?")
+    public void autoScanAcademicStanding() {
+        log.info("Starting auto-scan academic standing job (Rule C)...");
+        academicWarningService.autoScanRecentFinishedSemesters();
+    }
 }

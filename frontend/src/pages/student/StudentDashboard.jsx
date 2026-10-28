@@ -1,7 +1,7 @@
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Award, BookOpen, Layers, BookMarked } from 'lucide-react';
+import { TranscriptIcon, SubjectsIcon, CourseSectionsIcon, EnrollIcon } from '../../components/icons';
 import { studentService, transcriptService, enrollmentService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
 
@@ -52,7 +52,7 @@ export default function StudentDashboard() {
             Xem bảng điểm
           </button>
           <button className="btn btn-primary" onClick={() => navigate('/student/enroll')}>
-            <BookMarked size={16} />
+            <EnrollIcon size={16} />
             <span>Đăng ký môn học</span>
           </button>
         </div>
@@ -60,50 +60,21 @@ export default function StudentDashboard() {
 
       {/* Stats Bento Grid */}
       <div className="stats-grid">
-        <div className="stat-card" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, var(--bg-surface) 100%)',
-          borderColor: 'rgba(99, 102, 241, 0.25)',
-        }}>
-          <div
-            className="stat-icon-wrapper"
-            style={{
-              background: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)',
-              color: '#ffffff',
-              boxShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.4)',
-            }}
-          >
-            <Award size={22} />
+        <div className="stat-card">
+          <div className="stat-icon-wrapper stat-icon--cpa">
+            <TranscriptIcon size={22} />
           </div>
           <div>
-            <div className="stat-value" style={{
-              background: 'linear-gradient(135deg, var(--text-main) 60%, var(--primary) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontSize: '1.85rem',
-            }}>
-              {gpa} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)', WebkitTextFillColor: 'var(--text-muted)' }}>/ 4.0</span>
+            <div className="stat-value" style={{ fontSize: '1.85rem' }}>
+              {gpa} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>/ 4.0</span>
             </div>
             <div className="stat-label">Điểm TB tích lũy (GPA)</div>
           </div>
         </div>
 
-        <div className="stat-card" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-surface) 100%)',
-          borderColor: 'rgba(16, 185, 129, 0.25)',
-        }}>
-          <div
-            className="stat-icon-wrapper"
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-              color: '#ffffff',
-              boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.4)',
-            }}
-          >
-            <BookOpen size={22} />
+        <div className="stat-card">
+          <div className="stat-icon-wrapper stat-icon--credits">
+            <SubjectsIcon size={22} />
           </div>
           <div>
             <div className="stat-value">{transcript?.totalCredits || 0}</div>
@@ -111,21 +82,9 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        <div className="stat-card" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, var(--bg-surface) 100%)',
-          borderColor: 'rgba(6, 182, 212, 0.25)',
-        }}>
-          <div
-            className="stat-icon-wrapper"
-            style={{
-              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-              color: '#ffffff',
-              boxShadow: '0 4px 14px 0 rgba(6, 182, 212, 0.4)',
-            }}
-          >
-            <Layers size={22} />
+        <div className="stat-card">
+          <div className="stat-icon-wrapper stat-icon--courses">
+            <CourseSectionsIcon size={22} />
           </div>
           <div>
             <div className="stat-value">{enrollments.length}</div>

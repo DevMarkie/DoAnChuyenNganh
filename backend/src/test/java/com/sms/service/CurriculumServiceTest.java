@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -52,6 +53,10 @@ public class CurriculumServiceTest {
     private GradeRepository gradeRepository;
     @Mock
     private EnrollmentRepository enrollmentRepository;
+    @Spy
+    private PrerequisiteGraphEngine prerequisiteGraphEngine = new PrerequisiteGraphEngine();
+    @Spy
+    private DegreeAuditEngine degreeAuditEngine = new DegreeAuditEngine(prerequisiteGraphEngine);
 
     @InjectMocks
     private CurriculumService curriculumService;
@@ -188,7 +193,6 @@ public class CurriculumServiceTest {
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(programRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.of(program));
         when(gradeRepository.findFinalizedByStudentId(1L)).thenReturn(List.of(grade));
-        when(enrollmentRepository.findActiveByStudentId(1L)).thenReturn(List.of(enrollment));
         when(blockRepository.findByProgramIdOrdered(1L)).thenReturn(List.of(block));
         when(blockSubjectRepository.findByBlockIdWithSubject(1L)).thenReturn(List.of(link));
 
@@ -207,7 +211,6 @@ public class CurriculumServiceTest {
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(programRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.of(program));
         when(gradeRepository.findFinalizedByStudentId(1L)).thenReturn(List.of(grade));
-        when(enrollmentRepository.findActiveByStudentId(1L)).thenReturn(List.of(enrollment));
         when(blockRepository.findByProgramIdOrdered(1L)).thenReturn(List.of(block));
         when(blockSubjectRepository.findByBlockIdWithSubject(1L)).thenReturn(List.of(link));
 
@@ -225,7 +228,6 @@ public class CurriculumServiceTest {
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
         when(programRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.of(program));
         when(gradeRepository.findFinalizedByStudentId(1L)).thenReturn(List.of(grade));
-        when(enrollmentRepository.findActiveByStudentId(1L)).thenReturn(List.of(enrollment));
         when(blockRepository.findByProgramIdOrdered(1L)).thenReturn(List.of(block));
         when(blockSubjectRepository.findByBlockIdWithSubject(1L)).thenReturn(List.of(link));
 

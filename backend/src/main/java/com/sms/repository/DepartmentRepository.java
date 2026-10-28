@@ -11,4 +11,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Integer>
     boolean existsByName(String name);
     List<Department> findByIsActiveTrue();
     List<Department> findByNameContainingIgnoreCase(String name);
+    List<Department> findByHeadLecturerId(Long headLecturerId);
+    Optional<Department> findFirstByHeadLecturerId(Long headLecturerId);
 }

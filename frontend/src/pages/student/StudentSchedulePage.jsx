@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Calendar, Clock, MapPin, User, BookOpen, Layers, CheckCircle2,
-  Grid, List, Printer, School, CalendarDays, RefreshCw
+  Grid, List, Printer, School, CalendarDays, RefreshCw, Globe,
+  KeyRound, XCircle
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { scheduleService, semesterService } from '../../services/dataService';
+import { scheduleService, semesterService, attendanceService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
 import StudentClassListModal from './StudentClassListModal';
+import StudentCheckInModal from '../../components/student/StudentCheckInModal';
 
 const DAYS = [
   { value: 2, label: 'Thứ Hai', short: 'T2', jsDay: 1 },
@@ -25,6 +27,12 @@ const PERIOD_SLOTS = [
   { slot: 'Chiều 2', start: 10, end: 12, label: 'Tiết 10 - 12 (15:45 - 18:20)' },
 ];
 
+const isOnlineRoom = (room) => {
+  if (!room) return false;
+  const r = String(room).toLowerCase();
+  return r.includes('online') || r.includes('zoom') || r.includes('meet') || r.includes('teams') || r.startsWith('http');
+};
+
 export default function StudentSchedulePage() {
   const { user } = useAuthStore();
   const [schedules, setSchedules] = useState([]);
@@ -33,12 +41,27 @@ export default function StudentSchedulePage() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [selectedSection, setSelectedSection] = useState(null);
+  const [todayAttendance, setTodayAttendance] = useState({});
+  const [checkInSection, setCheckInSection] = useState(null);
 
   // Current day calculation
   const [todayVal] = useState(() => {
     const day = new Date().getDay(); // 0 = Sunday, 1 = Monday...
     return day === 0 ? 8 : day + 1; // 2..8
   });
+
+  const loadTodayAttendance = useCallback(async () => {
+    try {
+      const res = await attendanceService.getStudentToday();
+      const map = {};
+      (res.data?.data || []).forEach((item) => {
+        map[item.sectionId] = item;
+      });
+      setTodayAttendance(map);
+    } catch {
+      // Ignore background error
+    }
+  }, []);
 
   const loadScheduleForSemester = async (semId) => {
     try {
@@ -66,6 +89,7 @@ export default function StudentSchedulePage() {
         setSelectedSemesterId(defaultSemId);
 
         await loadScheduleForSemester(defaultSemId);
+        loadTodayAttendance();
       } catch {
         toast.error('Lỗi khi khởi tạo thời khóa biểu');
         setLoading(false);
@@ -73,16 +97,42 @@ export default function StudentSchedulePage() {
     };
 
     initData();
-  }, []);
+  }, [loadTodayAttendance]);
 
   const handleSemesterChange = (newSemId) => {
     setSelectedSemesterId(newSemId);
     loadScheduleForSemester(newSemId);
   };
 
-  const todayClasses = schedules.filter((s) => s.dayOfWeek === todayVal);
-  const totalCredits = schedules.reduce(
-    (acc, s) => acc + (s.courseSection?.subject?.credits || 0),
+  // Base scheduled classes for today
+  const todayScheduledClasses = schedules.filter((s) => s.dayOfWeek === todayVal);
+  const scheduledSectionIds = new Set(todayScheduledClasses.map((s) => s.courseSection?.id));
+
+  // Also include any enrolled classes that have an active OPEN/SAVED attendance session today (makeup/testing)
+  const extraActiveClasses = schedules.filter((s) => {
+    if (!s.courseSection?.id) return false;
+    if (scheduledSectionIds.has(s.courseSection.id)) return false;
+    const att = todayAttendance[s.courseSection.id];
+    return att && (att.sessionStatus === 'OPEN' || att.sessionStatus === 'SAVED');
+  });
+
+  const seenExtra = new Set();
+  const dedupedExtra = extraActiveClasses.filter((s) => {
+    if (seenExtra.has(s.courseSection?.id)) return false;
+    seenExtra.add(s.courseSection?.id);
+    return true;
+  });
+
+  const todayClasses = [...todayScheduledClasses, ...dedupedExtra];
+  const uniqueSubjects = Array.from(
+    new Map(
+      schedules
+        .filter((s) => s.courseSection?.subject?.id)
+        .map((s) => [s.courseSection.subject.id, s.courseSection.subject])
+    ).values()
+  );
+  const totalCredits = uniqueSubjects.reduce(
+    (acc, subj) => acc + (subj.credits || 0),
     0
   );
 
@@ -157,7 +207,7 @@ export default function StudentSchedulePage() {
       {/* Quick Summary Cards */}
       <div className="stats-grid" style={{ marginBottom: '20px' }}>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#eff6ff', color: '#1d4ed8' }}>
+          <div className="stat-icon-wrapper stat-icon--info">
             <Calendar size={24} />
           </div>
           <div>
@@ -167,17 +217,17 @@ export default function StudentSchedulePage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#ecfdf5', color: '#059669' }}>
+          <div className="stat-icon-wrapper stat-icon--success">
             <BookOpen size={24} />
           </div>
           <div>
-            <div className="stat-value">{new Set(schedules.map((s) => s.courseSection?.subject?.id)).size}</div>
+            <div className="stat-value">{uniqueSubjects.length}</div>
             <div className="stat-label">Môn học đang học</div>
           </div>
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+          <div className="stat-icon-wrapper stat-icon--purple">
             <Layers size={24} />
           </div>
           <div>
@@ -187,7 +237,7 @@ export default function StudentSchedulePage() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#fffbeb', color: '#d97706' }}>
+          <div className="stat-icon-wrapper stat-icon--warning">
             <Clock size={24} />
           </div>
           <div>
@@ -240,12 +290,25 @@ export default function StudentSchedulePage() {
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
-                    {s.courseSection?.subject?.subjectName || 'Lớp học'}
+                  <div>
+                    <div style={{ fontWeight: 700, color: 'var(--primary)', fontSize: '0.95rem' }}>
+                      {s.courseSection?.subject?.subjectName || 'Lớp học'}
+                    </div>
+                    {s.dayOfWeek !== todayVal && (
+                      <span className="badge badge-warning" style={{ fontSize: '0.675rem', padding: '1px 5px', marginTop: '3px', display: 'inline-block' }}>
+                        ⚡ Phiên điểm danh hôm nay
+                      </span>
+                    )}
                   </div>
-                  <span className="badge badge-success" style={{ fontWeight: 700 }}>
-                    Phòng {s.room}
-                  </span>
+                  {isOnlineRoom(s.room) ? (
+                    <span className="badge badge-purple" style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <Globe size={13} /> Học Online
+                    </span>
+                  ) : (
+                    <span className="badge badge-success" style={{ fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={13} /> Phòng {s.room}
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -265,6 +328,85 @@ export default function StudentSchedulePage() {
                     Lưu ý: {s.note}
                   </div>
                 )}
+
+                {/* Attendance Status & Check-in Action */}
+                {(() => {
+                  const att = todayAttendance[s.courseSection?.id];
+                  if (!att) return null;
+
+                  if (att.sessionStatus === 'OPEN') {
+                    if (att.isPresent) {
+                      return (
+                        <div style={{ marginTop: '10px' }}>
+                          <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', padding: '4px 8px' }}>
+                            <CheckCircle2 size={13} /> Đã điểm danh (Có mặt)
+                          </span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <button
+                        className="btn btn-primary btn-sm"
+                        style={{
+                          marginTop: '10px',
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          fontWeight: 700,
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          borderColor: '#059669'
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCheckInSection(s.courseSection);
+                        }}
+                      >
+                        <KeyRound size={14} />
+                        <span>Điểm danh ngay (Đang mở)</span>
+                      </button>
+                    );
+                  }
+
+                  if (att.sessionStatus === 'SAVED') {
+                    return (
+                      <div style={{ marginTop: '10px' }}>
+                        {att.isPresent ? (
+                          <span className="badge badge-success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', padding: '4px 8px' }}>
+                            <CheckCircle2 size={13} /> Buổi hôm nay: Có mặt
+                          </span>
+                        ) : (
+                          <span className="badge badge-danger" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', padding: '4px 8px' }}>
+                            <XCircle size={13} /> Buổi hôm nay: Vắng mặt
+                          </span>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <button
+                      className="btn btn-outline btn-sm"
+                      style={{
+                        marginTop: '10px',
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        fontSize: '0.78rem'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCheckInSection(s.courseSection);
+                      }}
+                    >
+                      <KeyRound size={13} />
+                      <span>Nhập mã điểm danh</span>
+                    </button>
+                  );
+                })()}
               </div>
             ))}
           </div>
@@ -473,9 +615,9 @@ export default function StudentSchedulePage() {
                               {subj?.subjectName || 'Lớp học'}
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', color: 'var(--primary)', fontWeight: 600 }}>
-                              <MapPin size={12} />
-                              <span>{s.room}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', color: isOnlineRoom(s.room) ? 'var(--purple, #8b5cf6)' : 'var(--primary)', fontWeight: 600 }}>
+                              {isOnlineRoom(s.room) ? <Globe size={12} /> : <MapPin size={12} />}
+                              <span>{isOnlineRoom(s.room) ? (String(s.room).length > 15 ? 'Online' : s.room) : `P.${s.room}`}</span>
                               <span className="badge badge-info" style={{ fontSize: '0.65rem', padding: '1px 5px', marginLeft: 'auto' }}>
                                 Tiết {s.startPeriod}-{s.endPeriod}
                               </span>
@@ -498,6 +640,71 @@ export default function StudentSchedulePage() {
                                 {s.note}
                               </div>
                             )}
+
+                            {/* Quick Attendance Action */}
+                            <div
+                              style={{
+                                marginTop: '6px',
+                                paddingTop: '4px',
+                                borderTop: '1px dashed var(--border-light, #e5e7eb)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                              }}
+                            >
+                              {todayAttendance[s.courseSection?.id]?.isPresent ? (
+                                <span
+                                  className="badge badge-success"
+                                  style={{
+                                    fontSize: '0.675rem',
+                                    padding: '2px 5px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                  }}
+                                >
+                                  <CheckCircle2 size={11} /> Đã có mặt
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className={`btn btn-sm ${
+                                    todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                                      ? 'btn-primary'
+                                      : 'btn-outline'
+                                  }`}
+                                  style={{
+                                    fontSize: '0.675rem',
+                                    padding: '2px 8px',
+                                    height: 'auto',
+                                    fontWeight: 700,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                    background:
+                                      todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                                        ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                        : undefined,
+                                    borderColor:
+                                      todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                                        ? '#059669'
+                                        : undefined,
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCheckInSection(s.courseSection);
+                                  }}
+                                  title="Nhập mã điểm danh cho lớp học phần này"
+                                >
+                                  <KeyRound size={11} />
+                                  <span>
+                                    {todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                                      ? '⚡ Điểm danh'
+                                      : 'Điểm danh'}
+                                  </span>
+                                </button>
+                              )}
+                            </div>
                           </div>
                         );
                       })}
@@ -522,6 +729,7 @@ export default function StudentSchedulePage() {
                   <th>Giảng viên giảng dạy</th>
                   <th>Thời gian áp dụng</th>
                   <th>Ghi chú</th>
+                  <th style={{ textAlign: 'center', width: '130px' }}>Điểm danh</th>
                 </tr>
               </thead>
               <tbody>
@@ -554,9 +762,15 @@ export default function StudentSchedulePage() {
                       </div>
                     </td>
                     <td>
-                      <span className="badge badge-success" style={{ fontSize: '0.825rem' }}>
-                        <MapPin size={12} /> {s.room}
-                      </span>
+                      {isOnlineRoom(s.room) ? (
+                        <span className="badge badge-purple" style={{ fontSize: '0.825rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <Globe size={12} /> {s.room} (Online)
+                        </span>
+                      ) : (
+                        <span className="badge badge-success" style={{ fontSize: '0.825rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <MapPin size={12} /> Phòng {s.room}
+                        </span>
+                      )}
                     </td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -575,6 +789,60 @@ export default function StudentSchedulePage() {
                         {s.note || '—'}
                       </span>
                     </td>
+                    <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                      {todayAttendance[s.courseSection?.id]?.isPresent ? (
+                        <span
+                          className="badge badge-success"
+                          style={{
+                            fontSize: '0.725rem',
+                            padding: '3px 6px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <CheckCircle2 size={12} /> Đã có mặt
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${
+                            todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                              ? 'btn-primary'
+                              : 'btn-outline'
+                          }`}
+                          style={{
+                            fontSize: '0.725rem',
+                            padding: '3px 8px',
+                            height: 'auto',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background:
+                              todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                : undefined,
+                            borderColor:
+                              todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                                ? '#059669'
+                                : undefined,
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCheckInSection(s.courseSection);
+                          }}
+                          title="Nhập mã điểm danh cho lớp này"
+                        >
+                          <KeyRound size={12} />
+                          <span>
+                            {todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                              ? '⚡ Điểm danh'
+                              : 'Điểm danh'}
+                          </span>
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -586,7 +854,17 @@ export default function StudentSchedulePage() {
       {selectedSection && (
         <StudentClassListModal 
           courseSection={selectedSection} 
+          todayAttendance={todayAttendance}
+          onCheckInSuccess={loadTodayAttendance}
           onClose={() => setSelectedSection(null)} 
+        />
+      )}
+
+      {checkInSection && (
+        <StudentCheckInModal
+          courseSection={checkInSection}
+          onClose={() => setCheckInSection(null)}
+          onSuccess={loadTodayAttendance}
         />
       )}
     </div>

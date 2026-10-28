@@ -18,6 +18,8 @@
   box-shadow: var(--shadow-xs), var(--glass-inset-shine);
 }
 
+/* When sidebar is collapsed, shrink header left offset */
+.sidebar.collapsed ~ .main-content .app-header,
 .main-content.collapsed .app-header {
   left: var(--sidebar-collapsed);
 }
@@ -64,12 +66,12 @@
   width: 38px;
   height: 38px;
   border-radius: var(--radius-md);
-  background: var(--primary-gradient);
+  background: var(--primary);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.35);
+  box-shadow: var(--shadow-xs);
   flex-shrink: 0;
 }
 
@@ -124,7 +126,11 @@
   gap: 3px;
 }
 
-.nav-item {
+/* ——— Navigation Item (Links) ——— */
+.nav-item,
+a.nav-item,
+a.nav-item:link,
+a.nav-item:visited {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -133,22 +139,40 @@
   color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
-  text-decoration: none;
+  text-decoration: none !important;
   transition: all var(--transition-fast);
   position: relative;
+  border: 1px solid transparent;
+  outline: none;
 }
 
-.nav-item:hover {
+.nav-item:hover,
+a.nav-item:hover {
   background: var(--bg-hover);
   color: var(--text-main);
   transform: translateX(2px);
+  text-decoration: none !important;
 }
 
-.nav-item.active {
+.nav-item.active,
+a.nav-item.active,
+a.nav-item.active:visited {
   background: var(--primary-light);
-  color: var(--primary);
+  color: var(--primary) !important;
   font-weight: 600;
-  box-shadow: 0 0 16px rgba(99, 102, 241, 0.15), var(--glass-inset-shine);
+  border: 1px solid var(--primary-border);
+  text-decoration: none !important;
+}
+
+.nav-item:focus-visible,
+a.nav-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.nav-item:focus:not(:focus-visible),
+a.nav-item:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .nav-item.active::before {
@@ -158,18 +182,69 @@
   top: 6px;
   bottom: 6px;
   width: 3.5px;
-  background: var(--primary-gradient);
+  background: var(--primary);
   border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 10px var(--primary);
 }
 
+/* Icon inside nav-item */
 .nav-item-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+/* Label text inside nav-item */
+.nav-item-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none !important;
+  color: inherit;
+}
+
+/* Badge counter (e.g. pending password resets) */
+.nav-item-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  background: var(--danger);
+  color: #ffffff;
+  line-height: 1;
   flex-shrink: 0;
 }
 
+/* Badge dot (collapsed sidebar) */
+.nav-item-badge-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 2px solid var(--bg-surface);
+}
+
+/* Collapsed sidebar nav items */
 .sidebar.collapsed .nav-item {
   justify-content: center;
   padding: 10px 0;
+}
+
+.sidebar.collapsed .nav-item-label,
+.sidebar.collapsed .nav-item-badge {
+  display: none;
 }
 
 /* ——— Sidebar Footer ——— */
@@ -213,7 +288,8 @@
     padding: 0 12px !important;
   }
 
-  .main-content.collapsed .app-header {
+  .main-content.collapsed .app-header,
+  .sidebar.collapsed ~ .main-content .app-header {
     left: 0 !important;
   }
 
@@ -282,3 +358,4 @@
     display: none !important;
   }
 }
+

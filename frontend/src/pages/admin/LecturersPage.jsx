@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, CheckCircle, XCircle, X, Filter, RotateCcw } from 'lucide-react';
+import { Plus, Search, Edit2, CheckCircle, XCircle, X, Filter, RotateCcw, KeyRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { lecturerService, departmentService } from '../../services/dataService';
 import Skeleton from '../../components/common/Skeleton';
@@ -123,6 +123,18 @@ export default function LecturersPage() {
     const parts = name.trim().split(/\s+/);
     if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const handleResetPassword = async (lec) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn cấp lại mật khẩu mặc định (123456) cho Giảng viên ${lec.fullName} (${lec.lecturerCode})?`)) {
+      return;
+    }
+    try {
+      await lecturerService.resetPassword(lec.id);
+      toast.success(`Đã cấp lại mật khẩu mặc định "123456" cho Giảng viên ${lec.fullName}!`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Có lỗi khi cấp lại mật khẩu');
+    }
   };
 
   return (
@@ -296,6 +308,14 @@ export default function LecturersPage() {
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '4px' }}>
+                        <button
+                          className="btn-icon"
+                          title="Cấp lại mật khẩu mặc định (123456) tại quầy"
+                          style={{ color: '#b45309' }}
+                          onClick={() => handleResetPassword(l)}
+                        >
+                          <KeyRound size={15} />
+                        </button>
                         <button className="btn-icon" title="Sửa" onClick={() => handleOpenModal(l)}>
                           <Edit2 size={15} />
                         </button>

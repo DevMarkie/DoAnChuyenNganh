@@ -1,151 +1,151 @@
 @echo off
 chcp 65001 >nul
-title Kiem Thu He Thong SMS (System Test Runner)
+title SMS - Bo Kiem Thu Dang Ky Tin Chi (Course Enrollment Test Suite)
 
-echo ======================================================================
-echo    CHẠY BỘ TEST CASE KIỂM THỬ HỆ THỐNG (SYSTEM TESTING)
-echo ======================================================================
+cls
+echo.
+echo  ========================================================================
+echo       HE THONG QUAN LY SINH VIEN - CHUYEN DE DANG KY TIN CHI
+echo       Student Management System - Course Enrollment Test Suite
+echo  ========================================================================
 echo.
 
-REM 1. Kiem tra Node.js
+REM --- Kiem tra tien quyet: Node.js ---
 where node >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [Lỗi] Không tìm thấy Node.js trên máy tính!
-    echo Vui lòng cài đặt Node.js từ https://nodejs.org để thực thi kiểm thử.
+    echo  [LOI] Node.js chua duoc cai dat tren may!
+    echo  Vui long tai va cai dat tai: https://nodejs.org
     echo.
     pause
     exit /b 1
 )
 
-REM 2. Kiem tra va Tu dong khoi dong MySQL neu chua chay
-echo [1/3] Đang kiểm tra trạng thái Cơ sở dữ liệu MySQL...
+REM --- Buoc 1: Kiem tra MySQL ---
+echo  [1/3] Kiem tra trang thai co so du lieu MySQL...
 netstat -ano | findstr ":3308 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 goto db_ready
-
 netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 goto db_ready
 
-echo [MySQL] Database chưa chạy. Đang tự động bật container MySQL...
+echo        MySQL chua khoi dong. Dang tu dong khoi chay container...
 docker start student_management_db >nul 2>&1
-timeout /t 3 /nobreak >nul
+timeout /t 4 /nobreak >nul
 
 :db_ready
-echo [✓] Cơ sở dữ liệu MySQL: Sẵn sàng.
+echo  [OK] Co so du lieu MySQL: San sang.
 
-REM 3. Kiem tra Backend cong 8080
-echo.
-echo [2/3] Đang kiểm tra cổng Backend 8080...
+REM --- Buoc 2: Kiem tra Backend ---
+echo  [2/3] Kiem tra Backend Spring Boot (cong 8080)...
 netstat -ano | findstr ":8080 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
-    echo [Cảnh báo] Backend Spring Boot chưa bật trên cổng 8080.
-    echo Vui lòng chạy file start_dev.bat trước để khởi động Backend!
+    echo.
+    echo  [LOI] Backend chua khoi dong tren cong 8080.
+    echo        Vui long chay start_dev.bat truoc roi thu lai.
     echo.
     pause
     exit /b 1
 )
-echo [✓] Backend Spring Boot: Đang lắng nghe trên cổng 8080.
+echo  [OK] Backend Spring Boot: Dang lang nghe tren cong 8080.
 
-REM 4. Kiem tra suc khoe Backend va ket noi Database
-echo.
-echo [3/3] Đang xác thực kết nối giữa Backend và Database...
+REM --- Buoc 3: Kiem tra ket noi Backend-Database ---
+echo  [3/3] Kiem tra ket noi Backend - Database...
 node "%~dp0tests\utils\health_check.js" >nul 2>&1
 if %ERRORLEVEL% EQU 0 goto health_ready
 
-echo [Cảnh báo] Backend đang bật nhưng chưa thể kết nối tới MySQL!
-echo Đang thử kích hoạt lại container student_management_db...
+echo        Backend online nhung chua ket noi duoc MySQL. Thu khoi dong lai...
 docker start student_management_db >nul 2>&1
-timeout /t 3 /nobreak >nul
-
+timeout /t 4 /nobreak >nul
 node "%~dp0tests\utils\health_check.js" >nul 2>&1
 if %ERRORLEVEL% EQU 0 goto health_ready
 
-echo [Lỗi] Backend không thể kết nối tới Database MySQL.
-echo Vui lòng kiểm tra Docker Desktop hoặc dịch vụ MySQL rồi thử lại!
+echo.
+echo  [LOI] Backend khong ket noi duoc voi MySQL.
+echo        Vui long kiem tra Docker Desktop hoac dich vu MySQL roi thu lai.
 echo.
 pause
 exit /b 1
 
 :health_ready
-echo [✓] Hệ thống Backend và MySQL hoạt động hoàn hảo, sẵn sàng kiểm thử!
+echo  [OK] He thong hoat dong on dinh. San sang thuc thi kiem thu!
 echo.
 
-REM 5. Menu lua chon
-echo ======================================================================
-echo              CHỌN CHU TRÌNH KIỂM THỬ THEO CHU KỲ RELEASE
-echo ======================================================================
-echo [1] 💨 SMOKE TEST: Kiểm thử nhanh sau deploy (< 30s, 10 Luồng Cốt Lõi)
-echo [2] 🛡️ REGRESSION TEST: Kiểm thử hồi quy toàn diện (56 Cases: RBAC, SQLi, BR)
-echo [3] ⚡ PERFORMANCE REGRESSION: Kiểm thử tải tranh chấp (600 SV Concurrency)
-echo [4] 🚀 FULL RELEASE AUDIT: Chạy toàn bộ chu trình (Smoke -> Regression)
-echo [5] 📋 Kiểm thử API & Toàn vẹn CSDL (46 Test Cases: Mã 200/400/500, Schema & DB CRUD)
-echo [6] 🔒 BASIC SECURITY AUDIT: Kiểm thử Bảo mật cơ bản (26 Cases)
-echo [0] Thoát
-echo ======================================================================
+REM --- Menu lua chon ---
+echo  ========================================================================
+echo           CAC KICH BAN KIEM THU DANG KY TIN CHI (ENROLLMENT TESTS)
+echo  ========================================================================
 echo.
-set /p TEST_CHOICE="Nhập lựa chọn của bạn [Mặc định: 1]: "
+echo   [1]  KIEM THU NHANH TRANG THAI HE THONG (Smoke Test)
+echo        Kiem tra ket noi API Dang ky hoc phan, Danh muc mon va Lop tin chi
+echo.
+echo   [2]  KIEM THU TRANH CHAP TAI DONG THOI (600 SV Concurrency)
+echo        600 sinh vien tranh slot - Kiem tra chong tran si so (Over-enrollment)
+echo.
+echo   [3]  KIEM THU TAI DA CAP DO (Multi-stage Load Test: 500 - 5.000 Reqs)
+echo        Danh gia hieu nang Nginx Load Balancer + 3 Backend Replicas
+echo.
+echo   [4]  KIEM THU SUC CHIU TAI CUC HAN (Stress Test To Failure)
+echo        Leo thang tai tu dong den khi he thong dat nguong cham dut
+echo.
+echo   [0]  Thoat
+echo.
+echo  ========================================================================
+echo.
+set /p TEST_CHOICE="  Nhap lua chon [1-4, hoac 0 de thoat]: "
 
 if defined TEST_CHOICE set TEST_CHOICE=%TEST_CHOICE: =%
 if "%TEST_CHOICE%"=="" set TEST_CHOICE=1
 if "%TEST_CHOICE%"=="0" exit /b 0
 if "%TEST_CHOICE%"=="1" goto run_smoke
-if "%TEST_CHOICE%"=="2" goto run_comprehensive
-if "%TEST_CHOICE%"=="3" goto run_overload
-if "%TEST_CHOICE%"=="4" goto run_release_audit
-if "%TEST_CHOICE%"=="5" goto run_basic
-if "%TEST_CHOICE%"=="6" goto run_security
+if "%TEST_CHOICE%"=="2" goto run_concurrency_600
+if "%TEST_CHOICE%"=="3" goto run_multistage_load
+if "%TEST_CHOICE%"=="4" goto run_stress_failure
 goto run_smoke
 
+REM -----------------------------------------------------------------------
 :run_smoke
 echo.
-echo Đang chạy bộ kiểm thử khói [Smoke Test Gate < 30s]...
+echo  [1] Dang kiem tra nhanh cac API phuc vu Dang ky hoc phan...
+echo  ------------------------------------------------------------------------
 node "%~dp0tests\smoke\smoke_test.js"
 goto finish
 
-:run_overload
+REM -----------------------------------------------------------------------
+:run_concurrency_600
 echo.
-echo Đang chạy bộ kiểm thử áp lực quá tải [Overload and Stress Test]...
-node "%~dp0tests\performance\overload_stress_test.js"
+echo  [2] Dang chay kiem thu tranh chap 600 sinh vien dong thoi...
+echo  ------------------------------------------------------------------------
+node "%~dp0tests\performance\simulate_600_enrollment.js"
 goto finish
 
-:run_basic
+REM -----------------------------------------------------------------------
+:run_multistage_load
 echo.
-echo Đang chạy bộ kiểm thử API & Toàn vẹn CSDL [46 test cases: Mã 200/400/500, Schema, DB CRUD]...
-node "%~dp0tests\e2e\system_e2e_test.js"
+echo  [3] Dang chay kiem thu tai da cap do (500 -> 5.000 requests)...
+echo  ------------------------------------------------------------------------
+node "%~dp0stress_test.js"
 goto finish
 
-:run_comprehensive
+REM -----------------------------------------------------------------------
+:run_stress_failure
 echo.
-echo Đang chạy bộ kiểm thử hồi quy toàn diện [56 test cases]...
-node "%~dp0tests\e2e\comprehensive_system_test.js"
+echo  ========================================================================
+echo   CANH BAO: STRESS TEST TO FAILURE
+echo   He thong se bi day len muc tai cao nhat de do nguong sup do.
+echo  ========================================================================
+echo.
+set /p CONFIRM="  Ban co chac chan muon chay Stress Test To Failure? (Y/N): "
+if /i "%CONFIRM%" NEQ "Y" goto finish
+echo.
+echo  [4] Dang chay Stress Test leo thang...
+echo  ------------------------------------------------------------------------
+node "%~dp0stress_test_to_death.js"
 goto finish
 
-:run_security
-echo.
-echo Đang chạy bộ kiểm thử bảo mật cơ bản [26 test cases: Password/Token, IDOR, SQLi/XSS]...
-node "%~dp0tests\security\basic_security_test.js"
-goto finish
-
-:run_release_audit
-echo.
-echo ======================================================================
-echo [BƯỚC 1/2] Đang kích hoạt SMOKE TEST GATE (Kiểm tra liveness)...
-echo ======================================================================
-node "%~dp0tests\smoke\smoke_test.js"
-if %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo [CẢNH BÁO ĐỎ] Smoke Test thất bại! Hủy bỏ chạy Regression Test.
-    goto finish
-)
-echo.
-echo ======================================================================
-echo [BƯỚC 2/2] Smoke Test Đạt! Tiếp tục chạy REGRESSION TEST SUITE...
-echo ======================================================================
-node "%~dp0tests\e2e\comprehensive_system_test.js"
-goto finish
-
+REM -----------------------------------------------------------------------
 :finish
 echo.
-echo ======================================================================
-echo Báo cáo chi tiết đã lưu trong thư mục tests/reports/ và tests/results/
-echo ======================================================================
+echo  ========================================================================
+echo   Ket thuc qua trinh kiem thu!
+echo  ========================================================================
+echo.
 pause

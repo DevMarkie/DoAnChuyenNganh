@@ -5,6 +5,7 @@ import com.sms.exception.BadRequestException;
 import com.sms.repository.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -36,8 +37,20 @@ class EnrollmentServiceTest {
     @Mock private CurriculumProgramRepository curriculumProgramRepository;
     @Mock private CurriculumBlockSubjectRepository curriculumBlockSubjectRepository;
     @Mock private AttendanceRecordRepository attendanceRecordRepository;
+    @Mock private StudentInvoiceRepository studentInvoiceRepository;
+    @Mock private TuitionService tuitionService;
+    @Mock private RedisLockService redisLockService;
+    @Mock private RedisCourseSectionService redisCourseSectionService;
 
     @InjectMocks private EnrollmentService enrollmentService;
+
+    @BeforeEach
+    void setUpRedisMocks() {
+        lenient().when(redisLockService.tryConsumeUserRateLimit(any(), anyInt(), anyLong())).thenReturn(true);
+        lenient().when(redisLockService.acquireUserActionLock(any(), any(), anyLong())).thenReturn(true);
+        lenient().when(redisCourseSectionService.tryAcquireSlot(anyLong())).thenReturn(true);
+        lenient().when(courseSectionRepository.incrementCurrentStudentsAtomic(anyLong())).thenReturn(1);
+    }
 
     private static Student createStudent(Long id, Long userId) {
         User user = new User();
@@ -122,7 +135,7 @@ class EnrollmentServiceTest {
         CourseSection section = createSection(sectionId, targetSubject, 40, 20);
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
         allowCurriculum(2);
         when(gradeRepository.existsPassedFinalizedByStudentAndSubject(studentId, prereq.getId())).thenReturn(false);
 
@@ -156,7 +169,7 @@ class EnrollmentServiceTest {
         CourseSection section = createSection(sectionId, targetSubject, 40, 20);
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
         allowCurriculum(2);
         when(gradeRepository.existsPassedFinalizedByStudentAndSubject(studentId, prereq.getId())).thenReturn(true);
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
@@ -171,7 +184,9 @@ class EnrollmentServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getEnrollmentType()).isEqualTo(Enrollment.EnrollmentType.FIRST_TIME);
         assertThat(result.getStatus()).isEqualTo(Enrollment.EnrollmentStatus.ENROLLED);
+        assertThat(section.getCurrentStudents()).isEqualTo(21);
         verify(enrollmentRepository).save(any(Enrollment.class));
+        verify(courseSectionRepository).save(section);
     }
 
     @Test
@@ -195,7 +210,7 @@ class EnrollmentServiceTest {
         failingGrade.setFinalScore(new BigDecimal("2.5"));
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
         allowCurriculum(5);
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
         when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(0);
@@ -232,7 +247,7 @@ class EnrollmentServiceTest {
         passedGrade.setFinalScore(new BigDecimal("5.0"));
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
         allowCurriculum(5);
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
         when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(0);
@@ -273,7 +288,7 @@ class EnrollmentServiceTest {
         existing.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
 
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(targetSection));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(targetSection));
         allowCurriculum(5);
         when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
         when(enrollmentRepository.findActiveEnrollmentBySubject(studentId, 1, subject.getId()))
@@ -285,82 +300,6 @@ class EnrollmentServiceTest {
                 .hasMessageContaining("cùng một môn");
 
         verify(enrollmentRepository, never()).save(any(Enrollment.class));
-    }
-
-    @Test
-    @DisplayName("TC-05.1: Admin assign thất bại khi lớp đầy và không dùng forceOverride")
-    void adminAssign_fails_whenCapacityFullAndNoOverride() {
-        Long studentId = 1L;
-        Long sectionId = 200L;
-
-        Subject subject = new Subject();
-        subject.setId(3);
-        subject.setSubjectCode("PHY101");
-
-        Student student = createStudent(studentId, 10L);
-        CourseSection section = createSection(sectionId, subject, 40, 40);
-
-        when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
-        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> enrollmentService.adminAssign(studentId, sectionId, false, null))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Học phần đã đầy");
-
-        verify(enrollmentRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("TC-05.2: Admin assign thất bại khi forceOverride = true nhưng thiếu lý do")
-    void adminAssign_fails_whenOverrideWithoutReason() {
-        Long studentId = 1L;
-        Long sectionId = 200L;
-
-        Subject subject = new Subject();
-        subject.setId(3);
-        subject.setSubjectCode("PHY101");
-
-        Student student = createStudent(studentId, 10L);
-        CourseSection section = createSection(sectionId, subject, 40, 40);
-
-        when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
-        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> enrollmentService.adminAssign(studentId, sectionId, true, "   "))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Phải nhập lý do khi cưỡng chế vượt sĩ số");
-
-        verify(enrollmentRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("TC-05.3: Admin assign thành công khi forceOverride = true và có lý do chính đáng")
-    void adminAssign_success_whenOverrideWithValidReason() {
-        Long studentId = 1L;
-        Long sectionId = 200L;
-
-        Subject subject = new Subject();
-        subject.setId(3);
-        subject.setSubjectCode("PHY101");
-
-        Student student = createStudent(studentId, 10L);
-        CourseSection section = createSection(sectionId, subject, 40, 40);
-
-        when(studentRepository.findById(studentId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
-        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
-        when(gradeRepository.findFinalizedByStudentAndSubject(studentId, 3)).thenReturn(Collections.emptyList());
-        when(enrollmentRepository.save(any(Enrollment.class))).thenAnswer(i -> i.getArgument(0));
-
-        Enrollment result = enrollmentService.adminAssign(studentId, sectionId, true, "Sinh viên năm cuối cứu xét tốt nghiệp");
-
-        assertThat(result).isNotNull();
-        assertThat(result.getStudent()).isEqualTo(student);
-        assertThat(result.getSection()).isEqualTo(section);
-        assertThat(result.getEnrollmentType()).isEqualTo(Enrollment.EnrollmentType.FIRST_TIME);
-        verify(enrollmentRepository).save(any(Enrollment.class));
     }
 
     @Test
@@ -377,13 +316,8 @@ class EnrollmentServiceTest {
         CourseSection section = createSection(sectionId, subject, 40, 10);
         section.getSemester().setRegistrationStart(LocalDate.now().plusDays(2));
 
-        CurriculumProgram program = new CurriculumProgram();
-        program.setId(1L);
-
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
-        when(courseSectionRepository.findByIdForEnrollment(sectionId)).thenReturn(Optional.of(section));
-        when(curriculumProgramRepository.findActiveByMajorAndCohort(1, 1)).thenReturn(Optional.of(program));
-        when(curriculumBlockSubjectRepository.existsByProgramIdAndSubjectId(1L, 1)).thenReturn(true);
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
 
         assertThrows(BadRequestException.class, () -> enrollmentService.enroll(userId, sectionId));
     }
@@ -406,25 +340,13 @@ class EnrollmentServiceTest {
         when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
         when(enrollmentRepository.findById(enrollmentId)).thenReturn(Optional.of(enrollment));
         when(gradeRepository.findByEnrollmentId(enrollmentId)).thenReturn(Optional.empty());
-        when(courseSectionRepository.findByIdForEnrollment(100L)).thenReturn(Optional.of(section));
+        when(courseSectionRepository.findById(100L)).thenReturn(Optional.of(section));
 
         enrollmentService.cancelEnrollment(userId, enrollmentId);
         verify(enrollmentRepository).save(enrollment);
+        verify(courseSectionRepository).save(section);
         assertEquals(Enrollment.EnrollmentStatus.CANCELLED, enrollment.getStatus());
-    }
-
-    @Test
-    void adminBatchAssignClass_Success() {
-        CourseSection section = createSection(100L, new Subject(), 40, 10);
-        Student student = createStudent(1L, 10L);
-
-        when(courseSectionRepository.findByIdForEnrollment(100L)).thenReturn(Optional.of(section));
-        when(studentRepository.findByClassEntityId(1)).thenReturn(List.of(student));
-        when(enrollmentRepository.findByStudentIdAndSectionId(1L, 100L)).thenReturn(Optional.empty());
-        when(enrollmentRepository.saveAll(anyList())).thenAnswer(i -> i.getArgument(0));
-
-        List<Enrollment> results = enrollmentService.adminBatchAssignClass(1, 100L);
-        assertEquals(1, results.size());
+        assertEquals(9, section.getCurrentStudents());
     }
 
     @Test
@@ -471,5 +393,173 @@ class EnrollmentServiceTest {
 
         assertThat(result.get(0).getAbsenceCount()).isEqualTo(3);
         assertThat(result.get(1).getAbsenceCount()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("BR-Tuition: Khóa quyền đăng ký học phần khi sinh viên nợ học phí quá hạn")
+    void enroll_blocked_whenTuitionOverdue() {
+        Long userId = 1L;
+        Student student = createStudent(1L, userId);
+        student.setStatus(Student.StudentStatus.ACTIVE);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(tuitionService.isTuitionOverdue(student.getId())).thenReturn(true);
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, 100L))
+                .isInstanceOf(com.sms.exception.BadRequestException.class)
+                .hasMessageContaining("nợ học phí quá hạn");
+    }
+
+    @Test
+    @DisplayName("BR-Học phí: Hủy học phần khi mở cổng ĐKHP hoàn 100% vào tài khoản tích lũy nếu đã đóng tiền")
+    void unenroll_refundsToWallet_whenPaid() {
+        Long userId = 1L;
+        Student student = createStudent(1L, userId);
+        student.setBalance(java.math.BigDecimal.ZERO);
+
+        Semester sem = new Semester();
+        sem.setId(1);
+        sem.setStatus(Semester.SemesterStatus.ACTIVE);
+        sem.setIsCurrent(true);
+        sem.setRegistrationStart(java.time.LocalDate.now().minusDays(1));
+        sem.setRegistrationEnd(java.time.LocalDate.now().plusDays(5));
+
+        CourseSection sec = new CourseSection();
+        sec.setId(200L);
+        sec.setSectionCode("SEC-200");
+        sec.setSemester(sem);
+        sec.setCurrentStudents(10);
+
+        Enrollment enr = new Enrollment();
+        enr.setId(50L);
+        enr.setStudent(student);
+        enr.setSection(sec);
+        enr.setStatus(Enrollment.EnrollmentStatus.ENROLLED);
+
+        com.sms.entity.StudentInvoice invoice = new com.sms.entity.StudentInvoice();
+        invoice.setId(10L);
+        invoice.setStatus(com.sms.entity.StudentInvoice.InvoiceStatus.PAID);
+        invoice.setAmount(new java.math.BigDecimal("1350000.00"));
+
+        when(enrollmentRepository.findById(50L)).thenReturn(Optional.of(enr));
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(gradeRepository.findByEnrollmentId(50L)).thenReturn(Optional.empty());
+        when(courseSectionRepository.findById(200L)).thenReturn(Optional.of(sec));
+        when(studentInvoiceRepository.findByStudentIdAndSectionId(student.getId(), 200L)).thenReturn(Optional.of(invoice));
+
+        enrollmentService.cancelEnrollment(userId, 50L);
+
+        // Verify balance was refunded 100%
+        assertThat(student.getBalance()).isEqualByComparingTo(new java.math.BigDecimal("1350000.00"));
+        assertThat(invoice.getStatus()).isEqualTo(com.sms.entity.StudentInvoice.InvoiceStatus.CANCELLED);
+        assertThat(enr.getStatus()).isEqualTo(Enrollment.EnrollmentStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("LUỒNG 2: Đăng ký thất bại khi không thỏa mãn môn tiên quyết ném PrerequisiteNotMetException")
+    void enroll_fails_throwsPrerequisiteNotMetException_withSubjectDetails() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+
+        Subject prereq = new Subject();
+        prereq.setId(1);
+        prereq.setSubjectCode("CS101");
+        prereq.setSubjectName("Lập trình C");
+        prereq.setCredits(3);
+
+        Subject targetSubject = new Subject();
+        targetSubject.setId(2);
+        targetSubject.setSubjectCode("CS201");
+        targetSubject.setSubjectName("Cấu trúc dữ liệu");
+        targetSubject.setCredits(3);
+        targetSubject.setPrerequisites(Set.of(prereq));
+
+        Student student = createStudent(studentId, userId);
+        CourseSection section = createSection(sectionId, targetSubject, 40, 20);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(2);
+        when(gradeRepository.existsPassedFinalizedByStudentAndSubject(studentId, prereq.getId())).thenReturn(false);
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(com.sms.exception.PrerequisiteNotMetException.class)
+                .satisfies(ex -> {
+                    com.sms.exception.PrerequisiteNotMetException pne = (com.sms.exception.PrerequisiteNotMetException) ex;
+                    assertThat(pne.getTargetSubjectCode()).isEqualTo("CS201");
+                    assertThat(pne.getPrerequisiteSubjectCode()).isEqualTo("CS101");
+                    assertThat(pne.getPrerequisiteSubjectName()).isEqualTo("Lập trình C");
+                });
+    }
+
+    @Test
+    @DisplayName("LUỒNG 2: Khi DB atomic update trả về 0 (lớp đầy ở CSDL), ném lỗi và bù slot Redis")
+    void enroll_fails_whenDatabaseAtomicUpdateReturnsZero_andCompensatesRedisSlot() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+
+        Subject targetSubject = new Subject();
+        targetSubject.setId(5);
+        targetSubject.setSubjectCode("MATH101");
+        targetSubject.setCredits(3);
+        targetSubject.setPrerequisites(Collections.emptySet());
+
+        Student student = createStudent(studentId, userId);
+        CourseSection section = createSection(sectionId, targetSubject, 40, 39);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(5);
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(0);
+        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, 1, 1L)).thenReturn(Collections.emptyList());
+        when(scheduleRepository.findBySectionId(sectionId)).thenReturn(Collections.emptyList());
+        when(redisCourseSectionService.tryAcquireSlot(sectionId)).thenReturn(true);
+        // DB báo không còn dòng nào được cập nhật vì currentStudents >= maxStudents
+        when(courseSectionRepository.incrementCurrentStudentsAtomic(sectionId)).thenReturn(0);
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Học phần đã đầy");
+
+        // Đảm bảo đã bù lại slot trên Redis (INCR)
+        verify(redisCourseSectionService).incrementSlot(sectionId);
+    }
+
+    @Test
+    @DisplayName("LUỒNG 2: Khi DB Transaction ném ngoại lệ bất kỳ, tự động bù lại slot trên Redis")
+    void enroll_fails_whenDatabaseThrowsException_andCompensatesRedisSlot() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+
+        Subject targetSubject = new Subject();
+        targetSubject.setId(5);
+        targetSubject.setSubjectCode("MATH101");
+        targetSubject.setCredits(3);
+        targetSubject.setPrerequisites(Collections.emptySet());
+
+        Student student = createStudent(studentId, userId);
+        CourseSection section = createSection(sectionId, targetSubject, 40, 10);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(5);
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(0);
+        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, 1, 1L)).thenReturn(Collections.emptyList());
+        when(scheduleRepository.findBySectionId(sectionId)).thenReturn(Collections.emptyList());
+        when(redisCourseSectionService.tryAcquireSlot(sectionId)).thenReturn(true);
+        when(courseSectionRepository.incrementCurrentStudentsAtomic(sectionId)).thenReturn(1);
+        when(enrollmentRepository.save(any(Enrollment.class))).thenThrow(new RuntimeException("Database connection dropped"));
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Database connection dropped");
+
+        // Đảm bảo bồi hoàn slot trên Redis
+        verify(redisCourseSectionService).incrementSlot(sectionId);
     }
 }

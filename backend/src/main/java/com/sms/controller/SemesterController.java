@@ -48,4 +48,19 @@ public class SemesterController {
         semesterService.setCurrent(id);
         return ResponseEntity.ok(ApiResponse.success("Đã đặt học kỳ hiện tại"));
     }
+
+    @PutMapping("/{id}/open-registration")
+    public ResponseEntity<ApiResponse<Semester>> openRegistration(
+            @PathVariable Integer id,
+            @RequestParam(required = false) Integer days,
+            @RequestParam(required = false) String deadline) {
+        Semester updated = semesterService.openRegistration(id, days, deadline);
+        return ResponseEntity.ok(ApiResponse.success("Đã mở cổng đăng ký học phần thành công", updated));
+    }
+
+    @PutMapping("/{id}/close-registration")
+    public ResponseEntity<ApiResponse<Semester>> closeRegistration(@PathVariable Integer id) {
+        Semester updated = semesterService.closeRegistration(id);
+        return ResponseEntity.ok(ApiResponse.success("Đã đóng cổng đăng ký học phần thành công", updated));
+    }
 }

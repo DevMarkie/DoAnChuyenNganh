@@ -55,9 +55,17 @@ public class Enrollment {
     @Column(name = "enrollment_type", nullable = false)
     private EnrollmentType enrollmentType = EnrollmentType.FIRST_TIME;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "attendance_status", nullable = false)
+    private AttendanceStatus attendanceStatus = AttendanceStatus.QUALIFIED;
+
     @jakarta.persistence.Transient
     @JsonProperty("absenceCount")
     private Integer absenceCount = 0;
+
+    @jakarta.persistence.Transient
+    @JsonProperty("absentRate")
+    private Double absentRate;
 
     @JsonProperty("absenceCount")
     public Integer getAbsenceCount() {
@@ -68,9 +76,17 @@ public class Enrollment {
         this.absenceCount = absenceCount;
     }
 
+    @JsonProperty("isDisqualified")
+    public boolean isDisqualified() {
+        return attendanceStatus == AttendanceStatus.DISQUALIFIED;
+    }
+
     @PrePersist
     protected void onCreate() {
         enrolledAt = LocalDateTime.now();
+        if (attendanceStatus == null) {
+            attendanceStatus = AttendanceStatus.QUALIFIED;
+        }
     }
 
     public enum EnrollmentStatus {
@@ -79,5 +95,9 @@ public class Enrollment {
 
     public enum EnrollmentType {
         FIRST_TIME, RETAKE, IMPROVE
+    }
+
+    public enum AttendanceStatus {
+        QUALIFIED, DISQUALIFIED
     }
 }

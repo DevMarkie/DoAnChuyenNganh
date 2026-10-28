@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import SmsLogo from '../../components/common/SmsLogo';
+import { PortalStudentIcon, PortalLecturerIcon, PortalAdminIcon } from '../../components/icons';
 
 const Chevron = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -9,12 +10,38 @@ const Chevron = () => (
 );
 
 const DOORS = [
-  { id: 'student', name: 'Sinh viên', accent: '#2563eb', path: '/student/login',
-    desc: 'Đăng ký học phần, tra cứu thời khóa biểu và bảng điểm GPA/CPA.' },
-  { id: 'lecturer', name: 'Giảng viên & cán bộ', accent: '#0d9488', path: '/lecturer/login',
-    desc: 'Quản lý lớp học phần, vào điểm và theo dõi lịch giảng dạy theo kỳ.' },
-  { id: 'admin', name: 'Phòng đào tạo', accent: '#d97706', path: '/admin/login',
-    desc: 'Quản trị khoa ngành, người dùng, chương trình đào tạo và báo cáo toàn trường.' },
+  {
+    id: 'student',
+    name: 'Sinh viên',
+    accent: '#2563eb',
+    path: '/student/login',
+    desc: 'Đăng ký học phần, tra cứu thời khóa biểu và bảng điểm GPA/CPA.',
+    Icon: PortalStudentIcon
+  },
+  {
+    id: 'lecturer',
+    name: 'Giảng viên',
+    accent: '#0d9488',
+    path: '/lecturer/login',
+    desc: 'Quản lý lớp học phần, vào điểm và theo dõi lịch giảng dạy theo kỳ.',
+    Icon: PortalLecturerIcon
+  },
+  {
+    id: 'academic',
+    name: 'Cán bộ Đào tạo',
+    accent: '#7c3aed',
+    path: '/academic/login',
+    desc: 'Quản lý đào tạo, khung chương trình, mở lớp học phần và xét tốt nghiệp.',
+    Icon: PortalAdminIcon
+  },
+  {
+    id: 'admin',
+    name: 'Quản trị viên',
+    accent: '#d97706',
+    path: '/admin/login',
+    desc: 'Quản trị hệ thống, phân quyền, cấu hình bảo mật và giám sát kiểm toán.',
+    Icon: PortalAdminIcon
+  },
 ];
 
 export default function PortalHubPage() {
@@ -38,7 +65,6 @@ export default function PortalHubPage() {
           </p>
         </div>
 
-        {/* shortcut: học kỳ + trạng thái đăng ký đang hardcode; thay bằng API kỳ hiện tại khi có */}
         <div className="hub-anim" style={{ animationDelay: '0.26s' }}>
           <div className="hub-term"><b>Học kỳ 1</b>&nbsp;&nbsp;năm học 2025–2026</div>
           <span className="hub-live"><i />Đợt đăng ký tín chỉ đang mở</span>
@@ -52,56 +78,46 @@ export default function PortalHubPage() {
         </p>
 
         <div className="hub-doors">
-          {DOORS.map((door, i) => (
-            <Link
-              key={door.id}
-              to={door.path}
-              data-portal={door.id}
-              className="hub-door hub-anim"
-              style={{ '--role': door.accent, animationDelay: `${0.26 + i * 0.07}s` }}
-            >
-              <div>
-                <div className="name">{door.name}</div>
-                <div className="desc">{door.desc}</div>
-              </div>
-              <span className="hub-go"><Chevron /></span>
-            </Link>
-          ))}
-        </div>
-
-        <div className="hub-anim" style={{ animationDelay: '0.45s', marginTop: '16px' }}>
-          <Link
-            to="/design-system"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 18px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, rgba(30, 58, 95, 0.08) 0%, rgba(37, 99, 235, 0.08) 100%)',
-              border: '1px solid rgba(37, 99, 235, 0.3)',
-              textDecoration: 'none',
-              color: 'inherit',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e3a5f', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                🎨 Khám phá Bản Demo Design System v2.0
-                <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '999px', background: '#2563eb', color: '#ffffff', fontWeight: 600 }}>
-                  UI/UX Pro Max
-                </span>
-              </div>
-              <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
-                Xem trước giao diện chuẩn Swiss Modernism 2.0 & Bento Grid trước khi triển khai code
-              </div>
-            </div>
-            <span style={{ color: '#2563eb', fontWeight: 700, fontSize: '0.9rem' }}>→</span>
-          </Link>
+          {DOORS.map((door, i) => {
+            const DoorIcon = door.Icon;
+            return (
+              <Link
+                key={door.id}
+                to={door.path}
+                data-portal={door.id}
+                className="hub-door hub-anim"
+                style={{ '--role': door.accent, animationDelay: `${0.26 + i * 0.07}s` }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                  <div
+                    className="hub-door-icon"
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '12px',
+                      background: 'color-mix(in srgb, var(--role) 12%, transparent)',
+                      color: 'var(--role)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <DoorIcon size={26} />
+                  </div>
+                  <div>
+                    <div className="name">{door.name}</div>
+                    <div className="desc">{door.desc}</div>
+                  </div>
+                </div>
+                <span className="hub-go"><Chevron /></span>
+              </Link>
+            );
+          })}
         </div>
 
         <p className="hub-foot hub-anim" style={{ animationDelay: '0.52s' }}>
-          Quên mật khẩu? Mở cổng tương ứng rồi chọn “Gửi yêu cầu cấp lại” để Phòng đào tạo xử lý.
+          Quên mật khẩu? Mở cổng tương ứng rồi chọn “Gửi yêu cầu cấp lại” để được hỗ trợ.
         </p>
       </section>
     </main>

@@ -136,28 +136,10 @@ export default function ImportExcelModal({
           role="dialog"
           aria-modal="true"
           aria-labelledby="excel-import-title"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 2000,
-            backgroundColor: "rgba(15, 23, 42, 0.72)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
+          className="modal-backdrop"
+          onClick={(e) => { if (e.target === e.currentTarget) setImportModalOpen(false); }}
         >
-          <div
-            style={{
-              backgroundColor: "var(--bg-surface)",
-              borderRadius: "var(--radius-lg)",
-              maxWidth: "620px",
-              width: "100%",
-              border: "1px solid var(--border-color)",
-              boxShadow: "var(--shadow-xl)",
-              overflow: "hidden",
-            }}
-          >
+          <div className="modal-content" style={{ maxWidth: '620px' }}>
             <div
               style={{
                 padding: "18px 22px",
@@ -233,31 +215,10 @@ export default function ImportExcelModal({
       {/* Preview modal */}
       {previewRows && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 2000,
-            backgroundColor: "rgba(15, 23, 42, 0.72)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
+          className="modal-backdrop"
+          onClick={(e) => { if (e.target === e.currentTarget) setPreviewRows(null); }}
         >
-          <div
-            style={{
-              backgroundColor: "var(--bg-surface)",
-              borderRadius: "var(--radius-lg)",
-              maxWidth: "920px",
-              width: "100%",
-              maxHeight: "88vh",
-              border: "1px solid var(--border-color)",
-              boxShadow: "var(--shadow-xl)",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
+          <div className="modal-content" style={{ maxWidth: '920px' }}>
             <div
               style={{
                 padding: "18px 22px",

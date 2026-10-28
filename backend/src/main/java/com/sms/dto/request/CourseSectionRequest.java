@@ -22,6 +22,9 @@ public class CourseSectionRequest {
     @NotNull(message = "Sĩ số tối đa không được để trống")
     @Min(value = 1, message = "Sĩ số tối đa phải lớn hơn 0")
     private Integer maxStudents;
+
+    @Min(value = 1, message = "Sĩ số tối thiểu phải lớn hơn 0")
+    private Integer minStudents;
     private String schedule;
     private String room;
     private String status;
@@ -31,3 +34,4 @@ public class CourseSectionRequest {
     private LocalDate startDate;
     private LocalDate endDate;
 }
+

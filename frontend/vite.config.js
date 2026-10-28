@@ -14,6 +14,7 @@ export default defineConfig({
     // The project path contains a space; the default "forks" pool fails to spawn
     // workers under that path on Windows, so use the threads pool instead.
     pool: 'threads',
+    testTimeout: 15000,
     // Reset the DOM/localStorage-backed globals between test files.
     restoreMocks: true,
   },

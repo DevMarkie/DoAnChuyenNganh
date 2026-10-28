@@ -470,6 +470,9 @@ async function runAllTests() {
     assertDbRecord(`SELECT is_active FROM departments WHERE id = ${createdDeptId}`, {
       is_active: '0',
     });
+
+    // Cleanup temporary department
+    db.executeSql(`DELETE FROM departments WHERE id = ${createdDeptId};`);
   });
 
   await runTest('2. Admin Features', '2.15 CRUD & DB Persistence: Create Subject (INSERT verified)', async () => {
@@ -497,6 +500,9 @@ async function runAllTests() {
       department_id: '1',
       is_active: '1',
     });
+
+    // Cleanup temporary subject
+    db.executeSql(`DELETE FROM subjects WHERE id = ${createdSubId};`);
   });
 
   await runTest('2. Admin Features', '2.16 Subject Validation Boundaries (HTTP 400 + Schema)', async () => {
@@ -564,6 +570,9 @@ async function runAllTests() {
       academic_year: 'K18',
       is_active: '1',
     });
+
+    // Cleanup temporary class
+    db.executeSql(`DELETE FROM classes WHERE id = ${createdClassId};`);
   });
 
   await runTest('2. Admin Features', '2.18 CRUD & DB Persistence: Create & Delete Schedule (Physical DELETE verified)', async () => {
@@ -701,7 +710,7 @@ async function runAllTests() {
         },
       });
 
-      // 2. Lecturer enters and saves grades
+      // 2. Lecturer enters and saves coursework grades (BR-Exam02: final score input restricted to Exam Office/Admin)
       const res = await apiRequest('/grades', {
         method: 'PUT',
         token: lecturerToken,
@@ -710,7 +719,6 @@ async function runAllTests() {
           cc1Score: 10.0,
           cc2Score: 10.0,
           midtermScore: 8.5,
-          finalScore: 9.0,
           finalize: false,
         },
       });
@@ -766,9 +774,9 @@ async function runAllTests() {
   });
 
   // =========================================================================
-  // SUITE 4: STUDENT FEATURES, REGISTRATION & DATABASE TRIGGERS
+  // SUITE 4: STUDENT FEATURES, REGISTRATION & ATOMIC SIZES
   // =========================================================================
-  logHeader('4. Student Features & Registration DB Triggers');
+  logHeader('4. Student Features & Registration Atomic Sizing');
 
   await runTest('4. Student Features', '4.1 Get Student Profile (/api/students/me HTTP 200 + Schema)', async () => {
     const res = await apiRequest('/students/me', { token: studentToken });
@@ -791,7 +799,13 @@ async function runAllTests() {
   let testEnrollSectionId = null;
   let testEnrollmentId = null;
 
-  await runTest('4. Student Features', '4.3b Course Enrollment Persistence & DB Trigger (+1 enrolled_count verified)', async () => {
+  await runTest('4. Student Features', '4.3b Course Enrollment Persistence & Atomic Increment (+1 enrolled_count verified)', async () => {
+    // 0. Ensure registration gate is open for current semester (4)
+    await apiRequest('/semesters/4/open-registration?days=14', {
+      method: 'PUT',
+      token: adminToken,
+    });
+
     // 1. Admin creates an open section for CS203 (in curriculum, no prerequisites) in current semester (4)
     const secCode = 'CS203-T' + Date.now().toString().slice(-4);
     const secRes = await apiRequest('/course-sections', {
@@ -837,13 +851,13 @@ async function runAllTests() {
       throw new Error(`Expected 0 initialized grade record before lecturer enters grades (to allow cancellation), got ${gradeCount}`);
     }
 
-    // c. DB TRIGGER trg_enrollment_insert_after incremented enrolled_count to 1
+    // c. Atomic SQL incremented enrolled_count to 1
     assertDbRecord(`SELECT enrolled_count FROM course_sections WHERE id = ${testEnrollSectionId}`, {
       enrolled_count: '1',
     });
   });
 
-  await runTest('4. Student Features', '4.3c Course Cancellation Persistence & DB Trigger (-1 enrolled_count verified)', async () => {
+  await runTest('4. Student Features', '4.3c Course Cancellation Persistence & Atomic Decrement (-1 enrolled_count verified)', async () => {
     if (!testEnrollmentId || !testEnrollSectionId) {
       throw new Error('No testEnrollmentId / testEnrollSectionId available for cancellation test');
     }
@@ -860,15 +874,13 @@ async function runAllTests() {
       status: 'CANCELLED',
     });
 
-    // Verify DB TRIGGER trg_enrollment_update_after decremented enrolled_count back to 0
+    // Verify Atomic SQL decremented enrolled_count back to 0
     assertDbRecord(`SELECT enrolled_count FROM course_sections WHERE id = ${testEnrollSectionId}`, {
       enrolled_count: '0',
     });
 
     // Clean up temporary section and enrollment
-    db.executeSql(`DELETE FROM grades WHERE enrollment_id = ${testEnrollmentId};`);
-    db.executeSql(`DELETE FROM enrollments WHERE id = ${testEnrollmentId};`);
-    db.executeSql(`DELETE FROM course_sections WHERE id = ${testEnrollSectionId};`);
+    db.executeSql(`DELETE FROM student_invoices WHERE section_id = ${testEnrollSectionId}; DELETE FROM grades WHERE enrollment_id = ${testEnrollmentId}; DELETE FROM enrollments WHERE id = ${testEnrollmentId}; DELETE FROM course_sections WHERE id = ${testEnrollSectionId};`);
   });
 
   await runTest('4. Student Features', '4.4 Get Student Transcript & GPA (/api/transcript/me HTTP 200 + Schema)', async () => {

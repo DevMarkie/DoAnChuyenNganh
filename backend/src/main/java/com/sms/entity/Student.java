@@ -3,6 +3,7 @@ package com.sms.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -25,6 +26,9 @@ public class Student {
     @Column(name = "student_code", nullable = false, unique = true, length = 20)
     private String studentCode;
 
+    @Column(name = "citizen_id", length = 20)
+    private String citizenId;
+
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
@@ -44,6 +48,18 @@ public class Student {
     @Column(columnDefinition = "TEXT")
     private String address;
 
+    @Column(length = 200)
+    private String hometown;
+
+    @Column(name = "emergency_contact_name", length = 100)
+    private String emergencyContactName;
+
+    @Column(name = "emergency_contact_phone", length = 20)
+    private String emergencyContactPhone;
+
+    @Column(name = "emergency_contact_relationship", length = 50)
+    private String emergencyContactRelationship;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer"})
@@ -52,6 +68,19 @@ public class Student {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StudentStatus status = StudentStatus.ACTIVE;
+
+    @Column(nullable = false, precision = 14, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
+
+    @Column(name = "financial_hold", nullable = false)
+    private Boolean financialHold = false;
+
+    @Column(name = "academic_warning_level", nullable = false)
+    private Integer academicWarningLevel = 0;
+
+    public boolean isFinancialHold() {
+        return Boolean.TRUE.equals(financialHold);
+    }
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -75,6 +104,6 @@ public class Student {
     }
 
     public enum StudentStatus {
-        ACTIVE, INACTIVE, GRADUATED, SUSPENDED
+        ACTIVE, INACTIVE, GRADUATED, SUSPENDED, RESERVED
     }
 }

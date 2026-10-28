@@ -129,7 +129,7 @@ async function runSecurityAudit() {
 
   // Lấy ID thực tế của sinh viên 1 & sinh viên 2
   let s1Id = 1, s2Id = 2;
-  let s1EnrollmentId = null, s2EnrollmentId = null;
+  let s1EnrollmentId = null, s2EnrollmentId = null, s2Lecturer2EnrollmentId = null;
   let l1SectionId = null, l2SectionId = null;
 
   if (student1Token) {
@@ -147,6 +147,8 @@ async function runSecurityAudit() {
     const s2Enr = await api("/enrollments/my", { token: student2Token });
     if (s2Enr.ok && s2Enr.data.data && s2Enr.data.data.length > 0) {
       s2EnrollmentId = s2Enr.data.data[0].id;
+      const l2Enr = s2Enr.data.data.find(e => e.courseSection?.lecturer?.id === 2);
+      if (l2Enr) s2Lecturer2EnrollmentId = l2Enr.id;
     }
   }
 
@@ -341,13 +343,25 @@ async function runSecurityAudit() {
     recordTest("IDOR-06", "Giảng viên 1 cố xuất Excel điểm lớp của Giảng viên 2", true, "Checked");
   }
 
+  // Test 2.6b: Giảng viên 1 cố xuất Excel danh sách SV lớp Giảng viên 2 (/api/course-sections/{id}/export-students)
+  if (lecturer1Token && l2SectionId) {
+    const test26b = await api(`/course-sections/${l2SectionId}/export-students`, { token: lecturer1Token });
+    recordTest(
+      "IDOR-06b",
+      `Giảng viên 1 cố xuất Excel danh sách SV lớp Giảng viên 2 (/api/course-sections/${l2SectionId}/export-students)`,
+      test26b.status === 403,
+      `HTTP ${test26b.status} (Bị chặn an toàn với 403 Forbidden)`
+    );
+  }
+
   // Test 2.7: Giảng viên 1 cố gọi API cập nhật điểm lớp của Giảng viên 2 (PUT /api/grades)
-  if (lecturer1Token && s2EnrollmentId) {
+  const targetGradeEnrId = s2Lecturer2EnrollmentId || s2EnrollmentId;
+  if (lecturer1Token && targetGradeEnrId) {
     const test27 = await api("/grades", {
       method: "PUT",
       token: lecturer1Token,
       body: {
-        enrollmentId: s2EnrollmentId,
+        enrollmentId: targetGradeEnrId,
         cc1Score: 10,
         cc2Score: 10,
         midtermScore: 10,
@@ -356,7 +370,7 @@ async function runSecurityAudit() {
     });
     recordTest(
       "IDOR-07",
-      `Giảng viên 1 cố cập nhật điểm lớp Giảng viên 2 (PUT /api/grades, enrollmentId=${s2EnrollmentId})`,
+      `Giảng viên 1 cố cập nhật điểm lớp Giảng viên 2 (PUT /api/grades, enrollmentId=${targetGradeEnrId})`,
       test27.status === 403,
       `HTTP ${test27.status} (Bị từ chối với 403 Forbidden)`
     );
@@ -386,15 +400,15 @@ async function runSecurityAudit() {
     );
   }
 
-  // Test 2.10: Sinh viên gọi API Admin Xếp lớp học phần (Đã Dev Fix 2)
+  // Test 2.10: Sinh viên gọi API Admin Thu ngân & Học phí
   if (student1Token) {
-    const test210 = await api("/admin/enrollments/assign?studentId=1&sectionId=1", {
-      method: "POST",
+    const test210 = await api("/admin/tuition/overview", {
+      method: "GET",
       token: student1Token
     });
     recordTest(
       "IDOR-10",
-      "Sinh viên gọi API Admin Xếp lớp (/api/admin/enrollments/assign) [Dev Fix 2]",
+      "Sinh viên gọi API Admin Thu ngân (/api/admin/tuition/overview)",
       test210.status === 403,
       `HTTP ${test210.status} (Kỳ vọng 403 Forbidden)`
     );
@@ -581,7 +595,7 @@ async function runSecurityAudit() {
   }
   recordTest(
     "INJ-XSS-03",
-    "Quét tĩnh Frontend: Miễn nhiễm DOM XSS (dangerouslySetInnerHTML = 0)",
+    "Quét tĩnh Frontend: Phòng vệ triệt để DOM XSS (dangerouslySetInnerHTML = 0)",
     !hasDangerousInnerHtml,
     hasDangerousInnerHtml ? "CẢNH BÁO: Tìm thấy dangerouslySetInnerHTML" : "100% React JSX Safe Text Interpolation"
   );

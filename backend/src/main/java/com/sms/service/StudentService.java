@@ -13,7 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -101,12 +103,17 @@ public class StudentService {
         Student student = new Student();
         student.setUser(user);
         student.setStudentCode(request.getStudentCode().trim());
+        student.setCitizenId(request.getCitizenId() != null ? request.getCitizenId().trim() : null);
         student.setFullName(request.getFullName().trim());
         student.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
         student.setGender(parseGender(request.getGender()));
         student.setEmail(request.getEmail());
         student.setPhone(request.getPhone());
         student.setAddress(request.getAddress());
+        student.setHometown(request.getHometown());
+        student.setEmergencyContactName(request.getEmergencyContactName());
+        student.setEmergencyContactPhone(request.getEmergencyContactPhone());
+        student.setEmergencyContactRelationship(request.getEmergencyContactRelationship());
         student.setClassEntity(cls);
         student.setStatus(parseStatus(request.getStatus()));
 
@@ -136,11 +143,18 @@ public class StudentService {
             }
         }
 
+        if (request.getCitizenId() != null) {
+            student.setCitizenId(request.getCitizenId().trim());
+        }
         student.setFullName(request.getFullName().trim());
         student.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
         student.setGender(parseGender(request.getGender()));
         student.setPhone(request.getPhone());
         student.setAddress(request.getAddress());
+        student.setHometown(request.getHometown());
+        student.setEmergencyContactName(request.getEmergencyContactName());
+        student.setEmergencyContactPhone(request.getEmergencyContactPhone());
+        student.setEmergencyContactRelationship(request.getEmergencyContactRelationship());
         student.setClassEntity(cls);
 
         if (request.getStatus() != null) {
@@ -185,6 +199,15 @@ public class StudentService {
         }
     }
 
+    @Transactional
+    public Student updateMyContact(Long userId, String phone, String address) {
+        Student student = studentRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
+        if (phone != null) student.setPhone(phone.trim());
+        if (address != null) student.setAddress(address.trim());
+        return studentRepository.save(student);
+    }
+
     /**
      * Tra cứu điều kiện xét tốt nghiệp của sinh viên
      */
@@ -205,6 +228,9 @@ public class StudentService {
         Role studentRole = roleRepository.findByName("STUDENT")
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy role STUDENT"));
 
+        String defaultEncodedPassword = passwordEncoder.encode("123456");
+        Map<String, ClassEntity> classCache = new HashMap<>();
+
         int count = 0;
         for (StudentImportRow row : validRows) {
             if (!row.isValid()) continue;
@@ -215,17 +241,17 @@ public class StudentService {
                 continue;
             }
 
-            ClassEntity cls = classRepository.findByCode(row.getClassCode().trim())
-                    .orElse(null);
+            String classCode = row.getClassCode().trim();
+            ClassEntity cls = classCache.computeIfAbsent(classCode, code ->
+                    classRepository.findByCode(code).orElse(null));
             if (cls == null) continue;
 
             // 1. Tạo tài khoản User
             String username = row.getStudentCode().trim().toLowerCase();
-            String rawPassword = "123456";
 
             User user = new User();
             user.setUsername(username);
-            user.setPassword(passwordEncoder.encode(rawPassword));
+            user.setPassword(defaultEncodedPassword);
             user.setEmail(row.getEmail().trim());
             user.setRole(studentRole);
             user.setIsActive(true);
@@ -270,6 +296,9 @@ public class StudentService {
         if (s.equalsIgnoreCase("SUSPENDED") || s.equalsIgnoreCase("Tạm đình chỉ")) {
             return Student.StudentStatus.SUSPENDED;
         }
+        if (s.equalsIgnoreCase("RESERVED") || s.equalsIgnoreCase("Bảo lưu")) {
+            return Student.StudentStatus.RESERVED;
+        }
         return Student.StudentStatus.INACTIVE;
     }
 
@@ -301,5 +330,17 @@ public class StudentService {
                         + " của lớp '" + cls.getName() + "' (yêu cầu bắt đầu bằng '" + expectedPrefix + "')");
             }
         }
+    }
+
+    @Transactional
+    public void resetPassword(Long studentId) {
+        Student student = findById(studentId);
+        User user = student.getUser();
+        if (user == null) {
+            throw new ResourceNotFoundException("Sinh viên chưa có tài khoản người dùng liên kết");
+        }
+        user.setPassword(passwordEncoder.encode("123456"));
+        user.setMustChangePassword(true);
+        userRepository.save(user);
     }
 }

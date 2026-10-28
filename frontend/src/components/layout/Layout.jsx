@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -10,10 +10,13 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
-  // Đóng mobile sidebar khi chuyển trang
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(location.pathname);
+
+  // Đóng mobile sidebar khi chuyển trang theo khuyến nghị chuẩn React
+  if (location.pathname !== prevPathname) {
+    setPrevPathname(location.pathname);
     setMobileOpen(false);
-  }, [location.pathname]);
+  }
 
   return (
     <div className="app-container">

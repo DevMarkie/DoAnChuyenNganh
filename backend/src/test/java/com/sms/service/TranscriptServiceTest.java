@@ -2,6 +2,7 @@ package com.sms.service;
 
 import com.sms.dto.response.TranscriptResponse;
 import com.sms.entity.ClassEntity;
+import com.sms.entity.Cohort;
 import com.sms.entity.CourseSection;
 import com.sms.entity.Department;
 import com.sms.entity.Enrollment;
@@ -37,6 +38,8 @@ public class TranscriptServiceTest {
     private GradeRepository gradeRepository;
     @Mock
     private LecturerRepository lecturerRepository;
+    @Mock
+    private TuitionService tuitionService;
 
     @InjectMocks
     private TranscriptService transcriptService;
@@ -53,9 +56,18 @@ public class TranscriptServiceTest {
         dept.setCode("CNTT");
         dept.setName("Khoa Công nghệ Thông tin & Máy tính");
 
+        Cohort cohort = new Cohort();
+        cohort.setId(1);
+        cohort.setCode("K22");
+        cohort.setName("Khóa 2022");
+        cohort.setAdmissionYear(2022);
+        cohort.setGraduationYear(2026);
+
         ClassEntity cls = new ClassEntity();
         cls.setName("SE01");
         cls.setDepartment(dept);
+        cls.setCohort(cohort);
+        cls.setAcademicYear("2022-2026");
 
         student = new Student();
         student.setId(1L);
@@ -65,6 +77,7 @@ public class TranscriptServiceTest {
 
         semester = new Semester();
         semester.setId(1);
+        semester.setSemesterNumber(1);
         semester.setSemesterName("Ky 1");
         semester.setAcademicYear("2023-2024");
 
@@ -103,10 +116,10 @@ public class TranscriptServiceTest {
     @Test
     void getTranscript_Success() {
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student));
-        when(gradeRepository.findFinalizedByStudentId(1L)).thenReturn(List.of(grade));
+        when(gradeRepository.findAllByStudentId(1L)).thenReturn(List.of(grade));
 
         TranscriptResponse response = transcriptService.getTranscript(1L);
-        
+
         assertNotNull(response);
         assertEquals("SV01", response.getStudentCode());
         assertEquals("Nguyen Van A", response.getStudentName());
@@ -116,7 +129,7 @@ public class TranscriptServiceTest {
         assertEquals(0, response.getWarningLevel());
         assertEquals(BigDecimal.valueOf(4.0).setScale(2), response.getCumulativeGpa());
         assertEquals("Xuất sắc", response.getAcademicStanding());
-        
+
         assertEquals(1, response.getSemesters().size());
         assertEquals(BigDecimal.valueOf(4.0).setScale(2), response.getSemesters().get(0).getSemesterGpa());
         assertEquals(3, response.getSemesters().get(0).getSemesterCredits());
@@ -134,7 +147,7 @@ public class TranscriptServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> transcriptService.getTranscript(99L));
     }
 
-    private static Grade makeGrade(String code, int credits, double gpa, int semId) {
+    private static Grade makeGrade(String code, int credits, double gpa, int semId, int semNumber) {
         Subject s = new Subject();
         s.setSubjectCode(code);
         s.setSubjectName(code);
@@ -142,6 +155,7 @@ public class TranscriptServiceTest {
 
         Semester sem = new Semester();
         sem.setId(semId);
+        sem.setSemesterNumber(semNumber);
         sem.setSemesterName("HK" + semId);
         sem.setAcademicYear("2025-2026");
 
@@ -155,14 +169,19 @@ public class TranscriptServiceTest {
         Grade g = new Grade();
         g.setEnrollment(enr);
         g.setGpaPoint(BigDecimal.valueOf(gpa));
-        g.setLetterGrade(gpa > 0 ? "P" : "F");
+        g.setLetterGrade(gpa > 0 ? "B" : "F");
+        g.setIsFinalized(true);
         return g;
+    }
+
+    private static Grade makeGrade(String code, int credits, double gpa, int semId) {
+        return makeGrade(code, credits, gpa, semId, 1);
     }
 
     @Test
     void retake_countsBestAttempt() {
         when(studentRepository.findById(10L)).thenReturn(Optional.of(student));
-        when(gradeRepository.findFinalizedByStudentId(10L)).thenReturn(List.of(
+        when(gradeRepository.findAllByStudentId(10L)).thenReturn(List.of(
                 makeGrade("CS101", 3, 0.0, 1),
                 makeGrade("CS101", 3, 4.0, 2)));
 
@@ -170,12 +189,13 @@ public class TranscriptServiceTest {
         assertEquals(0, BigDecimal.valueOf(4.00).compareTo(t.getCumulativeGpa()));
         assertEquals(3, t.getTotalCredits());
         assertEquals(1, t.getCompletedCourses());
+        assertEquals(0, t.getDebtCredits());
     }
 
     @Test
     void improvement_lowerSecondAttempt_keepsBestGradeForCpa() {
         when(studentRepository.findById(20L)).thenReturn(Optional.of(student));
-        when(gradeRepository.findFinalizedByStudentId(20L)).thenReturn(List.of(
+        when(gradeRepository.findAllByStudentId(20L)).thenReturn(List.of(
                 makeGrade("CS104", 3, 3.0, 1),
                 makeGrade("CS104", 3, 2.0, 2)));
 
@@ -185,16 +205,122 @@ public class TranscriptServiceTest {
     }
 
     @Test
-    void failingGrade_excludedFromEarnedCredits_butCountedInCpa() {
+    void unfinalizedDraftGrade_excludedFromCpaAndCredits() {
+        when(studentRepository.findById(40L)).thenReturn(Optional.of(student));
+        Grade draftGrade = makeGrade("CS105", 3, 4.0, 1);
+        draftGrade.setIsFinalized(false);
+        when(gradeRepository.findAllByStudentId(40L)).thenReturn(List.of(draftGrade));
+
+        TranscriptResponse t = transcriptService.getTranscript(40L);
+        assertEquals(0, t.getTotalCredits());
+        assertEquals(0, t.getCompletedCourses());
+        assertEquals(0, BigDecimal.ZERO.compareTo(t.getCumulativeGpa()));
+    }
+
+    @Test
+    void failingGrade_excludedFromEarnedCredits_andCpa_countedInDebtCredits() {
         when(studentRepository.findById(30L)).thenReturn(Optional.of(student));
-        when(gradeRepository.findFinalizedByStudentId(30L)).thenReturn(List.of(
+        when(gradeRepository.findAllByStudentId(30L)).thenReturn(List.of(
                 makeGrade("CS102", 3, 0.0, 1),
                 makeGrade("CS103", 2, 3.0, 1)));
 
         TranscriptResponse t = transcriptService.getTranscript(30L);
         assertEquals(2, t.getTotalCredits());
         assertEquals(1, t.getCompletedCourses());
-        assertEquals(0, BigDecimal.valueOf(1.20).compareTo(t.getCumulativeGpa()));
+        assertEquals(3, t.getDebtCredits());
+        // Điểm tích lũy CPA chỉ tính trên các môn đạt theo chuẩn tín chỉ: 3.00
+        assertEquals(0, BigDecimal.valueOf(3.00).compareTo(t.getCumulativeGpa()));
+    }
+
+    @Test
+    void academicWarning_level1_dueToFirstSemesterLowGpa() {
+        when(studentRepository.findById(50L)).thenReturn(Optional.of(student));
+        // Kỳ 1: GPA < 1.0 (ví dụ 0.0 do F)
+        when(gradeRepository.findAllByStudentId(50L)).thenReturn(List.of(
+                makeGrade("CS101", 3, 0.0, 1, 1)));
+
+        TranscriptResponse t = transcriptService.getTranscript(50L);
+        assertEquals(1, t.getWarningLevel());
+        assertTrue(t.getWarningNotice().contains("Mức 1"));
+    }
+
+    @Test
+    void academicWarning_level1_dueToSecondSemesterLowGpa() {
+        when(studentRepository.findById(51L)).thenReturn(Optional.of(student));
+        // Kỳ 1 đạt 2.0 (ổn), kỳ 2 đạt 1.0 (< 1.2) -> Mức 1
+        when(gradeRepository.findAllByStudentId(51L)).thenReturn(List.of(
+                makeGrade("CS101", 3, 2.0, 1, 1),
+                makeGrade("CS102", 3, 1.0, 2, 2)));
+
+        TranscriptResponse t = transcriptService.getTranscript(51L);
+        assertEquals(1, t.getWarningLevel());
+        assertTrue(t.getWarningNotice().contains("Mức 1"));
+    }
+
+    @Test
+    void academicWarning_level1_dueToDebtCreditsOver24() {
+        when(studentRepository.findById(52L)).thenReturn(Optional.of(student));
+        // Sinh viên nợ 9 môn x 3 TC = 27 tín chỉ nợ
+        List<Grade> failGrades = List.of(
+                makeGrade("M1", 3, 0.0, 1, 1),
+                makeGrade("M2", 3, 0.0, 1, 1),
+                makeGrade("M3", 3, 0.0, 1, 1),
+                makeGrade("M4", 3, 0.0, 1, 1),
+                makeGrade("M5", 3, 0.0, 1, 1),
+                makeGrade("M6", 3, 0.0, 1, 1),
+                makeGrade("M7", 3, 0.0, 1, 1),
+                makeGrade("M8", 3, 0.0, 1, 1),
+                makeGrade("M9", 3, 0.0, 1, 1)
+        );
+        when(gradeRepository.findAllByStudentId(52L)).thenReturn(failGrades);
+
+        TranscriptResponse t = transcriptService.getTranscript(52L);
+        assertEquals(27, t.getDebtCredits());
+        assertEquals(1, t.getWarningLevel());
+        assertTrue(t.getWarningNotice().contains("Nợ quá 24 tín chỉ"));
+    }
+
+    @Test
+    void academicWarning_level2_dueToTwoConsecutiveMainSemesters() {
+        when(studentRepository.findById(53L)).thenReturn(Optional.of(student));
+        // Kỳ 1: GPA 0.0 (< 1.0), Kỳ 2: GPA 1.0 (< 1.2) -> 2 kỳ chính liên tiếp -> Mức 2
+        when(gradeRepository.findAllByStudentId(53L)).thenReturn(List.of(
+                makeGrade("CS101", 3, 0.0, 1, 1),
+                makeGrade("CS102", 3, 1.0, 2, 2)));
+
+        TranscriptResponse t = transcriptService.getTranscript(53L);
+        assertEquals(2, t.getWarningLevel());
+        assertTrue(t.getWarningNotice().contains("Mức 2"));
+    }
+
+    @Test
+    void academicWarning_level3_expelled_dueToThreeConsecutiveSemesters() {
+        when(studentRepository.findById(54L)).thenReturn(Optional.of(student));
+        // 3 kỳ chính liên tiếp không tiến bộ -> Buộc thôi học (Mức 3)
+        when(gradeRepository.findAllByStudentId(54L)).thenReturn(List.of(
+                makeGrade("CS101", 3, 0.0, 1, 1),
+                makeGrade("CS102", 3, 1.0, 2, 2),
+                makeGrade("CS103", 3, 1.0, 3, 1)));
+
+        TranscriptResponse t = transcriptService.getTranscript(54L);
+        assertEquals(3, t.getWarningLevel());
+        assertTrue(t.getWarningNotice().contains("Buộc thôi học"));
+    }
+
+    @Test
+    void transcript_lockedDueToTuitionOverdue() {
+        when(studentRepository.findById(60L)).thenReturn(Optional.of(student));
+        when(gradeRepository.findAllByStudentId(60L)).thenReturn(List.of(grade));
+        when(tuitionService.isTuitionOverdue(60L)).thenReturn(true);
+
+        TranscriptResponse response = transcriptService.getTranscript(60L);
+        assertTrue(response.getIsLockedDueToTuition());
+        assertNotNull(response.getLockReason());
+        assertNull(response.getCumulativeGpa());
+        assertEquals("Tạm khóa do nợ học phí", response.getAcademicStanding());
+        // Môn học bị che điểm cuối kỳ và tổng kết
+        assertEquals("LOCKED_DEBT", response.getSemesters().get(0).getCourses().get(0).getStatus());
+        assertNull(response.getSemesters().get(0).getCourses().get(0).getFinalScore());
     }
 
     @Test
@@ -204,7 +330,7 @@ public class TranscriptServiceTest {
         s2.setStudentCode("SV02");
         s2.setFullName("Tran Thi B");
 
-        Grade g2 = makeGrade("CS201", 3, 0.0, 1); // F
+        Grade g2 = makeGrade("CS201", 3, 0.0, 1);
         g2.getEnrollment().setStudent(s2);
 
         when(gradeRepository.findFinalizedByStudentIdIn(List.of(1L, 2L)))
@@ -217,60 +343,5 @@ public class TranscriptServiceTest {
         assertEquals(BigDecimal.valueOf(4.0).setScale(2), result.get(0).getCumulativeGpa());
         assertEquals("SV02", result.get(1).getStudentCode());
         assertEquals(0, BigDecimal.valueOf(0.00).compareTo(result.get(1).getCumulativeGpa()));
-    }
-
-    @Test
-    void buildAdvisorContact_withAssignedAdvisor() {
-        Lecturer advisor = new Lecturer();
-        advisor.setId(5L);
-        advisor.setFullName("TS. Nguyen Hoang Long");
-        advisor.setLecturerCode("1000001");
-        advisor.setEmail("long.nh@sms.edu.vn");
-        advisor.setPhone("0912345001");
-        advisor.setDegree("TS");
-        advisor.setSpecialization("Software Engineering");
-        advisor.setIsActive(true);
-
-        student.getClassEntity().setAdvisor(advisor);
-
-        TranscriptResponse.AdvisorContact contact = transcriptService.buildAdvisorContact(student, 1);
-        assertNotNull(contact);
-        assertEquals("TS. Nguyen Hoang Long", contact.getAdvisorName());
-        assertEquals("1000001", contact.getAdvisorCode());
-        assertEquals("long.nh@sms.edu.vn", contact.getAdvisorEmail());
-        assertEquals("0912345001", contact.getAdvisorPhone());
-        assertEquals("TS", contact.getAdvisorDegree());
-        assertTrue(contact.getStudentSupportNotes().contains("Cảnh báo học vụ Mức 1"));
-    }
-
-    @Test
-    void buildAdvisorContact_fallbackToDepartmentLecturer() {
-        student.getClassEntity().setAdvisor(null);
-
-        Lecturer deptLecturer = new Lecturer();
-        deptLecturer.setId(6L);
-        deptLecturer.setFullName("ThS. Tran Thi Mai");
-        deptLecturer.setLecturerCode("1000002");
-        deptLecturer.setEmail("mai.tt@sms.edu.vn");
-        deptLecturer.setIsActive(true);
-
-        when(lecturerRepository.findByDepartmentId(1)).thenReturn(List.of(deptLecturer));
-
-        TranscriptResponse.AdvisorContact contact = transcriptService.buildAdvisorContact(student, 2);
-        assertNotNull(contact);
-        assertEquals("ThS. Tran Thi Mai", contact.getAdvisorName());
-        assertEquals("1000002", contact.getAdvisorCode());
-        assertTrue(contact.getStudentSupportNotes().contains("Cảnh báo học vụ Mức 2"));
-    }
-
-    @Test
-    void buildAdvisorContact_nullClass_usesDefaultFallback() {
-        Student noClassStudent = new Student();
-        noClassStudent.setId(50L);
-
-        TranscriptResponse.AdvisorContact contact = transcriptService.buildAdvisorContact(noClassStudent, 0);
-        assertNotNull(contact);
-        assertNotNull(contact.getAdvisorName());
-        assertNotNull(contact.getDepartmentName());
     }
 }

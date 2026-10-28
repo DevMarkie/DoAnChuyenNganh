@@ -42,6 +42,12 @@ public class AttendanceSession {
     @Column(name = "attendance_keyword")
     private String attendanceKeyword;
 
+    @Column(name = "status")
+    private String status = "OPEN"; // OPEN, SAVED
+
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

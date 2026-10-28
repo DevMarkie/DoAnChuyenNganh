@@ -145,4 +145,16 @@ public class LecturerService {
         if (g.equalsIgnoreCase("Nữ") || g.equalsIgnoreCase("Nu") || g.equalsIgnoreCase("FEMALE")) return Student.Gender.FEMALE;
         return Student.Gender.OTHER;
     }
+
+    @Transactional
+    public void resetPassword(Long lecturerId) {
+        Lecturer lecturer = findById(lecturerId);
+        User user = lecturer.getUser();
+        if (user == null) {
+            throw new ResourceNotFoundException("Giảng viên chưa có tài khoản người dùng liên kết");
+        }
+        user.setPassword(passwordEncoder.encode("123456"));
+        user.setMustChangePassword(true);
+        userRepository.save(user);
+    }
 }

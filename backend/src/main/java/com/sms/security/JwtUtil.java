@@ -14,26 +14,28 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
+    /**
+     * Khóa ký JWT mặc định dùng chung cho môi trường dev / local cluster.
+     * Tránh tự sinh khóa ngẫu nhiên trong RAM của từng container làm lệch khóa xác thực trên cụm 3 Backend Replicas.
+     */
+    public static final String DEFAULT_CLUSTER_SECRET = "KY1L6HPEzkSRZBiJSxXIILsbKUwnCq8hxZ4sl6ZOjbPC1QNLrca/GeEebVpIHUue2zufgB0xddr68/Pjx4v6SA==";
+
     private final SecretKey key;
     private final long expiration;
 
     public JwtUtil(@Value("${app.jwt.secret:}") String secret,
                    @Value("${app.jwt.expiration}") long expiration,
                    @Value("${spring.profiles.active:default}") String activeProfile) {
-        if (secret == null || secret.isBlank()) {
+        String effectiveSecret = secret;
+        if (effectiveSecret == null || effectiveSecret.isBlank()) {
             if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
                 throw new IllegalStateException("JWT_SECRET must be set in production environment!");
             }
-            // No secret configured: generate a random ephemeral key so a known
-            // signing key is never shipped. Tokens are invalidated on restart —
-            // set JWT_SECRET (base64, >= 64 bytes) in production for a stable key.
-            this.key = Jwts.SIG.HS512.key().build();
-            log.warn("app.jwt.secret is not set — using a random ephemeral JWT key. "
-                    + "All tokens become invalid after each restart. "
-                    + "Set the JWT_SECRET environment variable (base64-encoded) for production.");
-        } else {
-            this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
+            log.warn("app.jwt.secret is not set — using shared cluster fallback key so tokens remain consistent across replicas. "
+                    + "Set the JWT_SECRET environment variable for production.");
+            effectiveSecret = DEFAULT_CLUSTER_SECRET;
         }
+        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSecret));
         this.expiration = expiration;
     }
 

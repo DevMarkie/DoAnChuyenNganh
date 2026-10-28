@@ -15,8 +15,10 @@ RUN ./mvnw clean package -DskipTests -B
 FROM eclipse-temurin:23-jre-alpine
 WORKDIR /app
 
-# Add non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Add non-root user for security and ensure uploads directory permissions
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && mkdir -p /app/uploads/evidence \
+    && chown -R appuser:appgroup /app
 USER appuser
 
 COPY --from=builder /app/target/*.jar app.jar

@@ -48,6 +48,24 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("PrerequisiteNotMetException ánh xạ thành HTTP 400 kèm chi tiết môn tiên quyết")
+    void handlePrerequisiteNotMet_Returns400WithDetails() {
+        PrerequisiteNotMetException ex = new PrerequisiteNotMetException("CS201", "CS101", "Lập trình C");
+        var response = handler.handlePrerequisiteNotMet(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertFalse(response.getBody().isSuccess());
+        assertTrue(response.getBody().getMessage().contains("CS201 yêu cầu hoàn thành môn tiên quyết CS101 - Lập trình C"));
+        assertNotNull(response.getBody().getData());
+        assertEquals("CS201", response.getBody().getData().get("targetSubjectCode"));
+        assertEquals("CS101", response.getBody().getData().get("prerequisiteSubjectCode"));
+        assertEquals("Lập trình C", response.getBody().getData().get("prerequisiteSubjectName"));
+        assertEquals(1.0, response.getBody().getData().get("minGpaPointRequired"));
+        assertEquals("PASSED", response.getBody().getData().get("statusRequired"));
+    }
+
+    @Test
     @DisplayName("BadCredentialsException ánh xạ thành HTTP 401")
     void handleBadCredentials_Returns401() {
         BadCredentialsException ex = new BadCredentialsException("Bad credentials");

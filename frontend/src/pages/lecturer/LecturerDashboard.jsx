@@ -1,6 +1,7 @@
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
-import { Layers, Users, ArrowUpRight, GraduationCap } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import { CourseSectionsIcon, StudentsIcon, DepartmentsIcon } from '../../components/icons';
 import { useNavigate } from 'react-router-dom';
 import { courseSectionService, lecturerService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
@@ -54,14 +55,8 @@ export default function LecturerDashboard() {
       {/* Metrics */}
       <div className="stats-grid">
         <div className="stat-card">
-          <div
-            className="stat-icon-wrapper"
-            style={{
-              backgroundColor: 'var(--bg-subtle)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            <Layers size={22} />
+          <div className="stat-icon-wrapper stat-icon--primary">
+            <CourseSectionsIcon size={22} />
           </div>
           <div>
             <div className="stat-value">{mySections.length}</div>
@@ -70,14 +65,8 @@ export default function LecturerDashboard() {
         </div>
 
         <div className="stat-card">
-          <div
-            className="stat-icon-wrapper"
-            style={{
-              backgroundColor: 'var(--bg-subtle)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            <Users size={22} />
+          <div className="stat-icon-wrapper stat-icon--success">
+            <StudentsIcon size={22} />
           </div>
           <div>
             <div className="stat-value">{totalStudents}</div>
@@ -86,14 +75,8 @@ export default function LecturerDashboard() {
         </div>
 
         <div className="stat-card">
-          <div
-            className="stat-icon-wrapper"
-            style={{
-              backgroundColor: 'var(--bg-subtle)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            <GraduationCap size={22} />
+          <div className="stat-icon-wrapper stat-icon--purple">
+            <DepartmentsIcon size={22} />
           </div>
           <div>
             <div className="stat-value">{profile?.department?.code || '—'}</div>

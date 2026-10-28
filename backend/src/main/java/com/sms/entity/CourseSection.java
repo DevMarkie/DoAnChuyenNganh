@@ -45,13 +45,12 @@ public class CourseSection {
     private Integer minStudents = 1;
 
     /**
-     * Số chỗ đã được giữ trong lớp học phần. Tên thuộc tính khớp với API
-     * mà giao diện sử dụng, còn cột vật lý vẫn là {@code enrolled_count}.
-     * Cột do trigger MySQL quản lý (insert/cancel enrollment) nên JPA không
-     * ghi (insertable/updatable=false) để khỏi ghi đè giá trị trigger → tránh
-     * lost update khi admin sửa lớp đúng lúc có SV đăng ký.
+     * Sĩ số sinh viên đang học trong lớp học phần (cột vật lý: enrolled_count).
+     * Quản lý trực tiếp trong cùng Transaction với lệnh đăng ký môn qua khóa
+     * bi quan (PESSIMISTIC_WRITE) trong Spring Boot, thay vì dùng Trigger DB
+     * để tránh deadlock và sai lệch bộ nhớ đệm (1st-level cache) của Hibernate.
      */
-    @Column(name = "enrolled_count", nullable = false, insertable = false, updatable = false)
+    @Column(name = "enrolled_count", nullable = false)
     private Integer currentStudents = 0;
 
     @Column(length = 200)
@@ -59,6 +58,15 @@ public class CourseSection {
 
     @Column(length = 50)
     private String room;
+
+    @Column(name = "grade_submission_status", nullable = false, length = 20)
+    private String gradeSubmissionStatus = "DRAFT";
+
+    @Column(name = "published_at")
+    private LocalDateTime publishedAt;
+
+    @Column(name = "grade_return_reason", columnDefinition = "TEXT")
+    private String gradeReturnReason;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -93,5 +101,13 @@ public class CourseSection {
 
     public enum SectionType {
         REGULAR, SPECIAL
+    }
+
+    public void incrementCurrentStudents() {
+        this.currentStudents = (this.currentStudents != null ? this.currentStudents : 0) + 1;
+    }
+
+    public void decrementCurrentStudents() {
+        this.currentStudents = Math.max(0, (this.currentStudents != null ? this.currentStudents : 0) - 1);
     }
 }

@@ -110,6 +110,11 @@ public class SemesterService {
             semester.setRegistrationStart(null);
             semester.setRegistrationEnd(null);
         }
+        if (request.getTuitionDeadline() != null && !request.getTuitionDeadline().isBlank()) {
+            semester.setTuitionDeadline(LocalDate.parse(request.getTuitionDeadline()));
+        } else {
+            semester.setTuitionDeadline(null);
+        }
         if (request.getStatus() != null && !request.getStatus().isEmpty()) {
             try {
                 semester.setStatus(Semester.SemesterStatus.valueOf(request.getStatus()));
@@ -117,6 +122,40 @@ public class SemesterService {
                 throw new BadRequestException("Trạng thái học kỳ không hợp lệ");
             }
         }
+    }
+
+    @Transactional
+    @CacheEvict(value = "semesters", allEntries = true)
+    public Semester openRegistration(Integer id, Integer days, String deadlineStr) {
+        Semester semester = findById(id);
+        int openDays = (days == null || days <= 0) ? 14 : days;
+        LocalDate today = LocalDate.now();
+        semester.setRegistrationStart(today);
+        semester.setRegistrationEnd(today.plusDays(openDays));
+        if (deadlineStr != null && !deadlineStr.isBlank()) {
+            semester.setTuitionDeadline(LocalDate.parse(deadlineStr));
+        } else if (semester.getTuitionDeadline() == null || semester.getTuitionDeadline().isBefore(semester.getRegistrationEnd())) {
+            semester.setTuitionDeadline(semester.getRegistrationEnd().plusDays(7));
+        }
+        // Đảm bảo học kỳ đang ACTIVE và là CURRENT để SV đăng ký được
+        semester.setStatus(Semester.SemesterStatus.ACTIVE);
+        if (!Boolean.TRUE.equals(semester.getIsCurrent())) {
+            clearCurrentSemester(id);
+            semester.setIsCurrent(true);
+        }
+        return semesterRepository.save(semester);
+    }
+
+    @Transactional
+    @CacheEvict(value = "semesters", allEntries = true)
+    public Semester closeRegistration(Integer id) {
+        Semester semester = findById(id);
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        if (semester.getRegistrationStart() != null && semester.getRegistrationStart().isAfter(yesterday)) {
+            semester.setRegistrationStart(yesterday);
+        }
+        semester.setRegistrationEnd(yesterday);
+        return semesterRepository.save(semester);
     }
 
     private void clearCurrentSemester(Integer exceptId) {

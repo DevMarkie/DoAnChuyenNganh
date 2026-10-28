@@ -1,6 +1,7 @@
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, CheckCircle, XCircle, X, Building2, RotateCcw } from 'lucide-react';
+import { Plus, Search, Edit2, CheckCircle, XCircle, X, RotateCcw } from 'lucide-react';
+import { DepartmentsIcon } from '../../components/icons';
 import { toast } from 'react-toastify';
 import { departmentService } from '../../services/dataService';
 
@@ -201,7 +202,7 @@ export default function DepartmentsPage() {
                             flexShrink: 0
                           }}
                         >
-                          <Building2 size={16} />
+                          <DepartmentsIcon size={16} />
                         </div>
                         <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{d.name}</span>
                       </div>

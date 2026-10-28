@@ -4,18 +4,17 @@ import com.sms.dto.ApiResponse;
 import com.sms.dto.response.AcademicWarningResponse;
 import com.sms.dto.response.TranscriptResponse;
 import com.sms.entity.Student;
+import com.sms.service.AcademicWarningService;
 import com.sms.service.StudentService;
 import com.sms.service.TranscriptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/academic-warnings")
@@ -24,9 +23,10 @@ public class AcademicWarningController {
 
     private final StudentService studentService;
     private final TranscriptService transcriptService;
+    private final AcademicWarningService academicWarningService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ACADEMIC_AFFAIRS')")
     public ResponseEntity<ApiResponse<List<AcademicWarningResponse>>> getWarnings(
             @RequestParam(required = false) Integer semesterId,
             @RequestParam(required = false) Integer level,
@@ -47,14 +47,44 @@ public class AcademicWarningController {
         return ResponseEntity.ok(ApiResponse.success(warnings));
     }
 
+    @PostMapping("/scan")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ACADEMIC_AFFAIRS')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> scanAcademicStanding(
+            @RequestParam(required = false) Integer semesterId) {
+        Map<String, Object> result = academicWarningService.scanAndApplyAcademicWarnings(semesterId);
+        return ResponseEntity.ok(ApiResponse.success("Đã hoàn tất quét và xử lý quy chế học vụ tự động", result));
+    }
+
     private AcademicWarningResponse toWarningResponse(TranscriptResponse transcript, Integer semesterId) {
-        TranscriptResponse.SemesterGrade latest = transcript.getSemesters().stream()
-                .max(Comparator.comparing(TranscriptResponse.SemesterGrade::getSemesterId))
-                .orElse(null);
-        if (semesterId != null && transcript.getSemesters().stream()
-                .noneMatch(semester -> semesterId.equals(semester.getSemesterId()))) {
-            return null;
+        TranscriptResponse.SemesterGrade targetSemester;
+        if (semesterId != null) {
+            targetSemester = transcript.getSemesters().stream()
+                    .filter(s -> semesterId.equals(s.getSemesterId()))
+                    .findFirst()
+                    .orElse(null);
+            if (targetSemester == null) {
+                return null;
+            }
+        } else {
+            targetSemester = transcript.getSemesters().stream()
+                    .max(Comparator.comparing(TranscriptResponse.SemesterGrade::getSemesterId))
+                    .orElse(null);
         }
+        String statusText = switch (transcript.getWarningLevel()) {
+            case 3 -> "BUỘC THÔI HỌC";
+            case 2 -> "MỨC 2";
+            default -> "MỨC 1";
+        };
+
+        int maxCredits = transcript.getMaxAllowedCredits() != null 
+                ? transcript.getMaxAllowedCredits()
+                : (switch (transcript.getWarningLevel()) {
+                    case 3 -> 0;
+                    case 2 -> 10;
+                    case 1 -> 14;
+                    default -> 24;
+                });
+
         return AcademicWarningResponse.builder()
                 .studentId(transcript.getStudentId())
                 .studentCode(transcript.getStudentCode())
@@ -62,11 +92,14 @@ public class AcademicWarningController {
                 .className(transcript.getClassName())
                 .cumulativeGpa(transcript.getCumulativeGpa())
                 .academicStanding(transcript.getAcademicStanding())
-                .semesterId(latest == null ? null : latest.getSemesterId())
-                .semesterName(latest == null ? null : latest.getSemesterName())
-                .semesterGpa(latest == null ? null : latest.getSemesterGpa())
+                .semesterId(targetSemester == null ? null : targetSemester.getSemesterId())
+                .semesterName(targetSemester == null ? null : targetSemester.getSemesterName())
+                .semesterGpa(targetSemester == null ? null : targetSemester.getSemesterGpa())
                 .warningLevel(transcript.getWarningLevel())
+                .warningStatus(statusText)
+                .debtCredits(transcript.getDebtCredits())
                 .warningNotice(transcript.getWarningNotice())
+                .nextSemesterMaxCredits(maxCredits)
                 .build();
     }
 }

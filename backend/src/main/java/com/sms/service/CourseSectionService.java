@@ -81,8 +81,13 @@ public class CourseSectionService {
         section.setSubject(subject);
         section.setLecturer(lecturer);
         section.setSemester(semester);
-        section.setMaxStudents(request.getMaxStudents() != null ? request.getMaxStudents() : 40);
-        section.setMinStudents((int) Math.ceil(section.getMaxStudents() * 2.0 / 3.0));
+        int maxStudents = request.getMaxStudents() != null ? request.getMaxStudents() : 40;
+        int minStudents = request.getMinStudents() != null ? request.getMinStudents() : (int) Math.ceil(maxStudents * 2.0 / 3.0);
+        if (minStudents > maxStudents) {
+            throw new BadRequestException("Sĩ số tối thiểu (" + minStudents + ") không được lớn hơn sĩ số tối đa (" + maxStudents + ")");
+        }
+        section.setMaxStudents(maxStudents);
+        section.setMinStudents(minStudents);
         section.setCurrentStudents(0);
         section.setSchedule(request.getSchedule());
         section.setRoom(request.getRoom());
@@ -107,6 +112,13 @@ public class CourseSectionService {
                         + section.getCurrentStudents() + ")");
             }
             section.setMaxStudents(request.getMaxStudents());
+        }
+        if (request.getMinStudents() != null) {
+            int currentMax = section.getMaxStudents() != null ? section.getMaxStudents() : 40;
+            if (request.getMinStudents() > currentMax) {
+                throw new BadRequestException("Sĩ số tối thiểu (" + request.getMinStudents() + ") không được lớn hơn sĩ số tối đa (" + currentMax + ")");
+            }
+            section.setMinStudents(request.getMinStudents());
         }
         section.setSchedule(request.getSchedule());
         section.setRoom(request.getRoom());
@@ -156,7 +168,7 @@ public class CourseSectionService {
                 request.getEndPeriod(), startDate, endDate, existingScheduleId).isEmpty()) {
             throw new BadRequestException("Phòng học bị trùng lịch trong khoảng thời gian đã chọn");
         }
-        if (!scheduleRepository.findLecturerConflicts(section.getLecturer().getId(), request.getDayOfWeek(),
+        if (section.getLecturer() != null && !scheduleRepository.findLecturerConflicts(section.getLecturer().getId(), request.getDayOfWeek(),
                 request.getStartPeriod(), request.getEndPeriod(), startDate, endDate, existingScheduleId).isEmpty()) {
             throw new BadRequestException("Giảng viên bị trùng lịch trong khoảng thời gian đã chọn");
         }

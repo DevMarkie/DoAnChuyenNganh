@@ -115,7 +115,9 @@ public class SpecialClassService {
             enrollment.setSection(saved);
             enrollment.setEnrollmentType(toEnrollmentType(request.getRequestType()));
             enrollmentRepository.save(enrollment);
+            saved.incrementCurrentStudents();
         }
+        sectionRepository.save(saved);
         return saved;
     }
 

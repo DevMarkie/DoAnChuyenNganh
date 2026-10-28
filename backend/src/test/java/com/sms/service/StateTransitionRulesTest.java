@@ -166,7 +166,13 @@ public class StateTransitionRulesTest {
         @Mock
         private LecturerRepository lecturerRepository;
         @Mock
+        private SemesterRepository semesterRepository;
+        @Mock
         private NotificationService notificationService;
+        @Mock
+        private UserRepository userRepository;
+        @Mock
+        private com.sms.repository.GradeAuditLogRepository gradeAuditLogRepository;
 
         @InjectMocks
         private GradeService gradeService;
@@ -238,6 +244,7 @@ public class StateTransitionRulesTest {
         @DisplayName("Grade Finalize: When finalized, section transitions automatically to COMPLETED")
         void testGradeFinalize_TransitionsSectionToCompleted() {
             section.setStatus(CourseSection.SectionStatus.ACTIVE);
+            grade.setFinalScore(BigDecimal.valueOf(8.5)); // BR-Exam02: Khảo thí đã nạp điểm thi cuối kỳ
             when(enrollmentRepository.findById(200L)).thenReturn(Optional.of(enrollment));
             when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
             when(gradeRepository.findByEnrollmentId(200L)).thenReturn(Optional.of(grade));

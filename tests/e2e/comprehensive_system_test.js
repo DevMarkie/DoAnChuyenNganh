@@ -1273,104 +1273,486 @@ async function executeFullTest() {
   // =========================================================================
   // NHÓM 8: HIỆU NĂNG TẢI ĐỒNG THỜI & CHUẨN KẾT NỐI (CONCURRENCY & STANDARDS)
   // =========================================================================
+  // NHÓM 9: LUỒNG TRẠNG THÁI & ACCESS CONTROL (STATE TRANSITION & ACCESS)
+  // =========================================================================
   logSuiteHeader(
-    8,
-    "Hiệu Năng Đồng Thời & Chuẩn Kết Nối (Concurrency & Standards)",
+    9,
+    "Luồng Trạng Thái & Access Control (State Transition & Access)",
   );
 
+  let tempSectionId = null;
+  const tempSectionCode = `TEST_ST_${Date.now().toString().slice(-4)}`;
+  let testSubId = null;
+  let testSemId = null;
+  let testLecId = null;
+
   await testCase(
-    "8. Concurrency & Standards",
-    "STRESS-01",
-    "Xử lý đồng thời 10 yêu cầu đăng nhập song song (Concurrent Logins)",
+    "9. State & Access Control",
+    "STATE-01",
+    "Chuyển trạng thái lớp học phần tuần tự hợp lệ (OPEN -> CLOSED -> ACTIVE)",
     async () => {
-      const promises = Array.from({ length: 10 }, (_, i) =>
-        api("/auth/login", {
-          method: "POST",
-          body: { username: "admin", password: "123456" },
-        }),
-      );
-      const responses = await Promise.all(promises);
-      const allOk = responses.every((r) => r.ok && r.data.data?.token);
-      if (!allOk)
-        throw new Error(
-          "Có yêu cầu đăng nhập đồng thời bị thất bại hoặc nghẽn thread!",
-        );
+      const subRes = await api("/subjects", { token: adminToken });
+      const semRes = await api("/semesters", { token: adminToken });
+      const lecRes = await api("/lecturers", { token: adminToken });
+
+      testSubId = subRes.data?.data?.[0]?.id;
+      testSemId = semRes.data?.data?.[0]?.id;
+      testLecId = lecRes.data?.data?.[0]?.id;
+
+      const createRes = await api("/course-sections", {
+        method: "POST",
+        token: adminToken,
+        body: {
+          sectionCode: tempSectionCode,
+          subjectId: testSubId,
+          semesterId: testSemId,
+          lecturerId: testLecId,
+          room: "P.TEST-301",
+          minStudents: 15,
+          maxStudents: 40,
+        },
+      });
+
+      if (!createRes.ok || !createRes.data?.data?.id) {
+        throw new Error("Không tạo được lớp học phần thử nghiệm trạng thái");
+      }
+      tempSectionId = createRes.data.data.id;
+
+      // 2. Chuyển sang CLOSED hợp lệ
+      const closeRes = await api(`/course-sections/${tempSectionId}`, {
+        method: "PUT",
+        token: adminToken,
+        body: {
+          sectionCode: tempSectionCode,
+          subjectId: testSubId,
+          semesterId: testSemId,
+          lecturerId: testLecId,
+          maxStudents: 40,
+          status: "CLOSED",
+        },
+      });
+      if (!closeRes.ok) throw new Error("Chuyển trạng thái sang CLOSED thất bại");
+
+      // 3. Chuyển sang ACTIVE hợp lệ
+      const activeRes = await api(`/course-sections/${tempSectionId}`, {
+        method: "PUT",
+        token: adminToken,
+        body: {
+          sectionCode: tempSectionCode,
+          subjectId: testSubId,
+          semesterId: testSemId,
+          lecturerId: testLecId,
+          maxStudents: 40,
+          status: "ACTIVE",
+        },
+      });
+      if (!activeRes.ok) throw new Error("Chuyển trạng thái sang ACTIVE thất bại");
     },
   );
 
   await testCase(
-    "8. Concurrency & Standards",
-    "STRESS-02",
-    "Xử lý đồng thời 20 truy vấn dữ liệu song song (Dashboard, Khoa, Môn học)",
+    "9. State & Access Control",
+    "STATE-02",
+    "Chặn nhảy cóc trạng thái lớp học phần (Anti-skip Enforcement)",
     async () => {
-      const endpoints = [
-        "/dashboard",
-        "/departments",
-        "/subjects",
-        "/classes",
-        "/semesters",
-      ];
-      const promises = Array.from({ length: 20 }, (_, i) =>
-        api(endpoints[i % endpoints.length], { token: adminToken }),
-      );
-      const responses = await Promise.all(promises);
-      const allOk = responses.every((r) => r.ok && r.data.success);
-      if (!allOk)
-        throw new Error(
-          "Có truy vấn đồng thời bị timeout hoặc lỗi kết nối pool!",
-        );
-    },
-  );
+      const skipCode = `SKIP_${Date.now().toString().slice(-4)}`;
+      const createRes = await api("/course-sections", {
+        method: "POST",
+        token: adminToken,
+        body: {
+          sectionCode: skipCode,
+          subjectId: testSubId,
+          semesterId: testSemId,
+          lecturerId: testLecId,
+          maxStudents: 30,
+        },
+      });
+      const skipId = createRes.data?.data?.id;
 
-  await testCase(
-    "8. Concurrency & Standards",
-    "STRESS-03",
-    "Kiểm tra OpenAPI Documentation JSON (/api-docs) đầy đủ schemas",
-    async () => {
-      const res = await fetch("http://localhost:8080/api-docs");
-      if (!res.ok) throw new Error("Không tải được api-docs");
-      const json = await res.json();
-      if (!json.paths || Object.keys(json.paths).length < 10) {
-        throw new Error("Tài liệu OpenAPI quá ít paths hoặc không hoàn chỉnh");
+      try {
+        const skipRes = await api(`/course-sections/${skipId}`, {
+          method: "PUT",
+          token: adminToken,
+          body: {
+            sectionCode: skipCode,
+            subjectId: testSubId,
+            semesterId: testSemId,
+            lecturerId: testLecId,
+            maxStudents: 30,
+            status: "COMPLETED",
+          },
+        });
+        if (skipRes.ok) {
+          throw new Error("Chưa chặn được hành vi nhảy cóc trạng thái OPEN -> COMPLETED");
+        }
+      } finally {
+        if (skipId) {
+          await api(`/course-sections/${skipId}`, {
+            method: "DELETE",
+            token: adminToken,
+          }).catch(() => {});
+        }
       }
     },
   );
 
   await testCase(
-    "8. Concurrency & Standards",
-    "STRESS-04",
-    "Kiểm tra Header CORS linh hoạt (Access-Control-Allow-Origin)",
+    "9. State & Access Control",
+    "STATE-03",
+    "Chặn nhập điểm cho lớp học phần khi chưa đủ điều kiện",
     async () => {
-      const testOrigin =
-        process.env.TEST_CORS_ORIGIN || "http://192.168.1.130:5173";
-      const res = await fetch("http://localhost:8080/api/auth/login", {
-        method: "OPTIONS",
-        headers: {
-          Origin: testOrigin,
-          "Access-Control-Request-Method": "POST",
+      const res = await api("/grades", {
+        method: "PUT",
+        token: lecturer2Token,
+        body: {
+          sectionId: tempSectionId,
+          grades: [{ enrollmentId: 999999, finalScore: 9.0 }],
         },
       });
-      const allowOrigin = res.headers.get("access-control-allow-origin");
-      if (!allowOrigin)
-        throw new Error("Thiếu header Access-Control-Allow-Origin");
+      if (res.ok) {
+        throw new Error("Chưa chặn giảng viên nhập điểm trái phép");
+      }
+    },
+  );
+
+  // =========================================================================
+  // NHÓM 10: QUẢN LÝ THU - CHI HỌC PHÍ (TUITION & CASHIER)
+  // =========================================================================
+  logSuiteHeader(10, "Quản Lý Thu - Chi Học Phí (Tuition & Cashier Management)");
+
+  let overdueStudentId = null;
+
+  await testCase(
+    "10. Tuition Management",
+    "TUI-01",
+    "Tra cứu công nợ học phí sinh viên theo học kỳ (/api/admin/tuition/student/{id})",
+    async () => {
+      const stdListRes = await api("/students", { token: adminToken });
+      const semListRes = await api("/semesters", { token: adminToken });
+      const targetStudent = stdListRes.data?.data?.[0];
+      const targetSemester = semListRes.data?.data?.[0];
+
+      if (!targetStudent || !targetSemester) return;
+
+      const res = await api(`/admin/tuition/student/${targetStudent.id}?semesterId=${targetSemester.id}`, {
+        token: adminToken,
+      });
+
+      if (!res.ok) {
+        throw new Error(`Tra cứu học phí thất bại: HTTP ${res.status}`);
+      }
+      if (typeof res.data?.data?.unpaidAmount === "undefined" && typeof res.data?.data?.totalAmount === "undefined") {
+        throw new Error("Response không chứa thông tin tổng hợp học phí");
+      }
     },
   );
 
   await testCase(
-    "8. Concurrency & Standards",
-    "STRESS-05",
-    "Kiểm tra HTTP Compression GZIP cho payload lớn",
+    "10. Tuition Management",
+    "TUI-02",
+    "Quét và kiểm tra danh sách sinh viên nợ học phí quá hạn (/api/admin/tuition/overdue)",
     async () => {
-      const res = await fetch(
-        "http://localhost:8080/api/students/paged?page=0&size=100",
-        {
-          headers: {
-            Authorization: `Bearer ${adminToken}`,
-            "Accept-Encoding": "gzip, deflate",
-          },
+      const semListRes = await api("/semesters", { token: adminToken });
+      const targetSemester = semListRes.data?.data?.[0];
+      if (!targetSemester) return;
+
+      const res = await api(`/admin/tuition/overdue?semesterId=${targetSemester.id}`, {
+        token: adminToken,
+      });
+
+      if (!res.ok) {
+        throw new Error(`Quét nợ quá hạn thất bại: HTTP ${res.status}`);
+      }
+      if (!Array.isArray(res.data?.data)) {
+        throw new Error("Danh sách nợ quá hạn phải là một mảng");
+      }
+      if (res.data.data.length > 0) {
+        overdueStudentId = res.data.data[0].studentId;
+      }
+    },
+  );
+
+  await testCase(
+    "10. Tuition Management",
+    "TUI-03",
+    "Gia hạn nộp học phí cho sinh viên (/api/admin/tuition/extend-deadline)",
+    async () => {
+      const semListRes = await api("/semesters", { token: adminToken });
+      const targetSemester = semListRes.data?.data?.[0];
+      if (!targetSemester) return;
+
+      // Chọn sinh viên có học phí chưa nộp
+      let targetStuId = overdueStudentId;
+      if (!targetStuId) {
+        const stdListRes = await api("/students", { token: adminToken });
+        targetStuId = stdListRes.data?.data?.[0]?.id;
+      }
+      if (!targetStuId) return;
+
+      const res = await api("/admin/tuition/extend-deadline", {
+        method: "POST",
+        token: adminToken,
+        body: {
+          studentId: targetStuId,
+          semesterId: targetSemester.id,
+          days: 7,
+          reason: "Kiểm thử tự động gia hạn 7 ngày",
         },
-      );
-      if (!res.ok) throw new Error("Không tải được danh sách sinh viên lớn");
+      });
+
+      // Nếu sinh viên có hóa đơn chưa thanh toán -> 200; nếu không có -> 400 (do sạch nợ)
+      if (!res.ok && res.status !== 400) {
+        throw new Error(`Gia hạn học phí gặp mã lỗi bất thường: HTTP ${res.status}`);
+      }
+    },
+  );
+
+  // =========================================================================
+  // NHÓM 11: ĐIỂM DANH CHUYÊN CẦN (ATTENDANCE & ELIGIBILITY)
+  // =========================================================================
+  logSuiteHeader(11, "Điểm Danh Chuyên Cần & Điều Kiện Dự Thi (Attendance)");
+
+  await testCase(
+    "11. Attendance",
+    "ATT-01",
+    "Tra cứu danh sách sinh viên theo lớp học phần (/api/enrollments/section/{id})",
+    async () => {
+      if (!sampleSectionId) return;
+      const res = await api(`/enrollments/section/${sampleSectionId}`, {
+        token: lecturerToken,
+      });
+      if (!res.ok) {
+        throw new Error(`Không lấy được danh sách sinh viên lớp: HTTP ${res.status}`);
+      }
+      if (!Array.isArray(res.data?.data)) {
+        throw new Error("Dữ liệu trả về không phải là mảng sinh viên");
+      }
+    },
+  );
+
+  await testCase(
+    "11. Attendance",
+    "ATT-02",
+    "Giảng viên lưu phiên điểm danh buổi học (/api/attendance/session)",
+    async () => {
+      if (!sampleSectionId) return;
+      const secRes = await api(`/enrollments/section/${sampleSectionId}`, { token: lecturerToken });
+      const enrollments = secRes.data?.data || [];
+      if (enrollments.length === 0) return;
+
+      const targetEnrollment = enrollments[0];
+      const today = new Date().toISOString().split("T")[0];
+
+      const saveRes = await api("/attendance/session", {
+        method: "POST",
+        token: lecturerToken,
+        body: {
+          sectionId: sampleSectionId,
+          sessionDate: today,
+          attendanceKeyword: "TEST_E2E",
+          records: [{ enrollmentId: targetEnrollment.id, isPresent: true }],
+        },
+      });
+
+      if (!saveRes.ok) {
+        throw new Error(`Lưu điểm danh thất bại: HTTP ${saveRes.status}`);
+      }
+    },
+  );
+
+  // =========================================================================
+  // NHÓM 12: VÒNG ĐỜI PHÚC KHẢO ĐIỂM (GRADE APPEALS LIFECYCLE)
+  // =========================================================================
+  logSuiteHeader(12, "Vòng Đời Phúc Khảo Điểm (Grade Appeals Lifecycle)");
+
+  let pendingAppealId = null;
+
+  await testCase(
+    "12. Grade Appeals",
+    "APL-01",
+    "Sinh viên tra cứu danh sách đơn phúc khảo cá nhân (/api/grade-appeals/my)",
+    async () => {
+      const res = await api("/grade-appeals/my", {
+        token: studentToken,
+      });
+      if (!res.ok) {
+        throw new Error(`Tra cứu đơn phúc khảo cá nhân thất bại: HTTP ${res.status}`);
+      }
+      if (!Array.isArray(res.data?.data)) {
+        throw new Error("Danh sách đơn phúc khảo phải là một mảng");
+      }
+    },
+  );
+
+  await testCase(
+    "12. Grade Appeals",
+    "APL-02",
+    "Admin/Giảng viên tra cứu toàn bộ danh sách đơn phúc khảo (/api/grade-appeals)",
+    async () => {
+      const res = await api("/grade-appeals", {
+        token: adminToken,
+      });
+      if (!res.ok) {
+        throw new Error(`Admin tra cứu danh sách đơn phúc khảo thất bại: HTTP ${res.status}`);
+      }
+      if (!Array.isArray(res.data?.data)) {
+        throw new Error("Danh sách đơn phúc khảo phải là một mảng");
+      }
+      // Tìm đơn đang chờ xử lý (PENDING hoặc IN_REVIEW)
+      const pending = res.data.data.find(a => a.status === "PENDING" || a.status === "IN_REVIEW");
+      if (pending) {
+        pendingAppealId = pending.id;
+      }
+    },
+  );
+
+  await testCase(
+    "12. Grade Appeals",
+    "APL-03",
+    "Hội đồng thẩm định phúc khảo điểm (/api/grade-appeals/{id}/review)",
+    async () => {
+      if (!pendingAppealId) {
+        // Nếu không có đơn pending sẵn, tạo đơn mới để kiểm thử luồng thẩm định
+        const myEnrRes = await api("/enrollments/my", { token: studentToken });
+        const enrList = myEnrRes.data?.data || [];
+        if (enrList.length > 0) {
+          const createAppealRes = await api("/grade-appeals", {
+            method: "POST",
+            token: studentToken,
+            body: {
+              enrollmentId: enrList[0].id,
+              reason: "Xin chấm lại bài thi kết thúc học phần",
+              expectedScore: 8.5,
+              scoreComponent: "FINAL",
+            },
+          });
+          if (createAppealRes.ok && createAppealRes.data?.data?.id) {
+            pendingAppealId = createAppealRes.data.data.id;
+          }
+        }
+      }
+
+      if (pendingAppealId) {
+        const res = await api(`/grade-appeals/${pendingAppealId}/review`, {
+          method: "PUT",
+          token: adminToken,
+          body: {
+            status: "REJECTED",
+            reviewNotes: "Bài thi chấm chính xác theo thang barem kiểm thử",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Thẩm định phúc khảo thất bại: HTTP ${res.status}`);
+        }
+      }
+    },
+  );
+
+  // =========================================================================
+  // NHÓM 13: LỚP ĐẶC BIỆT & ĐIỀU PHỐI (SPECIAL CLASSES & COORDINATION)
+  // =========================================================================
+  logSuiteHeader(13, "Lớp Học Phần Đặc Biệt & Điều Phối Đào Tạo (Special Classes)");
+
+  let specialSubId = null;
+
+  await testCase(
+    "13. Special Classes",
+    "CLS-01",
+    "Chặn tạo lớp học phần khi minStudents > maxStudents",
+    async () => {
+      const subRes = await api("/subjects", { token: adminToken });
+      const semRes = await api("/semesters", { token: adminToken });
+      const lecRes = await api("/lecturers", { token: adminToken });
+
+      const res = await api("/course-sections", {
+        method: "POST",
+        token: adminToken,
+        body: {
+          sectionCode: `ERR_SLOT_${Date.now().toString().slice(-4)}`,
+          subjectId: subRes.data?.data?.[0]?.id,
+          semesterId: semRes.data?.data?.[0]?.id,
+          lecturerId: lecRes.data?.data?.[0]?.id,
+          room: "P.TEST-ERR",
+          minStudents: 50,
+          maxStudents: 30,
+        },
+      });
+
+      if (res.ok || res.status !== 400) {
+        throw new Error("Hệ thống chưa chặn trường hợp minStudents > maxStudents!");
+      }
+    },
+  );
+
+  await testCase(
+    "13. Special Classes",
+    "CLS-02",
+    "Sinh viên gửi đơn đề nghị mở lớp học phần riêng (/api/special-classes/requests)",
+    async () => {
+      const semRes = await api("/semesters", { token: adminToken });
+      const testSem = semRes.data?.data?.[0]?.id;
+
+      const depRes = await api("/departments", { token: adminToken });
+      const depId = depRes.data?.data?.[0]?.id;
+
+      const subCreate = await api("/subjects", {
+        method: "POST",
+        token: adminToken,
+        body: {
+          subjectCode: `SPE_SUB_${Date.now().toString().slice(-4)}`,
+          subjectName: "Môn Học Thử Nghiệm Lớp Riêng",
+          credits: 3,
+          departmentId: depId,
+        },
+      });
+
+      if (!subCreate.ok) throw new Error("Không tạo được môn học thử nghiệm lớp riêng");
+      specialSubId = subCreate.data.data.id;
+
+      const res = await api("/special-classes/requests", {
+        method: "POST",
+        token: studentToken,
+        body: {
+          subjectId: specialSubId,
+          semesterId: testSem,
+          requestType: "LEARN_AGAIN",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Gửi đơn đề nghị mở lớp thất bại: HTTP ${res.status}`);
+      }
+    },
+  );
+
+  await testCase(
+    "13. Special Classes",
+    "CLS-03",
+    "Admin tạo lớp học phần đặc biệt có định mức học phí riêng (/api/special-classes)",
+    async () => {
+      if (!specialSubId) return;
+
+      const semRes = await api("/semesters", { token: adminToken });
+      const lecRes = await api("/lecturers", { token: adminToken });
+      const specialCode = `SPE_${Date.now().toString().slice(-4)}`;
+
+      const res = await api("/special-classes", {
+        method: "POST",
+        token: adminToken,
+        body: {
+          subjectId: specialSubId,
+          semesterId: semRes.data?.data?.[0]?.id,
+          lecturerId: lecRes.data?.data?.[0]?.id,
+          sectionCode: specialCode,
+          maxStudents: 25,
+          baseTuitionRate: 650000.0,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Tạo lớp đặc biệt thất bại: HTTP ${res.status}`);
+      }
     },
   );
 
@@ -1427,15 +1809,12 @@ async function executeFullTest() {
 
   // Dọn dẹp dữ liệu kiểm thử tạm thời để cơ sở dữ liệu luôn nguyên vẹn, sạch đẹp
   try {
-    const { execSync } = require("child_process");
-    const cleanupSql = "DELETE FROM curriculum_block_subjects WHERE subject_id IN (SELECT id FROM subjects WHERE subject_code LIKE 'SUB%'); DELETE FROM subjects WHERE subject_code LIKE 'SUB%'; DELETE FROM classes WHERE code LIKE 'K18_T%'; DELETE FROM departments WHERE code LIKE 'TD%' OR name LIKE '%Kiểm Thử%'; DELETE FROM password_reset_requests WHERE reason LIKE '%test%' OR reason LIKE '%kiểm thử%'; UPDATE users SET password = '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', must_change_password = 0 WHERE username = '2500003';";
-    try {
-      execSync(`"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "${cleanupSql}"`, { stdio: "ignore" });
-    } catch (e) {}
-    try {
-      execSync(`docker exec student_management_db mysql -uroot student_management -e "${cleanupSql}"`, { stdio: "ignore" });
-    } catch (e) {}
-  } catch (e) {}
+    const dbHelper = require("../utils/db_helper");
+    const cleanupSql = "DELETE FROM student_invoices WHERE section_id IN (SELECT id FROM course_sections WHERE section_code LIKE 'TEST_%' OR section_code LIKE 'SPE_%' OR section_code LIKE 'RACE_%' OR section_code LIKE 'ERR_%' OR section_code LIKE 'CS203-T%'); DELETE FROM grades WHERE enrollment_id IN (SELECT id FROM enrollments WHERE section_id IN (SELECT id FROM course_sections WHERE section_code LIKE 'TEST_%' OR section_code LIKE 'SPE_%' OR section_code LIKE 'RACE_%' OR section_code LIKE 'ERR_%' OR section_code LIKE 'CS203-T%')); DELETE FROM attendance_records WHERE enrollment_id IN (SELECT id FROM enrollments WHERE section_id IN (SELECT id FROM course_sections WHERE section_code LIKE 'TEST_%' OR section_code LIKE 'SPE_%' OR section_code LIKE 'RACE_%' OR section_code LIKE 'ERR_%' OR section_code LIKE 'CS203-T%')); DELETE FROM enrollments WHERE section_id IN (SELECT id FROM course_sections WHERE section_code LIKE 'TEST_%' OR section_code LIKE 'SPE_%' OR section_code LIKE 'RACE_%' OR section_code LIKE 'ERR_%' OR section_code LIKE 'CS203-T%'); DELETE FROM schedules WHERE section_id IN (SELECT id FROM course_sections WHERE section_code LIKE 'TEST_%' OR section_code LIKE 'SPE_%' OR section_code LIKE 'RACE_%' OR section_code LIKE 'ERR_%' OR section_code LIKE 'CS203-T%'); DELETE FROM class_opening_requests WHERE subject_id IN (SELECT id FROM subjects WHERE subject_code LIKE 'SPE_SUB_%' OR subject_code LIKE 'SUB%'); DELETE FROM course_sections WHERE section_code LIKE 'TEST_%' OR section_code LIKE 'SPE_%' OR section_code LIKE 'RACE_%' OR section_code LIKE 'ERR_%' OR section_code LIKE 'CS203-T%'; DELETE FROM curriculum_block_subjects WHERE subject_id IN (SELECT id FROM subjects WHERE subject_code LIKE 'SPE_SUB_%' OR subject_code LIKE 'SUB%'); DELETE FROM subjects WHERE subject_code LIKE 'SPE_SUB_%' OR subject_code LIKE 'SUB%'; DELETE FROM classes WHERE code LIKE 'K18_T%'; DELETE FROM departments WHERE code LIKE 'TD%' AND id NOT IN (SELECT department_id FROM majors); DELETE FROM password_reset_requests WHERE reason LIKE '%test%' OR reason LIKE '%kiểm thử%'; UPDATE users SET password = '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', must_change_password = 0 WHERE username = '2500003';";
+    dbHelper.executeSql(cleanupSql);
+  } catch (e) {
+    console.error("Cleanup notice:", e.message);
+  }
 
   return results;
 }

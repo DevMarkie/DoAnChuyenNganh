@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotificationStore } from '../../store/notificationStore';
-import { Bell, BellOff, CheckCheck, GraduationCap, Award, ExternalLink } from 'lucide-react';
+import { Bell, BellOff, CheckCheck, ExternalLink } from 'lucide-react';
+import { GraduationCapIcon, AwardIcon } from '../icons';
 
 function formatNotificationTime(dateStr) {
   if (!dateStr) return '';
@@ -247,9 +248,9 @@ export default function NotificationDropdown() {
                       }}
                     >
                       {isFinalized ? (
-                        <GraduationCap size={18} />
+                        <GraduationCapIcon size={18} />
                       ) : isGrade ? (
-                        <Award size={18} />
+                        <AwardIcon size={18} />
                       ) : (
                         <Bell size={18} />
                       )}

@@ -64,10 +64,10 @@ export default function Header({ onToggleMobileMenu }) {
     }
   }, [user?.role, token, initSse, disconnectSse, fetchUnreadCount, navigate]);
 
-  const roleLabel = user?.role === 'ADMIN' ? 'Quản trị viên'
+  const roleLabel = user?.role === 'ADMIN' ? 'Quản trị viên' : user?.role === 'ACADEMIC_STAFF' ? 'Cán bộ Đào tạo'
     : user?.role === 'LECTURER' ? 'Giảng viên' : 'Sinh viên';
 
-  const roleBadgeClass = user?.role === 'ADMIN' ? 'badge-danger'
+  const roleBadgeClass = user?.role === 'ADMIN' ? 'badge-danger' : user?.role === 'ACADEMIC_STAFF' ? 'badge-warning'
     : user?.role === 'LECTURER' ? 'badge-info' : 'badge-success';
 
   const handleLogout = () => {
@@ -109,6 +109,8 @@ export default function Header({ onToggleMobileMenu }) {
         {/* Light / Dark Mode Toggle */}
         <button
           className="btn-icon"
+          data-testid="theme-toggle-btn"
+          aria-label={theme === 'light' ? 'Chuyển sang chế độ Dark' : 'Chuyển sang chế độ Light'}
           onClick={toggleTheme}
           title={theme === 'light' ? 'Chuyển sang chế độ Dark' : 'Chuyển sang chế độ Light'}
           style={{ border: '1px solid var(--border-color)', width: '36px', height: '36px' }}
@@ -116,26 +118,6 @@ export default function Header({ onToggleMobileMenu }) {
           {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
         </button>
 
-        {/* Design System Demo Button */}
-        <button
-          className="btn btn-outline btn-sm"
-          onClick={() => navigate('/design-system')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            fontSize: '0.78rem',
-            fontWeight: 600,
-            padding: '5px 9px',
-            borderRadius: 'var(--radius-md)',
-            borderColor: 'var(--primary-border)',
-            color: 'var(--primary)',
-            background: 'var(--primary-light)',
-          }}
-          title="Xem Bản Demo Design System v2.0 (UI/UX Pro Max)"
-        >
-          🎨 Demo v2.0
-        </button>
 
         {/* User Pill */}
         <div className="user-pill" style={{

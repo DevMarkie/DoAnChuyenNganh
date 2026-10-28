@@ -42,6 +42,9 @@ public class Semester {
     @Column(name = "registration_end")
     private LocalDate registrationEnd;
 
+    @Column(name = "tuition_deadline")
+    private LocalDate tuitionDeadline;
+
     @Column(name = "is_current", nullable = false)
     private Boolean isCurrent = false;
 

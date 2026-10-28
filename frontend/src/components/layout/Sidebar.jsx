@@ -3,10 +3,11 @@ import { NavLink } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import { passwordResetService } from '../../services/dataService';
 import SmsLogo from '../common/SmsLogo';
+import './Layout.css';
 import {
   LayoutDashboard, Users, Building2, BookOpen, UserCog,
   CalendarDays, Calendar, Layers, ClipboardList, BookMarked, School, Award, AlertTriangle, Menu,
-  ChevronLeft, KeyRound, UserPlus, X
+  ChevronLeft, KeyRound, UserPlus, X, GraduationCap, DollarSign, ShieldCheck
 } from 'lucide-react';
 
 const adminNavGroups = [
@@ -17,31 +18,84 @@ const adminNavGroups = [
     ]
   },
   {
-    group: 'Quản lý Đào tạo',
+    group: 'Hệ thống & Tài khoản',
     items: [
-      { path: '/admin/students', icon: Users, label: 'Sinh viên' },
+      { path: '/admin/students', icon: Users, label: 'Quản lý tài khoản SV' },
       { path: '/admin/lecturers', icon: UserCog, label: 'Giảng viên' },
+    ]
+  },
+  {
+    group: 'Danh mục & Cổng dịch vụ',
+    items: [
       { path: '/admin/departments', icon: Building2, label: 'Khoa / Viện' },
       { path: '/admin/classes', icon: School, label: 'Lớp sinh hoạt' },
       { path: '/admin/subjects', icon: BookOpen, label: 'Môn học' },
+      { path: '/admin/semesters', icon: CalendarDays, label: 'Học kỳ & Niên giám' },
+      { path: '/admin/tuition', icon: DollarSign, label: 'Quản lý cổng Thu ngân' },
     ]
   },
   {
-    group: 'Kế hoạch & Điểm số',
+    group: 'Giám sát & Kiểm toán',
     items: [
-      { path: '/admin/semesters', icon: CalendarDays, label: 'Học kỳ & Đợt ĐK' },
-      { path: '/admin/course-sections', icon: Layers, label: 'Lớp học phần' },
-      { path: '/admin/assign-enrollments', icon: UserPlus, label: 'Xếp lớp cho SV' },
-      { path: '/admin/schedules', icon: Calendar, label: 'Lịch học & Xếp lịch' },
-      { path: '/admin/grades', icon: ClipboardList, label: 'Sổ điểm toàn trường' },
-      { path: '/admin/academic-warnings', icon: AlertTriangle, label: 'Cảnh báo học vụ' },
-      { path: '/admin/grade-appeals', icon: ClipboardList, label: 'Duyệt phúc khảo' },
+      { path: '/admin/course-sections', icon: Layers, label: 'Lớp học phần (R)' },
+      { path: '/admin/grades', icon: ClipboardList, label: 'Kiểm toán sổ điểm' },
+      { path: '/admin/grade-audit-logs', icon: ShieldCheck, label: 'Nhật ký kiểm toán điểm' },
+      { path: '/admin/grade-amendments', icon: ShieldCheck, label: 'Sửa điểm sau khóa' },
+    ]
+  }
+];
+
+const academicNavGroups = [
+  {
+    group: 'Tổng quan',
+    items: [
+      { path: '/academic/dashboard', icon: LayoutDashboard, label: 'Tổng quan Đào tạo' },
     ]
   },
   {
-    group: 'Hệ thống & Bảo mật',
+    group: 'Quản lý Đào tạo',
     items: [
-      { path: '/admin/password-resets', icon: KeyRound, label: 'Yêu cầu cấp lại MK', showBadge: true },
+      { path: '/academic/students', icon: Users, label: 'Hồ sơ Sinh viên (CRUD)' },
+      { path: '/academic/classes', icon: School, label: 'Lớp sinh hoạt' },
+      { path: '/academic/departments', icon: Building2, label: 'Khoa / Viện' },
+      { path: '/academic/subjects', icon: BookOpen, label: 'Khung CTĐT & Môn học' },
+    ]
+  },
+  {
+    group: 'Kế hoạch & Lớp học phần',
+    items: [
+      { path: '/academic/semesters', icon: CalendarDays, label: 'Học kỳ & Đợt ĐK' },
+      { path: '/academic/course-sections', icon: Layers, label: 'Mở lớp học phần (CRUD)' },
+      { path: '/academic/schedules', icon: Calendar, label: 'Xếp thời khóa biểu' },
+      { path: '/academic/exam-rooms', icon: Calendar, label: 'Khảo thí & Phòng thi' },
+    ]
+  },
+  {
+    group: 'Khảo thí, Điểm & Tốt nghiệp',
+    items: [
+      { path: '/academic/grades', icon: ClipboardList, label: 'Sổ điểm (Mở/Khóa)' },
+      { path: '/academic/grade-audit-logs', icon: ShieldCheck, label: 'Nhật ký kiểm toán điểm' },
+      { path: '/academic/grade-appeals', icon: ClipboardList, label: 'Duyệt phúc khảo điểm' },
+      { path: '/academic/grade-amendments', icon: ShieldCheck, label: 'Sửa điểm sau khóa' },
+      { path: '/academic/academic-warnings', icon: AlertTriangle, label: 'Cảnh báo học vụ' },
+      { path: '/academic/graduation', icon: GraduationCap, label: 'Xét tốt nghiệp' },
+      { path: '/academic/tuition', icon: DollarSign, label: 'Báo cáo học phí (R)' },
+    ]
+  }
+];
+
+const examOfficerNavGroups = [
+  {
+    group: 'Tổng quan',
+    items: [
+      { path: '/exam/rooms', icon: LayoutDashboard, label: 'Cổng Khảo thí' },
+    ]
+  },
+  {
+    group: 'Quản lý Thi & Điểm',
+    items: [
+      { path: '/exam/rooms', icon: Calendar, label: 'Ca thi & Phòng thi' },
+      { path: '/exam/audit-logs', icon: ShieldCheck, label: 'Nhật ký kiểm toán điểm' },
     ]
   }
 ];
@@ -54,7 +108,8 @@ const lecturerNavGroups = [
       { path: '/lecturer/my-sections', icon: Layers, label: 'Học phần phụ trách' },
       { path: '/lecturer/schedule', icon: Calendar, label: 'Lịch giảng dạy' },
       { path: '/lecturer/grades', icon: ClipboardList, label: 'Vào sổ điểm' },
-      { path: '/lecturer/grade-appeals', icon: ClipboardList, label: 'Duyệt phúc khảo' },
+      { path: '/lecturer/grade-appeals', icon: ClipboardList, label: 'Đề xuất phúc khảo' },
+      { path: '/lecturer/grade-amendments', icon: ShieldCheck, label: 'Đơn sửa điểm sau khóa' },
     ]
   },
   {
@@ -73,7 +128,7 @@ const studentNavGroups = [
       { path: '/student/schedule', icon: Calendar, label: 'Thời khóa biểu' },
       { path: '/student/enroll', icon: BookMarked, label: 'Đăng ký học phần' },
       { path: '/student/enrollments', icon: Layers, label: 'HP đã đăng ký' },
-      { path: '/student/transcript', icon: Award, label: 'Kết quả học tập (CPA)' },
+      { path: '/student/transcript', icon: Award, label: 'Kết quả học tập & Tốt nghiệp' },
       { path: '/student/curriculum', icon: Layers, label: 'Chương trình đào tạo' },
     ]
   },
@@ -96,7 +151,6 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
       const fetchPending = async () => {
         try {
           const res = await passwordResetService.getPendingCount();
-          // BUG-11: dữ liệu nằm trong ApiResponse.data (res.data.data), không phải res.data
           const count = res?.data?.data?.count ?? res?.data?.count;
           if (isMounted && count !== undefined) {
             setPendingResets(count);
@@ -114,7 +168,15 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
     }
   }, [role]);
 
-  const groups = role === 'ADMIN' ? adminNavGroups : role === 'LECTURER' ? lecturerNavGroups : studentNavGroups;
+  const groups = (role === 'EXAMINATION_OFFICER')
+    ? examOfficerNavGroups
+    : (role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF')
+    ? academicNavGroups
+    : role === 'ADMIN'
+    ? adminNavGroups
+    : role === 'LECTURER'
+    ? lecturerNavGroups
+    : studentNavGroups;
 
   return (
     <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
@@ -125,7 +187,9 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
           {(!collapsed || mobileOpen) && (
             <div className="sidebar-brand-text">
               <span className="brand-name">SMS Portal</span>
-              <span className="brand-sub">Quản lý đào tạo</span>
+              <span className="brand-sub">
+                {(role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF') ? 'Phòng Đào tạo' : role === 'ADMIN' ? 'Quản trị hệ thống' : role === 'LECTURER' ? 'Giảng viên' : 'Sinh viên'}
+              </span>
             </div>
           )}
         </div>
@@ -152,65 +216,41 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
         </div>
       </div>
 
-      {/* Navigation Menu */}
+      {/* Nav Groups */}
       <nav className="sidebar-nav">
-        {groups.map((grp, gIdx) => (
-          <div key={gIdx} className="nav-group">
+        {groups.map((grp) => (
+          <div key={grp.group} className="nav-group">
             {(!collapsed || mobileOpen) && <div className="nav-group-title">{grp.group}</div>}
             <div className="nav-group-items">
-              {grp.items.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => onCloseMobile?.()}
-                  className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                  title={collapsed && !mobileOpen ? (item.showBadge && pendingResets > 0 ? `${item.label} (${pendingResets} chờ)` : item.label) : ''}
-                >
-                  <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
-                    <item.icon size={18} className="nav-item-icon" />
-                    {collapsed && !mobileOpen && item.showBadge && pendingResets > 0 && (
-                      <span style={{
-                        position: 'absolute',
-                        top: -3,
-                        right: -3,
-                        width: 7,
-                        height: 7,
-                        borderRadius: '50%',
-                        backgroundColor: '#ef4444'
-                      }} />
+              {grp.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => {
+                      if (mobileOpen && onCloseMobile) onCloseMobile();
+                    }}
+                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    title={collapsed && !mobileOpen ? item.label : undefined}
+                  >
+                    <span className="nav-item-icon"><Icon size={18} /></span>
+                    {(!collapsed || mobileOpen) && (
+                      <span className="nav-item-label">{item.label}</span>
                     )}
-                  </div>
-                  {(!collapsed || mobileOpen) && <span className="nav-item-text">{item.label}</span>}
-                  {(!collapsed || mobileOpen) && item.showBadge && pendingResets > 0 && (
-                    <span style={{
-                      marginLeft: 'auto',
-                      backgroundColor: '#ef4444',
-                      color: '#ffffff',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '2px 7px',
-                      borderRadius: '9999px',
-                      lineHeight: 1
-                    }}>
-                      {pendingResets}
-                    </span>
-                  )}
-                </NavLink>
-              ))}
+                    {item.showBadge && pendingResets > 0 && (!collapsed || mobileOpen) && (
+                      <span className="nav-item-badge">{pendingResets}</span>
+                    )}
+                    {item.showBadge && pendingResets > 0 && collapsed && !mobileOpen && (
+                      <span className="nav-item-badge-dot" />
+                    )}
+                  </NavLink>
+                );
+              })}
             </div>
           </div>
         ))}
       </nav>
-
-      {/* Sidebar Footer Info */}
-      {(!collapsed || mobileOpen) && (
-        <div className="sidebar-footer">
-          <div className="system-version">
-            <span>Hệ Thống Quản Lý Đào Tạo</span>
-            <span className="version-tag">v2.5 Enterprise</span>
-          </div>
-        </div>
-      )}
     </aside>
   );
 }

@@ -41,11 +41,17 @@ import com.sms.repository.GradeRepository;
 import com.sms.repository.StudentRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import com.sms.dto.response.ExamGradeImportRow;
+import com.sms.entity.ExamRoom;
+import com.sms.entity.ExamRoster;
+import java.util.HashMap;
 
 /**
  * Dịch vụ nhập điểm từ Excel (Task 4). Xuất file mẫu đã điền sẵn roster để GV chỉ
  * việc điền 4 cột điểm, và đọc file tải lên để đối chiếu + kiểm tra trước khi lưu.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExcelImportService {
@@ -55,6 +61,8 @@ public class ExcelImportService {
     private final GradeRepository gradeRepository;
     private final StudentRepository studentRepository;
     private final ClassRepository classRepository;
+    private final com.sms.repository.ExamRoomRepository examRoomRepository;
+    private final com.sms.repository.ExamRosterRepository examRosterRepository;
 
     private static final String[] STUDENT_HEADERS = {
             "STT", "Mã Sinh Viên (*)", "Họ và Tên (*)", "Ngày Sinh (*)",
@@ -339,8 +347,8 @@ public class ExcelImportService {
             String sampleClassCode2 = activeClasses.size() > 1 ? activeClasses.get(1).getCode() : sampleClassCode1;
 
             String[][] sampleData = {
-                {"1", "24010001", "Nguyễn Văn An", "2006-03-15", "Nam", sampleClassCode1, "an.nv24010001@st.phenikaa-uni.edu.vn", "0912345678", "Hà Nội"},
-                {"2", "24010002", "Trần Thị Bình", "2006-07-22", "Nữ", sampleClassCode2, "binh.tt24010002@st.phenikaa-uni.edu.vn", "0987654321", "Hải Phòng"}
+                {"1", "24010001", "Nguyễn Văn An", "2006-03-15", "Nam", sampleClassCode1, "an.nv24010001@sv.sms.edu.vn", "0912345678", "Hà Nội"},
+                {"2", "24010002", "Trần Thị Bình", "2006-07-22", "Nữ", sampleClassCode2, "binh.tt24010002@sv.sms.edu.vn", "0987654321", "Hải Phòng"}
             };
 
             int rowIdx = STUDENT_HEADER_ROW + 1;
@@ -530,6 +538,213 @@ public class ExcelImportService {
                 return String.valueOf(cell.getBooleanCellValue());
             default:
                 return "";
+        }
+    }
+
+    /**
+     * Khảo thí import bảng điểm phòng thi: Đọc file Excel, đối soát kép (MSSV + SBD + Ngày sinh + Họ tên),
+     * kiểm tra điểm 0—10 và mã V/I. Trả về bảng xem trước (preview), KHÔNG lưu vào DB.
+     */
+    public List<ExamGradeImportRow> parseExamGradeImport(Long roomId, MultipartFile file) {
+        requireXlsx(file);
+        ExamRoom room = examRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng thi: " + roomId));
+
+        List<ExamRoster> rosters = examRosterRepository.findByExamRoomIdOrderBySbdAsc(roomId);
+        if (rosters.isEmpty()) {
+            throw new BadRequestException("Phòng thi " + room.getRoomCode() + " chưa có danh sách thí sinh");
+        }
+
+        Map<String, ExamRoster> byStudentCode = new HashMap<>();
+        Map<String, ExamRoster> bySbd = new HashMap<>();
+        for (ExamRoster r : rosters) {
+            if (r.getStudent() != null && r.getStudent().getStudentCode() != null) {
+                byStudentCode.put(r.getStudent().getStudentCode().trim().toUpperCase(), r);
+            }
+            if (r.getSbd() != null) {
+                bySbd.put(r.getSbd().trim().toUpperCase(), r);
+            }
+        }
+
+        List<ExamGradeImportRow> resultRows = new ArrayList<>();
+        Set<String> seenStudentCodes = new HashSet<>();
+        Set<String> seenSbds = new HashSet<>();
+
+        try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = wb.getSheetAt(0);
+
+            int headerRowIdx = -1;
+            int sbdCol = -1;
+            int codeCol = -1;
+            int nameCol = -1;
+            int dobCol = -1;
+            int classCol = -1;
+            int scoreCol = -1;
+            int noteCol = -1;
+
+            for (int r = 0; r <= Math.min(sheet.getLastRowNum(), 10); r++) {
+                Row row = sheet.getRow(r);
+                if (row == null) continue;
+                for (Cell c : row) {
+                    String val = getCellValueAsString(c).toLowerCase().trim();
+                    if (val.contains("sbd") || val.contains("báo danh")) {
+                        headerRowIdx = r;
+                        break;
+                    }
+                    if (val.contains("mã sinh viên") || val.contains("mssv")) {
+                        headerRowIdx = r;
+                        break;
+                    }
+                }
+                if (headerRowIdx != -1) break;
+            }
+
+            if (headerRowIdx == -1) {
+                headerRowIdx = 4;
+            }
+
+            Row headerRow = sheet.getRow(headerRowIdx);
+            if (headerRow != null) {
+                for (int c = 0; c < headerRow.getLastCellNum(); c++) {
+                    String h = getCellValueAsString(headerRow.getCell(c)).toLowerCase().trim();
+                    if (h.contains("sbd") || h.contains("báo danh")) sbdCol = c;
+                    else if (h.contains("mã sinh viên") || h.contains("mssv") || h.contains("mã sv")) codeCol = c;
+                    else if (h.contains("họ") || h.contains("tên")) nameCol = c;
+                    else if (h.contains("ngày sinh") || h.contains("dob")) dobCol = c;
+                    else if (h.contains("lớp")) classCol = c;
+                    else if (h.contains("điểm")) scoreCol = c;
+                    else if (h.contains("ghi chú") || h.contains("kỷ luật")) noteCol = c;
+                }
+            }
+
+            if (sbdCol == -1) sbdCol = 1;
+            if (codeCol == -1) codeCol = 2;
+            if (nameCol == -1) nameCol = 3;
+            if (dobCol == -1) dobCol = 4;
+            if (classCol == -1) classCol = 5;
+            if (scoreCol == -1) scoreCol = 6;
+            if (noteCol == -1) noteCol = 7;
+
+            for (int r = headerRowIdx + 1; r <= sheet.getLastRowNum(); r++) {
+                Row row = sheet.getRow(r);
+                if (row == null) continue;
+
+                String sbdVal = getCellValueAsString(row.getCell(sbdCol)).trim();
+                String codeVal = getCellValueAsString(row.getCell(codeCol)).trim();
+                String nameVal = getCellValueAsString(row.getCell(nameCol)).trim();
+                String dobVal = getCellValueAsString(row.getCell(dobCol)).trim();
+                String classVal = getCellValueAsString(row.getCell(classCol)).trim();
+                String noteVal = noteCol >= 0 ? getCellValueAsString(row.getCell(noteCol)).trim() : "";
+
+                if (sbdVal.isBlank() && codeVal.isBlank() && nameVal.isBlank()) {
+                    continue;
+                }
+
+                ExamGradeImportRow.ExamGradeImportRowBuilder b = ExamGradeImportRow.builder()
+                        .rowNumber(r + 1)
+                        .sbd(sbdVal)
+                        .studentCode(codeVal)
+                        .studentName(nameVal)
+                        .dateOfBirth(dobVal)
+                        .className(classVal)
+                        .violationNote(noteVal)
+                        .valid(true);
+
+                List<String> errors = new ArrayList<>();
+                List<String> warnings = new ArrayList<>();
+
+                ExamRoster roster = null;
+                if (!codeVal.isBlank()) {
+                    roster = byStudentCode.get(codeVal.toUpperCase());
+                }
+                if (roster == null && !sbdVal.isBlank()) {
+                    roster = bySbd.get(sbdVal.toUpperCase());
+                }
+
+                if (roster == null) {
+                    errors.add("Không tìm thấy thí sinh (MSSV: " + codeVal + ", SBD: " + sbdVal + ") trong danh sách phòng thi " + room.getRoomCode());
+                } else {
+                    b.rosterId(roster.getId());
+                    b.enrollmentId(roster.getEnrollment().getId());
+
+                    if (!codeVal.isBlank() && !seenStudentCodes.add(codeVal.toUpperCase())) {
+                        errors.add("Mã sinh viên " + codeVal + " bị lặp lại trong file");
+                    }
+                    if (!sbdVal.isBlank() && !seenSbds.add(sbdVal.toUpperCase())) {
+                        errors.add("Số báo danh " + sbdVal + " bị lặp lại trong file");
+                    }
+
+                    if (!sbdVal.isBlank() && roster.getSbd() != null && !sbdVal.equalsIgnoreCase(roster.getSbd().trim())) {
+                        warnings.add("SBD trong file (" + sbdVal + ") khác SBD hệ thống (" + roster.getSbd() + ")");
+                    }
+
+                    if (!nameVal.isBlank() && roster.getStudent() != null) {
+                        String dbName = roster.getStudent().getFullName().trim();
+                        if (!nameVal.equalsIgnoreCase(dbName)) {
+                            warnings.add("Họ tên file (" + nameVal + ") khác họ tên hệ thống (" + dbName + ")");
+                        }
+                    }
+
+                    if (!dobVal.isBlank() && roster.getStudent() != null && roster.getStudent().getDateOfBirth() != null) {
+                        String parsedDob = parseDateOfBirth(dobVal, new ArrayList<>());
+                        String dbDob = roster.getStudent().getDateOfBirth().toString();
+                        if (!parsedDob.equals(dbDob)) {
+                            warnings.add("Ngày sinh file (" + dobVal + ") khác ngày sinh hồ sơ (" + dbDob + ")");
+                        }
+                    }
+                }
+
+                Cell scoreCell = row.getCell(scoreCol);
+                if (scoreCell == null || scoreCell.getCellType() == CellType.BLANK) {
+                    errors.add("Điểm thi không được để trống");
+                } else if (scoreCell.getCellType() == CellType.NUMERIC) {
+                    double num = scoreCell.getNumericCellValue();
+                    if (num < 0.0 || num > 10.0) {
+                        errors.add("Điểm thi phải nằm trong khoảng 0.0 — 10.0 (giá trị: " + num + ")");
+                    } else {
+                        b.score(BigDecimal.valueOf(num).setScale(2, RoundingMode.HALF_UP));
+                        b.specialGrade(Grade.SpecialGrade.NONE);
+                    }
+                } else if (scoreCell.getCellType() == CellType.STRING) {
+                    String strScore = scoreCell.getStringCellValue().trim().toUpperCase();
+                    if (strScore.equals("V") || strScore.contains("VẮNG")) {
+                        b.score(BigDecimal.ZERO);
+                        b.specialGrade(Grade.SpecialGrade.V);
+                    } else if (strScore.equals("I") || strScore.contains("HOÃN")) {
+                        b.score(null);
+                        b.specialGrade(Grade.SpecialGrade.I);
+                    } else {
+                        try {
+                            double num = Double.parseDouble(strScore.replace(",", "."));
+                            if (num < 0.0 || num > 10.0) {
+                                errors.add("Điểm thi phải nằm trong khoảng 0.0 — 10.0 (giá trị: " + num + ")");
+                            } else {
+                                b.score(BigDecimal.valueOf(num).setScale(2, RoundingMode.HALF_UP));
+                                b.specialGrade(Grade.SpecialGrade.NONE);
+                            }
+                        } catch (NumberFormatException e) {
+                            errors.add("Điểm thi '" + strScore + "' không hợp lệ (chỉ chấp nhận số 0—10 hoặc V, I)");
+                        }
+                    }
+                } else {
+                    errors.add("Định dạng ô điểm không hợp lệ");
+                }
+
+                if (!errors.isEmpty()) {
+                    b.valid(false);
+                    b.error(String.join("; ", errors));
+                }
+                if (!warnings.isEmpty()) {
+                    b.warning(String.join("; ", warnings));
+                }
+
+                resultRows.add(b.build());
+            }
+
+            return resultRows;
+        } catch (IOException | EncryptedDocumentException e) {
+            log.error("Lỗi đọc file Excel phòng thi: {}", e.getMessage(), e);
+            throw new BadRequestException("Không thể đọc file Excel: " + e.getMessage());
         }
     }
 }

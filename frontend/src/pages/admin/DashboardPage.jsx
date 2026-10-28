@@ -1,23 +1,21 @@
 import { useState, useEffect } from 'react';
-import {
-  Users, GraduationCap, School, BookOpen, UserCog, Layers, Award,
-  TrendingUp, Calendar
-} from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, CartesianGrid, Legend } from 'recharts';
 import { dashboardService } from '../../services/dataService';
+import {
+  StudentsIcon,
+  TranscriptIcon,
+  LecturersIcon,
+  DepartmentsIcon,
+  ClassesIcon,
+  SubjectsIcon,
+  CourseSectionsIcon,
+  AwardIcon,
+  SchedulesIcon,
+  TrendingUpIcon,
+  GraduationCapIcon,
+} from '../../components/icons';
 
 const CHART_COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#38bdf8', '#34d399'];
-
-const CARD_THEMES = [
-  { bg: 'rgba(99, 102, 241, 0.08)', border: 'rgba(99, 102, 241, 0.25)', iconGrad: 'linear-gradient(135deg, #6366f1 0%, #06b6d4 100%)', shadow: 'rgba(99, 102, 241, 0.4)' },
-  { bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.25)', iconGrad: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)', shadow: 'rgba(16, 185, 129, 0.4)' },
-  { bg: 'rgba(6, 182, 212, 0.08)', border: 'rgba(6, 182, 212, 0.25)', iconGrad: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)', shadow: 'rgba(6, 182, 212, 0.4)' },
-  { bg: 'rgba(139, 92, 246, 0.08)', border: 'rgba(139, 92, 246, 0.25)', iconGrad: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)', shadow: 'rgba(139, 92, 246, 0.4)' },
-  { bg: 'rgba(245, 158, 11, 0.08)', border: 'rgba(245, 158, 11, 0.25)', iconGrad: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)', shadow: 'rgba(245, 158, 11, 0.4)' },
-  { bg: 'rgba(59, 130, 246, 0.08)', border: 'rgba(59, 130, 246, 0.25)', iconGrad: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)', shadow: 'rgba(59, 130, 246, 0.4)' },
-  { bg: 'rgba(236, 72, 153, 0.08)', border: 'rgba(236, 72, 153, 0.25)', iconGrad: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)', shadow: 'rgba(236, 72, 153, 0.4)' },
-  { bg: 'rgba(16, 185, 129, 0.08)', border: 'rgba(16, 185, 129, 0.25)', iconGrad: 'linear-gradient(135deg, #10b981 0%, #84cc16 100%)', shadow: 'rgba(16, 185, 129, 0.4)' },
-];
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);
@@ -52,14 +50,14 @@ export default function DashboardPage() {
   }
 
   const statCards = [
-    { label: 'Tổng sinh viên', val: data?.totalStudents || 0, icon: Users },
-    { label: 'Sinh viên đang học', val: data?.activeStudents || 0, icon: GraduationCap },
-    { label: 'Giảng viên', val: data?.totalLecturers || 0, icon: UserCog },
-    { label: 'Khoa đào tạo', val: data?.totalDepartments || 0, icon: School },
-    { label: 'Lớp sinh hoạt', val: data?.totalClasses || 0, icon: School },
-    { label: 'Môn học', val: data?.totalSubjects || 0, icon: BookOpen },
-    { label: 'Lớp học phần', val: data?.totalCourseSections || 0, icon: Layers },
-    { label: 'Đã tốt nghiệp', val: data?.graduatedStudents || 0, icon: Award },
+    { label: 'Tổng sinh viên', val: data?.totalStudents || 0, icon: StudentsIcon },
+    { label: 'Sinh viên đang học', val: data?.activeStudents || 0, icon: TranscriptIcon },
+    { label: 'Giảng viên', val: data?.totalLecturers || 0, icon: LecturersIcon },
+    { label: 'Khoa đào tạo', val: data?.totalDepartments || 0, icon: DepartmentsIcon },
+    { label: 'Lớp sinh hoạt', val: data?.totalClasses || 0, icon: ClassesIcon },
+    { label: 'Môn học', val: data?.totalSubjects || 0, icon: SubjectsIcon },
+    { label: 'Lớp học phần', val: data?.totalCourseSections || 0, icon: CourseSectionsIcon },
+    { label: 'Đã tốt nghiệp', val: data?.graduatedStudents || 0, icon: AwardIcon },
   ];
 
   const deptData = data?.studentsByDepartment?.map(d => ({
@@ -96,7 +94,7 @@ export default function DashboardPage() {
             color: 'var(--text-secondary)',
             fontWeight: 500
           }}>
-            <Calendar size={15} color="var(--primary)" />
+            <SchedulesIcon size={15} color="var(--primary)" />
             <span>Học kỳ 1 (2025 - 2026)</span>
           </div>
         </div>
@@ -104,36 +102,17 @@ export default function DashboardPage() {
 
       {/* KPI Cards Grid */}
       <div className="stats-grid">
-        {statCards.map((c, i) => {
-          const theme = CARD_THEMES[i % CARD_THEMES.length];
-          return (
-            <div
-              key={i}
-              className="stat-card"
-              style={{
-                position: 'relative',
-                overflow: 'hidden',
-                background: `linear-gradient(135deg, ${theme.bg} 0%, var(--bg-surface) 100%)`,
-                borderColor: theme.border,
-              }}
-            >
-              <div
-                className="stat-icon-wrapper"
-                style={{
-                  background: theme.iconGrad,
-                  color: '#ffffff',
-                  boxShadow: `0 4px 14px 0 ${theme.shadow}`,
-                }}
-              >
-                <c.icon size={22} />
-              </div>
-              <div>
-                <div className="stat-value">{c.val}</div>
-                <div className="stat-label">{c.label}</div>
-              </div>
+        {statCards.map((c, i) => (
+          <div key={i} className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--primary">
+              <c.icon size={22} />
             </div>
-          );
-        })}
+            <div>
+              <div className="stat-value">{c.val}</div>
+              <div className="stat-label">{c.label}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Charts Grid */}
@@ -147,7 +126,7 @@ export default function DashboardPage() {
         <div className="card">
           <div className="card-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TrendingUp size={18} color="var(--primary)" />
+              <TrendingUpIcon size={18} color="var(--primary)" />
               <h3>Phân bố sinh viên theo Khoa đào tạo</h3>
             </div>
           </div>
@@ -203,7 +182,7 @@ export default function DashboardPage() {
         <div className="card">
           <div className="card-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <GraduationCap size={18} color="#059669" />
+              <GraduationCapIcon size={18} color="#059669" />
               <h3>Cơ cấu tình trạng học tập của sinh viên</h3>
             </div>
           </div>

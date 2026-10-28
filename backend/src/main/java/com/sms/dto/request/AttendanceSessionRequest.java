@@ -16,5 +16,7 @@ public class AttendanceSessionRequest {
 
     private String attendanceKeyword;
     
+    private String status; // "OPEN" or "SAVED"
+    
     private List<AttendanceRecordRequest> records;
 }

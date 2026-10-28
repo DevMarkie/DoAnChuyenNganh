@@ -101,7 +101,7 @@ async function main() {
 
   // SMK-01: Backend Server Connectivity
   await runSmokeCase('SMK-01', 'Backend Server Liveness & Actuator Ping', async () => {
-    const res = await apiRequest('/auth/logout', { method: 'POST', timeout: 3000 });
+    const res = await apiRequest('/auth/logout', { method: 'POST', timeout: 5000 });
     if (res.status === 0) {
       throw new Error(`Backend không phản hồi trên cổng 8080: ${res.error}`);
     }

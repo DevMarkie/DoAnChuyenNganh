@@ -1,15 +1,14 @@
 /**
  * SMS University Brand Emblem (Logo)
- * Triết lý thiết kế (UI/UX Pro Max x Ponytail):
- * - Đơn giản, phẳng hiện đại (Flat Modernism), không gradient màu mè.
- * - Ý nghĩa học thuật sâu sắc: Mũ cử nhân (Mortarboard) đặt trên nền tảng
- *   Cuốn sách tri thức & tín chỉ mở (Open Book Foundation).
- * - Palette chính quy: Academic Navy (#1E3A8A) + White (#FFFFFF) + Ice Blue (#DBEAFE) + Điểm nhấn Tassel Vàng (#F59E0B).
+ * Triết lý thiết kế (Minimalist Academic Clean):
+ * - Đơn giản, phẳng hiện đại, không màu mè hay gradient sặc sỡ.
+ * - Nhận diện học thuật đặc trưng: Mũ cử nhân (Mortarboard) đặt trên nền tảng Cuốn sách tri thức mở.
+ * - Nét vẽ 1.8px thanh thoát, tương thích hoàn hảo mọi chế độ hiển thị (Sáng / Tối).
  */
 export default function SmsLogo({
   size = 36,
   showText = false,
-  variant = 'badge', // 'badge' (có nền navy) | 'flat' (trong suốt)
+  variant = 'badge', // 'badge' (khung viền xanh navy) | 'flat' (trong suốt)
   className = '',
   style = {},
 }) {
@@ -18,56 +17,62 @@ export default function SmsLogo({
   const iconSvg = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 40 40"
+      viewBox="0 0 36 36"
       width={size}
       height={size}
       fill="none"
       className={className}
       style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}
     >
-      {/* 1. Nền Huy hiệu Học viện (Academic Badge Shield) */}
+      {/* 1. Nền Huy Hiệu (nếu là variant 'badge') */}
       {isBadge && (
-        <>
-          <rect width="40" height="40" rx="9" fill="#1E3A8A" />
-          <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="8.25" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1.5" />
-        </>
+        <rect
+          x="1"
+          y="1"
+          width="34"
+          height="34"
+          rx="8"
+          fill="#1E3A8A"
+          stroke="rgba(255, 255, 255, 0.15)"
+          strokeWidth="1.2"
+        />
       )}
 
-      {/* 2. Đỉnh Mũ Cử Nhân (Graduation Cap Diamond Top) */}
+      {/* 2. Đỉnh Mũ Cử Nhân (Mortarboard Diamond Top) */}
       <polygon
-        points="20,8.5 32.5,14.5 20,20.5 7.5,14.5"
-        fill="#FFFFFF"
+        points="18,7 29,12.5 18,18 7,12.5"
+        fill={isBadge ? '#FFFFFF' : '#2563EB'}
       />
 
-      {/* 3. Thân Mũ Cử Nhân & Nơ Vòm (Skull Cap Layer) */}
+      {/* 3. Thân Vòm Mũ Cử Nhân (Skull Cap Base) */}
       <path
-        d="M12.5 17.5V21.5C12.5 24.2 15.8 25.8 20 25.8C24.2 25.8 27.5 24.2 27.5 21.5V17.5L20 21.2L12.5 17.5Z"
-        fill={isBadge ? '#DBEAFE' : '#2563EB'}
+        d="M11 15.5V19C11 21.2 13.8 22.5 18 22.5C22.2 22.5 25 21.2 25 19V15.5L18 19L11 15.5Z"
+        fill={isBadge ? '#DBEAFE' : '#93C5FD'}
       />
 
-      {/* 4. Tua Rua Cử Nhân Vàng Học Thuật (Golden Academic Tassel) */}
+      {/* 4. Dây Tua Rua Vàng Học Thuật (Golden Academic Tassel) */}
       <path
-        d="M29.5 16V22.5C29.5 23.3 28.8 24 28 24"
+        d="M26.5 14V20C26.5 20.8 25.8 21.5 25 21.5"
         stroke="#F59E0B"
-        strokeWidth="1.8"
+        strokeWidth="1.6"
         strokeLinecap="round"
-        fill="none"
       />
-      <circle cx="28" cy="24" r="1.3" fill="#F59E0B" />
+      <circle cx="25" cy="21.5" r="1.2" fill="#F59E0B" />
 
-      {/* 5. Đôi Cánh Sách Tín Chỉ Mở (Open Book / Knowledge Foundation) */}
-      {/* Trang trái */}
+      {/* 5. Bệ Cuốn Sách Tri Thức Mở (Open Book Foundation) */}
       <path
-        d="M9.5 27.2C13.2 25.8 16.8 26.2 20 27.6V31C16.8 29.6 13.2 29.2 9.5 30.6V27.2Z"
-        fill="#FFFFFF"
+        d="M8 25.5C11 24.2 14.5 24.2 18 25.6C21.5 24.2 25 24.2 28 25.5V28C25 26.8 21.5 26.8 18 28.2C14.5 26.8 11 26.8 8 28V25.5Z"
+        fill={isBadge ? '#93C5FD' : '#3B82F6'}
       />
-      {/* Trang phải */}
-      <path
-        d="M30.5 27.2C26.8 25.8 23.2 26.2 20 27.6V31C23.2 29.6 26.8 29.2 30.5 30.6V27.2Z"
-        fill={isBadge ? '#BFDBFE' : '#93C5FD'}
+      <line
+        x1="18"
+        y1="25.6"
+        x2="18"
+        y2="28.2"
+        stroke={isBadge ? '#1E3A8A' : '#1D4ED8'}
+        strokeWidth="1.2"
+        strokeLinecap="round"
       />
-      {/* Gáy sách trung tâm */}
-      <line x1="20" y1="27.6" x2="20" y2="31" stroke={isBadge ? '#1E3A8A' : '#1E40AF'} strokeWidth="1" strokeLinecap="round" />
     </svg>
   );
 

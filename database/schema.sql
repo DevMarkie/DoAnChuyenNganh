@@ -11,6 +11,45 @@ CREATE DATABASE IF NOT EXISTS student_management
 USE student_management;
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Clean slate: Drop existing views and tables in reverse dependency order
+DROP VIEW IF EXISTS v_student_gpa;
+DROP VIEW IF EXISTS v_student_transcript;
+
+DROP TABLE IF EXISTS grade_audit_logs;
+DROP TABLE IF EXISTS grade_change_tickets;
+DROP TABLE IF EXISTS exam_rosters;
+DROP TABLE IF EXISTS exam_rooms;
+DROP TABLE IF EXISTS exam_sessions;
+DROP TABLE IF EXISTS attendance_records;
+DROP TABLE IF EXISTS attendance_sessions;
+DROP TABLE IF EXISTS student_invoices;
+DROP TABLE IF EXISTS fee_scale_rules;
+DROP TABLE IF EXISTS class_opening_requests;
+DROP TABLE IF EXISTS grade_appeals;
+DROP TABLE IF EXISTS grades;
+DROP TABLE IF EXISTS schedules;
+DROP TABLE IF EXISTS enrollments;
+DROP TABLE IF EXISTS course_sections;
+DROP TABLE IF EXISTS semesters;
+DROP TABLE IF EXISTS curriculum_block_subjects;
+DROP TABLE IF EXISTS curriculum_blocks;
+DROP TABLE IF EXISTS curriculum_programs;
+DROP TABLE IF EXISTS cohorts;
+DROP TABLE IF EXISTS majors;
+DROP TABLE IF EXISTS subject_prerequisites;
+DROP TABLE IF EXISTS subjects;
+DROP TABLE IF EXISTS lecturers;
+DROP TABLE IF EXISTS students;
+DROP TABLE IF EXISTS classes;
+DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS password_reset_requests;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS roles;
+
+SET CHARACTER SET utf8mb4;
 
 -- ============================================================
 -- BẢNG 1: roles – Vai trò người dùng
@@ -20,7 +59,7 @@ CREATE TABLE roles (
     name VARCHAR(20)  NOT NULL,
     CONSTRAINT pk_roles PRIMARY KEY (id),
     CONSTRAINT uq_roles_name UNIQUE (name),
-    CONSTRAINT ck_roles_name CHECK (name IN ('ADMIN', 'LECTURER', 'STUDENT'))
+    CONSTRAINT ck_roles_name CHECK (name IN ('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER', 'STUDENT'))
 );
 
 -- ============================================================
@@ -51,6 +90,7 @@ CREATE TABLE departments (
     name        VARCHAR(100) NOT NULL,
     description TEXT         NULL,
     is_active   BOOLEAN      NOT NULL DEFAULT TRUE,
+    head_lecturer_id BIGINT  NULL     COMMENT 'Giảng viên giữ chức vụ Trưởng bộ môn/Trưởng khoa',
     created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_departments PRIMARY KEY (id),
@@ -155,25 +195,71 @@ CREATE TABLE classes (
 -- BẢNG 5: students – Sinh viên
 -- ============================================================
 CREATE TABLE students (
-    id            BIGINT       NOT NULL AUTO_INCREMENT,
-    user_id       BIGINT       NOT NULL,
-    student_code  VARCHAR(20)  NOT NULL,
-    full_name     VARCHAR(100) NOT NULL,
-    date_of_birth DATE         NOT NULL,
-    gender        ENUM('MALE', 'FEMALE', 'OTHER') NOT NULL,
-    email         VARCHAR(100) NOT NULL,
-    phone         VARCHAR(15)  NULL,
-    address       TEXT         NULL,
-    class_id      INT          NOT NULL,
-    status        ENUM('ACTIVE', 'INACTIVE', 'GRADUATED', 'SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
-    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id                             BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id                        BIGINT       NOT NULL,
+    student_code                   VARCHAR(20)  NOT NULL,
+    citizen_id                     VARCHAR(20)  NULL,
+    full_name                      VARCHAR(100) NOT NULL,
+    date_of_birth                  DATE         NOT NULL,
+    gender                         ENUM('MALE', 'FEMALE', 'OTHER') NOT NULL,
+    email                          VARCHAR(100) NOT NULL,
+    phone                          VARCHAR(15)  NULL,
+    address                        TEXT         NULL,
+    hometown                       VARCHAR(200) NULL,
+    emergency_contact_name         VARCHAR(100) NULL,
+    emergency_contact_phone        VARCHAR(20)  NULL,
+    emergency_contact_relationship VARCHAR(50)  NULL,
+    class_id                       INT          NOT NULL,
+    status                         ENUM('ACTIVE', 'INACTIVE', 'GRADUATED', 'SUSPENDED', 'RESERVED') NOT NULL DEFAULT 'ACTIVE',
+    balance                        DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
+    financial_hold                 BOOLEAN        NOT NULL DEFAULT FALSE,
+    created_at                     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at                     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_students PRIMARY KEY (id),
     CONSTRAINT uq_students_user_id UNIQUE (user_id),
     CONSTRAINT uq_students_code UNIQUE (student_code),
     CONSTRAINT uq_students_email UNIQUE (email),
     CONSTRAINT fk_students_user FOREIGN KEY (user_id) REFERENCES users (id),
     CONSTRAINT fk_students_class FOREIGN KEY (class_id) REFERENCES classes (id)
+);
+
+-- ============================================================
+-- BẢNG 5.1: student_achievements_disciplines – Khen thưởng & Kỷ luật
+-- ============================================================
+CREATE TABLE student_achievements_disciplines (
+    id              BIGINT       NOT NULL AUTO_INCREMENT,
+    student_id      BIGINT       NOT NULL,
+    semester_id     INT          NULL,
+    type            ENUM('REWARD', 'DISCIPLINE') NOT NULL,
+    decision_number VARCHAR(50)  NOT NULL,
+    issue_date      DATE         NOT NULL,
+    title           VARCHAR(255) NOT NULL,
+    description     TEXT         NULL,
+    level           VARCHAR(50)  NOT NULL DEFAULT 'TRUONG',
+    created_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT pk_student_achievements_disciplines PRIMARY KEY (id),
+    CONSTRAINT fk_sad_student FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
+    CONSTRAINT fk_sad_semester FOREIGN KEY (semester_id) REFERENCES semesters (id) ON DELETE SET NULL
+);
+
+-- ============================================================
+-- BẢNG 5.2: student_training_points – Điểm rèn luyện theo kỳ
+-- ============================================================
+CREATE TABLE student_training_points (
+    id               BIGINT      NOT NULL AUTO_INCREMENT,
+    student_id       BIGINT      NOT NULL,
+    semester_id      INT         NOT NULL,
+    score            INT         NOT NULL,
+    evaluation_grade VARCHAR(30) NOT NULL COMMENT 'XUAT_SAC, TOT, KHA, TRUNG_BINH, YEU, KEM',
+    notes            TEXT        NULL,
+    created_at       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT pk_student_training_points PRIMARY KEY (id),
+    CONSTRAINT fk_stp_student FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
+    CONSTRAINT fk_stp_semester FOREIGN KEY (semester_id) REFERENCES semesters (id) ON DELETE CASCADE,
+    CONSTRAINT uq_stp_student_semester UNIQUE (student_id, semester_id),
+    CONSTRAINT ck_stp_score CHECK (score >= 0 AND score <= 100)
 );
 
 -- ============================================================
@@ -201,6 +287,10 @@ CREATE TABLE lecturers (
     CONSTRAINT fk_lecturers_user FOREIGN KEY (user_id) REFERENCES users (id),
     CONSTRAINT fk_lecturers_department FOREIGN KEY (department_id) REFERENCES departments (id)
 );
+
+ALTER TABLE departments
+    ADD CONSTRAINT fk_departments_head_lecturer FOREIGN KEY (head_lecturer_id) REFERENCES lecturers (id) ON DELETE SET NULL;
+
 
 -- ============================================================
 -- BẢNG 7: subjects – Môn học
@@ -269,6 +359,33 @@ CREATE TABLE semesters (
 );
 
 -- ============================================================
+-- BẢNG 8b: registration_waves – Đợt/Ca đăng ký tín chỉ phân bổ theo Khóa/Khoa/Ngành
+-- ============================================================
+CREATE TABLE IF NOT EXISTS registration_waves (
+    id             BIGINT       NOT NULL AUTO_INCREMENT,
+    semester_id    INT          NOT NULL,
+    name           VARCHAR(150) NOT NULL,
+    shift_name     VARCHAR(100) NULL,
+    cohort_id      INT          NULL,
+    department_id  INT          NULL,
+    major_id       INT          NULL,
+    start_time     DATETIME     NOT NULL,
+    end_time       DATETIME     NOT NULL,
+    description    TEXT         NULL,
+    is_active      BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT pk_registration_waves PRIMARY KEY (id),
+    CONSTRAINT fk_reg_waves_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reg_waves_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts(id) ON DELETE SET NULL,
+    CONSTRAINT fk_reg_waves_department FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
+    CONSTRAINT fk_reg_waves_major FOREIGN KEY (major_id) REFERENCES majors(id) ON DELETE SET NULL,
+    INDEX idx_reg_waves_semester_active (semester_id, is_active),
+    INDEX idx_reg_waves_time (start_time, end_time),
+    INDEX idx_reg_waves_major (major_id)
+);
+
+-- ============================================================
 -- BẢNG 9: course_sections – Học phần (lớp học phần)
 -- ============================================================
 CREATE TABLE course_sections (
@@ -285,6 +402,9 @@ CREATE TABLE course_sections (
     base_tuition_rate DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     schedule       VARCHAR(200) NULL     COMMENT 'VD: Thứ 2 (7:30-9:30), Thứ 4 (7:30-9:30)',
     room           VARCHAR(50)  NULL,
+    grade_submission_status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
+    published_at   DATETIME     NULL     COMMENT 'Thời điểm Phòng Đào tạo duyệt và phát hành điểm',
+    grade_return_reason TEXT    NULL     COMMENT 'Lý do Phòng Đào tạo trả về yêu cầu sửa điểm',
     status         ENUM('OPEN', 'ACTIVE', 'CLOSED', 'CANCELLED', 'PENDING_FEE', 'LOCKED_BILLING', 'COMPLETED') NOT NULL DEFAULT 'OPEN',
     created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -329,12 +449,44 @@ CREATE TABLE student_invoices (
     coefficient DECIMAL(3,2) NOT NULL,
     amount DECIMAL(14,2) NOT NULL,
     status ENUM('UNPAID', 'PAID', 'CANCELLED') NOT NULL DEFAULT 'UNPAID',
+    paid_at DATETIME NULL,
+    paid_method VARCHAR(30) NULL DEFAULT 'CASH',
+    receipt_number VARCHAR(50) NULL,
+    cashier_user_id BIGINT NULL,
+    extended_deadline DATE NULL,
+    extension_reason VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT pk_student_invoices PRIMARY KEY (id),
     CONSTRAINT uq_invoice_student_section UNIQUE (student_id, section_id),
     CONSTRAINT fk_invoice_student FOREIGN KEY (student_id) REFERENCES students (id),
     CONSTRAINT fk_invoice_section FOREIGN KEY (section_id) REFERENCES course_sections (id)
 );
+
+CREATE TABLE attendance_sessions (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    section_id BIGINT NOT NULL,
+    session_date DATE NOT NULL,
+    attendance_keyword VARCHAR(255) NULL,
+    status VARCHAR(50) NULL DEFAULT 'OPEN',
+    expires_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_attendance_sessions PRIMARY KEY (id),
+    CONSTRAINT fk_attendance_sessions_section FOREIGN KEY (section_id) REFERENCES course_sections (id) ON DELETE CASCADE,
+    CONSTRAINT uq_attendance_session UNIQUE (section_id, session_date)
+);
+
+CREATE TABLE attendance_records (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    session_id BIGINT NOT NULL,
+    enrollment_id BIGINT NOT NULL,
+    is_present BOOLEAN NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_attendance_records PRIMARY KEY (id),
+    CONSTRAINT fk_attendance_records_session FOREIGN KEY (session_id) REFERENCES attendance_sessions (id) ON DELETE CASCADE,
+    CONSTRAINT fk_attendance_records_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments (id) ON DELETE CASCADE,
+    CONSTRAINT uq_attendance_record UNIQUE (session_id, enrollment_id)
+);
+
+CREATE INDEX idx_attendance_records_enrollment ON attendance_records (enrollment_id);
 
 CREATE TABLE notifications (
     id BIGINT NOT NULL AUTO_INCREMENT,
@@ -361,6 +513,7 @@ CREATE TABLE enrollments (
     enrolled_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status      ENUM('ENROLLED', 'CANCELLED', 'COMPLETED') NOT NULL DEFAULT 'ENROLLED',
     enrollment_type ENUM('FIRST_TIME', 'RETAKE', 'IMPROVE') NOT NULL DEFAULT 'FIRST_TIME',
+    attendance_status VARCHAR(20) NOT NULL DEFAULT 'QUALIFIED',
     CONSTRAINT pk_enrollments PRIMARY KEY (id),
     CONSTRAINT uq_enrollments_student_section UNIQUE (student_id, section_id),
     CONSTRAINT fk_enrollments_student FOREIGN KEY (student_id) REFERENCES students (id),
@@ -405,21 +558,38 @@ CREATE TABLE grade_appeals (
     current_score DECIMAL(4,2) NOT NULL,
     desired_score DECIMAL(4,2) NULL,
     reason TEXT NOT NULL,
-    status ENUM('PENDING', 'IN_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING, ASSIGNED, REJECTED_NO_CHANGE, PENDING_HEAD_APPROVAL, HEAD_APPROVED, APPROVED_AND_APPLIED, REJECTED',
+    assigned_lecturer_id BIGINT NULL COMMENT 'Cán bộ chấm phúc khảo độc lập',
+    assigned_at DATETIME NULL,
+    has_mechanical_error BOOLEAN NOT NULL DEFAULT FALSE,
+    score_diff DECIMAL(4,2) NULL,
+    exceeds_threshold BOOLEAN NOT NULL DEFAULT FALSE,
     reviewer_id BIGINT NULL,
     review_notes TEXT NULL,
     new_score DECIMAL(4,2) NULL,
+    head_reviewer_id BIGINT NULL COMMENT 'Trưởng bộ môn / Trưởng khoa ký duyệt',
+    head_approved_at DATETIME NULL,
+    head_signature_hash VARCHAR(128) NULL COMMENT 'Mã băm SHA-256 ký số điện tử nội bộ',
+    head_review_notes TEXT NULL,
+    final_adjustment_reason TEXT NULL COMMENT 'Lý do điều chỉnh chính thức của Phòng Đào tạo',
+    applied_by_user_id BIGINT NULL COMMENT 'Cán bộ Phòng Đào tạo cập nhật điểm',
+    applied_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     reviewed_at DATETIME NULL,
     CONSTRAINT pk_grade_appeals PRIMARY KEY (id),
     CONSTRAINT fk_appeal_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments (id) ON DELETE CASCADE,
     CONSTRAINT fk_appeal_student FOREIGN KEY (student_id) REFERENCES students (id),
-    CONSTRAINT fk_appeal_reviewer FOREIGN KEY (reviewer_id) REFERENCES users (id)
+    CONSTRAINT fk_appeal_reviewer FOREIGN KEY (reviewer_id) REFERENCES users (id),
+    CONSTRAINT fk_appeal_assigned_lecturer FOREIGN KEY (assigned_lecturer_id) REFERENCES lecturers (id) ON DELETE SET NULL,
+    CONSTRAINT fk_appeal_head_reviewer FOREIGN KEY (head_reviewer_id) REFERENCES users (id) ON DELETE SET NULL,
+    CONSTRAINT fk_appeal_applied_by FOREIGN KEY (applied_by_user_id) REFERENCES users (id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_appeals_student ON grade_appeals (student_id);
 CREATE INDEX idx_appeals_status ON grade_appeals (status);
+CREATE INDEX idx_appeals_assigned_lecturer ON grade_appeals (assigned_lecturer_id);
+CREATE INDEX idx_appeals_head_reviewer ON grade_appeals (head_reviewer_id);
 
 -- ============================================================
 -- BẢNG 12: schedules – Thời khóa biểu học phần
@@ -473,6 +643,7 @@ CREATE TABLE password_reset_requests (
 CREATE INDEX idx_students_class ON students (class_id);
 CREATE INDEX idx_students_status ON students (status);
 CREATE INDEX idx_students_name ON students (full_name);
+CREATE INDEX idx_students_financial_hold ON students (financial_hold);
 
 CREATE INDEX idx_lecturers_department ON lecturers (department_id);
 CREATE INDEX idx_lecturers_name ON lecturers (full_name);
@@ -504,40 +675,13 @@ CREATE INDEX idx_block_subjects_subject ON curriculum_block_subjects (subject_id
 CREATE INDEX idx_classes_major_cohort ON classes (major_id, cohort_id);
 
 -- ============================================================
--- TRIGGERS – Tự động cập nhật enrolled_count
+-- LƯU Ý KIẾN TRÚC: Quản lý sĩ số (enrolled_count)
+-- Đã loại bỏ Database Triggers (trg_enrollment_insert_after,
+-- trg_enrollment_update_after) nhằm tránh deadlock và xung đột
+-- với khóa bi quan (PESSIMISTIC_WRITE) / 1st-level cache của JPA.
+-- Sĩ số được cập nhật trực tiếp bởi backend Spring Boot trong cùng
+-- một Transaction với lệnh đăng ký/hủy môn.
 -- ============================================================
-
-DELIMITER //
-
-CREATE TRIGGER trg_enrollment_insert_after
-    AFTER INSERT ON enrollments
-    FOR EACH ROW
-BEGIN
-    IF NEW.status = 'ENROLLED' THEN
-        UPDATE course_sections
-        SET enrolled_count = enrolled_count + 1
-        WHERE id = NEW.section_id;
-    END IF;
-END //
-
-CREATE TRIGGER trg_enrollment_update_after
-    AFTER UPDATE ON enrollments
-    FOR EACH ROW
-BEGIN
-    IF NEW.status = 'CANCELLED' AND OLD.status <> 'CANCELLED' THEN
-        UPDATE course_sections
-        SET enrolled_count = enrolled_count - 1
-        WHERE id = NEW.section_id;
-    END IF;
-
-    IF OLD.status = 'CANCELLED' AND NEW.status = 'ENROLLED' THEN
-        UPDATE course_sections
-        SET enrolled_count = enrolled_count + 1
-        WHERE id = NEW.section_id;
-    END IF;
-END //
-
-DELIMITER ;
 
 -- ============================================================
 -- VIEW: Bảng điểm sinh viên
@@ -577,21 +721,267 @@ WHERE e.status != 'CANCELLED';
 -- VIEW: GPA tổng hợp sinh viên
 -- ============================================================
 
-CREATE VIEW v_student_gpa AS
+CREATE OR REPLACE VIEW v_student_gpa AS
+WITH best_grades AS (
+    SELECT
+        e.student_id,
+        cs.subject_id,
+        sub.credits,
+        MAX(g.gpa_point) AS best_gpa_point
+    FROM enrollments e
+        JOIN grades g ON g.enrollment_id = e.id AND g.is_finalized = TRUE
+        JOIN course_sections cs ON e.section_id = cs.id
+        JOIN subjects sub ON cs.subject_id = sub.id
+    WHERE e.status != 'CANCELLED'
+      AND g.gpa_point IS NOT NULL
+    GROUP BY e.student_id, cs.subject_id, sub.credits
+)
 SELECT
-    s.id                                                                        AS student_id,
+    s.id                                                                               AS student_id,
     s.student_code,
     s.full_name,
-    COUNT(CASE WHEN g.gpa_point IS NOT NULL THEN 1 END)                        AS completed_courses,
-    COALESCE(SUM(CASE WHEN g.gpa_point IS NOT NULL THEN sub.credits ELSE 0 END), 0) AS total_credits,
+    COUNT(CASE WHEN bg.best_gpa_point >= 1.0 THEN 1 END)                              AS completed_courses,
+    COALESCE(SUM(CASE WHEN bg.best_gpa_point >= 1.0 THEN bg.credits ELSE 0 END), 0)    AS total_credits,
     ROUND(
-        SUM(CASE WHEN g.gpa_point IS NOT NULL THEN g.gpa_point * sub.credits ELSE 0 END)
-        / NULLIF(SUM(CASE WHEN g.gpa_point IS NOT NULL THEN sub.credits ELSE 0 END), 0),
+        COALESCE(
+            SUM(bg.best_gpa_point * bg.credits) / NULLIF(SUM(bg.credits), 0),
+            0.00
+        ),
         2
-    )                                                                           AS cumulative_gpa
+    )                                                                                  AS cumulative_gpa
 FROM students s
-    LEFT JOIN enrollments e ON e.student_id = s.id AND e.status != 'CANCELLED'
-    LEFT JOIN grades g ON g.enrollment_id = e.id AND g.is_finalized = TRUE
-    LEFT JOIN course_sections cs ON e.section_id = cs.id
-    LEFT JOIN subjects sub ON cs.subject_id = sub.id
+    LEFT JOIN best_grades bg ON bg.student_id = s.id
 GROUP BY s.id, s.student_code, s.full_name;
+
+-- ============================================================
+-- 15. EXAM MANAGEMENT & ROOM SCORING (KHẢO THÍ & PHÒNG THI)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS exam_sessions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    semester_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    session_name VARCHAR(150) NOT NULL,
+    exam_date DATE NOT NULL,
+    start_time VARCHAR(10) NOT NULL,
+    end_time VARCHAR(10) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_exam_sessions_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exam_sessions_subject FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS exam_rooms (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_id BIGINT NOT NULL,
+    room_code VARCHAR(50) NOT NULL,
+    room_location VARCHAR(100),
+    capacity INT NOT NULL DEFAULT 40,
+    status VARCHAR(20) NOT NULL DEFAULT 'SCHEDULED',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_exam_rooms_session FOREIGN KEY (session_id) REFERENCES exam_sessions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS exam_rosters (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    exam_room_id BIGINT NOT NULL,
+    enrollment_id BIGINT NOT NULL,
+    student_id BIGINT NOT NULL,
+    sbd VARCHAR(30) NOT NULL,
+    score DECIMAL(4,2),
+    special_grade VARCHAR(10) NOT NULL DEFAULT 'NONE',
+    violation_note TEXT,
+    scored_at DATETIME,
+    scored_by BIGINT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_exam_rosters_room FOREIGN KEY (exam_room_id) REFERENCES exam_rooms(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exam_rosters_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exam_rosters_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exam_rosters_scored_by FOREIGN KEY (scored_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_exam_rosters_sbd (sbd),
+    INDEX idx_exam_rosters_student (student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS grade_change_tickets (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    class_section_id BIGINT NOT NULL,
+    component_type VARCHAR(20) NOT NULL COMMENT 'Cột điểm cần sửa: CC1, CC2, MIDTERM, FINAL',
+    old_score DECIMAL(4,2) NOT NULL COMMENT 'Điểm số ban đầu của sinh viên',
+    new_score DECIMAL(4,2) NOT NULL COMMENT 'Điểm số mới đề xuất (0 - 10)',
+    reason TEXT NOT NULL COMMENT 'Lý do sửa điểm chi tiết',
+    evidence_url VARCHAR(500) NOT NULL COMMENT 'Đường dẫn tệp minh chứng bài thi / biên bản',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING_DEPT' COMMENT 'PENDING_DEPT, PENDING_ACADEMIC, APPROVED, REJECTED',
+    created_by BIGINT NOT NULL COMMENT 'ID user giảng viên tạo đơn',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    dept_reviewer_id BIGINT NULL COMMENT 'ID user Trưởng bộ môn thẩm định',
+    dept_reviewed_at DATETIME NULL,
+    dept_notes TEXT NULL COMMENT 'Ý kiến thẩm định chuyên môn',
+    approved_by BIGINT NULL COMMENT 'ID user cán bộ Phòng Đào tạo duyệt cuối',
+    approved_at DATETIME NULL,
+    rejection_reason TEXT NULL COMMENT 'Lý do từ chối',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_gct_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_gct_section FOREIGN KEY (class_section_id) REFERENCES course_sections(id) ON DELETE CASCADE,
+    CONSTRAINT fk_gct_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_gct_dept_reviewer FOREIGN KEY (dept_reviewer_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_gct_approved_by FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT ck_gct_new_score CHECK (new_score >= 0.00 AND new_score <= 10.00),
+    INDEX idx_gct_section_student (class_section_id, student_id),
+    INDEX idx_gct_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS grade_audit_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ticket_id BIGINT,
+    student_id BIGINT,
+    grade_id BIGINT NOT NULL,
+    exam_room_id BIGINT,
+    component VARCHAR(20) NOT NULL DEFAULT 'FINAL',
+    old_score DECIMAL(4,2),
+    new_score DECIMAL(4,2),
+    old_special_grade VARCHAR(10),
+    new_special_grade VARCHAR(10),
+    reason TEXT,
+    changed_by BIGINT,
+    ip_address VARCHAR(50),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_grade_audit_ticket FOREIGN KEY (ticket_id) REFERENCES grade_change_tickets(id) ON DELETE SET NULL,
+    CONSTRAINT fk_grade_audit_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE SET NULL,
+    CONSTRAINT fk_grade_audit_logs_grade FOREIGN KEY (grade_id) REFERENCES grades(id) ON DELETE CASCADE,
+    CONSTRAINT fk_grade_audit_logs_exam_room FOREIGN KEY (exam_room_id) REFERENCES exam_rooms(id) ON DELETE SET NULL,
+    CONSTRAINT fk_grade_audit_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- 16. SMS 3.0 MODULES (CONFIGS, AUDIT, BACKUP, EXCEPTIONS, GRADUATION, CONDUCT, ONE-STOP)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS system_configs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    config_key VARCHAR(100) NOT NULL,
+    config_value TEXT NOT NULL,
+    description VARCHAR(255),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uq_system_configs_key UNIQUE (config_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    username VARCHAR(50),
+    role VARCHAR(50),
+    action VARCHAR(100) NOT NULL,
+    module VARCHAR(100) NOT NULL,
+    ip_address VARCHAR(50),
+    details TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_audit_logs_action (action),
+    INDEX idx_audit_logs_module (module),
+    INDEX idx_audit_logs_created_at (created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS backup_histories (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size_bytes BIGINT NOT NULL DEFAULT 0,
+    record_count BIGINT DEFAULT 0,
+    status VARCHAR(30) NOT NULL DEFAULT 'SUCCESS',
+    created_by BIGINT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_backup_histories_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_backup_histories_created_at (created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS academic_exceptions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    exception_type VARCHAR(50) NOT NULL,
+    course_section_id BIGINT,
+    subject_id INT,
+    semester_id INT,
+    reason TEXT NOT NULL,
+    attachment_url VARCHAR(500),
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    reviewed_by BIGINT,
+    reviewer_note TEXT,
+    reviewed_at DATETIME,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_academic_exceptions_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_academic_exceptions_section FOREIGN KEY (course_section_id) REFERENCES course_sections(id) ON DELETE SET NULL,
+    CONSTRAINT fk_academic_exceptions_subject FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE SET NULL,
+    CONSTRAINT fk_academic_exceptions_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE SET NULL,
+    CONSTRAINT fk_academic_exceptions_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_academic_exceptions_status (status),
+    INDEX idx_academic_exceptions_student (student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS graduation_records (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    cohort_id INT,
+    total_credits_accumulated INT NOT NULL DEFAULT 0,
+    cumulative_gpa DECIMAL(4,2) NOT NULL DEFAULT 0.00,
+    tuition_cleared BOOLEAN NOT NULL DEFAULT FALSE,
+    physical_education_passed BOOLEAN NOT NULL DEFAULT FALSE,
+    defense_education_passed BOOLEAN NOT NULL DEFAULT FALSE,
+    english_certificate_status BOOLEAN NOT NULL DEFAULT FALSE,
+    system_recommendation VARCHAR(30) NOT NULL DEFAULT 'DISQUALIFIED',
+    official_status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    graduation_decision_no VARCHAR(100),
+    decision_date DATE,
+    assessed_by BIGINT,
+    note TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_graduation_records_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_graduation_records_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts(id) ON DELETE SET NULL,
+    CONSTRAINT fk_graduation_records_assessed_by FOREIGN KEY (assessed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_graduation_records_student (student_id),
+    INDEX idx_graduation_records_status (official_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS conduct_scores (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    semester_id INT NOT NULL,
+    score INT NOT NULL DEFAULT 80,
+    classification VARCHAR(30) NOT NULL DEFAULT 'TOT',
+    note TEXT,
+    rated_by BIGINT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_conduct_scores_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_conduct_scores_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    CONSTRAINT fk_conduct_scores_rated_by FOREIGN KEY (rated_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT uq_student_semester_conduct UNIQUE (student_id, semester_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS student_service_requests (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    request_type VARCHAR(50) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    purpose TEXT,
+    verification_code VARCHAR(64) NOT NULL,
+    pickup_method VARCHAR(30) NOT NULL DEFAULT 'ONLINE_PDF',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    processed_by BIGINT,
+    admin_note TEXT,
+    completed_at DATETIME,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_service_requests_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_service_requests_processed_by FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT uq_service_verification_code UNIQUE (verification_code),
+    INDEX idx_service_requests_status (status),
+    INDEX idx_service_requests_student (student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET FOREIGN_KEY_CHECKS = 1;

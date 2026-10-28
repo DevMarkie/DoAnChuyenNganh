@@ -33,6 +33,18 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage()));
     }
 
+    @ExceptionHandler(PrerequisiteNotMetException.class)
+    public ResponseEntity<ApiResponse<Map<String, Object>>> handlePrerequisiteNotMet(PrerequisiteNotMetException ex) {
+        Map<String, Object> details = new HashMap<>();
+        details.put("targetSubjectCode", ex.getTargetSubjectCode());
+        details.put("prerequisiteSubjectCode", ex.getPrerequisiteSubjectCode());
+        details.put("prerequisiteSubjectName", ex.getPrerequisiteSubjectName());
+        details.put("minGpaPointRequired", 1.0);
+        details.put("statusRequired", "PASSED");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage(), details));
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(BadRequestException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -49,6 +61,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.error("Bạn không có quyền thực hiện thao tác này"));
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiResponse<Void>> handleForbidden(ForbiddenException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(ex.getMessage() != null && !ex.getMessage().isBlank() ? ex.getMessage() : "Bạn không có quyền thực hiện thao tác này"));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -78,6 +96,12 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("Thiếu tham số bắt buộc: " + ex.getParameterName()));
     }
 
+    @ExceptionHandler(java.time.format.DateTimeParseException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDateTimeParse(java.time.format.DateTimeParseException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Định dạng ngày không hợp lệ (chuẩn: YYYY-MM-DD): " + ex.getParsedString()));
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -103,16 +127,16 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("File tải lên quá lớn (tối đa " + maxFileSize + ")"));
     }
 
-    @ExceptionHandler(java.time.format.DateTimeParseException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDateTimeParseException(java.time.format.DateTimeParseException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Định dạng ngày giờ không hợp lệ"));
-    }
-
     @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(org.springframework.web.HttpRequestMethodNotSupportedException ex) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(ApiResponse.error("Phương thức HTTP không được hỗ trợ: " + ex.getMethod()));
+    }
+
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoResourceFound(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error("Không tìm thấy tài nguyên: " + ex.getResourcePath()));
     }
 
     @ExceptionHandler(Exception.class)

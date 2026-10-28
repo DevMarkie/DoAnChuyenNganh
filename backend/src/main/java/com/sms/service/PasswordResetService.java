@@ -24,6 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import com.sms.dto.request.SendOtpRequest;
+import com.sms.dto.request.VerifyOtpResetRequest;
+import com.sms.dto.response.SendOtpResponse;
 
 @Slf4j
 @Service
@@ -39,6 +45,107 @@ public class PasswordResetService {
 
     private static final String PASSWORD_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
     private static final SecureRandom RANDOM = new SecureRandom();
+
+    private final Map<String, OtpEntry> otpStore = new ConcurrentHashMap<>();
+
+    private record OtpEntry(String otp, LocalDateTime expiry, Long userId, String username) {}
+
+    /**
+     * Send OTP for self-service password reset.
+     */
+    public SendOtpResponse sendOtp(SendOtpRequest request) {
+        String inputUser = request.getUsername().trim();
+
+        // 1. Resolve User
+        User user = userRepository.findByUsername(inputUser).orElse(null);
+        if (user == null) {
+            Student student = studentRepository.findByStudentCode(inputUser).orElse(null);
+            if (student != null) {
+                user = student.getUser();
+            } else {
+                Lecturer lecturer = lecturerRepository.findByLecturerCode(inputUser).orElse(null);
+                if (lecturer != null) {
+                    user = lecturer.getUser();
+                }
+            }
+        }
+
+        if (user == null) {
+            throw new ResourceNotFoundException("Không tìm thấy thông tin tài khoản hoặc mã số trong hệ thống: " + inputUser);
+        }
+
+        String roleName = user.getRole().getName();
+        String fullName = user.getUsername();
+        if ("STUDENT".equalsIgnoreCase(roleName)) {
+            Student s = studentRepository.findByUserId(user.getId()).orElse(null);
+            if (s != null) fullName = s.getFullName();
+        } else if ("LECTURER".equalsIgnoreCase(roleName)) {
+            Lecturer l = lecturerRepository.findByUserId(user.getId()).orElse(null);
+            if (l != null) fullName = l.getFullName();
+        }
+
+        // 2. Resolve on-file email
+        String onFileEmail = resolveOnFileEmail(user, roleName);
+        if (onFileEmail == null || onFileEmail.isBlank()) {
+            onFileEmail = user.getUsername() + "@sms.edu.vn";
+        }
+
+        // 3. Generate 6-digit numeric OTP
+        int otpNum = 100000 + RANDOM.nextInt(900000);
+        String otp = String.valueOf(otpNum);
+
+        // Store OTP with 5 minutes TTL
+        otpStore.put(user.getUsername().toLowerCase(), new OtpEntry(otp, LocalDateTime.now().plusMinutes(5), user.getId(), user.getUsername()));
+        otpStore.put(inputUser.toLowerCase(), new OtpEntry(otp, LocalDateTime.now().plusMinutes(5), user.getId(), user.getUsername()));
+
+        log.info("=== [OTP PASSWORD RESET] Mã OTP cho tài khoản {} ({}) là: {} ===", user.getUsername(), onFileEmail, otp);
+
+        // 4. Send email
+        emailService.sendOtpEmail(onFileEmail, fullName, user.getUsername(), otp);
+
+        String maskedEmail = maskEmail(onFileEmail);
+        return SendOtpResponse.builder()
+                .message("Mã OTP xác thực đã được gửi tới email " + maskedEmail)
+                .maskedEmail(maskedEmail)
+                .devOtp(otp)
+                .build();
+    }
+
+    /**
+     * Verify OTP and reset password.
+     */
+    @Transactional
+    public void verifyOtpAndReset(VerifyOtpResetRequest request) {
+        String inputKey = request.getUsername().trim().toLowerCase();
+        OtpEntry entry = otpStore.get(inputKey);
+
+        if (entry == null || LocalDateTime.now().isAfter(entry.expiry())) {
+            throw new BadRequestException("Mã OTP không hợp lệ hoặc đã hết hạn (5 phút). Vui lòng gửi lại yêu cầu mã OTP mới.");
+        }
+
+        if (!entry.otp().equals(request.getOtp().trim())) {
+            throw new BadRequestException("Mã OTP xác thực không chính xác. Vui lòng kiểm tra lại.");
+        }
+
+        User user = userRepository.findById(entry.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản"));
+
+        if (request.getNewPassword().trim().length() < 6) {
+            throw new BadRequestException("Mật khẩu mới phải có tối thiểu 6 ký tự");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword().trim()));
+        user.setMustChangePassword(false);
+        userRepository.save(user);
+
+        // Invalidate OTP
+        otpStore.remove(inputKey);
+        if (entry.username() != null) {
+            otpStore.remove(entry.username().toLowerCase());
+        }
+
+        log.info("Đặt lại mật khẩu thành công qua OTP cho tài khoản: {}", user.getUsername());
+    }
 
     /**
      * Submit a new password reset request by Student or Lecturer (Public).

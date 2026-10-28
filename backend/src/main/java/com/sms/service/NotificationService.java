@@ -246,4 +246,24 @@ public class NotificationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin sinh viên"));
         notificationRepository.markAllAsRead(student.getId());
     }
+
+    /**
+     * Tạo thông báo đơn lẻ cho một sinh viên cụ thể
+     */
+    @Transactional
+    public void createNotification(Long studentId, String title, String message, NotificationType type, Long relatedId) {
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if (student == null) return;
+        Notification n = Notification.builder()
+                .student(student)
+                .title(title)
+                .message(message)
+                .type(type != null ? type : NotificationType.SYSTEM)
+                .relatedId(relatedId)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+        Notification saved = notificationRepository.save(n);
+        pushRealtime(studentId, NotificationResponse.from(saved));
+    }
 }

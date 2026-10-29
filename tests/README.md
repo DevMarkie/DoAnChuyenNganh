@@ -1,7 +1,7 @@
-# 🧪 BỘ KIỂM THỬ TỰ ĐỘNG (AUTOMATED TEST SUITE)
+# 🧪 BỘ KIỂM THỬ TỰ ĐỘNG TOÀN DIỆN (AUTOMATED TEST SUITE)
 **Hệ thống Quản lý Đào tạo & Sinh viên (SMS / DoAnChuyenNganh)**
 
-Thư mục `tests/` quản lý các kịch bản kiểm thử tự động đa tầng: End-to-End (E2E), kiểm thử áp lực & tải đồng thời (Performance/Stress), và kiểm thử tích hợp chuyên biệt (Integration).
+Thư mục `tests/` quản lý toàn bộ các kịch bản kiểm thử tự động đa tầng: Khói (Smoke), Đầu-cuối (End-to-End), Tích hợp (Integration), Bảo mật (Security), Hiệu năng & Tải đồng thời (Performance & Stress), cùng hệ thống báo cáo kiểm toán chất lượng.
 
 ---
 
@@ -10,83 +10,100 @@ Thư mục `tests/` quản lý các kịch bản kiểm thử tự động đa t
 ```text
 tests/
 ├── smoke/                           # 💨 Kiểm thử khói (Sanity Gate - Fail Fast < 30s)
-│   └── smoke_test.js                # 10 Test cases cốt lõi: Auth, DB, Dashboard, Catalog, SPA
-├── e2e/                             # 🛡️ Kiểm thử hồi quy toàn diện End-to-End
+│   └── smoke_test.js                # 10 Test cases cốt lõi: Auth, DB, Liveness, Catalog, SPA Liveness
+├── e2e/                             # 🛡️ Kiểm thử hồi quy chức năng End-to-End
 │   ├── comprehensive_system_test.js # Bộ 65+ test cases: Bảo mật, RBAC, Học phí, Điểm danh, Phúc khảo, Lớp riêng
 │   ├── system_e2e_test.js           # Bộ 39 test cases: Kiểm tra chức năng các phân hệ chính
-│   └── user_experience_journey_test.js # Kiểm thử hành trình trải nghiệm người dùng xuyên suốt
+│   ├── test_admin_coordination_and_tuition.js # Kiểm thử điều phối học vụ và quản lý công nợ học phí
+│   ├── test_analytics_and_cohort_feature.js   # Kiểm thử phân tích thống kê khóa học & chỉ số đào tạo
+│   ├── test_grade_amendment_e2e.cjs # Kiểm thử quy trình đề xuất - duyệt sửa điểm sau khóa sổ & nhật ký vết
+│   └── user_experience_journey_test.js        # Kiểm thử hành trình trải nghiệm người dùng xuyên suốt 3 vai trò
+├── integration/                     # 🧩 Kiểm thử tích hợp tính năng chuyên sâu
+│   ├── test_attendance_feature.js   # Kiểm thử quy trình điểm danh sinh viên bằng mã số 6 ký tự
+│   └── test_excel_import_flow.js    # Kiểm thử luồng nhập điểm tự động từ tệp Excel chuẩn
 ├── performance/                     # ⚡ Kiểm thử hiệu năng, áp lực & tải đồng thời
-│   ├── simulate_600_enrollment.js   # Mô phỏng 600 sinh viên đồng thời tranh chấp đăng ký tín chỉ
 │   ├── enrollment_load_test.js      # Kiểm thử tranh chấp đăng ký tín chỉ đồng thời (Concurrency)
-│   └── overload_stress_test.js      # Benchmark chịu tải kết nối: HikariCP, Tomcat thread pool
-├── integration/                     # 🧩 Kiểm thử tích hợp tính năng & kiểm toán kỹ thuật
-│   ├── test_attendance_feature.js   # Kiểm thử quy trình điểm danh sinh viên theo lớp học phần
-│   ├── test_excel_import_flow.js    # Kiểm thử luồng nhập điểm tự động từ tệp Excel
-│   ├── phase1_verification_test.js  # Kiểm thử xác thực tích hợp giai đoạn 1
-│   └── full_browser_devtools_audit.js # Kiểm toán DevTools: mạng, console log và layout
-└── README.md                        # Hướng dẫn danh mục kiểm thử này
+│   ├── overload_stress_test.js      # Benchmark chịu tải kết nối: HikariCP pool, Tomcat thread pool
+│   ├── simulate_600_enrollment.js   # Mô phỏng 600 sinh viên đồng thời tranh chấp đăng ký tín chỉ
+│   ├── stress_test.js               # Kiểm thử tải đa cấp độ (500 -> 5.000 requests qua Nginx + 3 Replicas)
+│   └── stress_test_to_death.js      # Kiểm thử leo thang tải cực hạn đến ngưỡng sập để đo giới hạn tối đa
+├── security/                        # 🔒 Kiểm thử an toàn bảo mật
+│   └── basic_security_test.js       # Quét lỗ hổng phân quyền, CSRF, Token Injection và brute-force
+├── reports/                         # 📊 Báo cáo kết quả kiểm thử & kiểm toán chất lượng
+│   ├── BA_QA_EXECUTION_REPORT_2026-10-01.md
+│   ├── BA_QA_TEST_PACK.md
+│   ├── COMPREHENSIVE_TEST_REPORT.md
+│   ├── FULL_8_PILLARS_QA_REPORT.md
+│   ├── FULL_QA_AUDIT_REPORT.md
+│   ├── OVERLOAD_TEST_REPORT.md
+│   └── STRESS_TEST_TO_DEATH_REPORT.md
+├── results/                         # 📋 Dữ liệu kết quả chạy kiểm thử dạng JSON
+├── test-results/                    # 📸 Minh chứng chụp màn hình và audit DevTools
+├── utils/                           # 🛠️ Tiện ích hỗ trợ kiểm thử (DB helper, Token gen, Health check)
+└── README.md                        # Cẩm nang tài liệu này
 ```
 
 ---
 
 ## 🚀 Hướng dẫn thực thi kiểm thử
 
-### 1. Chạy nhanh qua Menu tương tác (Windows)
-Từ thư mục gốc của dự án, chạy lệnh:
+### 1. Chạy nhanh qua Menu tương tác 1-Click (Windows)
+Từ thư mục gốc của dự án, khởi chạy:
 ```cmd
 run_tests.bat
 ```
-* **Lựa chọn [1]:** 💨 Chạy Smoke Test siêu tốc (< 30s, kiểm tra liveness & luồng chính sau deploy).
-* **Lựa chọn [2]:** 🛡️ Chạy Regression Test toàn diện 65+ Test Cases (`comprehensive_system_test.js`).
-* **Lựa chọn [3]:** ⚡ Chạy Performance Regression (Kiểm thử tranh chấp tải 600 sinh viên).
-* **Lựa chọn [4]:** 🚀 Chạy trọn vẹn chu kỳ Release (Smoke Test Gate $\rightarrow$ Regression Test Suite).
-* **Lựa chọn [5]:** 📋 Chạy kiểm thử nghiệp vụ cơ bản 39 Test Cases (`system_e2e_test.js`).
+* **Lựa chọn [1]:** 💨 Smoke Test siêu tốc (< 30s, kiểm tra liveness & API sau deploy).
+* **Lựa chọn [2]:** ⚡ Kiểm thử tranh chấp tải 600 sinh viên đồng thời.
+* **Lựa chọn [3]:** 📈 Kiểm thử tải đa cấp độ (500 -> 5.000 requests qua Nginx Load Balancer).
+* **Lựa chọn [4]:** 💥 Kiểm thử leo thang tải cực hạn (Stress Test To Failure).
+* **Lựa chọn [5]:** 🛡️ Kiểm thử hệ thống toàn diện End-to-End (65+ Test Cases).
 
 ---
 
-### 2. Chạy trực tiếp từng kịch bản bằng Node.js CLI
+### 2. Thực thi trực tiếp qua lệnh CLI
 
-Đảm bảo môi trường Backend (cổng `8080`) và Frontend (cổng `5173`) đang hoạt động trước khi chạy:
+Đảm bảo Backend (`http://localhost:8080`) và Frontend (`http://localhost:5173`) đang hoạt động:
 
-#### 🔹 1. Smoke Test siêu tốc (< 30s)
+#### 🔹 1. Smoke Test (< 30s)
 ```bash
 node tests/smoke/smoke_test.js
 ```
 
-#### 🔹 2. Regression Test E2E Toàn diện (56 Cases)
+#### 🔹 2. Kiểm thử E2E Toàn diện (65+ Cases)
 ```bash
 node tests/e2e/comprehensive_system_test.js
 ```
 
-#### 🔹 Kiểm thử E2E Toàn diện (56 Cases)
+#### 🔹 3. Kiểm thử Tranh chấp 600 Sinh viên (Concurrency)
 ```bash
-node tests/e2e/comprehensive_system_test.js
+node tests/performance/simulate_600_enrollment.js
 ```
 
-#### 🔹 Kiểm thử Tranh chấp Đăng ký Tín chỉ (Concurrency)
+#### 🔹 4. Kiểm thử Tải đa cấp độ (500 - 5.000 requests)
 ```bash
-node tests/performance/enrollment_load_test.js
+node tests/performance/stress_test.js
 ```
 
-#### 🔹 Kiểm thử Chịu tải & Giới hạn kết nối (Stress Test)
+#### 🔹 5. Kiểm thử Chịu tải cực hạn (Stress to Death)
 ```bash
-node tests/performance/overload_stress_test.js
+node tests/performance/stress_test_to_death.js
 ```
 
-#### 🔹 Kiểm thử Luồng Import Điểm Excel
+#### 🔹 6. Kiểm thử Điểm danh & Import Excel
 ```bash
+node tests/integration/test_attendance_feature.js
 node tests/integration/test_excel_import_flow.js
 ```
 
-#### 🔹 Kiểm toán Trình duyệt & DevTools
+#### 🔹 7. Kiểm thử An toàn bảo mật (Security Gate)
 ```bash
-node tests/integration/full_browser_devtools_audit.js
+node tests/security/basic_security_test.js
 ```
 
 ---
 
-## 🎯 Tiêu chuẩn nghiệm thu (Pass Criteria)
+## 🎯 Tiêu chuẩn nghiệm thu (Quality Gate Criteria)
 
-1. **E2E & Business Rules:** 100% test cases vượt qua, không phát sinh lỗi phân quyền 403 trái phép hoặc rò rỉ dữ liệu.
-2. **Kiểm thử tranh chấp:** Đảm bảo không xảy ra Race Condition vượt quá sĩ số tối đa (`max_students`) khi nhiều sinh viên đăng ký cùng 1 giây.
-3. **Hiệu năng:** Thời gian phản hồi trung bình (p95) < 300ms trong điều kiện vận hành thông thường.
+1. **E2E & Business Rules:** 100% test cases vượt qua, không phát sinh lỗi phân quyền 403 trái phép hoặc vi phạm ràng buộc tiên quyết/trùng lịch.
+2. **Kiểm thử tranh chấp (Concurrency):** Tuyệt đối không xảy ra hiện tượng vượt quá sĩ số tối đa (`enrolled_students <= max_students`) khi 600 sinh viên ghi dữ liệu trong cùng 1 giây.
+3. **Hiệu năng tải cao:** Nginx cân bằng tải thành công qua 3 Backend Replicas, tỷ lệ thành công đạt trên 98% ở ngưỡng tải thông thường.

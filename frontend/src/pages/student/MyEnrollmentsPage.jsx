@@ -300,8 +300,9 @@ export default function MyEnrollmentsPage() {
               <option value="ALL">Toàn bộ lịch sử (Tất cả học kỳ)</option>
               {semesters.map((sem) => (
                 <option key={sem.id} value={String(sem.id)}>
-                  {sem.semesterName}{" "}
-                  {sem.academicYear ? `(${sem.academicYear})` : ""}{" "}
+                  {sem.academicYear && !sem.semesterName?.includes(sem.academicYear)
+                    ? `${sem.semesterName} (${sem.academicYear})`
+                    : sem.semesterName}{" "}
                   {sem.isCurrent ? "— [Hiện tại]" : ""}
                 </option>
               ))}

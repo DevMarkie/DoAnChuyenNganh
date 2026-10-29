@@ -71,22 +71,52 @@ flowchart LR
 
 ```text
 DoAnChuyenNganh/
-├── backend/               # Mã nguồn máy chủ Spring Boot 3 (REST API, Security, Business Logic)
-│   ├── src/main/java/     #   Controllers, Services, Repositories, Entities, DTOs, Security
-│   └── src/test/java/     #   Bộ kiểm thử tự động JUnit 5 + Mockito
-├── frontend/              # Giao diện người dùng React 19 + Vite SPA
-│   ├── src/components/    #   Layouts, Modals, Reusable UI Components
-│   ├── src/pages/         #   Màn hình theo vai trò (admin, lecturer, student, auth)
-│   └── src/services/      #   Kết nối API Axios, Data Services & Zustand Stores
-├── database/              # Cơ sở dữ liệu MySQL 8.0
-│   ├── schema.sql         #   DDL khởi tạo toàn bộ bảng, khóa ngoại, ràng buộc
-│   ├── seed.sql           #   Dữ liệu khởi tạo mẫu
-│   └── migrations/        #   Các bản cập nhật cấu trúc DB có kiểm soát
-├── docs/                  # Tài liệu phân tích thiết kế hệ thống & đặc tả nghiệp vụ
-├── tests/                 # Kịch bản kiểm thử E2E, Integration & Load Test
-├── docker-compose.yml     # Cấu hình khởi chạy trọn gói hệ thống qua Docker
-├── start_dev.bat          # Script 1-click khởi chạy môi trường phát triển (Windows)
-└── run_tests.bat          # Script kích hoạt bộ kiểm thử tự động
+├── backend/               # Máy chủ Spring Boot 3 (REST API, Spring Security, Business Logic)
+│   ├── src/main/java/     #   Controllers, Services, Repositories, Entities, DTOs, Cross-cutting Rules
+│   └── src/test/java/     #   288 Unit Tests tự động JUnit 5 + Mockito (100% Pass)
+├── frontend/              # Giao diện người dùng React 19 + Vite SPA (Apple & Aurora Glassmorphism)
+│   ├── src/components/    #   Layouts, Navigation, Modals, Shared UI Components
+│   ├── src/pages/         #   Màn hình theo vai trò (Admin, Lecturer, Student, Auth, Dashboard)
+│   ├── src/services/      #   Data Services, Native Fetch / Axios Client & Zustand Stores
+│   └── src/tests/         #   80 Unit & Component Tests tự động Vitest (100% Pass)
+├── database/              # Cơ sở dữ liệu MySQL 8.0 (InnoDB, UTF8MB4 Unicode)
+│   ├── schema.sql         #   DDL Canonical khởi tạo toàn bộ bảng, Views, Composite Indexes
+│   ├── seed.sql           #   Dữ liệu mẫu thực nghiệm chuẩn (28 ngành, 8 khoa, 3.000 sinh viên, TKB, điểm, hóa đơn)
+│   ├── migrations/        #   27 bản vá nâng cấp cấu trúc CSDL theo từng chặng
+│   └── README.md          #   Cẩm nang thiết kế CSDL, chiến lược Indexing và sổ tay Migration
+├── docs/                  # Hệ thống tài liệu phân tích thiết kế, đặc tả nghiệp vụ & kiểm thử
+│   ├── 01–08_*.md         #   Kiến trúc, Danh mục Use Case, Quy tắc BR, ERD, CTĐT, Triển khai
+│   ├── 09–11_*.md         #   Đặc tả kịch bản kiểm thử, Luồng nghiệp vụ hệ thống, Yêu cầu NFR ISO 25010
+│   └── README.md          #   Mục lục và chỉ dẫn toàn bộ bộ hồ sơ tài liệu
+├── drawio/                # Hệ thống sơ đồ phân tích thiết kế chuẩn UML 2.5
+│   ├── *.drawio           #   Trọn bộ sơ đồ Use Case, Sequence (18 tabs), Activity (18 tabs), BCE (18 tabs)
+│   ├── scripts/           #   Công cụ Python tự động biên dịch và cập nhật sơ đồ DrawIO
+│   └── README.md          #   Danh mục và hướng dẫn khai thác toàn bộ file sơ đồ
+├── design-system/         # Hệ thống thiết kế giao diện Phenikaa SMS Design System
+│   ├── MASTER.md          #   Quy chuẩn Design tokens, bảng màu Apple Glassmorphism, typography
+│   ├── pages/             #   Cấu hình bố cục chuyên biệt cho từng màn hình (dashboard...)
+│   └── prototypes/        #   Bản mẫu giao diện HTML tĩnh thực nghiệm (demo-ui-simple.html)
+├── report/                # Bộ công cụ tự động sinh báo cáo Word đồ án tốt nghiệp
+│   ├── build_report.js    #   Kịch bản Node.js tổng hợp nội dung và xuất file Word .docx
+│   ├── BaoCao_DoAn_*.docx #   Báo cáo đồ án tốt nghiệp hoàn chỉnh theo quy cách Đại học Phenikaa
+│   └── README.md          #   Hướng dẫn vận hành công cụ sinh báo cáo
+├── scripts/               # Bộ công cụ & tiện ích vận hành dữ liệu đồ án
+│   ├── *.py               #   Kịch bản nạp & chuẩn hóa CSDL, tạo file Excel mẫu chấm điểm/phòng thi
+│   ├── *.mjs / *.ps1      #   Tự động hóa chụp màn hình hệ thống và tối ưu ảnh cho báo cáo
+│   └── README.md          #   Danh mục mô tả chi tiết toàn bộ các kịch bản
+├── tests/                 # Bộ kiểm thử tự động đa tầng (Automated Test Suite)
+│   ├── smoke/             #   Kiểm thử khói (Sanity Gate - Fail Fast < 30s)
+│   ├── e2e/               #   Kiểm thử hồi quy toàn diện 65+ Cases (Nghiệp vụ, RBAC, Học phí, Điểm...)
+│   ├── integration/       #   Kiểm thử tích hợp (Điểm danh PIN, Luồng import Excel)
+│   ├── performance/       #   Kiểm thử áp lực & tải đồng thời (600 SV Concurrency, Stress to Death)
+│   ├── security/          #   Kiểm thử an toàn bảo mật (CSRF, Injection, Brute-force)
+│   ├── reports/           #   Báo cáo kiểm toán chất lượng và kết quả đo tải thực nghiệm
+│   └── README.md          #   Cẩm nang hướng dẫn thực thi toàn bộ kịch bản kiểm thử
+├── docker-compose.yml     # Cấu hình container trọn gói (MySQL, Redis, 3 Backend Replicas, Nginx, Web)
+├── start_dev.bat          # Script 1-Click khởi chạy môi trường phát triển cục bộ (Windows)
+├── run_tests.bat          # Script 1-Click menu thực thi bộ kiểm thử tự động
+├── share_internet.bat     # Script 1-Click tạo đường hầm HTTPS chia sẻ hệ thống ra Internet
+└── DEPLOY_GUIDE.md        # Cẩm nang hướng dẫn triển khai máy chủ và vận hành production
 ```
 
 ---
@@ -123,11 +153,28 @@ docker compose up --build -d
 
 Mật khẩu mặc định cho toàn bộ tài khoản thử nghiệm: **`123456`**
 
-| Phân hệ | Tên đăng nhập | Vai trò chính |
-| :--- | :--- | :--- |
-| **Phòng Đào Tạo** | `admin` | Toàn quyền quản trị danh mục, CTĐT, mở lớp và xét duyệt học vụ |
-| **Giảng Viên** | `1000001` | Quản lý giảng dạy môn học, nhập điểm và chốt sổ điểm |
-| **Sinh Viên** | `2500001` | Đăng ký tín chỉ, xem TKB tuần và tra cứu bảng điểm |
+### 1. Quản trị viên & Giảng viên
+| Phân hệ | Tên đăng nhập | Vai trò & Đơn vị | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| **Phòng Đào Tạo** | `admin` | Quản trị hệ thống, P.Đào tạo | Toàn quyền CTĐT 9 ngành, mở lớp, TKB, xét tốt nghiệp |
+| **Giảng Viên CNTT** | `gv_gv001` | PGS.TS. Trần Văn Long | Trưởng bộ môn CNPM, Khoa CNTT |
+| **Giảng Viên QTKD** | `gv_gv006` | PGS.TS. Nguyễn Mạnh Cường | Khoa Kinh tế & QTKD |
+| **Giảng Viên ĐTVT** | `gv_gv011` | TS. Ngô Quang Đăng | Khoa KT Điện - Điện tử & Tự động hóa |
+| *(45 Giảng viên)* | `gv_gv001` .. `gv_gv045` | 5 Giảng viên / Khoa × 9 Khoa | Quản lý sổ điểm, điểm danh, chốt điểm |
+
+### 2. Sinh viên đại diện 9 Ngành Đào tạo (Toàn bộ 4 Khóa K16 – K19)
+| Ngành đào tạo | Mã tài khoản Demo | Khóa / Năm học | Tiến độ CTĐT | Tình trạng học vụ |
+| :--- | :--- | :--- | :--- | :--- |
+| **Công nghệ thông tin** | `sv_cntt_k16` | K16 (Năm 4 - Kỳ 7) | 120/130 TC (76.2% hoàn thành, 21 TC đang học) | Chuẩn bị làm Đồ án tốt nghiệp |
+| **Quản trị kinh doanh** | `sv_qtkd_k17` | K17 (Năm 3 - Kỳ 5) | 81/133 TC (48.1% hoàn thành, 17 TC đang học) | Tích lũy chuyên ngành CSNG & CN |
+| **Kỹ thuật Điện tử - Viễn thông** | `sv_dtvt_k18` | K18 (Năm 2 - Kỳ 3) | 48/132 TC (25.0% hoàn thành, 15 TC đang học) | Tích lũy cơ sở ngành & mạch số |
+| **Kỹ thuật Cơ khí & Ô tô** | `sv_ck_k16` | K16 (Năm 4 - Kỳ 7) | 122/132 TC (78.8% hoàn thành, 18 TC đang học) | Đồ án chuyên ngành Cơ điện tử |
+| **Ngôn ngữ Anh** | `sv_nn_k17` | K17 (Năm 3 - Kỳ 5) | 84/133 TC (50.4% hoàn thành, 17 TC đang học) | Biên phiên dịch & TA Thương mại |
+| **Kế toán - Kiểm toán** | `sv_kt_k18` | K18 (Năm 2 - Kỳ 3) | 50/133 TC (24.8% hoàn thành, 17 TC đang học) | Kế toán tài chính & Thuế |
+| **Luật kinh tế** | `sv_luat_k16` | K16 (Năm 4 - Kỳ 7) | 122/134 TC (73.1% hoàn thành, 24 TC đang học) | Luật cạnh tranh & Hợp đồng quốc tế |
+| **Kỹ thuật Xây dựng** | `sv_xd_k17` | K17 (Năm 3 - Kỳ 5) | 85/131 TC (51.9% hoàn thành, 17 TC đang học) | Kết cấu bê tông & BIM |
+| **Dược học** | `sv_yd_k19` | K19 (Năm 1 - Kỳ 1) | 17/130 TC (0% hoàn thành, 17 TC đang học) | Sinh viên tân khóa năm nhất |
+| *(Toàn bộ 540 Sinh viên)* | `sv_<ngành>_<khóa>` hoặc mã SV (`23010001`..) | 36 Lớp sinh hoạt | Đầy đủ dữ liệu điểm, học phí, rèn luyện |
 
 ---
 
@@ -157,6 +204,9 @@ Tất cả đặc tả kiến trúc, nghiệp vụ và hướng dẫn vận hàn
 * [docs/04_business_rules.md](docs/04_business_rules.md) — Quy tắc nghiệp vụ (Business Rules)
 * [docs/05_database_erd.md](docs/05_database_erd.md) — Thiết kế lược đồ CSDL & ERD
 * [docs/08_deployment_and_operations_guide.md](docs/08_deployment_and_operations_guide.md) — Hướng dẫn triển khai & Vận hành
+* [docs/09_comprehensive_test_case_specification.md](docs/09_comprehensive_test_case_specification.md) — Đặc tả kịch bản kiểm thử toàn diện
+* [docs/10_system_processing_workflows.md](docs/10_system_processing_workflows.md) — Luồng xử lý nghiệp vụ hệ thống
+* [docs/11_nfr_and_technical_challenges.md](docs/11_nfr_and_technical_challenges.md) — Yêu cầu phi chức năng (NFR) & Thách thức kỹ thuật
 
 ---
 <div align="center">

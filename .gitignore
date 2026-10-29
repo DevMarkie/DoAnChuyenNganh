@@ -72,74 +72,52 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+!.env.production
 
-# DrawIO diagrams
-*.drawio
-*.drawio.*
+# Temporary & backup files
+*.bak
+*.temp
+*.tmp
 *.bkp
-drawio/
 
-# Root diagram generator scripts
-/*.py
-
-# Root document files (báo cáo Word/PDF — không commit vào repo)
-/*.docx
-/*.pdf
-docs/09_*.md
-docs/10_*.md
-docs/11_*.md
-docs/YEU_CAU_*.md
-docs/*.html
-STRESS_TEST_TO_DEATH_REPORT.md
-*REPORT*.md
-*report*.md
-stress_test*.js
-
-# Local-only tooling scratch (trình sinh báo cáo Word + cache Python — không commit)
-/report/
-/bao-cao/
-
-# Local docker-compose overrides (chứa secret cục bộ như JWT_SECRET — không commit)
+# Local docker-compose overrides
 docker-compose.override.yml
 docker-compose.override.yaml
 
-# Root duplicate package files
-/package.json
-/package-lock.json
+# Local report build scratch (temporary generated DrawIO pages & word docx backups)
+report/_tmp_pages/
+report/_cov/
+report/*.docx.bak
 
-# Portable tunnel binaries & scripts
-cloudflared.exe
-share_internet.bat
-update_tunnel_and_deploy.js
-deploy_github.bat
-1_click_deploy_public.bat
-
-# Test output result files, reports, and auxiliary tools (not run on project)
+# Test execution runtime results & output dumps
 tests/*_result.json
 tests/*.json
-tests/reports/
 tests/results/
-tests/utils/*
-!tests/utils/health_check.js
 tests/test-results/
-tests/performance/simulate_600_enrollment.js
 
-# Auxiliary scripts and Agent metadata
-scripts/
-skills-lock.json
-.bangiao/
+# Uploaded evidence in backend & root runtime uploads
+uploads/
+uploads/**
+backend/uploads/evidence/*
+!backend/uploads/evidence/.gitkeep
 
-# Seed generator scripts (chỉ dùng 1 lần để tạo data)
-database/generate_enriched_seed.js
-database/import_seed.js
+# Portable binaries & tools
+cloudflared.exe
+.tools/
 
-# Database data dump/seed files (không commit data theo yêu cầu)
-database/scale_seed.sql
-database/target_scale_seed.sql
-database/redesign_market_data.sql
+# Images (exclude all image formats as requested)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.bmp
+*.tiff
+*.ico
+report/assets/
 
-# Agent configs
+# Agent metadata
 .claude/
 .agents/
-
-
+.bangiao/
+skills-lock.json

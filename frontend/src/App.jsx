@@ -28,7 +28,7 @@ const AdminGradesPage = lazy(() => import('./pages/admin/GradesPage'));
 const ExamRoomsPage = lazy(() => import('./pages/admin/ExamRoomsPage'));
 const PasswordResetsPage = lazy(() => import('./pages/admin/PasswordResetsPage'));
 const AcademicWarningsPage = lazy(() => import('./pages/admin/AcademicWarningsPage'));
-const AdminGradeAppealsPage = lazy(() => import('./pages/shared/GradeAppealsPage'));
+const GradeAppealsPage = lazy(() => import('./pages/shared/GradeAppealsPage'));
 const GradeAmendmentsPage = lazy(() => import('./pages/shared/GradeAmendmentsPage'));
 const GradeAuditLogsPage = lazy(() => import('./pages/shared/GradeAuditLogsPage'));
 const StudentConductPage = lazy(() => import('./pages/admin/StudentConductPage'));
@@ -38,7 +38,6 @@ const LecturerDashboard = lazy(() => import('./pages/lecturer/LecturerDashboard'
 const LecturerSchedulePage = lazy(() => import('./pages/lecturer/LecturerSchedulePage'));
 const GradeEntryPage = lazy(() => import('./pages/lecturer/GradeEntryPage'));
 const LecturerProfilePage = lazy(() => import('./pages/lecturer/LecturerProfilePage'));
-const LecturerGradeAppealsPage = lazy(() => import('./pages/shared/GradeAppealsPage'));
 
 // Student Pages - Lazy Loaded
 const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
@@ -125,7 +124,7 @@ export default function App() {
             <Route path="/academic/grades" element={<AdminGradesPage />} />
             <Route path="/academic/grade-audit-logs" element={<GradeAuditLogsPage />} />
             <Route path="/academic/academic-warnings" element={<AcademicWarningsPage />} />
-            <Route path="/academic/grade-appeals" element={<AdminGradeAppealsPage />} />
+            <Route path="/academic/grade-appeals" element={<GradeAppealsPage />} />
             <Route path="/academic/grade-amendments" element={<GradeAmendmentsPage />} />
             <Route path="/academic/graduation" element={<GraduationPage />} />
             <Route path="/academic/tuition" element={<TuitionCashierPage />} />
@@ -175,7 +174,7 @@ export default function App() {
             <Route path="/lecturer/schedule" element={<LecturerSchedulePage />} />
             <Route path="/lecturer/grades" element={<GradeEntryPage />} />
             <Route path="/lecturer/profile" element={<LecturerProfilePage />} />
-            <Route path="/lecturer/grade-appeals" element={<LecturerGradeAppealsPage />} />
+            <Route path="/lecturer/grade-appeals" element={<GradeAppealsPage />} />
             <Route path="/lecturer/grade-amendments" element={<GradeAmendmentsPage />} />
           </Route>
 

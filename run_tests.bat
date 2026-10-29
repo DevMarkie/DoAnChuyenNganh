@@ -86,11 +86,14 @@ echo.
 echo   [4]  KIEM THU SUC CHIU TAI CUC HAN (Stress Test To Failure)
 echo        Leo thang tai tu dong den khi he thong dat nguong cham dut
 echo.
+echo   [5]  KIEM THU HE THONG TOAN DIEN END-TO-END (Comprehensive E2E Test)
+echo        Bo 65+ Test Cases kiem tra nghiep vu, phan quyen va toan ven du lieu
+echo.
 echo   [0]  Thoat
 echo.
 echo  ========================================================================
 echo.
-set /p TEST_CHOICE="  Nhap lua chon [1-4, hoac 0 de thoat]: "
+set /p TEST_CHOICE="  Nhap lua chon [1-5, hoac 0 de thoat]: "
 
 if defined TEST_CHOICE set TEST_CHOICE=%TEST_CHOICE: =%
 if "%TEST_CHOICE%"=="" set TEST_CHOICE=1
@@ -99,6 +102,7 @@ if "%TEST_CHOICE%"=="1" goto run_smoke
 if "%TEST_CHOICE%"=="2" goto run_concurrency_600
 if "%TEST_CHOICE%"=="3" goto run_multistage_load
 if "%TEST_CHOICE%"=="4" goto run_stress_failure
+if "%TEST_CHOICE%"=="5" goto run_e2e_comprehensive
 goto run_smoke
 
 REM -----------------------------------------------------------------------
@@ -122,7 +126,7 @@ REM -----------------------------------------------------------------------
 echo.
 echo  [3] Dang chay kiem thu tai da cap do (500 -> 5.000 requests)...
 echo  ------------------------------------------------------------------------
-node "%~dp0stress_test.js"
+node "%~dp0tests\performance\stress_test.js"
 goto finish
 
 REM -----------------------------------------------------------------------
@@ -138,7 +142,15 @@ if /i "%CONFIRM%" NEQ "Y" goto finish
 echo.
 echo  [4] Dang chay Stress Test leo thang...
 echo  ------------------------------------------------------------------------
-node "%~dp0stress_test_to_death.js"
+node "%~dp0tests\performance\stress_test_to_death.js"
+goto finish
+
+REM -----------------------------------------------------------------------
+:run_e2e_comprehensive
+echo.
+echo  [5] Dang chay kiem thu he thong toan dien End-to-End (65+ Cases)...
+echo  ------------------------------------------------------------------------
+node "%~dp0tests\e2e\comprehensive_system_test.js"
 goto finish
 
 REM -----------------------------------------------------------------------

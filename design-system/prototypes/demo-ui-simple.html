@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phenikaa SMS - Demo Giao Diện Tối Giản (Minimal Academic UI)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ——— DESIGN SYSTEM TOKENS (LIGHT & DARK) ——— */
+    :root {
+      --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      /* Light Mode Palette */
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-active: #e2e8f0;
+      
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      
+      --border-color: #e2e8f0;
+      --border-subtle: #f1f5f9;
+      
+      /* Primary Academic Colors (Phenikaa Blue & Slate) */
+      --primary: #1e3a8a;          /* Deep University Blue */
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --primary-border: #bfdbfe;
+      
+      --accent: #2563eb;           /* Brand Action Blue */
+      --accent-hover: #1d4ed8;
+      
+      /* Status Colors */
+      --success: #15803d;
+      --success-bg: #f0fdf4;
+      --success-border: #bbf7d0;
+      
+      --warning: #b45309;
+      --warning-bg: #fffbeb;
+      --warning-border: #fde68a;
+      
+      --danger: #b91c1c;
+      --danger-bg: #fef2f2;
+      --danger-border: #fecaca;
+      
+      --info: #0369a1;
+      --info-bg: #f0f9ff;
+      --info-border: #bae6fd;
+
+      /* Elevation & Shapes */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0b1120;
+      --bg-surface: #131c31;
+      --bg-subtle: #1e293b;
+      --bg-active: #334155;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      
+      --border-color: #1e293b;
+      --border-subtle: #172033;
+      
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --primary-light: rgba(59, 130, 246, 0.12);
+      --primary-border: rgba(59, 130, 246, 0.25);
+      
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      
+      --success: #34d399;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --success-border: rgba(16, 185, 129, 0.25);
+      
+      --warning: #fbbf24;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --warning-border: rgba(245, 158, 11, 0.25);
+      
+      --danger: #f87171;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --danger-border: rgba(239, 68, 68, 0.25);
+      
+      --info: #38bdf8;
+      --info-bg: rgba(56, 189, 248, 0.12);
+      --info-border: rgba(56, 189, 248, 0.25);
+
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ——— CONTROL DEMO BAR ——— */
+    .demo-bar {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      border-bottom: 1px solid #1e293b;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .demo-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .demo-badge {
+      background: #2563eb;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .role-pills {
+      display: flex;
+      background: #1e293b;
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      gap: 4px;
+    }
+
+    .role-pill {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+      font-family: var(--font-main);
+    }
+
+    .role-pill.active {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    .role-pill:hover:not(.active) {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .demo-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle-btn {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition);
+      font-family: var(--font-main);
+    }
+
+    .theme-toggle-btn:hover {
+      background: #334155;
+      color: white;
+    }
+
+    /* ——— MAIN APP LAYOUT ——— */
+    .app-layout {
+      display: flex;
+      min-height: calc(100vh - 45px);
+    }
+
+    /* ——— SIDEBAR ——— */
+    .sidebar {
+      width: 250px;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: var(--transition);
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sidebar-nav {
+      padding: 16px 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-subtle);
+      padding: 12px 10px 4px 10px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      border: 1px solid transparent;
+    }
+
+    .nav-item:hover {
+      background-color: var(--bg-subtle);
+      color: var(--text-main);
+    }
+
+    .nav-item.active {
+      background-color: var(--primary-light);
+      color: var(--accent);
+      font-weight: 600;
+      border-color: var(--primary-border);
+    }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      opacity: 0.85;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--primary);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 9999px;
+    }
+
+    .sidebar-footer {
+      padding: 16px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .user-profile-widget {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-subtle);
+    }
+
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      color: #1e293b;
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .user-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .user-role-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ——— MAIN CONTENT AREA ——— */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ——— TOP HEADER ——— */
+    .top-header {
+      height: 60px;
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: sticky;
+      top: 45px;
+      z-index: 100;
+    }
+
+    .header-search {
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      width: 320px;
+      gap: 8px;
+    }
+
+    .header-search input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: var(--font-main);
+      font-size: 13px;
+      color: var(--text-main);
+      width: 100%;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .term-select-box {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .icon-button {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .icon-button:hover {
+      background-color: var(--bg-subtle);
+      color: var(--text-main);
+    }
+
+    .btn-indicator {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 7px;
+      height: 7px;
+      background: #ef4444;
+      border-radius: 50%;
+    }
+
+    /* ——— CONTENT BODY ——— */
+    .content-body {
+      padding: 24px;
+      max-width: 1360px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Welcome / Hero Banner (Minimal & Clear) */
+    .welcome-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .welcome-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .welcome-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .btn-action-primary {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .btn-action-primary:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .btn-action-secondary {
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-action-secondary:hover {
+      background-color: var(--bg-subtle);
+    }
+
+    /* ——— STATS / METRICS CARDS ——— */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .stat-icon {
+      width: 18px;
+      height: 18px;
+      color: var(--accent);
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.1;
+      font-family: var(--font-mono);
+    }
+
+    .stat-footer {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background-color: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+
+    .badge-warning {
+      background-color: var(--warning-bg);
+      color: var(--warning);
+      border: 1px solid var(--warning-border);
+    }
+
+    .badge-danger {
+      background-color: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid var(--danger-border);
+    }
+
+    .badge-info {
+      background-color: var(--info-bg);
+      color: var(--info);
+      border: 1px solid var(--info-border);
+    }
+
+    /* ——— 2 COLUMN CONTENT SECTION ——— */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Generic Card Container */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* ——— DATA TABLE (SIMPLE, CLEAN, HIGH READABILITY) ——— */
+    .data-table-container {
+      overflow-x: auto;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    table.data-table th {
+      background-color: var(--bg-subtle);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    table.data-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    table.data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.data-table tr:hover td {
+      background-color: var(--bg-subtle);
+    }
+
+    .course-code {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* ——— TIMETABLE / TODAY SCHEDULE WIDGET ——— */
+    .schedule-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .schedule-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: var(--bg-page);
+      position: relative;
+    }
+
+    .schedule-item.ongoing {
+      border-left: 4px solid var(--accent);
+      background-color: var(--primary-light);
+    }
+
+    .schedule-time {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-muted);
+      min-width: 80px;
+    }
+
+    .schedule-info {
+      flex: 1;
+    }
+
+    .schedule-subject {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .schedule-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Progress bar */
+    .progress-track {
+      background: var(--bg-active);
+      height: 8px;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    /* Simple Modal Preview */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(2px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 520px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: modalFadeIn 0.2s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .modal-body {
+      padding: 20px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+      .top-header {
+        padding: 0 16px;
+      }
+      .header-search {
+        width: 160px;
+      }
+      .content-body {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= TOP DEMO CONTROL BAR ================= -->
+  <div class="demo-bar">
+    <div class="demo-bar-left">
+      <span class="demo-badge">Giao diện Demo Tối Giản</span>
+      <span>Hệ Thống Quản Lý Đào Tạo & Sinh Viên (SMS Phenikaa)</span>
+      
+      <!-- Role Switcher -->
+      <div class="role-pills">
+        <button class="role-pill active" onclick="switchRole('student')">
+          <span>🎓</span> Sinh Viên
+        </button>
+        <button class="role-pill" onclick="switchRole('lecturer')">
+          <span>👨‍🏫</span> Giảng Viên
+        </button>
+        <button class="role-pill" onclick="switchRole('admin')">
+          <span>🧑‍💼</span> P. Đào Tạo (Admin)
+        </button>
+      </div>
+    </div>
+
+    <div class="demo-bar-right">
+      <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">
+        <span id="themeIcon">🌙</span> <span id="themeText">Chế độ Tối</span>
+      </button>
+      <button class="btn-action-primary" style="padding: 5px 12px; font-size: 12px;" onclick="openSampleModal()">
+        <span>⚡ Thao tác mẫu</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= MAIN APP WRAPPER ================= -->
+  <div class="app-layout">
+
+    <!-- ————— SIDEBAR ————— -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-icon">P</div>
+        <div>
+          <div class="brand-title">Phenikaa SMS</div>
+          <div class="brand-subtitle">Cổng Thông Tin Học Vụ</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebarNav">
+        <!-- Rendered dynamically according to active role -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-widget" id="userProfileWidget">
+          <div class="user-avatar" id="userAvatar">SV</div>
+          <div class="user-info">
+            <div class="user-name" id="userName">Nguyễn Văn An</div>
+            <div class="user-role-label" id="userRoleDetail">MSSV: 21010045 · CNTT</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ————— MAIN CONTENT CONTAINER ————— -->
+    <div class="main-wrapper">
+      
+      <!-- Top App Header -->
+      <header class="top-header">
+        <div class="header-search">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" placeholder="Tìm kiếm nhanh môn học, giảng viên, phòng..." />
+        </div>
+
+        <div class="header-actions">
+          <select class="term-select-box">
+            <option>Học kỳ 1 (2026 - 2027)</option>
+            <option>Học kỳ 2 (2025 - 2026)</option>
+            <option>Học kỳ Hè 2026</option>
+          </select>
+
+          <button class="icon-button" title="Thông báo">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span class="btn-indicator"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Body Views -->
+      <main class="content-body" id="roleContent">
+        <!-- Role Content Injected via JS -->
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ================= POPUP MODAL SAMPLE ================= -->
+  <div class="modal-overlay" id="sampleModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Chi tiết Môn Học / Đăng ký</h3>
+        <button class="modal-close-btn" onclick="closeSampleModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <p><strong>Môn học:</strong> Kiến trúc Phần mềm Nâng cao (IT4010)</p>
+        <p><strong>Số tín chỉ:</strong> 3 Tín chỉ (2 Lý thuyết + 1 Thực hành)</p>
+        <p><strong>Giảng viên:</strong> TS. Trần Quốc Dũng</p>
+        <p><strong>Lịch học:</strong> Thứ 3, Ca 1-3 (07:00 - 09:30) · P.602 Nhà A2</p>
+        <div style="margin-top: 15px; padding: 12px; background: var(--bg-subtle); border-radius: var(--radius-sm); border-left: 3px solid var(--success);">
+          ✅ Điều kiện tiên quyết: <strong>Đã hoàn thành</strong> môn Nhập môn CNPM (IT2020) với điểm A.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-action-secondary" onclick="closeSampleModal()">Đóng</button>
+        <button class="btn-action-primary" onclick="alert('Đã xác nhận đăng ký tín chỉ thành công!'); closeSampleModal();">Xác Nhận Đăng Ký</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    let currentRole = 'student';
+
+    const roleData = {
+      student: {
+        name: 'Nguyễn Văn An',
+        sub: 'MSSV: 21010045 · K15 CNTT',
+        avatar: 'AN',
+        nav: [
+          { name: 'Tổng quan học tập', icon: 'grid', active: true },
+          { name: 'Đăng ký tín chỉ', icon: 'check-square', badge: 'Mở' },
+          { name: 'Thời khóa biểu tuần', icon: 'calendar' },
+          { name: 'Kết quả học tập & Điểm', icon: 'award' },
+          { name: 'Tra cứu học phí', icon: 'credit-card' },
+          { name: 'Chương trình đào tạo', icon: 'book' },
+          { name: 'Đơn từ & Phúc khảo', icon: 'file-text' }
+        ],
+        render: () => `
+          <!-- Welcome Bar -->
+          <div class="welcome-card">
+            <div>
+              <div class="welcome-title">Xin chào, Nguyễn Văn An! 👋</div>
+              <div class="welcome-desc">Hôm nay bạn có <strong>2 ca học</strong> tại phòng A2-602 và Lab 304. Hãy chú ý đi học đúng giờ!</div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-action-secondary" onclick="openSampleModal()">Xem CTĐT</button>
+              <button class="btn-action-primary" onclick="openSampleModal()">⚡ Cổng Đăng Ký Tín Chỉ</button>
+            </div>
+          </div>
+
+          <!-- Quick Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Điểm Tích Lũy (CPA)</span>
+                <span class="badge badge-success">Xuất sắc</span>
+              </div>
+              <div class="stat-value">3.64 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">/ 4.0</span></div>
+              <div class="stat-footer">
+                <span style="color: var(--success); font-weight: 600;">↑ +0.06</span> so với học kỳ trước
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Tiến Độ Tín Chỉ</span>
+                <span class="badge badge-info">81.4%</span>
+              </div>
+              <div class="stat-value">118 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">/ 145 TC</span></div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: 81.4%;"></div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Tín Chỉ Kỳ Này</span>
+                <span class="badge badge-success">Đã duyệt</span>
+              </div>
+              <div class="stat-value">18 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">TC (6 Môn)</span></div>
+              <div class="stat-footer">
+                <span>Quy định: 12 - 24 tín chỉ/kỳ</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Trạng Thái Học Vụ</span>
+                <span class="badge badge-success">Bình thường</span>
+              </div>
+              <div class="stat-value" style="font-size: 18px; color: var(--success);">An Toàn</div>
+              <div class="stat-footer">
+                <span>Không có cảnh báo học vụ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main 2-Column Section -->
+          <div class="content-grid">
+            
+            <!-- Left: Recent Grades & Courses -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span>📊 Kết Quả Học Phần Kỳ Gần Nhất (HK2 2025-2026)</span>
+                </div>
+                <button class="btn-action-secondary" style="padding: 4px 10px; font-size: 12px;">Xem toàn bộ</button>
+              </div>
+              <div class="data-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Mã HP</th>
+                      <th>Tên Học Phần</th>
+                      <th>Số TC</th>
+                      <th>Quá trình</th>
+                      <th>Cuối kỳ</th>
+                      <th>Tổng kết</th>
+                      <th>Điểm chữ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="course-code">IT4010</td>
+                      <td>Kiến trúc Phần mềm Tiên tiến</td>
+                      <td>3</td>
+                      <td>8.5</td>
+                      <td>9.2</td>
+                      <td><strong>8.9</strong></td>
+                      <td><span class="badge badge-success">A</span></td>
+                    </tr>
+                    <tr>
+                      <td class="course-code">IT4025</td>
+                      <td>Trí tuệ Nhân tạo & Học máy</td>
+                      <td>4</td>
+                      <td>9.0</td>
+                      <td>9.5</td>
+                      <td><strong>9.3</strong></td>
+                      <td><span class="badge badge-success">A+</span></td>
+                    </tr>
+                    <tr>
+                      <td class="course-code">SE3012</td>
+                      <td>Thiết kế Trải nghiệm Người dùng (UI/UX)</td>
+                      <td>3</td>
+                      <td>9.5</td>
+                      <td>9.8</td>
+                      <td><strong>9.7</strong></td>
+                      <td><span class="badge badge-success">A+</span></td>
+                    </tr>
+                    <tr>
+                      <td class="course-code">IT3080</td>
+                      <td>Mạng Máy tính Chuyên sâu</td>
+                      <td>3</td>
+                      <td>7.5</td>
+                      <td>8.0</td>
+                      <td><strong>7.8</strong></td>
+                      <td><span class="badge badge-info">B</span></td>
+                    </tr>
+                    <tr>
+                      <td class="course-code">IT4990</td>
+                      <td>Đồ án Chuyên ngành CNTT</td>
+                      <td>4</td>
+                      <td>9.0</td>
+                      <td>9.0</td>
+                      <td><strong>9.0</strong></td>
+                      <td><span class="badge badge-success">A</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right: Today's Schedule -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span>📅 Lịch Học Hôm Nay</span>
+                </div>
+                <span class="badge badge-info">Thứ Ba, 25/10</span>
+              </div>
+              <div class="card-body">
+                <div class="schedule-list">
+                  <div class="schedule-item ongoing">
+                    <div class="schedule-time">07:00 - 09:30<br><span class="badge badge-info" style="font-size:10px;">Đang diễn ra</span></div>
+                    <div class="schedule-info">
+                      <div class="schedule-subject">Kiến trúc Phần mềm</div>
+                      <div class="schedule-meta">
+                        <span>📍 P.602 Nhà A2</span>
+                        <span>👨‍🏫 TS. Trần Quốc Dũng</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="schedule-item">
+                    <div class="schedule-time">13:00 - 15:30<br><span style="color:var(--text-subtle); font-size:10px;">Chiều</span></div>
+                    <div class="schedule-info">
+                      <div class="schedule-subject">Thực hành UI/UX Design</div>
+                      <div class="schedule-meta">
+                        <span>📍 Lab 304 Nhà A3</span>
+                        <span>👩‍🏫 ThS. Lê Thị Mai</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="schedule-item">
+                    <div class="schedule-time">15:45 - 17:15<br><span style="color:var(--text-subtle); font-size:10px;">Chiều</span></div>
+                    <div class="schedule-info">
+                      <div class="schedule-subject">Họp Đồ án Chuyên ngành</div>
+                      <div class="schedule-meta">
+                        <span>📍 Văn phòng Bộ môn SE</span>
+                        <span>👨‍🏫 PGS.TS. Hoàng Nam</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        `
+      },
+
+      lecturer: {
+        name: 'TS. Trần Quốc Dũng',
+        sub: 'Khoa Công nghệ Thông tin',
+        avatar: 'TD',
+        nav: [
+          { name: 'Lớp đang giảng dạy', icon: 'grid', active: true },
+          { name: 'Sổ điểm & Nhập điểm', icon: 'award', badge: 'Cần vào điểm' },
+          { name: 'Lịch giảng dạy tuần', icon: 'calendar' },
+          { name: 'Điểm danh sinh viên', icon: 'check-square' },
+          { name: 'Duyệt đơn phúc khảo', icon: 'file-text', badge: '2 đơn' },
+          { name: 'Xuất danh sách Excel', icon: 'download' }
+        ],
+        render: () => `
+          <!-- Welcome Bar -->
+          <div class="welcome-card">
+            <div>
+              <div class="welcome-title">Xin chào, Thầy Trần Quốc Dũng! 👨‍🏫</div>
+              <div class="welcome-desc">Học kỳ 1 (2026-2027): Thầy đang phụ trách <strong>4 lớp học phần</strong> (185 sinh viên).</div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-action-secondary" onclick="alert('Đang tải danh sách Excel...')">📥 Xuất DS Sinh Viên</button>
+              <button class="btn-action-primary" onclick="openSampleModal()">📝 Nhập Sổ Điểm</button>
+            </div>
+          </div>
+
+          <!-- Quick Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Tổng Lớp Phụ Trách</span>
+                <span class="badge badge-info">HK1</span>
+              </div>
+              <div class="stat-value">04 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">Lớp HP</span></div>
+              <div class="stat-footer">12 Tín chỉ giảng dạy</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Tổng Số Sinh Viên</span>
+                <span class="badge badge-success">Đã chốt danh sách</span>
+              </div>
+              <div class="stat-value">185 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">SV</span></div>
+              <div class="stat-footer">Tỉ lệ chuyên cần trung bình: 96.2%</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Tiến Độ Vào Điểm</span>
+                <span class="badge badge-warning">2 lớp chưa khóa</span>
+              </div>
+              <div class="stat-value">50% <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">(2/4 lớp)</span></div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: 50%;"></div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Thời Hạn Khóa Điểm</span>
+                <span class="badge badge-warning">Còn 4 ngày</span>
+              </div>
+              <div class="stat-value" style="font-size: 20px; color: var(--warning);">30/10/2026</div>
+              <div class="stat-footer">Cửa sổ ân hạn: 7 ngày sửa điểm</div>
+            </div>
+          </div>
+
+          <!-- Data Table Sections -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <span>📋 Danh Sách Lớp Học Phần Đang Giảng Dạy</span>
+              </div>
+              <input type="text" placeholder="Lọc lớp học phần..." style="padding: 4px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 12px; background: var(--bg-page); color: var(--text-main);" />
+            </div>
+            <div class="data-table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mã Lớp HP</th>
+                    <th>Tên Môn Học</th>
+                    <th>Sĩ số</th>
+                    <th>Lịch học / Phòng</th>
+                    <th>Trạng thái sổ điểm</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="course-code">IT4010-01</td>
+                    <td>Kiến trúc Phần mềm Tiên tiến</td>
+                    <td>52 / 60</td>
+                    <td>Thứ 3 (07:00 - 09:30) · P.602 A2</td>
+                    <td><span class="badge badge-success">Đã Khóa Điểm</span></td>
+                    <td><button class="btn-action-secondary" style="padding: 4px 8px; font-size: 12px;">Xem Điểm</button></td>
+                  </tr>
+                  <tr>
+                    <td class="course-code">IT4010-02</td>
+                    <td>Kiến trúc Phần mềm Tiên tiến</td>
+                    <td>48 / 60</td>
+                    <td>Thứ 5 (09:45 - 12:15) · P.501 A2</td>
+                    <td><span class="badge badge-warning">Đang Nhập Dở</span></td>
+                    <td><button class="btn-action-primary" style="padding: 4px 8px; font-size: 12px;">Vào Điểm</button></td>
+                  </tr>
+                  <tr>
+                    <td class="course-code">IT4990-03</td>
+                    <td>Đồ án Chuyên ngành CNTT</td>
+                    <td>45 / 45</td>
+                    <td>Thứ 6 (13:00 - 16:30) · P.Lab 3</td>
+                    <td><span class="badge badge-info">Chờ Thi Cuối Kỳ</span></td>
+                    <td><button class="btn-action-secondary" style="padding: 4px 8px; font-size: 12px;">Chi Tiết</button></td>
+                  </tr>
+                  <tr>
+                    <td class="course-code">SE3012-01</td>
+                    <td>Thiết kế UI/UX Trải nghiệm</td>
+                    <td>40 / 40</td>
+                    <td>Thứ 2 (13:00 - 15:30) · P.Lab 1</td>
+                    <td><span class="badge badge-success">Đã Khóa Điểm</span></td>
+                    <td><button class="btn-action-secondary" style="padding: 4px 8px; font-size: 12px;">Xem Điểm</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `
+      },
+
+      admin: {
+        name: 'ThS. Lê Hoàng Lâm',
+        sub: 'Trưởng Phòng Quản Lý Đào Tạo',
+        avatar: 'AD',
+        nav: [
+          { name: 'Trung tâm điều hành', icon: 'grid', active: true },
+          { name: 'Quản lý Khung CTĐT', icon: 'book' },
+          { name: 'Mở Lớp & Xếp TKB', icon: 'calendar', badge: '182 Lớp' },
+          { name: 'Rà soát Cảnh Báo Học Vụ', icon: 'alert-triangle', badge: '14 SV' },
+          { name: 'Quản lý Sinh Viên & Khóa', icon: 'users' },
+          { name: 'Cấp lại Mật khẩu', icon: 'key' },
+          { name: 'Xét tốt nghiệp đợt 1', icon: 'award' }
+        ],
+        render: () => `
+          <!-- Welcome Bar -->
+          <div class="welcome-card">
+            <div>
+              <div class="welcome-title">Bảng Điều Hành Đào Tạo (Admin Portal) 🧑‍💼</div>
+              <div class="welcome-desc">Hệ thống đang mở cổng Đăng ký tín chỉ đợt 2 cho Khóa 14, 15, 16.</div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-action-secondary" onclick="alert('Đang kích hoạt thuật toán rà soát cảnh báo...')">⚠️ Rà Soát Học Vụ</button>
+              <button class="btn-action-primary" onclick="openSampleModal()">➕ Mở Lớp Học Phần Mới</button>
+            </div>
+          </div>
+
+          <!-- Quick Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Tổng Sinh Viên Toàn Trường</span>
+                <span class="badge badge-info">Chính quy</span>
+              </div>
+              <div class="stat-value">4,820 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">SV</span></div>
+              <div class="stat-footer">8 Khoa chuyên môn</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Lớp Học Phần Đang Mở</span>
+                <span class="badge badge-success">HK1</span>
+              </div>
+              <div class="stat-value">182 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">Lớp</span></div>
+              <div class="stat-footer">Phòng học đáp ứng: 100% (0 va chạm)</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Lượt Đăng Ký Thành Công</span>
+                <span class="badge badge-success">Tải cao</span>
+              </div>
+              <div class="stat-value">12,450 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">Lượt</span></div>
+              <div class="stat-footer">Thời gian phản hồi TB: 82ms</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-header">
+                <span>Cảnh Báo Học Vụ Kỳ Này</span>
+                <span class="badge badge-danger">Cần xử lý</span>
+              </div>
+              <div class="stat-value" style="color: var(--danger);">14 <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);">Trường hợp</span></div>
+              <div class="stat-footer">Mức 1: 10 · Mức 2: 3 · Thôi học: 1</div>
+            </div>
+          </div>
+
+          <!-- Academic Warning Table & Quick Allocation -->
+          <div class="content-grid">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span>🚨 Danh Sách Sinh Viên Cảnh Báo Học Vụ Cần Phê Duyệt</span>
+                </div>
+                <button class="btn-action-secondary" style="padding: 4px 10px; font-size: 12px;">Xuất Báo Cáo</button>
+              </div>
+              <div class="data-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>MSSV</th>
+                      <th>Họ và Tên</th>
+                      <th>Khóa / Lớp</th>
+                      <th>GPA Kỳ</th>
+                      <th>CPA</th>
+                      <th>Mức Cảnh Báo</th>
+                      <th>Hành Động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="course-code">21010312</td>
+                      <td>Trần Minh Quân</td>
+                      <td>K15 CNTT 02</td>
+                      <td style="color:var(--danger); font-weight:bold;">0.85</td>
+                      <td>1.45</td>
+                      <td><span class="badge badge-danger">Cảnh báo Mức 2</span></td>
+                      <td><button class="btn-action-secondary" style="padding: 3px 8px; font-size:11px;">Gửi Cảnh Báo</button></td>
+                    </tr>
+                    <tr>
+                      <td class="course-code">22010884</td>
+                      <td>Phạm Thùy Linh</td>
+                      <td>K16 Điện Tử 01</td>
+                      <td style="color:var(--warning); font-weight:bold;">1.15</td>
+                      <td>1.68</td>
+                      <td><span class="badge badge-warning">Cảnh báo Mức 1</span></td>
+                      <td><button class="btn-action-secondary" style="padding: 3px 8px; font-size:11px;">Gửi Cảnh Báo</button></td>
+                    </tr>
+                    <tr>
+                      <td class="course-code">20010105</td>
+                      <td>Vũ Quốc Hùng</td>
+                      <td>K14 Cơ Khí 03</td>
+                      <td style="color:var(--danger); font-weight:bold;">0.40</td>
+                      <td>1.10</td>
+                      <td><span class="badge badge-danger">Buộc Thôi Học</span></td>
+                      <td><button class="btn-action-primary" style="padding: 3px 8px; font-size:11px; background:var(--danger);">Xét Quyết Định</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right Column: Room Utilization & Status -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  <span>🏢 Tình Trạng Phòng Học Hôm Nay</span>
+                </div>
+                <span class="badge badge-success">Tòa A2 & A3</span>
+              </div>
+              <div class="card-body">
+                <div style="margin-bottom: 12px; font-size: 13px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span>Phòng Lý thuyết (32 phòng):</span>
+                    <strong>28 / 32 đang dùng (87%)</strong>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 87%;"></div></div>
+                </div>
+
+                <div style="margin-bottom: 16px; font-size: 13px;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span>Phòng Máy tính / Lab (12 phòng):</span>
+                    <strong>11 / 12 đang dùng (91%)</strong>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width: 91%; background: #10b981;"></div></div>
+                </div>
+
+                <div style="background: var(--bg-subtle); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 12px;">
+                  ℹ️ <strong>Thuật toán chống xung đột TKB:</strong> Đã kiểm tra 182 lớp học phần, không phát hiện trùng lịch phòng và giảng viên nào.
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    };
+
+    function renderRole(roleKey) {
+      const data = roleData[roleKey];
+      if (!data) return;
+
+      // Update User Widget
+      document.getElementById('userName').innerText = data.name;
+      document.getElementById('userRoleDetail').innerText = data.sub;
+      document.getElementById('userAvatar').innerText = data.avatar;
+
+      // Update Nav
+      const navContainer = document.getElementById('sidebarNav');
+      navContainer.innerHTML = `
+        <div class="nav-section-title">Menu Chính</div>
+        ${data.nav.map(item => `
+          <div class="nav-item ${item.active ? 'active' : ''}" onclick="selectNav(this)">
+            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>${item.name}</span>
+            ${item.badge ? `<span class="nav-badge">${item.badge}</span>` : ''}
+          </div>
+        `).join('')}
+      `;
+
+      // Update Body
+      document.getElementById('roleContent').innerHTML = data.render();
+    }
+
+    function switchRole(roleKey) {
+      currentRole = roleKey;
+      document.querySelectorAll('.role-pill').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.role-pill')).find(b => b.innerText.toLowerCase().includes(roleKey === 'student' ? 'sinh viên' : roleKey === 'lecturer' ? 'giảng viên' : 'đào tạo'));
+      if (activeBtn) activeBtn.classList.add('active');
+      renderRole(roleKey);
+    }
+
+    function selectNav(element) {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+    }
+
+    function toggleTheme() {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.body.removeAttribute('data-theme');
+        document.getElementById('themeIcon').innerText = '🌙';
+        document.getElementById('themeText').innerText = 'Chế độ Tối';
+      } else {
+        document.body.setAttribute('data-theme', 'dark');
+        document.getElementById('themeIcon').innerText = '☀️';
+        document.getElementById('themeText').innerText = 'Chế độ Sáng';
+      }
+    }
+
+    function openSampleModal() {
+      document.getElementById('sampleModal').classList.add('open');
+    }
+
+    function closeSampleModal() {
+      document.getElementById('sampleModal').classList.remove('open');
+    }
+
+    // Close modal on click outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('sampleModal');
+      if (event.target === modal) {
+        closeSampleModal();
+      }
+    };
+
+    // Initial render
+    renderRole('student');
+  </script>
+</body>
+</html>

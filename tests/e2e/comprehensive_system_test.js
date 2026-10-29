@@ -515,10 +515,10 @@ async function executeFullTest() {
       const res = await api("/departments", {
         method: "POST",
         token: adminToken,
-        body: { code: "CNTT", name: "Khoa Trùng CNTT" },
+        body: { code: "CNTT_KHMT", name: "Khoa Trùng CNTT_KHMT" },
       });
       if (res.ok && res.data.success)
-        throw new Error("Cho phép tạo trùng mã khoa CNTT!");
+        throw new Error("Cho phép tạo trùng mã khoa CNTT_KHMT!");
     },
   );
 
@@ -674,7 +674,7 @@ async function executeFullTest() {
         method: "POST",
         token: adminToken,
         body: {
-          code: "K16-SE1",
+          code: "K16-CNTT1",
           name: "Lớp Trùng",
           departmentId: 1,
           academicYear: "K16",
@@ -709,10 +709,10 @@ async function executeFullTest() {
       sampleSectionId = res.data.data[0].id;
       // Find section taught by lecturer 1 (1000001) and lecturer 2 (1000002)
       const sec1 = res.data.data.find(
-        (s) => s.lecturer?.lecturerCode === "1000001",
+        (s) => s.lecturer?.lecturerCode === "1000001" && s.status === "ACTIVE" && s.gradeSubmissionStatus !== "PUBLISHED",
       );
       const sec2 = res.data.data.find(
-        (s) => s.lecturer?.lecturerCode === "1000002",
+        (s) => s.lecturer?.lecturerCode === "1000002" && s.status === "ACTIVE" && s.gradeSubmissionStatus !== "PUBLISHED",
       );
       if (sec1) sampleSectionId = sec1.id;
       if (sec2) otherLecturerSectionId = sec2.id;

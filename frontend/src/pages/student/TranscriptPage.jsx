@@ -364,7 +364,9 @@ export default function TranscriptPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <FileText size={18} style={{ color: 'var(--primary)' }} />
                 <h3 style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>
-                  {sem.semesterName} ({sem.academicYear})
+                  {sem.academicYear && !sem.semesterName?.includes(sem.academicYear)
+                    ? `${sem.semesterName} (${sem.academicYear})`
+                    : sem.semesterName}
                 </h3>
               </div>
               <div style={{ display: 'flex', gap: '12px', fontSize: '0.9rem', alignItems: 'center', flexWrap: 'wrap' }}>

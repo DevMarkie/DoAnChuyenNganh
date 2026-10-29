@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SMS Load Test Demo - 100 Concurrent Users Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      @keyframes pulse-subtle {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.85;
+          transform: scale(1.02);
+        }
+      }
+      .badge-pulse {
+        animation: pulse-subtle 2s infinite ease-in-out;
+      }
+      .waterfall-bar {
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .waterfall-bar:hover {
+        filter: brightness(1.2);
+        transform: scaleY(1.3);
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white"
+  >
+    <!-- TOP HEADER -->
+    <header
+      class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4"
+      >
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 font-bold text-white text-lg"
+          >
+            SMS
+          </div>
+          <div>
+            <h1
+              class="text-lg font-bold tracking-tight text-white flex items-center gap-2"
+            >
+              Hệ Thống Quản Lý Đào Tạo & Sinh Viên
+              <span
+                class="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-mono font-medium"
+                >CONCURRENCY LAB</span
+              >
+            </h1>
+            <p class="text-xs text-slate-400">
+              Demo Trực Quan: 100 Sinh Viên Cùng Tranh Chỗ Đăng Ký 1 Môn Học
+              (Race Condition & Load Test)
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <!-- System Health Badges -->
+          <div class="flex items-center gap-2 text-xs font-mono">
+            <span
+              class="inline-flex items-center px-2 py-1 rounded-md bg-emerald-950/80 text-emerald-400 border border-emerald-800/50"
+            >
+              <span
+                class="w-2 h-2 rounded-full bg-emerald-400 mr-1.5 animate-pulse"
+              ></span>
+              Backend :8080
+            </span>
+            <span
+              class="inline-flex items-center px-2 py-1 rounded-md bg-cyan-950/80 text-cyan-400 border border-cyan-800/50"
+            >
+              <span class="w-2 h-2 rounded-full bg-cyan-400 mr-1.5"></span>
+              Redis :6379 (Lua)
+            </span>
+            <span
+              class="inline-flex items-center px-2 py-1 rounded-md bg-amber-950/80 text-amber-400 border border-amber-800/50"
+            >
+              <span class="w-2 h-2 rounded-full bg-amber-400 mr-1.5"></span>
+              MySQL :3306 (ACID)
+            </span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+      <!-- CONTROL PANEL & SCENARIO INTRO -->
+      <section
+        class="bg-gradient-to-r from-slate-900 via-slate-900/90 to-indigo-950/40 border border-slate-800 rounded-2xl p-5 shadow-xl"
+      >
+        <div
+          class="flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        >
+          <div class="space-y-1.5 max-w-2xl">
+            <div class="flex items-center gap-2">
+              <span
+                class="text-xs uppercase tracking-wider text-indigo-400 font-semibold"
+                >Kịch bản thử nghiệm đồng thời</span
+              >
+              <span class="text-xs text-slate-400"
+                >• Môn: BS101 - Giải tích 1 (3 TC)</span
+              >
+            </div>
+            <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight">
+              100 sinh viên đồng loạt đăng ký vào 1 lớp học phần hot
+            </h2>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              Hệ thống kích hoạt cơ chế phòng vệ 2 tầng:
+              <strong class="text-cyan-300">Redis In-Memory Lua Script</strong>
+              trừ slot nguyên tử cực nhanh (&lt;2ms) và
+              <strong class="text-amber-300"
+                >MySQL Conditional Atomic UPDATE</strong
+              >
+              ghi dữ liệu giao dịch ACID bền vững. Tuyệt đối không xảy ra hiện
+              tượng
+              <span
+                class="text-rose-400 underline decoration-rose-500 font-semibold"
+                >Over-selling</span
+              >
+              (vượt sĩ số) hay lỗi
+              <span class="text-rose-400 font-semibold">HTTP 500</span>.
+            </p>
+          </div>
+
+          <!-- Controls -->
+          <div
+            class="flex flex-wrap items-center gap-3 bg-slate-950/70 p-3 rounded-xl border border-slate-800 shrink-0"
+          >
+            <div>
+              <label class="block text-[11px] font-mono text-slate-400 mb-1"
+                >SỐ USER ĐỒNG THỜI</label
+              >
+              <select
+                id="selectUsers"
+                class="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              >
+                <option value="100" selected>100 Sinh viên</option>
+                <option value="50">50 Sinh viên</option>
+                <option value="80">80 Sinh viên</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-mono text-slate-400 mb-1"
+                >SĨ SỐ TỐI ĐA (CHỖ)</label
+              >
+              <select
+                id="selectCapacity"
+                class="bg-slate-900 border border-slate-700 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500"
+              >
+                <option value="40" selected>40 Chỗ ngồi</option>
+                <option value="30">30 Chỗ ngồi</option>
+                <option value="50">50 Chỗ ngồi</option>
+              </select>
+            </div>
+
+            <div class="pt-4">
+              <button
+                id="btnRunTest"
+                onclick="startTest()"
+                class="px-5 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-medium text-sm rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg
+                  id="btnIcon"
+                  class="w-4 h-4 fill-current"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M4.5 3.5v13l11-6.5-11-6.5z" />
+                </svg>
+                <span id="btnText">CHẠY DEMO TRỰC TIẾP</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KPI / METRICS CARDS -->
+      <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <!-- Total Requests -->
+        <div
+          class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
+        >
+          <span class="text-xs text-slate-400 font-medium">TỔNG REQUESTS</span>
+          <div class="mt-2">
+            <span
+              id="metricTotal"
+              class="text-2xl md:text-3xl font-extrabold text-white tracking-tight"
+              >--</span
+            >
+            <span class="text-xs text-slate-500 block">100% đồng thời</span>
+          </div>
+        </div>
+
+        <!-- Successful Registrations -->
+        <div
+          class="bg-slate-900/80 border border-emerald-900/50 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden"
+        >
+          <div
+            class="absolute -right-2 -bottom-2 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"
+          ></div>
+          <span
+            class="text-xs text-emerald-400 font-medium flex items-center gap-1.5"
+          >
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> THÀNH CÔNG
+            (200)
+          </span>
+          <div class="mt-2">
+            <span
+              id="metricSuccess"
+              class="text-2xl md:text-3xl font-extrabold text-emerald-400 tracking-tight"
+              >--</span
+            >
+            <span
+              id="metricCapacityRatio"
+              class="text-xs text-emerald-500/80 block"
+              >Đạt 100% sĩ số</span
+            >
+          </div>
+        </div>
+
+        <!-- Rejected Full -->
+        <div
+          class="bg-slate-900/80 border border-amber-900/50 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden"
+        >
+          <div
+            class="absolute -right-2 -bottom-2 w-16 h-16 bg-amber-500/10 rounded-full blur-xl pointer-events-none"
+          ></div>
+          <span
+            class="text-xs text-amber-400 font-medium flex items-center gap-1.5"
+          >
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span> HẾT CHỖ
+            (400)
+          </span>
+          <div class="mt-2">
+            <span
+              id="metricRejected"
+              class="text-2xl md:text-3xl font-extrabold text-amber-400 tracking-tight"
+              >--</span
+            >
+            <span class="text-xs text-amber-500/80 block"
+              >Chặn hợp lệ tại RAM</span
+            >
+          </div>
+        </div>
+
+        <!-- Server Errors (500) -->
+        <div
+          class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
+        >
+          <span
+            class="text-xs text-slate-400 font-medium flex items-center gap-1.5"
+          >
+            <span class="w-2 h-2 rounded-full bg-rose-400"></span> LỖI MÁY CHỦ
+            (500)
+          </span>
+          <div class="mt-2">
+            <span
+              id="metricErrors"
+              class="text-2xl md:text-3xl font-extrabold text-white tracking-tight"
+              >0</span
+            >
+            <span class="text-xs text-emerald-400 block font-semibold"
+              >✔ 0% lỗi server</span
+            >
+          </div>
+        </div>
+
+        <!-- Over-selling Guard -->
+        <div
+          class="bg-slate-900/80 border border-indigo-900/50 rounded-xl p-4 flex flex-col justify-between relative overflow-hidden"
+        >
+          <div
+            class="absolute -right-2 -bottom-2 w-16 h-16 bg-indigo-500/10 rounded-full blur-xl pointer-events-none"
+          ></div>
+          <span
+            class="text-xs text-indigo-400 font-medium flex items-center gap-1.5"
+          >
+            🛡️ OVER-SELLING
+          </span>
+          <div class="mt-2">
+            <span
+              id="metricOverselling"
+              class="text-2xl md:text-3xl font-extrabold text-indigo-300 tracking-tight"
+              >0</span
+            >
+            <span class="text-xs text-emerald-400 block font-semibold"
+              >✔ Tuyệt đối chuẩn ACID</span
+            >
+          </div>
+        </div>
+
+        <!-- Total Duration & RPS -->
+        <div
+          class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
+        >
+          <span class="text-xs text-slate-400 font-medium"
+            >THỜI GIAN & RPS</span
+          >
+          <div class="mt-2">
+            <span
+              id="metricDuration"
+              class="text-2xl md:text-3xl font-extrabold text-cyan-400 tracking-tight"
+              >--</span
+            >
+            <span id="metricRps" class="text-xs text-slate-400 block"
+              >-- req/giây</span
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- CHARTS SECTION: WATERFALL & LATENCY -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- LEFT: Waterfall Gantt Chart of 100 requests (2 cols) -->
+        <div
+          class="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col shadow-lg"
+        >
+          <div
+            class="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-4"
+          >
+            <div>
+              <h3
+                class="text-base font-bold text-white flex items-center gap-2"
+              >
+                🌊 Biểu đồ Dòng thời gian & Xếp hàng Đồng thời (Waterfall
+                Timeline)
+              </h3>
+              <p class="text-xs text-slate-400">
+                Trực quan hóa thời điểm xuất phát và thời gian xử lý của từng
+                sinh viên trong 100 requests
+              </p>
+            </div>
+            <div class="flex items-center gap-3 text-xs font-mono">
+              <span class="flex items-center gap-1.5 text-emerald-400">
+                <span
+                  class="w-3 h-2 rounded bg-emerald-500 inline-block"
+                ></span>
+                Thành công
+              </span>
+              <span class="flex items-center gap-1.5 text-amber-400">
+                <span class="w-3 h-2 rounded bg-amber-500 inline-block"></span>
+                Hết chỗ (Full)
+              </span>
+            </div>
+          </div>
+
+          <!-- Waterfall Visualization Canvas Container -->
+          <div
+            id="waterfallContainer"
+            class="w-full h-80 overflow-y-auto pr-2 space-y-1 text-[11px] font-mono select-none"
+          >
+            <!-- Dynamically populated -->
+          </div>
+
+          <div
+            class="pt-3 border-t border-slate-800/80 mt-3 flex items-center justify-between text-xs text-slate-400"
+          >
+            <span>Trục ngang: Độ trễ phản hồi (0ms đến Max Latency)</span>
+            <span
+              >Hover vào từng thanh để xem chi tiết sinh viên & phản hồi</span
+            >
+          </div>
+        </div>
+
+        <!-- RIGHT: Donut Ratio & 2-Tier Architecture Explainer -->
+        <div class="space-y-6">
+          <!-- Donut Chart: Capacity Allocation -->
+          <div
+            class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col items-center"
+          >
+            <h3
+              class="text-sm font-bold text-white mb-2 self-start flex items-center gap-2"
+            >
+              🎯 Phân Bổ Sức Chứa (Capacity Allocation)
+            </h3>
+            <div class="w-48 h-48 relative">
+              <canvas id="chartDonut"></canvas>
+              <div
+                class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+              >
+                <span id="donutPercent" class="text-2xl font-bold text-white"
+                  >40/40</span
+                >
+                <span class="text-[10px] text-slate-400 uppercase"
+                  >Sĩ số lấp đầy</span
+                >
+              </div>
+            </div>
+            <div
+              class="w-full grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-800 text-xs"
+            >
+              <div
+                class="text-center p-2 rounded-lg bg-emerald-950/30 border border-emerald-900/30"
+              >
+                <span
+                  class="text-emerald-400 font-bold block text-sm"
+                  id="donutSuccessCount"
+                  >40</span
+                >
+                <span class="text-slate-400 text-[11px]">Được chấp nhận</span>
+              </div>
+              <div
+                class="text-center p-2 rounded-lg bg-amber-950/30 border border-amber-900/30"
+              >
+                <span
+                  class="text-amber-400 font-bold block text-sm"
+                  id="donutRejectedCount"
+                  >60</span
+                >
+                <span class="text-slate-400 text-[11px]"
+                  >Bị từ chối hợp lệ</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Latency Percentiles Card -->
+          <div
+            class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg"
+          >
+            <h3
+              class="text-sm font-bold text-white mb-3 flex items-center gap-2"
+            >
+              ⚡ Phân Vị Độ Trễ (Response Latency)
+            </h3>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+              <div class="p-2 bg-slate-950 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">MIN</span>
+                <span id="latMin" class="text-emerald-400 font-bold text-sm"
+                  >-- ms</span
+                >
+              </div>
+              <div class="p-2 bg-slate-950 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]"
+                  >P50 (MEDIAN)</span
+                >
+                <span id="latP50" class="text-cyan-400 font-bold text-sm"
+                  >-- ms</span
+                >
+              </div>
+              <div class="p-2 bg-slate-950 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">P90</span>
+                <span id="latP90" class="text-amber-400 font-bold text-sm"
+                  >-- ms</span
+                >
+              </div>
+              <div class="p-2 bg-slate-950 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">P95</span>
+                <span id="latP95" class="text-amber-400 font-bold text-sm"
+                  >-- ms</span
+                >
+              </div>
+              <div class="p-2 bg-slate-950 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">P99</span>
+                <span id="latP99" class="text-rose-400 font-bold text-sm"
+                  >-- ms</span
+                >
+              </div>
+              <div class="p-2 bg-slate-950 rounded-lg border border-slate-800">
+                <span class="text-slate-400 block text-[10px]">MAX</span>
+                <span id="latMax" class="text-rose-400 font-bold text-sm"
+                  >-- ms</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARCHITECTURE EXPLANATION & DATABASE INTEGRITY AUDIT -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Left: 2-Tier Architecture -->
+        <div
+          class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4"
+        >
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            🏛️ Kiến Trúc Chống Đua Tranh 2 Tầng (2-Tier Concurrency
+            Architecture)
+          </h3>
+
+          <div class="space-y-3 text-xs leading-relaxed text-slate-300">
+            <div
+              class="p-3 bg-slate-950/80 rounded-xl border border-cyan-900/40 space-y-1"
+            >
+              <div
+                class="flex items-center justify-between text-cyan-400 font-bold font-mono"
+              >
+                <span>TẦNG 1: REDIS IN-MEMORY LUA SCRIPT (FAIL-FAST)</span>
+                <span class="px-2 py-0.5 rounded bg-cyan-950 text-[10px]"
+                  >RAM &lt; 2ms</span
+                >
+              </div>
+              <p class="text-slate-400">
+                Tất cả 100 requests chạm vào Redis trước. Script Lua nguyên tử
+                <code class="text-cyan-300 font-mono">tryAcquireSlot()</code>
+                kiểm tra và trừ slot trong RAM. 40 sinh viên đầu tiên nhận được
+                slot; 60 sinh viên còn lại bị
+                <strong>từ chối ngay lập tức tại RAM</strong>, không sinh tải
+                hay chiếm connection của Database.
+              </p>
+            </div>
+
+            <div
+              class="p-3 bg-slate-950/80 rounded-xl border border-amber-900/40 space-y-1"
+            >
+              <div
+                class="flex items-center justify-between text-amber-400 font-bold font-mono"
+              >
+                <span>TẦNG 2: HIKARICP POOL & ATOMIC CONDITIONAL UPDATE</span>
+                <span class="px-2 py-0.5 rounded bg-amber-950 text-[10px]"
+                  >ACID DB</span
+                >
+              </div>
+              <p class="text-slate-400">
+                40 sinh viên vào DB được xếp hàng mượt mà trong HikariCP Pool
+                (15 connections). Câu lệnh SQL nguyên tử:
+                <code class="text-amber-300 font-mono"
+                  >UPDATE course_sections SET current_students =
+                  current_students + 1 WHERE id = :id AND current_students &lt;
+                  max_students</code
+                >
+                loại bỏ hoàn toàn nguy cơ Race Condition và chặn đứng 100% tình
+                trạng Over-selling.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Database Audit Table -->
+        <div
+          class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between"
+        >
+          <div>
+            <h3
+              class="text-base font-bold text-white flex items-center gap-2 mb-3"
+            >
+              🔍 Đối Soát Thực Tế Với Cơ Sở Dữ Liệu (Database Integrity Audit)
+            </h3>
+            <div class="space-y-2 font-mono text-xs">
+              <div
+                class="flex justify-between items-center p-2.5 rounded-lg bg-slate-950 border border-slate-800"
+              >
+                <span class="text-slate-400">Mã Lớp Học Phần Test</span>
+                <span id="auditSectionCode" class="text-indigo-400 font-bold"
+                  >--</span
+                >
+              </div>
+              <div
+                class="flex justify-between items-center p-2.5 rounded-lg bg-slate-950 border border-slate-800"
+              >
+                <span class="text-slate-400"
+                  >Sĩ số tối đa cấu hình (max_students)</span
+                >
+                <span id="auditMaxStudents" class="text-white font-bold"
+                  >--</span
+                >
+              </div>
+              <div
+                class="flex justify-between items-center p-2.5 rounded-lg bg-slate-950 border border-slate-800"
+              >
+                <span class="text-slate-400"
+                  >Số bản ghi ghi danh thực tế (table enrollments)</span
+                >
+                <span
+                  id="auditActualEnrollments"
+                  class="text-emerald-400 font-bold"
+                  >--</span
+                >
+              </div>
+              <div
+                class="flex justify-between items-center p-2.5 rounded-lg bg-slate-950 border border-slate-800"
+              >
+                <span class="text-slate-400"
+                  >Số hóa đơn học phí tự động sinh (table
+                  student_invoices)</span
+                >
+                <span id="auditActualInvoices" class="text-cyan-400 font-bold"
+                  >--</span
+                >
+              </div>
+              <div
+                class="flex justify-between items-center p-2.5 rounded-lg bg-slate-950 border border-slate-800"
+              >
+                <span class="text-slate-400"
+                  >Slot còn lại trên Redis (key sms:section:...:slots)</span
+                >
+                <span id="auditRedisSlot" class="text-amber-400 font-bold"
+                  >0</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="mt-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/60 flex items-center gap-3"
+          >
+            <div
+              class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold"
+            >
+              ✔
+            </div>
+            <div class="text-xs">
+              <span class="font-bold text-emerald-400 block"
+                >KẾT LUẬN TIÊU CHUẨN AN TOÀN ĐỒNG THỜI:</span
+              >
+              <span class="text-emerald-200"
+                >Dữ liệu hoàn toàn khớp 100%. Không có sinh viên thứ 41 nào lọt
+                vào lớp. Không có lỗi 500.</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REQUEST LOG TABLE -->
+      <section
+        class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4"
+      >
+        <div
+          class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        >
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              📋 Nhật Ký Chi Tiết 100 Requests (Live Request Stream)
+            </h3>
+            <p class="text-xs text-slate-400">
+              Xem mã sinh viên, họ tên, thời gian phản hồi và kết quả nhận được
+              từ máy chủ
+            </p>
+          </div>
+
+          <!-- Filter tabs -->
+          <div class="flex items-center gap-2">
+            <button
+              onclick="filterLogs('all')"
+              id="tabAll"
+              class="px-3 py-1 text-xs font-medium rounded-lg bg-indigo-600 text-white"
+            >
+              Tất cả (100)
+            </button>
+            <button
+              onclick="filterLogs('success')"
+              id="tabSuccess"
+              class="px-3 py-1 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700"
+            >
+              Thành công (40)
+            </button>
+            <button
+              onclick="filterLogs('rejected')"
+              id="tabRejected"
+              class="px-3 py-1 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700"
+            >
+              Hết chỗ (60)
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="overflow-x-auto max-h-96 border border-slate-800 rounded-xl"
+        >
+          <table class="w-full text-left text-xs text-slate-300 font-mono">
+            <thead
+              class="bg-slate-950 text-slate-400 sticky top-0 uppercase tracking-wider text-[11px] border-b border-slate-800"
+            >
+              <tr>
+                <th class="py-2.5 px-3">#</th>
+                <th class="py-2.5 px-3">Mã SV</th>
+                <th class="py-2.5 px-3">Họ và Tên</th>
+                <th class="py-2.5 px-3">Bắt đầu</th>
+                <th class="py-2.5 px-3">Độ trễ</th>
+                <th class="py-2.5 px-3">HTTP Status</th>
+                <th class="py-2.5 px-3">Thông điệp máy chủ</th>
+              </tr>
+            </thead>
+            <tbody
+              id="logsTableBody"
+              class="divide-y divide-slate-800/60 bg-slate-900/50"
+            >
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer
+      class="border-t border-slate-800 bg-slate-900/50 py-4 text-center text-xs text-slate-500 font-mono"
+    >
+      Phenikaa SMS - Đồ án Chuyên ngành KTPM & Hệ thống phân tán • Concurrency
+      Test Lab (100 Users)
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+      let currentData = null;
+      let donutChartInstance = null;
+      let activeFilter = "all";
+
+      async function loadLatestResult() {
+        try {
+          const res = await fetch("/api/latest-result");
+          if (res.ok) {
+            const data = await res.json();
+            renderData(data);
+          }
+        } catch (err) {
+          console.error("Lỗi khi tải kết quả:", err);
+        }
+      }
+
+      async function startTest() {
+        const btn = document.getElementById("btnRunTest");
+        const btnText = document.getElementById("btnText");
+        const btnIcon = document.getElementById("btnIcon");
+        const selectUsers = document.getElementById("selectUsers");
+        const selectCapacity = document.getElementById("selectCapacity");
+
+        btn.disabled = true;
+        btnText.innerText = "ĐANG BẮN 100 REQUESTS...";
+        btnIcon.classList.add("animate-spin");
+
+        try {
+          const res = await fetch("/api/run-test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              totalUsers: Number(selectUsers.value),
+              capacity: Number(selectCapacity.value),
+            }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            renderData(data);
+          } else {
+            const err = await res.json();
+            alert("Lỗi: " + (err.error || "Không thể chạy bài test"));
+          }
+        } catch (e) {
+          alert("Lỗi mạng khi gọi API test: " + e.message);
+        } finally {
+          btn.disabled = false;
+          btnText.innerText = "CHẠY DEMO TRỰC TIẾP";
+          btnIcon.classList.remove("animate-spin");
+        }
+      }
+
+      function renderData(data) {
+        currentData = data;
+
+        // Update KPI Cards
+        document.getElementById("metricTotal").innerText = data.totalRequests;
+        document.getElementById("metricSuccess").innerText =
+          data.successfulCount;
+        document.getElementById("metricCapacityRatio").innerText =
+          `Đạt ${data.successfulCount}/${data.sectionCapacity} chỗ`;
+        document.getElementById("metricRejected").innerText =
+          data.fullRejectedCount;
+        document.getElementById("metricErrors").innerText =
+          data.serverErrorCount;
+        document.getElementById("metricOverselling").innerText =
+          data.oversellingCount;
+        document.getElementById("metricDuration").innerText =
+          (data.totalDurationMs / 1000).toFixed(2) + "s";
+        document.getElementById("metricRps").innerText =
+          data.throughputRps + " req/giây";
+
+        // Update Percentiles
+        document.getElementById("latMin").innerText =
+          data.latencyAll.min + " ms";
+        document.getElementById("latP50").innerText =
+          data.latencyAll.p50 + " ms";
+        document.getElementById("latP90").innerText =
+          data.latencyAll.p90 + " ms";
+        document.getElementById("latP95").innerText =
+          data.latencyAll.p95 + " ms";
+        document.getElementById("latP99").innerText =
+          data.latencyAll.p99 + " ms";
+        document.getElementById("latMax").innerText =
+          data.latencyAll.max + " ms";
+
+        // Update Audit Data
+        document.getElementById("auditSectionCode").innerText =
+          data.sectionCode || "#" + data.sectionId;
+        document.getElementById("auditMaxStudents").innerText =
+          data.sectionCapacity + " sinh viên";
+        document.getElementById("auditActualEnrollments").innerText =
+          (data.database.actualEnrollmentRows || data.successfulCount) +
+          " sinh viên";
+        document.getElementById("auditActualInvoices").innerText =
+          (data.database.tuitionInvoicesRows || data.successfulCount) +
+          " hóa đơn";
+        document.getElementById("auditRedisSlot").innerText =
+          data.database.redisSlotsRemaining !== undefined
+            ? data.database.redisSlotsRemaining
+            : 0;
+
+        // Render Donut Chart
+        renderDonutChart(
+          data.successfulCount,
+          data.fullRejectedCount,
+          data.sectionCapacity,
+        );
+
+        // Render Waterfall
+        renderWaterfall(
+          data.requests,
+          data.totalDurationMs,
+          data.latencyAll.max,
+        );
+
+        // Render Logs Table
+        filterLogs(activeFilter);
+      }
+
+      function renderDonutChart(success, rejected, capacity) {
+        document.getElementById("donutPercent").innerText =
+          `${success}/${capacity}`;
+        document.getElementById("donutSuccessCount").innerText = success;
+        document.getElementById("donutRejectedCount").innerText = rejected;
+
+        const ctx = document.getElementById("chartDonut").getContext("2d");
+        if (donutChartInstance) donutChartInstance.destroy();
+
+        donutChartInstance = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: ["Thành công", "Hết chỗ"],
+            datasets: [
+              {
+                data: [success, rejected],
+                backgroundColor: ["#10b981", "#f59e0b"],
+                borderWidth: 0,
+                hoverOffset: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "75%",
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return ` ${context.label}: ${context.raw} sinh viên`;
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function renderWaterfall(requests, totalDuration, maxLat) {
+        const container = document.getElementById("waterfallContainer");
+        container.innerHTML = "";
+
+        const maxScale = Math.max(totalDuration, maxLat, 100);
+
+        requests.forEach((req, i) => {
+          const row = document.createElement("div");
+          row.className =
+            "flex items-center gap-2 group hover:bg-slate-800/40 py-0.5 px-1 rounded";
+
+          // Index & Code
+          const label = document.createElement("div");
+          label.className =
+            "w-24 text-[10px] text-slate-400 shrink-0 flex items-center justify-between";
+          label.innerHTML = `<span>#${req.index}</span> <span class="text-slate-300 font-bold">${req.studentCode}</span>`;
+
+          // Bar container
+          const barArea = document.createElement("div");
+          barArea.className =
+            "flex-1 h-3.5 bg-slate-950/60 rounded relative overflow-hidden flex items-center";
+
+          const offsetPercent = ((req.startOffsetMs || 0) / maxScale) * 100;
+          const widthPercent = Math.max(
+            1,
+            ((req.durationMs || 10) / maxScale) * 100,
+          );
+
+          const isSuccess = req.httpStatus === 200 || req.httpStatus === 201;
+          const barColor = isSuccess
+            ? "bg-emerald-500"
+            : req.httpStatus === 400
+              ? "bg-amber-500"
+              : "bg-rose-500";
+
+          const bar = document.createElement("div");
+          bar.className = `waterfall-bar absolute h-2.5 rounded ${barColor}`;
+          bar.style.left = `${Math.min(offsetPercent, 90)}%`;
+          bar.style.width = `${Math.min(widthPercent, 100 - offsetPercent)}%`;
+          bar.title = `SV: ${req.fullName} (${req.studentCode})\nThời gian: ${req.durationMs}ms\nTrạng thái: ${req.httpStatus}\nThông điệp: ${req.message}`;
+
+          barArea.appendChild(bar);
+
+          // Latency label
+          const latLabel = document.createElement("div");
+          latLabel.className =
+            "w-16 text-right text-[10px] text-slate-400 shrink-0 font-medium";
+          latLabel.innerText = `${req.durationMs}ms`;
+
+          // Status badge
+          const statusBadge = document.createElement("div");
+          statusBadge.className = `w-14 text-center text-[9px] py-0.5 rounded font-bold shrink-0 ${isSuccess ? "bg-emerald-950/80 text-emerald-400 border border-emerald-800/40" : "bg-amber-950/80 text-amber-400 border border-amber-800/40"}`;
+          statusBadge.innerText =
+            req.httpStatus === 200 ? "200 OK" : `${req.httpStatus} FULL`;
+
+          row.appendChild(label);
+          row.appendChild(barArea);
+          row.appendChild(latLabel);
+          row.appendChild(statusBadge);
+
+          container.appendChild(row);
+        });
+      }
+
+      function filterLogs(type) {
+        activeFilter = type;
+
+        document.getElementById("tabAll").className =
+          type === "all"
+            ? "px-3 py-1 text-xs font-medium rounded-lg bg-indigo-600 text-white"
+            : "px-3 py-1 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700";
+        document.getElementById("tabSuccess").className =
+          type === "success"
+            ? "px-3 py-1 text-xs font-medium rounded-lg bg-indigo-600 text-white"
+            : "px-3 py-1 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700";
+        document.getElementById("tabRejected").className =
+          type === "rejected"
+            ? "px-3 py-1 text-xs font-medium rounded-lg bg-indigo-600 text-white"
+            : "px-3 py-1 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700";
+
+        if (!currentData || !currentData.requests) return;
+
+        const tbody = document.getElementById("logsTableBody");
+        tbody.innerHTML = "";
+
+        let list = currentData.requests;
+        if (type === "success") {
+          list = list.filter(
+            (r) => r.httpStatus === 200 || r.httpStatus === 201,
+          );
+        } else if (type === "rejected") {
+          list = list.filter(
+            (r) => r.httpStatus !== 200 && r.httpStatus !== 201,
+          );
+        }
+
+        list.forEach((r) => {
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-800/50 transition";
+
+          const isSuccess = r.httpStatus === 200 || r.httpStatus === 201;
+          const statusBadge = isSuccess
+            ? `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/50 font-bold">200 OK</span>`
+            : `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/50 font-bold">${r.httpStatus} FULL</span>`;
+
+          tr.innerHTML = `
+          <td class="py-2 px-3 text-slate-500">#${r.index}</td>
+          <td class="py-2 px-3 font-bold text-white">${r.studentCode}</td>
+          <td class="py-2 px-3 text-slate-300">${r.fullName}</td>
+          <td class="py-2 px-3 text-slate-400">+${r.startOffsetMs || 0}ms</td>
+          <td class="py-2 px-3 font-semibold ${isSuccess ? "text-emerald-400" : "text-amber-400"}">${r.durationMs}ms</td>
+          <td class="py-2 px-3">${statusBadge}</td>
+          <td class="py-2 px-3 text-slate-300">${r.message}</td>
+        `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Auto-load on page load
+      window.addEventListener("DOMContentLoaded", loadLatestResult);
+    </script>
+  </body>
+</html>

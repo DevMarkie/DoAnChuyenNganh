@@ -123,34 +123,37 @@ Toàn bộ các biểu đồ trong thư mục này tuân thủ các quy tắc th
 
 ## 6. Hệ thống Scripts Python Tự động hóa & Xuất báo cáo
 
-Thư mục `drawio/scripts/` chứa các kịch bản Python hỗ trợ tự động sinh lại và kiểm định cấu trúc XML của toàn bộ sơ đồ:
+Thư mục `drawio/scripts/` chứa các kịch bản Python hỗ trợ tự động sinh và kiểm định cấu trúc XML của toàn bộ sơ đồ:
 
 ```text
 drawio/scripts/
-├── build_drawio_diagrams.py        # Kịch bản sinh sơ đồ Use Case 4 phân hệ
-├── build_full_sequence_diagrams.py # Kịch bản sinh toàn bộ 18 tab Biểu đồ tuần tự chuẩn UML
-├── build_full_activity_diagrams.py # Kịch bản sinh toàn bộ 18 tab Biểu đồ hoạt động phân làn
-├── build_full_bce_diagrams.py      # Kịch bản sinh toàn bộ 18 tab Biểu đồ lớp phân tích BCE
-├── generate_all_4_diagrams.py      # Master script thực thi đồng bộ sinh cả 4 bộ sơ đồ Master
+├── build_drawio_diagrams.py        # Kịch bản sinh sơ đồ Use Case các phân hệ
+├── build_full_sequence_diagrams.py # Kịch bản sinh toàn bộ 21 tab Biểu đồ tuần tự chuẩn UML
+├── build_full_activity_diagrams.py # Kịch bản sinh toàn bộ 21 tab Biểu đồ hoạt động phân làn
+├── build_full_bce_diagrams.py      # Kịch bản sinh toàn bộ 21 tab Biểu đồ lớp phân tích BCE
+├── build_full_erd_diagrams.py      # Kịch bản sinh toàn bộ 8 tab Lược đồ quan hệ thực thể ERD
 └── check_diagrams.py               # Kịch bản kiểm toán: phát hiện trùng lặp Cell ID, kiểm tra XML
 ```
 
-### Quy trình 1-Click biên dịch toàn bộ sơ đồ ra Báo cáo Word:
+### Cách thức thực thi sinh sơ đồ & kiểm định:
 ```bash
-# Bước 1: Sinh đồng bộ toàn bộ 4 file .drawio master
-python drawio/scripts/generate_all_4_diagrams.py
+# 1. Sinh sơ đồ Use Case
+python drawio/scripts/build_drawio_diagrams.py
 
-# Bước 2: Kiểm định cấu trúc XML và tính hợp lệ của các Cells
+# 2. Sinh biểu đồ Tuần tự (Sequence Diagrams)
+python drawio/scripts/build_full_sequence_diagrams.py
+
+# 3. Sinh biểu đồ Hoạt động (Activity Diagrams)
+python drawio/scripts/build_full_activity_diagrams.py
+
+# 4. Sinh biểu đồ Lớp phân tích BCE (Boundary - Control - Entity)
+python drawio/scripts/build_full_bce_diagrams.py
+
+# 5. Sinh lược đồ Thực thể Quan hệ ERD (8 tabs)
+python drawio/scripts/build_full_erd_diagrams.py
+
+# 6. Kiểm định cấu trúc XML và tính hợp lệ của toàn bộ Cells
 python drawio/scripts/check_diagrams.py
-
-# Bước 3: Bóc tách từng tab thành các file .drawio đơn trang
-node report/split_pages.mjs
-
-# Bước 4: Kết xuất thành hình ảnh PNG chất lượng cao
-node report/render_pages.mjs
-
-# Bước 5: Biên dịch và đóng gói thành file Báo cáo Đồ án tốt nghiệp (Word .docx)
-node report/build_report.js
 ```
 
 ---

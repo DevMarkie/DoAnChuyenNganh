@@ -91,10 +91,13 @@ public class TuitionService {
     @Transactional
     @EventListener
     public void onEnrollmentCreated(EnrollmentCreatedEvent event) {
-        log.info("Xử lý sự kiện đăng ký học phần: studentId={}, sectionId={}", event.getStudentId(), event.getSectionId());
-        Student student = studentRepository.findById(event.getStudentId()).orElse(null);
-        CourseSection section = courseSectionRepository.findById(event.getSectionId()).orElse(null);
-        syncEnrollmentInvoice(student, section);
+        log.debug("Nhận sự kiện đăng ký học phần: studentId={}, sectionId={}", event.getStudentId(), event.getSectionId());
+        // Tránh trùng lặp I/O nếu hóa đơn đã được đồng bộ trong transaction đăng ký
+        if (invoiceRepository.findByStudentIdAndSectionId(event.getStudentId(), event.getSectionId()).isEmpty()) {
+            Student student = studentRepository.findById(event.getStudentId()).orElse(null);
+            CourseSection section = courseSectionRepository.findById(event.getSectionId()).orElse(null);
+            syncEnrollmentInvoice(student, section);
+        }
     }
 
     @Transactional

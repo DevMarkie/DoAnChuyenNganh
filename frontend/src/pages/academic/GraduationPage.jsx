@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { graduationService, classService } from '../../services/dataService';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { graduationService } from '../../services/dataService';
 import { toast } from 'react-toastify';
 import { 
   Award, 
@@ -9,7 +9,6 @@ import {
   Download, 
   Search, 
   CheckCheck, 
-  FileText,
   RefreshCw,
   Users,
   GraduationCap
@@ -29,15 +28,10 @@ export default function GraduationPage() {
   const [evaluating, setEvaluating] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, QUALIFIED, DISQUALIFIED, APPROVED
-  const [decisionNo, setDecisionNo] = useState(`QD-TN-${new Date().getFullYear()}/QĐ-ĐH`);
+  const [decisionNo, setDecisionNo] = useState(() => `QD-TN-${new Date().getFullYear()}/QĐ-ĐH`);
   const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
-  const [selectedRecordForApproval, setSelectedRecordForApproval] = useState(null);
 
-  useEffect(() => {
-    loadRecords();
-  }, [selectedCohort]);
-
-  const loadRecords = async () => {
+  const loadRecords = useCallback(async () => {
     try {
       setLoading(true);
       const res = await graduationService.getRecords({ cohortId: selectedCohort, size: 200 });
@@ -47,7 +41,11 @@ export default function GraduationPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCohort]);
+
+  useEffect(() => {
+    loadRecords();
+  }, [loadRecords]);
 
   const handleRunEvaluation = async () => {
     if (!selectedCohort) {

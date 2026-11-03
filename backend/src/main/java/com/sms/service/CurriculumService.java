@@ -31,6 +31,7 @@ public class CurriculumService {
     private final EnrollmentRepository enrollmentRepository;
     private final PrerequisiteGraphEngine prerequisiteGraphEngine;
     private final DegreeAuditEngine degreeAuditEngine;
+    private final TuitionService tuitionService;
 
     public CurriculumResponse getMyCurriculum(Long userId) {
         Student student = studentRepository.findByUserId(userId)
@@ -224,19 +225,26 @@ public class CurriculumService {
         BigDecimal completionPercent = requiredCredits == 0 ? BigDecimal.ZERO
                 : BigDecimal.valueOf(completedCredits * 100.0 / requiredCredits).setScale(1, RoundingMode.HALF_UP);
 
+        List<String> unsatisfiedReasons = new ArrayList<>(audit.getUnsatisfiedReasons() != null ? audit.getUnsatisfiedReasons() : Collections.emptyList());
+        boolean hasTuitionDebt = (student.isFinancialHold()) || (tuitionService != null && tuitionService.isTuitionOverdue(student.getId()));
+        if (hasTuitionDebt) {
+            unsatisfiedReasons.add("Chưa hoàn thành công nợ học phí");
+        }
+        boolean isEligible = Boolean.TRUE.equals(audit.getIsGraduationEligible()) && !hasTuitionDebt;
+
         return GraduationEligibilityResponse.builder()
                 .studentId(student.getId())
                 .studentCode(student.getStudentCode())
                 .studentName(student.getFullName())
                 .className(className)
                 .programName(programName)
-                .eligible(audit.getIsGraduationEligible())
+                .eligible(isEligible)
                 .completedCredits(completedCredits)
                 .requiredCredits(requiredCredits)
                 .remainingCredits(remainingCredits)
                 .completionPercent(completionPercent)
                 .cumulativeGpa(audit.getAuditCpa())
-                .unsatisfiedReasons(audit.getUnsatisfiedReasons())
+                .unsatisfiedReasons(unsatisfiedReasons)
                 .build();
     }
 

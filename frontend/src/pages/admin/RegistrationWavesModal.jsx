@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Plus, Trash2, Edit2, AlertCircle, Clock, Calendar, CheckCircle2, ShieldAlert, Sparkles, Filter } from 'lucide-react';
+import { X, Plus, Trash2, Edit2, AlertCircle, Clock, Calendar, CheckCircle2, ShieldAlert, Sparkles } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { registrationWaveService, cohortService, departmentService, majorService } from '../../services/dataService';
 

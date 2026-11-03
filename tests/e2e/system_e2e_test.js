@@ -547,7 +547,7 @@ async function runAllTests() {
   });
 
   await runTest('2. Admin Features', '2.17 CRUD & DB Persistence: Create Administrative Class (INSERT verified)', async () => {
-    const code = 'K18_T' + Date.now().toString().slice(-3);
+    const code = 'TEST_CLS_' + Date.now().toString().slice(-3);
     const className = 'Lớp Sinh Hoạt Test ' + code;
     const res = await apiRequest('/classes', {
       method: 'POST',
@@ -583,7 +583,7 @@ async function runAllTests() {
       token: adminToken,
       body: {
         sectionId: testSectionId,
-        dayOfWeek: 7, // Sunday to avoid weekday conflict
+        dayOfWeek: 8, // Sunday (8) to avoid weekday/Saturday conflict
         startPeriod: 10,
         endPeriod: 12,
         room: roomName,
@@ -597,7 +597,7 @@ async function runAllTests() {
     // Verify DB Persistence of Schedule
     assertDbRecord(`SELECT room, day_of_week, start_period, end_period FROM schedules WHERE id = ${schedId}`, {
       room: roomName,
-      day_of_week: '7',
+      day_of_week: '8',
       start_period: '10',
       end_period: '12',
     });
@@ -697,6 +697,8 @@ async function runAllTests() {
       const enrollmentId = enrollRes.data.data[0].id;
 
       // 1. Ensure grade is unlocked
+      db.executeSql(`UPDATE course_sections SET grade_submission_status = 'DRAFT' WHERE id = ${testSectionId};`);
+      db.executeSql(`UPDATE grades SET is_finalized = 0, finalized_at = NULL WHERE enrollment_id = ${enrollmentId};`);
       await apiRequest('/grades', {
         method: 'PUT',
         token: adminToken,
@@ -986,7 +988,7 @@ async function runAllTests() {
 
   // Final Cleanup
   try {
-    const cleanupSql = "DELETE FROM curriculum_block_subjects WHERE subject_id IN (SELECT id FROM subjects WHERE subject_code LIKE 'SUB%'); DELETE FROM subjects WHERE subject_code LIKE 'SUB%'; DELETE FROM classes WHERE code LIKE 'K18_T%'; DELETE FROM departments WHERE code LIKE 'TD%' OR name LIKE '%Kiểm Thử%'; DELETE FROM password_reset_requests WHERE reason LIKE '%test%' OR reason LIKE '%kiểm thử%'; UPDATE users SET password = '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', must_change_password = 0 WHERE username IN ('2500001', '2500003');";
+    const cleanupSql = "DELETE FROM curriculum_block_subjects WHERE subject_id IN (SELECT id FROM subjects WHERE subject_code LIKE 'SUB%'); DELETE FROM subjects WHERE subject_code LIKE 'SUB%'; DELETE FROM classes WHERE code LIKE 'TEST_CLS_%'; DELETE FROM departments WHERE code LIKE 'TD%' OR name LIKE '%Kiểm Thử%'; DELETE FROM password_reset_requests WHERE reason LIKE '%test%' OR reason LIKE '%kiểm thử%'; UPDATE users SET password = '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', must_change_password = 0 WHERE username IN ('2500001', '2500003');";
     db.executeSql(cleanupSql);
   } catch (e) {}
 

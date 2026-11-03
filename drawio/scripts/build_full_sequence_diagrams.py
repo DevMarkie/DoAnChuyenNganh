@@ -859,6 +859,108 @@ build_seq_18_attendance = build_seq_18_live_attendance
 # ==========================================================
 # GHI TẤT CẢ 16 TAB VÀO FILE Sequence_Diagrams.drawio
 # ==========================================================
+
+# 19. KHẢO THÍ & QUẢN LÝ PHÒNG THI (EXAM MANAGEMENT)
+def build_seq_19_exam_management():
+    model, root = create_base_model(1380, 940)
+    add_cell(root, "frame_exam", "sd UC-19: Khảo thí & Quản lý phòng thi (Exam Management & Room Allocation)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+
+    setup_6_lifelines(root, "Cán bộ Khảo thí", "ExamRoomsPageUI", "ExamController", "ExamService", "ExamRoomRepository", "Database (MySQL)", height=800)
+
+    # Activations
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 360})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 280})
+
+    # Messages
+    add_message(root, "m1", "1: Cán bộ Khảo thí truy cập trang phòng thi & chọn lớp HP", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/exam/sessions (sectionId, examDate, shift, duration)", 315, 545, 185)
+    add_message(root, "m3", "3: createExamSession(request) -> validateSectionStatus(sectionId)", 555, 785, 230)
+    add_message(root, "m4", "4: Kiểm tra điều kiện mở thi: Lớp HP đã chốt sổ điểm quá trình", 795, 795, 275, is_self=True)
+    add_message(root, "m5", "5: save(session) -> INSERT INTO exam_sessions (section_id, status='PLANNED')", 795, 1245, 320)
+    add_message(root, "m6", "6: Trả về phiên thi vừa tạo (ExamSessionResponse)", 1245, 785, 360, is_reply=True)
+    add_message(root, "m7", "7: 200 OK: Tạo đợt thi thành công", 785, 315, 400, is_reply=True)
+    add_message(root, "m8", "8: Cán bộ bấm 'Phân bổ phòng thi tự động' (maxPerRoom=35)", 80, 305, 440)
+    add_message(root, "m9", "9: POST /api/exam/rooms/auto-assign (sessionId, capacity, roomList)", 315, 545, 480)
+    add_message(root, "m10", "10: autoAssignRooms(request) -> Lọc SV đủ điều kiện, chia phòng & sinh SBD", 555, 785, 520)
+    add_message(root, "m11", "11: BATCH INSERT INTO exam_rooms & exam_rosters", 795, 1245, 560)
+    add_message(root, "m12", "12: Trả về danh sách phòng thi & túi bài thi đã phân bổ", 1245, 785, 600, is_reply=True)
+    add_message(root, "m13", "13: 200 OK + ApiResponse.success(List<ExamRoomResponse>)", 785, 315, 640, is_reply=True)
+    add_message(root, "m14", "14: Cán bộ bấm 'Xuất danh sách phòng thi Excel'", 80, 305, 675)
+    add_message(root, "m15", "15: GET /api/exam/rooms/{id}/export-excel -> Sinh file Excel danh sách thí sinh", 315, 1245, 715)
+    add_message(root, "m16", "16: 200 OK + File Excel danh sách thí sinh & biểu mẫu chấm điểm", 1245, 80, 755, is_reply=True)
+
+    return model
+
+# 20. QUY TRÌNH ĐÍNH CHÍNH ĐIỂM 3 CẤP (3-TIER GRADE AMENDMENT)
+def build_seq_20_grade_amendment():
+    model, root = create_base_model(1380, 940)
+    add_cell(root, "frame_amd", "sd UC-20: Quy trình Đính chính điểm 3 cấp (3-Tier Grade Amendment Process)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+
+    setup_6_lifelines(root, "GV & Trưởng BM & P.ĐT", "GradeAmendmentsUI", "GradeAmendmentController", "GradeAmendmentService", "GradeAuditLogRepository", "Database (MySQL)", height=800)
+
+    # Activations
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 400})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 320})
+
+    # Messages
+    add_message(root, "m1", "1: Giảng viên lập đơn: Nhập MSSV, Lớp HP, cột điểm & điểm đề xuất sửa", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/grade-amendments (CreateGradeAmendmentRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: create(userId, request) -> Kiểm tra điểm đã khóa sổ và tính hợp lệ", 555, 785, 230)
+    add_message(root, "m4", "4: save(ticket) -> INSERT INTO grade_change_tickets (status='PENDING_DEPT')", 795, 1245, 275)
+    add_message(root, "m5", "5: Trả về đơn tạo thành công & gửi thông báo tới Trưởng Bộ môn", 1245, 785, 315, is_reply=True)
+    add_message(root, "m6", "6: 200 OK + ApiResponse.success(GradeAmendmentResponse)", 785, 315, 350, is_reply=True)
+    add_message(root, "m7", "7: Trưởng Bộ môn thẩm định minh chứng & bấm 'Duyệt cấp Bộ môn'", 80, 305, 390)
+    add_message(root, "m8", "8: PUT /api/grade-amendments/{id}/dept-review (approved=true)", 315, 545, 430)
+    add_message(root, "m9", "9: deptReview() -> UPDATE grade_change_tickets SET status='DEPT_APPROVED'", 555, 1245, 470)
+    add_message(root, "m10", "10: 200 OK: Chuyển tiếp hồ sơ lên hàng đợi Phòng Đào tạo", 1245, 315, 510, is_reply=True)
+    add_message(root, "m11", "11: Cán bộ Phòng Đào tạo / BGH xem xét và bấm 'Phê duyệt chính thức'", 80, 305, 550)
+    add_message(root, "m12", "12: PUT /api/grade-amendments/{id}/academic-approval (approved=true)", 315, 545, 590)
+    add_message(root, "m13", "13: academicApproval() -> @Transactional: (1) UPDATE grades, (2) INSERT audit_logs", 555, 785, 630)
+    add_message(root, "m14", "14: save(auditLog) & UPDATE grades SET score_ck=? WHERE id=?", 795, 1245, 670)
+    add_message(root, "m15", "15: recalculateGpaAndCpa(studentId) -> Cập nhật CPA tích lũy mới", 795, 795, 710, is_self=True)
+    add_message(root, "m16", "16: 200 OK: Điểm cập nhật chính thức; gửi thông báo kết quả tới GV và SV", 1245, 80, 755, is_reply=True)
+
+    return model
+
+# 21. THẨM ĐỊNH CHUẨN TỐT NGHIỆP (DEGREE AUDIT TT08)
+def build_seq_21_graduation_audit():
+    model, root = create_base_model(1380, 940)
+    add_cell(root, "frame_grad", "sd UC-21: Thẩm định chuẩn tốt nghiệp theo Thông tư 08 (Degree Audit TT08)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+
+    setup_6_lifelines(root, "Cán bộ Đào tạo", "GraduationAuditUI", "GraduationController", "GraduationService", "GraduationRecordRepository", "Database (MySQL)", height=800)
+
+    # Activations
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 360})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 280})
+
+    # Messages
+    add_message(root, "m1", "1: Cán bộ Đào tạo chọn Khóa tốt nghiệp & bấm 'Thẩm định tốt nghiệp'", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/graduation/evaluate-cohort/{cohortId}", 315, 545, 185)
+    add_message(root, "m3", "3: assessCohortCandidates(cohortId) -> Nạp toàn bộ hồ sơ sinh viên khóa", 555, 785, 230)
+    add_message(root, "m4", "4: SELECT s, c, g FROM students s JOIN curriculums c ... WHERE cohort_id = ?", 795, 1245, 275)
+    add_message(root, "m5", "5: Trả về danh sách sinh viên kèm toàn bộ bảng điểm học tập", 1245, 785, 315, is_reply=True)
+    add_message(root, "m6", "6: Kích hoạt Degree Audit Engine: Kiểm tra 7 tiêu chí TT08 (Tín chỉ, CPA, CC, Học phí)", 795, 795, 355, is_self=True)
+    add_message(root, "m7", "7: Xác định hạng tốt nghiệp (Xuất sắc/Giỏi/Khá/TB) & Kiểm tra hạ hạng do thi lại >5%", 795, 795, 395, is_self=True)
+    add_message(root, "m8", "8: saveAll(records) -> BATCH INSERT/UPDATE INTO graduation_records", 795, 1245, 435)
+    add_message(root, "m9", "9: Trả về kết quả thẩm định đã bền vững hóa trong CSDL", 1245, 785, 475, is_reply=True)
+    add_message(root, "m10", "10: 200 OK + ApiResponse.success(List<GraduationRecord>)", 785, 315, 515, is_reply=True)
+    add_message(root, "m11", "11: Hiển thị bảng tổng hợp tốt nghiệp: Danh sách đạt chuẩn & nợ chuẩn", 305, 80, 555, is_reply=True)
+    add_message(root, "m12", "12: Cán bộ bấm 'Xuất Quyết định công nhận tốt nghiệp' (PDF/Excel)", 80, 305, 600)
+    add_message(root, "m13", "13: GET /api/graduation/export-decision/{cohortId}", 315, 545, 640)
+    add_message(root, "m14", "14: exportGraduationDecision(cohortId) -> Sinh biểu mẫu Quyết định & Bảng điểm", 555, 1245, 680)
+    add_message(root, "m15", "15: 200 OK + File Quyết định công nhận tốt nghiệp & Sổ cấp bằng", 1245, 80, 725, is_reply=True)
+
+    return model
+
 def generate_all_sequence_diagrams():
     tabs = [
         ("1. Đăng nhập hệ thống", build_seq_1_login()),
@@ -879,6 +981,9 @@ def generate_all_sequence_diagrams():
         ("16. Báo cáo Thống kê & Dashboard", build_seq_16_dashboard()),
         ("17. Quản lý & Thu học phí", build_seq_17_tuition_management()),
         ("18. Điểm danh lớp học & Check-in trực tiếp", build_seq_18_live_attendance()),
+        ("19. Khảo thí & Quản lý phòng thi", build_seq_19_exam_management()),
+        ("20. Quy trình Đính chính điểm 3 cấp", build_seq_20_grade_amendment()),
+        ("21. Thẩm định chuẩn tốt nghiệp (Degree Audit)", build_seq_21_graduation_audit()),
     ]
 
     mxfile = ET.Element('mxfile', {

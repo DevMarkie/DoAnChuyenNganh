@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { 
   studentService, 
   courseSectionService, 
-  gradeAppealService, 
-  gradeService 
+  gradeAppealService 
 } from '../../services/dataService';
 import { 
   Users, 
@@ -16,8 +15,7 @@ import {
   DollarSign, 
   ArrowRight,
   Sparkles,
-  ClipboardCheck,
-  Building
+  ClipboardCheck
 } from 'lucide-react';
 
 export default function AcademicDashboardPage() {
@@ -27,32 +25,28 @@ export default function AcademicDashboardPage() {
     appealsPending: 0,
     gradeOverviewCount: 0,
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    async function loadDashboardData() {
+      try {
+        const [studentsRes, sectionsRes, appealsRes] = await Promise.allSettled([
+          studentService.getAll(),
+          courseSectionService.getAll(),
+          gradeAppealService.getAll({ status: 'PENDING' }),
+        ]);
+
+        setStats({
+          studentsCount: studentsRes.status === 'fulfilled' ? (studentsRes.value.data?.data?.length || 0) : 0,
+          sectionsCount: sectionsRes.status === 'fulfilled' ? (sectionsRes.value.data?.data?.length || 0) : 0,
+          appealsPending: appealsRes.status === 'fulfilled' ? (appealsRes.value.data?.data?.length || 0) : 0,
+          gradeOverviewCount: 0,
+        });
+      } catch (err) {
+        console.error('Lỗi nạp dashboard đào tạo:', err);
+      }
+    }
     loadDashboardData();
   }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [studentsRes, sectionsRes, appealsRes] = await Promise.allSettled([
-        studentService.getAll(),
-        courseSectionService.getAll(),
-        gradeAppealService.getAll({ status: 'PENDING' }),
-      ]);
-
-      setStats({
-        studentsCount: studentsRes.status === 'fulfilled' ? (studentsRes.value.data?.data?.length || 0) : 0,
-        sectionsCount: sectionsRes.status === 'fulfilled' ? (sectionsRes.value.data?.data?.length || 0) : 0,
-        appealsPending: appealsRes.status === 'fulfilled' ? (appealsRes.value.data?.data?.length || 0) : 0,
-      });
-    } catch (err) {
-      console.error('Lỗi nạp dashboard đào tạo:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const businessCards = [
     {

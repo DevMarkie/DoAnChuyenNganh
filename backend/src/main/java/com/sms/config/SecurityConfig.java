@@ -65,7 +65,7 @@ public class SecurityConfig {
                 // Academic Staff & Admin (Quản trị Đào tạo, CTĐT, Khoa, Môn học, Lớp SH)
                 .requestMatchers("/api/staff/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
                 .requestMatchers(HttpMethod.PUT, "/api/students/me/contact").hasRole("STUDENT")
-                .requestMatchers(HttpMethod.POST, "/api/students/**").hasAnyRole("ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers(HttpMethod.POST, "/api/students/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
                 .requestMatchers(HttpMethod.PUT, "/api/students/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
                 .requestMatchers(HttpMethod.POST, "/api/departments/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
                 .requestMatchers(HttpMethod.PUT, "/api/departments/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")

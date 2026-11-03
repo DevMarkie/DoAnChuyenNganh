@@ -255,7 +255,8 @@ public class GradeServiceTest {
         Grade existing = new Grade();
         existing.setEnrollment(enrollment);
         existing.setIsFinalized(true);
-        existing.setFinalizedAt(LocalDateTime.now().minusDays(2));
+        existing.setFinalizedAt(LocalDateTime.now().minusDays(8));
+        existing.setFinalScore(BigDecimal.valueOf(7));
 
         when(lecturerRepository.findByUserId(lectUserId)).thenReturn(Optional.of(lecturer));
         when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));

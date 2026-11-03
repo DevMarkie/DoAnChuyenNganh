@@ -57,6 +57,8 @@ public class CurriculumServiceTest {
     private PrerequisiteGraphEngine prerequisiteGraphEngine = new PrerequisiteGraphEngine();
     @Spy
     private DegreeAuditEngine degreeAuditEngine = new DegreeAuditEngine(prerequisiteGraphEngine);
+    @Mock
+    private TuitionService tuitionService;
 
     @InjectMocks
     private CurriculumService curriculumService;

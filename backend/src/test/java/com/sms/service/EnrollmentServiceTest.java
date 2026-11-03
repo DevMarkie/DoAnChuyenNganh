@@ -186,7 +186,7 @@ class EnrollmentServiceTest {
         assertThat(result.getStatus()).isEqualTo(Enrollment.EnrollmentStatus.ENROLLED);
         assertThat(section.getCurrentStudents()).isEqualTo(21);
         verify(enrollmentRepository).save(any(Enrollment.class));
-        verify(courseSectionRepository).save(section);
+        verify(courseSectionRepository).incrementCurrentStudentsAtomic(sectionId);
     }
 
     @Test
@@ -344,7 +344,7 @@ class EnrollmentServiceTest {
 
         enrollmentService.cancelEnrollment(userId, enrollmentId);
         verify(enrollmentRepository).save(enrollment);
-        verify(courseSectionRepository).save(section);
+        verify(courseSectionRepository).decrementCurrentStudentsAtomic(section.getId());
         assertEquals(Enrollment.EnrollmentStatus.CANCELLED, enrollment.getStatus());
         assertEquals(9, section.getCurrentStudents());
     }

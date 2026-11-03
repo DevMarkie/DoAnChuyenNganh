@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mxfile host="app.diagrams.net" modified="2026-10-28T00:00:00.000Z" agent="Antigravity AI Agent" version="24.0.0" type="device">
+  <diagram id="uc_academic" name="3. Phân hệ Cán bộ Phòng Đào tạo">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1550" pageHeight="1450" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="b3" value="PHÂN HỆ CÁN BỘ PHÒNG ĐÀO TẠO (ACADEMIC AFFAIRS)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;dashed=1;verticalAlign=top;align=left;spacingLeft=25;spacingTop=15;fontStyle=1;fontSize=15;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="210" y="30" width="1180" height="1360"/>
+        </mxCell>
+        <mxCell id="act_dt3" value="Cán bộ&#10;Phòng Đào tạo" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=13;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="60" y="620" width="45" height="80"/>
+        </mxCell>
+        <mxCell id="uc3_dept" value="Quản lý Cơ cấu Khoa &amp; Lớp sinh hoạt" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="80" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_dept" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_dept">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_subj" value="Quản lý Môn học &amp; Môn tiên quyết" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="195" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_subj" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_subj">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sem" value="Cấu hình Học kỳ &amp; Đợt ĐKHP (Waves)" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="310" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_sem" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_sem">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sec" value="Mở mới &amp; Điều phối Lớp học phần" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="435" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_sec" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_sec">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sch" value="Xếp Thời khóa biểu &amp; Chống xung đột" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="560" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_sch" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_sch">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_tuition" value="Quản lý &amp; Thu học phí sinh viên" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="685" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_tuition" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_tuition">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_exam" value="Tổ chức thi &amp; Phân bổ phòng tự động" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="810" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_exam" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_exam">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_warn" value="Quản lý Cảnh báo học vụ 3 mức độ" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="935" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_warn" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_warn">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_grad" value="Thẩm định tốt nghiệp theo Thông tư 08" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="260" y="1070" width="250" height="48"/>
+        </mxCell>
+        <mxCell id="e_dt3_uc3_grad" style="endArrow=none;html=1;strokeWidth=1.5;strokeColor=#000000;" parent="1" edge="1" source="act_dt3" target="uc3_grad">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_batchclass" value="Sinh mã lớp SH hàng loạt theo khóa" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="80" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="ext_batch_class" value="«mở rộng»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sub_batchclass" target="uc3_dept">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_prereq" value="Cấu hình môn học tiên quyết bắt buộc" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="195" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="inc_subj_pre" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_subj" target="uc3_sub_prereq">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_currsem" value="Kích hoạt Học kỳ hiện tại" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="285" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="uc3_sub_wave" value="Mở đợt đăng ký theo Khóa/Khoa" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="340" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="inc_sem1" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sem" target="uc3_sub_currsem">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="inc_sem2" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sem" target="uc3_sub_wave">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_secass" value="Phân công Giảng viên phụ trách" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="410" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="uc3_sub_seccfg" value="Cấu hình ca học &amp; Sĩ số tối đa" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="465" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="inc_sec1" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sec" target="uc3_sub_secass">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="inc_sec2" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sec" target="uc3_sub_seccfg">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_schroom" value="Quét xung đột phòng học" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="535" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="uc3_sub_schlec" value="Quét trùng lịch giảng viên" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="590" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="inc_sch1" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sch" target="uc3_sub_schroom">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="inc_sch2" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sch" target="uc3_sub_schlec">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_tuition_pay" value="Thu tiền mặt tại quầy &amp; Xuất biên lai" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="660" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="uc3_sub_tuition_ext" value="Xét duyệt đơn xin gia hạn học phí" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="715" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="inc_tui_pay" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_tuition" target="uc3_sub_tuition_pay">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ext_tui_ext" value="«mở rộng»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sub_tuition_ext" target="uc3_tuition">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_roster" value="Tự động chia phòng thi &amp; Đánh SBD" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="785" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="uc3_sub_examimport" value="Import bảng điểm rọc phách từ Excel" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="840" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="inc_exam_roster" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_exam" target="uc3_sub_roster">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ext_exam_import" value="«mở rộng»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sub_examimport" target="uc3_exam">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_warnfilter" value="Quét tự động sinh viên theo CPA" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="910" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="uc3_sub_warnexport" value="Xuất danh sách xử lý học vụ CSV" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="965" width="250" height="45"/>
+        </mxCell>
+        <mxCell id="inc_warn_filter" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_warn" target="uc3_sub_warnfilter">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ext_warn_export" value="«mở rộng»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sub_warnexport" target="uc3_warn">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="uc3_sub_gradaudit" value="Degree Audit Engine đối soát 7 tiêu chí" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="1045" width="260" height="45"/>
+        </mxCell>
+        <mxCell id="uc3_sub_graddec" value="Xuất Quyết định tốt nghiệp &amp; Sổ cấp bằng" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="1100" width="260" height="45"/>
+        </mxCell>
+        <mxCell id="inc_grad_audit" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_grad" target="uc3_sub_gradaudit">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ext_grad_dec" value="«mở rộng»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc3_sub_graddec" target="uc3_grad">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

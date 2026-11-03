@@ -292,6 +292,11 @@ public class RegistrationWaveService {
 
         LocalDateTime now = LocalDateTime.now();
 
+        // Nếu học kỳ không cấu hình đợt/ca đăng ký phân tải riêng -> cho phép đăng ký theo thời hạn mở của học kỳ
+        if (!registrationWaveRepository.existsBySemesterIdAndIsActiveTrue(semesterId)) {
+            return null;
+        }
+
         boolean hasSpecificMajorWaves = majorId != null && registrationWaveRepository.hasWavesForMajor(semesterId, majorId);
 
         List<RegistrationWave> eligibleWaves;

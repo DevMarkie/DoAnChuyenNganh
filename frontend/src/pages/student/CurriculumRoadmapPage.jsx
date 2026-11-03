@@ -4,7 +4,6 @@ import {
   Award,
   AlertCircle,
   AlertTriangle,
-  ArrowRight,
   BookOpen,
   Briefcase,
   CheckCircle2,
@@ -24,8 +23,6 @@ import {
   Sparkles,
   Unlock,
   ChevronsUpDown,
-  Filter,
-  Info,
   X,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
@@ -40,7 +37,7 @@ const statusConfig = {
   NOT_ENROLLED: { label: 'Chưa học', cls: 'badge-neutral', icon: Circle, color: 'var(--text-muted, #94a3b8)', bg: 'rgba(148, 163, 184, 0.1)' },
 };
 
-export const fixUtf8 = (text) => {
+const fixUtf8 = (text) => {
   if (!text || typeof text !== 'string') return text;
   try {
     if (/[\u00C0-\u00FF][\u0080-\u00BF]/.test(text)) {

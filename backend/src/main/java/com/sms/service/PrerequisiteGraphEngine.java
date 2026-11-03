@@ -265,11 +265,6 @@ public class PrerequisiteGraphEngine {
 
     public boolean isGradePassed(Grade grade) {
         if (grade == null) return false;
-        if (grade.getSpecialGrade() == Grade.SpecialGrade.M) return true;
-        if (grade.getSpecialGrade() == Grade.SpecialGrade.V) return false;
-        if (grade.getGpaPoint() == null) return false;
-        // Total score >= 4.0 and GPA >= 1.0 (D) and final score >= 3.0 (BR-Course01)
-        boolean finalScorePassed = grade.getFinalScore() == null || grade.getFinalScore().compareTo(BigDecimal.valueOf(3.0)) >= 0;
-        return grade.getGpaPoint().compareTo(BigDecimal.ONE) >= 0 && finalScorePassed;
+        return Boolean.TRUE.equals(grade.getIsPassed());
     }
 }

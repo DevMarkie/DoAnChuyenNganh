@@ -27,6 +27,7 @@ public class GraduationService {
     private final CurriculumService curriculumService;
     private final StudentRepository studentRepository;
     private final CohortRepository cohortRepository;
+    private final TuitionService tuitionService;
 
     @Transactional
     public List<GraduationRecord> assessCohortCandidates(Integer cohortId) {
@@ -51,13 +52,19 @@ public class GraduationService {
 
             record.setTotalCreditsAccumulated(eligibility.getCompletedCredits());
             record.setCumulativeGpa(eligibility.getCumulativeGpa() != null ? eligibility.getCumulativeGpa() : BigDecimal.ZERO);
-            record.setTuitionCleared(!eligibility.getUnsatisfiedReasons().contains("Chưa hoàn thành công nợ học phí"));
+            boolean tuitionCleared = (eligibility.getUnsatisfiedReasons() == null || !eligibility.getUnsatisfiedReasons().contains("Chưa hoàn thành công nợ học phí"))
+                    && !student.isFinancialHold()
+                    && (tuitionService == null || !tuitionService.isTuitionOverdue(student.getId()));
+            record.setTuitionCleared(tuitionCleared);
             record.setPhysicalEducationPassed(true); // chuẩn đầu ra
             record.setDefenseEducationPassed(true);
             record.setEnglishCertificateStatus(true);
-            record.setSystemRecommendation(eligibility.isEligible() ? "QUALIFIED" : "DISQUALIFIED");
-            if (!eligibility.isEligible() && eligibility.getUnsatisfiedReasons() != null && !eligibility.getUnsatisfiedReasons().isEmpty()) {
+            boolean isQualified = eligibility.isEligible() && tuitionCleared;
+            record.setSystemRecommendation(isQualified ? "QUALIFIED" : "DISQUALIFIED");
+            if (!isQualified && eligibility.getUnsatisfiedReasons() != null && !eligibility.getUnsatisfiedReasons().isEmpty()) {
                 record.setNote(String.join("; ", eligibility.getUnsatisfiedReasons()));
+            } else if (!isQualified) {
+                record.setNote("Chưa hoàn thành công nợ học phí theo quy chế");
             } else {
                 record.setNote("Đủ điều kiện tốt nghiệp theo chuẩn Khung CTĐT");
             }

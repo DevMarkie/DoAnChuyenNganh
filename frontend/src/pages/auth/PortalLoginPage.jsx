@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Lock, User, X, Mail, Phone, CheckCircle, Eye, EyeOff, KeyRound, Sparkles, ArrowRight } from 'lucide-react';
+import { Lock, User, X, Eye, EyeOff, KeyRound, ArrowRight } from 'lucide-react';
 import { PortalStudentIcon, PortalLecturerIcon, PortalAdminIcon } from '../../components/icons';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/dataService';

@@ -1,7 +1,7 @@
 # 📊 BỘ SƠ ĐỒ THIẾT KẾ & PHÂN TÍCH HỆ THỐNG (UML DRAW.IO SUITE)
 ## HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS / UAMS)
 > **Chuẩn mô hình hóa:** OMG UML 2.5 (Unified Modeling Language) & Phân tích BCE (Boundary - Control - Entity)  
-> **Bộ sơ đồ bao gồm:** 4 Tập sơ đồ Master (58 Tabs tổng cộng) + 4 Sơ đồ Use Case đơn phân hệ  
+> **Bộ sơ đồ bao gồm:** 5 Tập sơ đồ Master (76 Tabs tổng cộng: ERD 8 tabs, UseCase 5 tabs, Activity 21 tabs, Sequence 21 tabs, BCE 21 tabs) + 5 Sơ đồ Use Case đơn phân hệ  
 > **Quy chuẩn thiết kế:** Academic Monochrome High-Contrast (Nền trắng, viền đen 1.5px, Zero Overlap, tối ưu in ấn đồ án)  
 > **Tác giả:** Nguyễn Duy Minh (MSV: 21010696) · Khoa Công Nghệ Thông Tin · Đại học Phenikaa
 
@@ -9,8 +9,8 @@
 
 ## 📑 Mục lục
 1. [Tổng quan Bộ hồ sơ Sơ đồ Draw.io](#1-tổng-quan-bộ-hồ-sơ-sơ-đồ-drawio)
-2. [Danh mục 4 Bộ Sơ đồ Master Đa phân hệ (Multi-page Files)](#2-danh-mục-4-bộ-sơ-đồ-master-đa-phân-hệ-multi-page-files)
-3. [Danh mục 4 Sơ đồ Use Case Đơn phân hệ (Single-tab Files)](#3-danh-mục-4-sơ-đồ-use-case-đơn-phân-hệ-single-tab-files)
+2. [Danh mục 5 Bộ Sơ đồ Master Đa phân hệ (Multi-page Files)](#2-danh-mục-5-bộ-sơ-đồ-master-đa-phân-hệ-multi-page-files)
+3. [Danh mục 5 Sơ đồ Use Case Đơn phân hệ (Single-tab Files)](#3-danh-mục-5-sơ-đồ-use-case-đơn-phân-hệ-single-tab-files)
 4. [Ma trận 18 Chức năng Nghiệp vụ Cốt lõi đồng bộ trên toàn bộ sơ đồ](#4-ma-trận-18-chức-năng-nghiệp-vụ-cốt-lõi-đồng-bộ-trên-toàn-bộ-sơ-đồ)
 5. [Quy chuẩn thiết kế Hàn lâm & Chống lỗi đồ họa](#5-quy-chuẩn-thiết-kế-hàn-lâm--chống-lỗi-đồ-họa)
 6. [Hệ thống Scripts Python Tự động hóa & Xuất báo cáo](#6-hệ-thống-scripts-python-tự-động-hóa--xuất-báo-cáo)
@@ -25,27 +25,29 @@ Toàn bộ các biểu đồ được sinh tự động và kiểm định cấu
 
 ---
 
-## 2. Danh mục 4 Bộ Sơ đồ Master Đa phân hệ (Multi-page Files)
+## 2. Danh mục 5 Bộ Sơ đồ Master Đa phân hệ (Multi-page Files)
 
 | STT | Tên tệp Master | Chuẩn mô hình hóa | Số Tabs | Nội dung mô tả chi tiết |
 |:---:|:---|:---|:---:|:---|
-| **1** | [UseCase_Diagrams.drawio](UseCase_Diagrams.drawio) | UML 2.5 Use Case Diagram | **4 tabs** | 4 phân hệ ca sử dụng: Tổng quan toàn trường, Phân hệ Quản trị viên, Phân hệ Giảng viên, Phân hệ Sinh viên. Phân định ranh giới hệ thống chuẩn mực, đầy đủ quan hệ `«include»` và `«extend»`. |
-| **2** | [Sequence_Diagrams.drawio](Sequence_Diagrams.drawio) | UML 2.5 Sequence Diagram | **18 tabs**| 18 biểu đồ tuần tự cho 18 nghiệp vụ cốt lõi theo 6 đường sinh mệnh (Lifelines): `Tác nhân` ➜ `Giao diện React SPA` ➜ `REST Controller` ➜ `Business Service` ➜ `JPA Repository` ➜ `CSDL MySQL`. |
-| **3** | [Activity_Diagrams.drawio](Activity_Diagrams.drawio) | UML 2.5 Activity Diagram | **18 tabs**| 18 biểu đồ hoạt động phân làn (Swimlanes): Làn Tác nhân (Actor Lane) và Làn Hệ thống (System Service & DB Lane), đầy đủ nút khởi đầu, điểm rẽ nhánh quyết định và xử lý ngoại lệ. |
-| **4** | [AnalysisClass_BCE_Diagrams.drawio](AnalysisClass_BCE_Diagrams.drawio) | Boundary – Control – Entity | **18 tabs**| 18 biểu đồ phân tích kiến trúc BCE: Lớp Biên (Boundary UI), Lớp Điều khiển (Controller & Service), Lớp Thực thể (JPA Entity & DTO), khớp 1-1 với cấu trúc mã nguồn. |
+| **1** | [UseCase_Diagrams.drawio](UseCase_Diagrams.drawio) | UML 2.5 Use Case Diagram | **5 tabs** | 5 phân hệ ca sử dụng: Tổng quan toàn trường, Quản trị viên, Cán bộ Đào tạo, Giảng viên, Sinh viên. Phân định ranh giới hệ thống chuẩn mực, đầy đủ quan hệ `«include»` và `«extend»`. |
+| **2** | [ERD_Diagrams.drawio](ERD_Diagrams.drawio) | OMG UML / Relational ERD | **8 tabs** | Lược đồ Thực thể Quan hệ CSDL 2 tầng: 1 Tab Sơ đồ Tổng quan Thực thể Cốt lõi (15 thực thể) + 7 Tabs Lược đồ Phân hệ chi tiết mô hình hóa toàn bộ 41 bảng quan hệ CSDL MySQL 8. |
+| **3** | [Activity_Diagrams.drawio](Activity_Diagrams.drawio) | UML 2.5 Activity Diagram | **21 tabs**| 21 biểu đồ hoạt động phân làn (Swimlanes): Làn Tác nhân (Actor Lane) và Làn Hệ thống (System Service & DB Lane), đầy đủ nút khởi đầu, điểm rẽ nhánh quyết định và xử lý ngoại lệ. |
+| **4** | [AnalysisClass_BCE_Diagrams.drawio](AnalysisClass_BCE_Diagrams.drawio) | Boundary – Control – Entity | **21 tabs**| 21 biểu đồ phân tích kiến trúc BCE: Lớp Biên (Boundary UI), Lớp Điều khiển (Controller & Service), Lớp Thực thể (JPA Entity & DTO), khớp 1-1 với cấu trúc mã nguồn. |
+| **5** | [Sequence_Diagrams.drawio](Sequence_Diagrams.drawio) | UML 2.5 Sequence Diagram | **21 tabs**| 21 biểu đồ tuần tự cho 21 nghiệp vụ cốt lõi theo 6 đường sinh mệnh (Lifelines): `Tác nhân` ➜ `Giao diện React SPA` ➜ `REST Controller` ➜ `Business Service` ➜ `JPA Repository` ➜ `CSDL MySQL`. |
 
 ---
 
-## 3. Danh mục 4 Sơ đồ Use Case Đơn phân hệ (Single-tab Files)
+## 3. Danh mục 5 Sơ đồ Use Case Đơn phân hệ (Single-tab Files)
 
 Các tệp sơ đồ đơn phục vụ việc xem nhanh hoặc chèn trực tiếp vào các slide báo cáo độc lập:
 
 | STT | Tên tệp | Chuẩn / Phân hệ | Số Tab | Nội dung đặc tả |
 |:---:|:---|:---|:---:|:---|
-| **5** | [1_UseCase_TongQuan.drawio](1_UseCase_TongQuan.drawio) | Sơ đồ Ca sử dụng Tổng quan | 1 tab | Sơ đồ tổng quát toàn bộ hệ thống SMS với 4 nhóm tác nhân (Người dùng chung, Admin, Giảng viên, Sinh viên). |
-| **6** | [2_UseCase_Admin.drawio](2_UseCase_Admin.drawio) | Sơ đồ Phân hệ Quản trị & Đào tạo | 1 tab | Chi tiết các chức năng Admin: Quản lý cơ cấu đào tạo, mở lớp HP, xếp TKB, thu học phí, xét tốt nghiệp. |
-| **7** | [3_UseCase_GiangVien.drawio](3_UseCase_GiangVien.drawio) | Sơ đồ Phân hệ Giảng viên | 1 tab | Chi tiết nghiệp vụ giảng viên: Lịch giảng dạy, Sổ điểm điện tử, Import Excel, Điểm danh trực tiếp PIN 6 số. |
-| **8** | [4_UseCase_SinhVien.drawio](4_UseCase_SinhVien.drawio) | Sơ đồ Phân hệ Sinh viên | 1 tab | Chi tiết nghiệp vụ sinh viên: Cổng đăng ký tín chỉ, Smart Schedule, Tra cứu điểm CPA/GPA, nộp đơn phúc khảo. |
+| **6** | [1_UseCase_TongQuan.drawio](1_UseCase_TongQuan.drawio) | Sơ đồ Ca sử dụng Tổng quan | 1 tab | Sơ đồ tổng quát toàn bộ hệ thống SMS với 4 nhóm tác nhân (Admin, Cán bộ Đào tạo, Giảng viên, Sinh viên). |
+| **7** | [2_UseCase_Admin.drawio](2_UseCase_Admin.drawio) | Sơ đồ Phân hệ Quản trị viên | 1 tab | Chi tiết các chức năng Admin: Phân quyền, quản lý tài khoản, cấu hình tham số hệ thống. |
+| **8** | [3_UseCase_DaoTao.drawio](3_UseCase_DaoTao.drawio) | Sơ đồ Phân hệ Phòng Đào tạo | 1 tab | Chi tiết nghiệp vụ Đào tạo: CTĐT, mở lớp HP, xếp TKB, khóa đợt ĐKTC, xét cảnh báo & tốt nghiệp. |
+| **9** | [4_UseCase_GiangVien.drawio](4_UseCase_GiangVien.drawio) | Sơ đồ Phân hệ Giảng viên | 1 tab | Chi tiết nghiệp vụ giảng viên: Lịch giảng dạy, Sổ điểm điện tử, Import Excel, Điểm danh trực tiếp PIN 6 số. |
+| **10** | [5_UseCase_SinhVien.drawio](5_UseCase_SinhVien.drawio) | Sơ đồ Phân hệ Sinh viên | 1 tab | Chi tiết nghiệp vụ sinh viên: Cổng đăng ký tín chỉ, Smart Schedule, Tra cứu điểm CPA/GPA, nộp đơn phúc khảo. |
 
 ---
 

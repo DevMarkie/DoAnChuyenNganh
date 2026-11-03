@@ -241,8 +241,8 @@ public class DegreeAuditEngine {
             }
         }
 
-        int totalCompletedCredits = completedCompulsoryCredits + completedElectiveCreditsAccepted;
         int excessElectiveCredits = allExcessElectives.stream().mapToInt(AuditSubjectItem::getCredits).sum();
+        int totalCompletedCredits = completedCompulsoryCredits + completedElectiveCreditsAccepted + excessElectiveCredits;
 
         // Calculate Audit CPA and Official CPA
         BigDecimal auditCpa = auditCpaCredits > 0

@@ -1,3 +1,1349 @@
+﻿-- =====================================================================================
+-- HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS / UAMS)
+-- TỔNG HỢP TOÀN BỘ 27 BẢN MIGRATION LỊCH SỬ (CONSOLIDATED MIGRATIONS ARCHIVE)
+-- Đã gộp từ 27 bản vá riêng lẻ theo đúng trình tự tiến hóa kiến trúc CSDL.
+-- Lưu ý: Hệ thống chính thức chạy qua database/schema.sql và database/seed.sql.
+-- =====================================================================================
+
+-- =====================================================================================
+-- BẢN MIGRATION 01 : migration_academic_structure.sql
+-- =====================================================================================
+-- Academic structure: department -> major -> cohort -> curriculum -> blocks -> subjects.
+-- Safe to run after the existing schema and scale data migrations.
+USE student_management;
+
+START TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS majors (
+    id INT NOT NULL AUTO_INCREMENT,
+    department_id INT NOT NULL,
+    code VARCHAR(20) NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    description VARCHAR(500) NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_majors_code (code),
+    UNIQUE KEY uq_majors_department_name (department_id, name),
+    CONSTRAINT fk_majors_department FOREIGN KEY (department_id) REFERENCES departments(id)
+);
+
+CREATE TABLE IF NOT EXISTS cohorts (
+    id INT NOT NULL AUTO_INCREMENT,
+    code VARCHAR(10) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    admission_year INT NOT NULL,
+    graduation_year INT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_cohorts_code (code)
+);
+
+CREATE TABLE IF NOT EXISTS curriculum_programs (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    major_id INT NOT NULL,
+    cohort_id INT NOT NULL,
+    code VARCHAR(40) NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    total_credits INT NOT NULL DEFAULT 0,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_curriculum_program_major_cohort (major_id, cohort_id),
+    UNIQUE KEY uq_curriculum_program_code (code),
+    CONSTRAINT fk_curriculum_program_major FOREIGN KEY (major_id) REFERENCES majors(id),
+    CONSTRAINT fk_curriculum_program_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts(id)
+);
+
+CREATE TABLE IF NOT EXISTS curriculum_blocks (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    program_id BIGINT NOT NULL,
+    code VARCHAR(30) NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    block_type ENUM('COMPULSORY', 'ELECTIVE') NOT NULL,
+    required_subject_count INT NOT NULL DEFAULT 0,
+    required_credits INT NOT NULL DEFAULT 0,
+    elective_subject_count INT NOT NULL DEFAULT 0,
+    elective_credits INT NOT NULL DEFAULT 0,
+    display_order INT NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_curriculum_block_code (program_id, code),
+    CONSTRAINT fk_curriculum_block_program FOREIGN KEY (program_id) REFERENCES curriculum_programs(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS curriculum_block_subjects (
+    block_id BIGINT NOT NULL,
+    subject_id INT NOT NULL,
+    is_required BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (block_id, subject_id),
+    CONSTRAINT fk_block_subject_block FOREIGN KEY (block_id) REFERENCES curriculum_blocks(id) ON DELETE CASCADE,
+    CONSTRAINT fk_block_subject_subject FOREIGN KEY (subject_id) REFERENCES subjects(id)
+);
+
+ALTER TABLE classes ADD COLUMN major_id INT NULL, ADD COLUMN cohort_id INT NULL;
+ALTER TABLE classes ADD CONSTRAINT fk_classes_major FOREIGN KEY (major_id) REFERENCES majors(id);
+ALTER TABLE classes ADD CONSTRAINT fk_classes_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts(id);
+
+CREATE INDEX idx_majors_department ON majors(department_id);
+CREATE INDEX idx_curriculum_program_major_cohort ON curriculum_programs(major_id, cohort_id);
+CREATE INDEX idx_curriculum_blocks_program ON curriculum_blocks(program_id);
+CREATE INDEX idx_block_subjects_subject ON curriculum_block_subjects(subject_id);
+CREATE INDEX idx_classes_major_cohort ON classes(major_id, cohort_id);
+
+-- One representative major per faculty. These are stable business records, not test labels.
+INSERT IGNORE INTO majors (id, department_id, code, name, description) VALUES
+(1, 1, 'CNTT', 'Cong nghe thong tin', 'Ky thuat phan mem, tri tue nhan tao, an toan thong tin'),
+(2, 2, 'QTKD', 'Quan tri kinh doanh', 'Quan tri doanh nghiep, marketing va thuong mai dien tu'),
+(3, 3, 'DTVT', 'Dien - Dien tu', 'Dien tu vien thong, dieu khien va he thong nhung'),
+(4, 4, 'CK', 'Co khi', 'Co dien tu, ky thuat o to va che tao may'),
+(5, 5, 'NN', 'Ngoai ngu', 'Ngon ngu Anh, Nhat va bien phien dich'),
+(6, 6, 'KT', 'Ke toan - Kiem toan', 'Ke toan tai chinh va kiem toan'),
+(7, 7, 'LUAT', 'Luat', 'Luat kinh te va phap luat cong'),
+(8, 8, 'XD', 'Ky thuat Xay dung', 'Ky thuat xay dung va quan ly cong trinh'),
+(9, 9, 'YD', 'Y Duoc', 'Y khoa, duoc hoc va cham soc suc khoe'),
+(10, 10, 'DL', 'Du lich', 'Quan tri du lich, khach san va dich vu'),
+(11, 11, 'TT', 'Truyen thong', 'Truyen thong so, bao chi va quan he cong chung'),
+(12, 12, 'XH', 'Khoa hoc Xa hoi', 'Tam ly, xa hoi hoc va quan tri nhan luc'),
+(13, 13, 'NNG', 'Ngon ngu', 'Ngon ngu ung dung va giao tiep lien van hoa');
+
+INSERT IGNORE INTO cohorts (id, code, name, admission_year, graduation_year) VALUES
+(1, 'K16', 'Khoa 16', 2022, 2026),
+(2, 'K17', 'Khoa 17', 2023, 2027),
+(3, 'K18', 'Khoa 18', 2024, 2028),
+(4, 'K19', 'Khoa 19', 2025, 2029);
+
+-- Four programs per major, one for each cohort.
+INSERT IGNORE INTO curriculum_programs (id, major_id, cohort_id, code, name, total_credits)
+SELECT ((m.id - 1) * 4) + c.id,
+       m.id,
+       c.id,
+       CONCAT(m.code, '-', c.code),
+       CONCAT('Chuong trinh dao tao ', m.name, ' - ', c.name),
+       145
+FROM majors m CROSS JOIN cohorts c;
+
+-- Five compulsory blocks and seven elective blocks per program, matching the curriculum view.
+INSERT IGNORE INTO curriculum_blocks (program_id, code, name, block_type, required_subject_count, required_credits, elective_subject_count, elective_credits, display_order)
+SELECT p.id, b.code, b.name, b.block_type, b.required_subject_count, b.required_credits, b.elective_subject_count, b.elective_credits, b.display_order
+FROM curriculum_programs p
+CROSS JOIN (
+    SELECT 'GDDC' code, 'Khối kiến thức giáo dục đại cương' name, 'COMPULSORY' block_type, 18 required_subject_count, 47 required_credits, 0 elective_subject_count, 0 elective_credits, 1 display_order
+    UNION ALL SELECT 'CSNG', 'Khối kiến thức cơ sở ngành', 'COMPULSORY', 11, 30, 0, 0, 2
+    UNION ALL SELECT 'CN', 'Khối kiến thức chuyên ngành', 'COMPULSORY', 11, 30, 0, 0, 3
+    UNION ALL SELECT 'TN', 'Thực tập', 'COMPULSORY', 1, 4, 0, 0, 4
+    UNION ALL SELECT 'TNK', 'Khóa luận tốt nghiệp', 'COMPULSORY', 1, 10, 0, 0, 5
+    UNION ALL SELECT 'TC01', 'Giáo dục thể chất', 'ELECTIVE', 0, 0, 3, 3, 6
+    UNION ALL SELECT 'TC02', 'Giáo dục quốc phòng - an ninh', 'ELECTIVE', 0, 0, 4, 8, 7
+    UNION ALL SELECT 'TC03', 'Khối kiến thức bổ trợ', 'ELECTIVE', 0, 0, 8, 16, 8
+    UNION ALL SELECT 'TC04', 'Khối kiến thức điều kiện', 'ELECTIVE', 0, 0, 8, 16, 9
+    UNION ALL SELECT 'TC05', 'Khối kiến thức chuyên ngành tự chọn 1', 'ELECTIVE', 0, 0, 8, 16, 10
+    UNION ALL SELECT 'TC06', 'Khối kiến thức chuyên ngành tự chọn 2', 'ELECTIVE', 0, 0, 8, 16, 11
+    UNION ALL SELECT 'TC07', 'Đồ án/Khóa luận tốt nghiệp tự chọn', 'ELECTIVE', 0, 0, 1, 10, 12
+) b;
+
+-- Link existing classes to their major and cohort using the class code/year.
+UPDATE classes c
+JOIN majors m ON m.department_id = c.department_id
+JOIN cohorts h ON h.code = c.academic_year
+SET c.major_id = m.id, c.cohort_id = h.id
+WHERE c.major_id IS NULL;
+
+-- Scale classes represent the current K19 intake.
+UPDATE classes c
+JOIN majors m ON m.department_id = c.department_id
+JOIN cohorts h ON h.code = 'K19'
+SET c.major_id = m.id, c.cohort_id = h.id
+WHERE c.code LIKE 'SCALE-%' AND c.major_id IS NULL;
+
+-- Phân bổ môn học chuẩn mực vào các khối chương trình đào tạo
+-- 1. Khối GDDC (Giáo dục đại cương) cho toàn bộ các ngành
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+CROSS JOIN subjects s
+WHERE cb.code = 'GDDC' AND s.subject_code IN ('BS101', 'BS102', 'BS104', 'BS105', 'EN101');
+
+-- Thêm Vật lý đại cương (BS103) cho các khối ngành kỹ thuật (CNTT, Điện - Điện tử, Cơ khí)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'GDDC' AND cp.major_id IN (1, 3, 4) AND s.subject_code = 'BS103';
+
+-- 2. Ngành Công nghệ thông tin (major_id = 1)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 1 AND s.subject_code IN ('IT101', 'IT201', 'IT202', 'IT203');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 1 AND s.subject_code IN ('IT301', 'IT302', 'IT303', 'IT304');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 1 AND s.subject_code IN ('EN201', 'JA101');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC05' AND cp.major_id = 1 AND s.subject_code = 'IT305';
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC06' AND cp.major_id = 1 AND s.subject_code = 'IT401';
+
+-- 3. Ngành Quản trị kinh doanh (major_id = 2)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 2 AND s.subject_code IN ('BA101', 'BA102', 'BA103');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 2 AND s.subject_code IN ('BA201', 'BA202', 'BA301', 'BA302');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 2 AND s.subject_code IN ('EN201', 'JA101');
+
+-- 4. Ngành Điện - Điện tử (major_id = 3)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 3 AND s.subject_code IN ('EE101', 'IT101');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 3 AND s.subject_code IN ('EE201', 'EE202', 'EE301', 'EE302');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 3 AND s.subject_code IN ('EN201', 'JA101');
+
+-- 5. Ngành Cơ khí (major_id = 4)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 4 AND s.subject_code IN ('ME101', 'ME201');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 4 AND s.subject_code IN ('ME202', 'ME301', 'ME302');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 4 AND s.subject_code IN ('EN201', 'JA101');
+
+-- 6. Ngành Ngoại ngữ (major_id = 5)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 5 AND s.subject_code IN ('EN201', 'JA101');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 5 AND s.subject_code IN ('BA101', 'BA201');
+
+-- 7. Ngành Kế toán - Kiểm toán (major_id = 6)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 6 AND s.subject_code IN ('BA101', 'BA102', 'BA103');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 6 AND s.subject_code IN ('BA202', 'BA301');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 6 AND s.subject_code IN ('EN201', 'JA101');
+
+COMMIT;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 02 : populate_curriculum_subjects.sql
+-- =====================================================================================
+USE student_management;
+START TRANSACTION;
+
+-- Gán major và cohort cho các lớp nếu chưa có
+UPDATE classes c
+JOIN majors m ON m.department_id = c.department_id
+JOIN cohorts h ON h.code = 'K19'
+SET c.major_id = m.id, c.cohort_id = h.id
+WHERE c.code LIKE 'SCALE-%' AND c.major_id IS NULL;
+
+-- 1. Khối GDDC (Giáo dục đại cương) cho toàn bộ các ngành
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+CROSS JOIN subjects s
+WHERE cb.code = 'GDDC' AND s.subject_code IN ('BS101', 'BS102', 'BS104', 'BS105', 'EN101');
+
+-- Thêm Vật lý đại cương (BS103) cho các khối ngành kỹ thuật (CNTT, Điện - Điện tử, Cơ khí)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'GDDC' AND cp.major_id IN (1, 3, 4) AND s.subject_code = 'BS103';
+
+-- 2. Ngành Công nghệ thông tin (major_id = 1)
+-- Cơ sở ngành (CSNG)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 1 AND s.subject_code IN ('IT101', 'IT201', 'IT202', 'IT203');
+
+-- Chuyên ngành (CN)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 1 AND s.subject_code IN ('IT301', 'IT302', 'IT303', 'IT304');
+
+-- Tự chọn chuyên ngành & Bổ trợ (TC03, TC05, TC06)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 1 AND s.subject_code IN ('EN201', 'JA101');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC05' AND cp.major_id = 1 AND s.subject_code = 'IT305';
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC06' AND cp.major_id = 1 AND s.subject_code = 'IT401';
+
+-- 3. Ngành Quản trị kinh doanh (major_id = 2)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 2 AND s.subject_code IN ('BA101', 'BA102', 'BA103');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 2 AND s.subject_code IN ('BA201', 'BA202', 'BA301', 'BA302');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 2 AND s.subject_code IN ('EN201', 'JA101');
+
+-- 4. Ngành Điện - Điện tử (major_id = 3)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 3 AND s.subject_code IN ('EE101', 'IT101');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 3 AND s.subject_code IN ('EE201', 'EE202', 'EE301', 'EE302');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 3 AND s.subject_code IN ('EN201', 'JA101');
+
+-- 5. Ngành Cơ khí (major_id = 4)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 4 AND s.subject_code IN ('ME101', 'ME201');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 4 AND s.subject_code IN ('ME202', 'ME301', 'ME302');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 4 AND s.subject_code IN ('EN201', 'JA101');
+
+-- 6. Ngành Ngoại ngữ (major_id = 5)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 5 AND s.subject_code IN ('EN201', 'JA101');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 5 AND s.subject_code IN ('BA101', 'BA201');
+
+-- 7. Ngành Kế toán - Kiểm toán (major_id = 6)
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CSNG' AND cp.major_id = 6 AND s.subject_code IN ('BA101', 'BA102', 'BA103');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 1
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'CN' AND cp.major_id = 6 AND s.subject_code IN ('BA202', 'BA301');
+
+INSERT IGNORE INTO curriculum_block_subjects (block_id, subject_id, is_required)
+SELECT cb.id, s.id, 0
+FROM curriculum_blocks cb
+JOIN curriculum_programs cp ON cb.program_id = cp.id
+CROSS JOIN subjects s
+WHERE cb.code = 'TC03' AND cp.major_id = 6 AND s.subject_code IN ('EN201', 'JA101');
+
+COMMIT;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 03 : migrate_curriculum_block_names_vi.sql
+-- =====================================================================================
+-- Normalize curriculum block names for databases created from the original
+-- ASCII-only academic structure migration.
+UPDATE curriculum_blocks
+SET name = CASE code
+    WHEN 'GDDC' THEN 'Khối kiến thức giáo dục đại cương'
+    WHEN 'CSNG' THEN 'Khối kiến thức cơ sở ngành'
+    WHEN 'CN' THEN 'Khối kiến thức chuyên ngành'
+    WHEN 'TN' THEN 'Thực tập'
+    WHEN 'TNK' THEN 'Khóa luận tốt nghiệp'
+    WHEN 'TC01' THEN 'Giáo dục thể chất'
+    WHEN 'TC02' THEN 'Giáo dục quốc phòng - an ninh'
+    WHEN 'TC03' THEN 'Khối kiến thức bổ trợ'
+    WHEN 'TC04' THEN 'Khối kiến thức điều kiện'
+    WHEN 'TC05' THEN 'Khối kiến thức chuyên ngành tự chọn 1'
+    WHEN 'TC06' THEN 'Khối kiến thức chuyên ngành tự chọn 2'
+    WHEN 'TC07' THEN 'Đồ án/Khóa luận tốt nghiệp tự chọn'
+    ELSE name
+END
+WHERE code IN ('GDDC', 'CSNG', 'CN', 'TN', 'TNK', 'TC01', 'TC02', 'TC03', 'TC04', 'TC05', 'TC06', 'TC07');
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 04 : validate_academic_catalog.sql
+-- =====================================================================================
+-- Data quality checks for the academic catalog.
+-- Every query should return zero rows except the two count queries.
+USE student_management;
+
+SELECT 'departments' AS entity, COUNT(*) AS total FROM departments;
+SELECT 'active_subjects' AS entity, COUNT(*) AS total FROM subjects WHERE is_active = TRUE;
+
+SELECT s.id, s.subject_code, s.subject_name
+FROM subjects s
+LEFT JOIN departments d ON d.id = s.department_id
+WHERE d.id IS NULL OR s.subject_code REGEXP '^SC[0-9]+' OR s.subject_name LIKE 'Scale Subject%';
+
+SELECT subject_code, COUNT(*) AS duplicates
+FROM subjects
+GROUP BY subject_code
+HAVING COUNT(*) > 1;
+
+SELECT cs.id, cs.section_code
+FROM course_sections cs
+LEFT JOIN subjects s ON s.id = cs.subject_id
+LEFT JOIN lecturers l ON l.id = cs.lecturer_id
+LEFT JOIN semesters sem ON sem.id = cs.semester_id
+WHERE s.id IS NULL OR l.id IS NULL OR sem.id IS NULL;
+
+SELECT c.id, c.code
+FROM classes c
+LEFT JOIN departments d ON d.id = c.department_id
+WHERE d.id IS NULL;
+
+-- =====================================================================================
+-- BẢN MIGRATION 05 : migrate_fix_section_capacity.sql
+-- =====================================================================================
+USE student_management;
+
+-- Keep capacity consistent with existing registrations loaded by the seed data.
+UPDATE course_sections cs
+SET enrolled_count = (
+    SELECT COUNT(*)
+    FROM enrollments e
+    WHERE e.section_id = cs.id
+      AND e.status <> 'CANCELLED'
+),
+max_students = GREATEST(
+    cs.max_students,
+    (
+        SELECT COUNT(*)
+        FROM enrollments e
+        WHERE e.section_id = cs.id
+          AND e.status <> 'CANCELLED'
+    )
+)
+WHERE EXISTS (
+    SELECT 1
+    FROM enrollments e
+    WHERE e.section_id = cs.id
+);
+
+-- =====================================================================================
+-- BẢN MIGRATION 06 : migrate_split_overcapacity_sections.sql
+-- =====================================================================================
+USE student_management;
+SET NAMES utf8mb4;
+
+-- ============================================================
+-- MIGRATION: Split all over-capacity sections in HK1-26
+-- ============================================================
+-- Problem: Multiple sections have enrolled_count far exceeding
+-- max_students (e.g. 80/50, 160/50). This migration creates
+-- additional sections and redistributes enrollments so every
+-- section stays within its physical capacity.
+--
+-- Strategy:
+--   - 80 students → 2 sections of 40
+--   - 160 students → 4 sections of 40 (IT301 only)
+-- ============================================================
+
+START TRANSACTION;
+
+-- ============================================================
+-- STEP 1: Create new sections for each overcapacity section
+-- ============================================================
+
+-- IT301-01-HK1-26 (id=37): 160/50 → 4 sections of 40 (needs 3 new ones)
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'IT301-02-HK1-26', cs.subject_id, 2, cs.semester_id, 50, 0,
+       'Thứ Tư (07:00-09:30)', 'A104', cs.status
+FROM course_sections cs WHERE cs.id = 37
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'IT301-02-HK1-26');
+
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'IT301-03-HK1-26', cs.subject_id, 3, cs.semester_id, 50, 0,
+       'Thứ Sáu (07:00-09:30)', 'A205', cs.status
+FROM course_sections cs WHERE cs.id = 37
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'IT301-03-HK1-26');
+
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'IT301-04-HK1-26', cs.subject_id, 4, cs.semester_id, 50, 0,
+       'Thứ Năm (07:00-09:30)', 'A206', cs.status
+FROM course_sections cs WHERE cs.id = 37
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'IT301-04-HK1-26');
+
+-- IT304-01-HK1-26 (id=38): 80/50 → 2 sections
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'IT304-02-HK1-26', cs.subject_id, 4, cs.semester_id, 50, 0,
+       'Thứ Hai (07:00-09:30)', 'A207', cs.status
+FROM course_sections cs WHERE cs.id = 38
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'IT304-02-HK1-26');
+
+-- IT305-01-HK1-26 (id=39): 80/50 → 2 sections
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'IT305-02-HK1-26', cs.subject_id, 5, cs.semester_id, 50, 0,
+       'Thứ Bảy (07:00-09:30)', 'A103', cs.status
+FROM course_sections cs WHERE cs.id = 39
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'IT305-02-HK1-26');
+
+-- IT401-01-HK1-26 (id=40): 80/50 → 2 sections
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'IT401-02-HK1-26', cs.subject_id, 1, cs.semester_id, 50, 0,
+       'Thứ Bảy (13:20-15:50)', 'A201', cs.status
+FROM course_sections cs WHERE cs.id = 40
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'IT401-02-HK1-26');
+
+-- IT303-01-HK1-26 (id=41): 80/50 → 2 sections
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'IT303-02-HK1-26', cs.subject_id, 5, cs.semester_id, 50, 0,
+       'Thứ Ba (13:20-15:50)', 'A202', cs.status
+FROM course_sections cs WHERE cs.id = 41
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'IT303-02-HK1-26');
+
+-- BA301-01-HK1-26 (id=42): 80/55 → 2 sections
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'BA301-02-HK1-26', cs.subject_id, 9, cs.semester_id, 55, 0,
+       'Thứ Năm (07:00-09:30)', 'B101', cs.status
+FROM course_sections cs WHERE cs.id = 42
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'BA301-02-HK1-26');
+
+-- EE301-01-HK1-26 (id=44): 80/45 → 2 sections
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'EE301-02-HK1-26', cs.subject_id, 14, cs.semester_id, 45, 0,
+       'Thứ Hai (13:20-15:50)', 'C103', cs.status
+FROM course_sections cs WHERE cs.id = 44
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'EE301-02-HK1-26');
+
+-- ME202-01-HK1-26 (id=46): 80/45 → 2 sections
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'ME202-02-HK1-26', cs.subject_id, 20, cs.semester_id, 45, 0,
+       'Thứ Năm (07:00-10:20)', 'D103', cs.status
+FROM course_sections cs WHERE cs.id = 46
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'ME202-02-HK1-26');
+
+-- EN101-01-HK1-26 (id=50): 80/45 → 2 sections
+INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status)
+SELECT 'EN101-02-HK1-26', cs.subject_id, 24, cs.semester_id, 45, 0,
+       'Thứ Bảy (09:35-11:15)', 'C202', cs.status
+FROM course_sections cs WHERE cs.id = 50
+  AND NOT EXISTS (SELECT 1 FROM course_sections x WHERE x.section_code = 'EN101-02-HK1-26');
+
+-- ============================================================
+-- STEP 2: Create schedules for new sections
+-- ============================================================
+
+-- IT301-02: Wed P1-3, A104
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 4, 1, 3, 'A104', sem.start_date, sem.end_date, 'Phát triển ứng dụng Web - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'IT301-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- IT301-03: Fri P1-3, A205
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 6, 1, 3, 'A205', sem.start_date, sem.end_date, 'Phát triển ứng dụng Web - Lớp 03'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'IT301-03-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- IT301-04: Thu P1-3, A206
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 5, 1, 3, 'A206', sem.start_date, sem.end_date, 'Phát triển ứng dụng Web - Lớp 04'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'IT301-04-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- IT304-02: Mon P1-3, A207
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 2, 1, 3, 'A207', sem.start_date, sem.end_date, 'Công nghệ phần mềm - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'IT304-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- IT305-02: Sat P1-3, A103
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 7, 1, 3, 'A103', sem.start_date, sem.end_date, 'Kiểm thử phần mềm - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'IT305-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- IT401-02: Sat P7-9, A201
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 7, 7, 9, 'A201', sem.start_date, sem.end_date, 'An toàn thông tin - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'IT401-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- IT303-02: Tue P7-9, A202
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 3, 7, 9, 'A202', sem.start_date, sem.end_date, 'Trí tuệ nhân tạo - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'IT303-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- BA301-02: Thu P1-3, B101
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 5, 1, 3, 'B101', sem.start_date, sem.end_date, 'Tài chính doanh nghiệp - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'BA301-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- EE301-02: Mon P7-9, C103
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 2, 7, 9, 'C103', sem.start_date, sem.end_date, 'Đo lường và cảm biến - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'EE301-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- ME202-02: Thu P1-4, D103
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 5, 1, 4, 'D103', sem.start_date, sem.end_date, 'Động cơ đốt trong - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'ME202-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- EN101-02: Sat P4-6, C202
+INSERT INTO schedules (section_id, day_of_week, start_period, end_period, room, start_date, end_date, note)
+SELECT cs.id, 7, 4, 6, 'C202', sem.start_date, sem.end_date, 'Tiếng Anh 1 - Lớp 02'
+FROM course_sections cs JOIN semesters sem ON sem.id = cs.semester_id
+WHERE cs.section_code = 'EN101-02-HK1-26'
+  AND NOT EXISTS (SELECT 1 FROM schedules s WHERE s.section_id = cs.id);
+
+-- ============================================================
+-- STEP 3: Redistribute enrollments using temp table + ranked rows
+-- ============================================================
+
+-- Generic approach: for each overcapacity section, move the second
+-- half of enrollments (by enrollment ID order) to the new -02 section.
+-- For IT301 with 160 students, split into 4 groups of 40.
+
+DROP TEMPORARY TABLE IF EXISTS tmp_split;
+CREATE TEMPORARY TABLE tmp_split (
+    enrollment_id BIGINT PRIMARY KEY,
+    target_section_code VARCHAR(30) NOT NULL
+);
+
+-- IT301-01 (160 students → 4 groups of 40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE
+           WHEN row_num <= 40 THEN 'IT301-01-HK1-26'
+           WHEN row_num <= 80 THEN 'IT301-02-HK1-26'
+           WHEN row_num <= 120 THEN 'IT301-03-HK1-26'
+           ELSE 'IT301-04-HK1-26'
+       END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 37
+) ranked;
+
+-- IT304-01 (80 → 2×40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE WHEN row_num <= 40 THEN 'IT304-01-HK1-26' ELSE 'IT304-02-HK1-26' END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 38
+) ranked;
+
+-- IT305-01 (80 → 2×40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE WHEN row_num <= 40 THEN 'IT305-01-HK1-26' ELSE 'IT305-02-HK1-26' END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 39
+) ranked;
+
+-- IT401-01 (80 → 2×40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE WHEN row_num <= 40 THEN 'IT401-01-HK1-26' ELSE 'IT401-02-HK1-26' END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 40
+) ranked;
+
+-- IT303-01 (80 → 2×40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE WHEN row_num <= 40 THEN 'IT303-01-HK1-26' ELSE 'IT303-02-HK1-26' END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 41
+) ranked;
+
+-- BA301-01 (80 → 2×40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE WHEN row_num <= 40 THEN 'BA301-01-HK1-26' ELSE 'BA301-02-HK1-26' END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 42
+) ranked;
+
+-- EE301-01 (80 → 2×40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE WHEN row_num <= 40 THEN 'EE301-01-HK1-26' ELSE 'EE301-02-HK1-26' END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 44
+) ranked;
+
+-- ME202-01 (80 → 2×40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE WHEN row_num <= 40 THEN 'ME202-01-HK1-26' ELSE 'ME202-02-HK1-26' END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 46
+) ranked;
+
+-- EN101-01 (80 → 2×40)
+INSERT INTO tmp_split (enrollment_id, target_section_code)
+SELECT id,
+       CASE WHEN row_num <= 40 THEN 'EN101-01-HK1-26' ELSE 'EN101-02-HK1-26' END
+FROM (
+    SELECT e0.id, ROW_NUMBER() OVER (ORDER BY e0.id) AS row_num
+    FROM enrollments e0
+    WHERE e0.section_id = 50
+) ranked;
+
+-- ============================================================
+-- STEP 4: Move enrollments to their target sections
+-- ============================================================
+
+-- Disable the triggers temporarily to avoid double-counting
+-- (we will recalculate enrolled_count in step 5)
+
+UPDATE enrollments e
+JOIN tmp_split split ON split.enrollment_id = e.id
+JOIN course_sections target_cs ON target_cs.section_code = split.target_section_code
+SET e.section_id = target_cs.id
+WHERE e.section_id != target_cs.id;
+
+DROP TEMPORARY TABLE tmp_split;
+
+-- ============================================================
+-- STEP 5: Recalculate enrolled_count for ALL affected sections
+-- ============================================================
+
+UPDATE course_sections cs
+SET cs.enrolled_count = (
+    SELECT COUNT(*)
+    FROM enrollments e
+    WHERE e.section_id = cs.id
+      AND e.status <> 'CANCELLED'
+)
+WHERE cs.semester_id = 4;
+
+-- ============================================================
+-- STEP 6: Also fix any historical sections that were inflated
+-- by the old seed repair script (max_students = enrolled_count)
+-- ============================================================
+
+-- For CLOSED (historical) sections, the seed had set
+-- max_students = enrolled_count. Since those are finalized,
+-- we keep them as-is (no students can register).
+-- Only for OPEN sections do we enforce the physical capacity.
+UPDATE course_sections
+SET max_students = 50
+WHERE section_code IN (
+    'IT301-01-HK1-26', 'IT301-02-HK1-26',
+    'IT301-03-HK1-26', 'IT301-04-HK1-26',
+    'IT304-01-HK1-26', 'IT304-02-HK1-26',
+    'IT305-01-HK1-26', 'IT305-02-HK1-26',
+    'IT401-01-HK1-26', 'IT401-02-HK1-26',
+    'IT303-01-HK1-26', 'IT303-02-HK1-26'
+);
+
+UPDATE course_sections
+SET max_students = 55
+WHERE section_code IN (
+    'BA301-01-HK1-26', 'BA301-02-HK1-26'
+);
+
+UPDATE course_sections
+SET max_students = 45
+WHERE section_code IN (
+    'EE301-01-HK1-26', 'EE301-02-HK1-26',
+    'ME202-01-HK1-26', 'ME202-02-HK1-26',
+    'EN101-01-HK1-26', 'EN101-02-HK1-26'
+);
+
+-- ============================================================
+-- Verification query (run manually to check)
+-- ============================================================
+-- SELECT section_code, max_students, enrolled_count,
+--        CASE WHEN enrolled_count > max_students THEN 'OVER!' ELSE 'OK' END AS status_check
+-- FROM course_sections
+-- WHERE semester_id = 4
+-- ORDER BY section_code;
+
+COMMIT;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 07 : migrate_luong1_registration_shifts_and_majors.sql
+-- =====================================================================================
+-- Migration: Bổ sung khung chia ca và phân bổ theo Ngành (Major) cho Đợt đăng ký tín chỉ
+ALTER TABLE registration_waves
+ADD COLUMN shift_name VARCHAR(100) NULL AFTER name,
+ADD COLUMN major_id INT NULL AFTER department_id;
+
+ALTER TABLE registration_waves
+ADD CONSTRAINT fk_reg_waves_major FOREIGN KEY (major_id) REFERENCES majors(id) ON DELETE SET NULL;
+
+CREATE INDEX idx_reg_waves_major ON registration_waves (major_id);
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 08 : migrate_luong1_registration_waves.sql
+-- =====================================================================================
+-- Migration: Bảng quản lý đợt đăng ký tín chỉ (Registration Waves) phân bổ theo Khóa/Khoa
+CREATE TABLE IF NOT EXISTS registration_waves (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    semester_id INT NOT NULL,
+    name VARCHAR(150) NOT NULL,
+    cohort_id INT NULL,
+    department_id INT NULL,
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    description TEXT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reg_waves_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    CONSTRAINT fk_reg_waves_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts(id) ON DELETE SET NULL,
+    CONSTRAINT fk_reg_waves_department FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_reg_waves_semester_active ON registration_waves (semester_id, is_active);
+CREATE INDEX idx_reg_waves_time ON registration_waves (start_time, end_time);
+
+-- Seed đợt đăng ký mặc định cho học kỳ đang kích hoạt (HK1-2026, ID=4)
+INSERT INTO registration_waves (semester_id, name, cohort_id, department_id, start_time, end_time, description, is_active)
+SELECT 
+    s.id,
+    CONCAT('Đợt đăng ký chính thức - ', s.semester_name),
+    NULL,
+    NULL,
+    DATE_SUB(NOW(), INTERVAL 7 DAY),
+    DATE_ADD(NOW(), INTERVAL 30 DAY),
+    'Đợt đăng ký mở toàn trường cho mọi khóa và chuyên ngành',
+    TRUE
+FROM semesters s
+WHERE s.is_current = TRUE
+LIMIT 1;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 09 : migrate_split_cc.sql
+-- =====================================================================================
+USE student_management;
+
+ALTER TABLE grades DROP CHECK ck_grades_attendance;
+
+ALTER TABLE grades CHANGE attendance_score cc1_score DECIMAL(4,2) COMMENT 'Điểm chuyên cần (0-10), trọng số 5%';
+ALTER TABLE grades ADD COLUMN cc2_score DECIMAL(4,2) COMMENT 'Điểm bài tập/phát biểu (0-10), trọng số 5%' AFTER cc1_score;
+ALTER TABLE grades ADD CONSTRAINT ck_grades_cc1 CHECK (cc1_score IS NULL OR (cc1_score >= 0 AND cc1_score <= 10));
+ALTER TABLE grades ADD CONSTRAINT ck_grades_cc2 CHECK (cc2_score IS NULL OR (cc2_score >= 0 AND cc2_score <= 10));
+
+DROP VIEW v_student_transcript;
+CREATE VIEW v_student_transcript AS
+SELECT
+    s.id              AS student_id,
+    s.student_code,
+    s.full_name       AS student_name,
+    cl.name           AS class_name,
+    sem.id            AS semester_id,
+    sem.semester_name,
+    sem.academic_year,
+    sub.subject_code,
+    sub.subject_name,
+    sub.credits,
+    g.cc1_score,
+    g.cc2_score,
+    g.midterm_score,
+    g.final_score,
+    g.total_score,
+    g.letter_grade,
+    g.gpa_point,
+    g.is_finalized,
+    e.status          AS enrollment_status
+FROM students s
+    JOIN classes cl ON s.class_id = cl.id
+    JOIN enrollments e ON e.student_id = s.id
+    JOIN course_sections cs ON e.section_id = cs.id
+    JOIN subjects sub ON cs.subject_id = sub.id
+    JOIN semesters sem ON cs.semester_id = sem.id
+    LEFT JOIN grades g ON g.enrollment_id = e.id
+WHERE e.status != 'CANCELLED';
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 10 : migrate_grade_edit_window.sql
+-- =====================================================================================
+USE student_management;
+
+-- Activity #14 — cửa sổ ân hạn sau khi chốt điểm.
+-- Giảng viên vẫn sửa được điểm trong 7 ngày kể từ lúc chốt; hết hạn thì khoá cứng
+-- (chỉ Quản trị viên mở lại được).
+
+ALTER TABLE grades
+    ADD COLUMN finalized_at DATETIME NULL
+    COMMENT 'Thời điểm chốt; GV được sửa trong 7 ngày kể từ mốc này'
+    AFTER is_finalized;
+
+-- Dữ liệu cũ đã chốt: lấy updated_at làm mốc chốt (thường đã quá 7 ngày -> khoá).
+UPDATE grades
+SET finalized_at = updated_at
+WHERE is_finalized = TRUE AND finalized_at IS NULL;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 11 : migrate_grade_appeals.sql
+-- =====================================================================================
+-- Task 3: grade appeal workflow
+CREATE TABLE IF NOT EXISTS grade_appeals (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    enrollment_id BIGINT NOT NULL,
+    student_id BIGINT NOT NULL,
+    score_component ENUM('CC2', 'MIDTERM', 'FINAL', 'ALL') NOT NULL DEFAULT 'FINAL',
+    current_score DECIMAL(4,2) NOT NULL,
+    desired_score DECIMAL(4,2) NULL,
+    reason TEXT NOT NULL,
+    status ENUM('PENDING', 'IN_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    reviewer_id BIGINT NULL,
+    review_notes TEXT NULL,
+    new_score DECIMAL(4,2) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    reviewed_at DATETIME NULL,
+    CONSTRAINT pk_grade_appeals PRIMARY KEY (id),
+    CONSTRAINT fk_appeal_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments (id) ON DELETE CASCADE,
+    CONSTRAINT fk_appeal_student FOREIGN KEY (student_id) REFERENCES students (id),
+    CONSTRAINT fk_appeal_reviewer FOREIGN KEY (reviewer_id) REFERENCES users (id)
+);
+CREATE INDEX idx_appeals_student ON grade_appeals (student_id);
+CREATE INDEX idx_appeals_status ON grade_appeals (status);
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 12 : migrate_luong1_grade_amendment_and_audit.sql
+-- =====================================================================================
+-- ============================================================
+-- MIGRATION: Luồng 1 - Quy trình Sửa điểm sau khóa sổ & Nhật ký vết
+-- (Grade Amendment & Audit Trail)
+-- ============================================================
+
+USE student_management;
+
+-- 1. Tạo bảng grade_change_tickets
+CREATE TABLE IF NOT EXISTS grade_change_tickets (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    class_section_id BIGINT NOT NULL,
+    component_type VARCHAR(20) NOT NULL COMMENT 'Cột điểm cần sửa: CC1, CC2, MIDTERM, FINAL',
+    old_score DECIMAL(4,2) NOT NULL COMMENT 'Điểm số ban đầu của sinh viên',
+    new_score DECIMAL(4,2) NOT NULL COMMENT 'Điểm số mới đề xuất (0 - 10)',
+    reason TEXT NOT NULL COMMENT 'Lý do sửa điểm chi tiết',
+    evidence_url VARCHAR(500) NOT NULL COMMENT 'Đường dẫn tệp minh chứng bài thi / biên bản',
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING_DEPT' COMMENT 'PENDING_DEPT, PENDING_ACADEMIC, APPROVED, REJECTED',
+    
+    -- Người tạo yêu cầu (Giảng viên)
+    created_by BIGINT NOT NULL COMMENT 'ID user giảng viên tạo đơn',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Cấp 1: Thẩm định Bộ môn/Khoa
+    dept_reviewer_id BIGINT NULL COMMENT 'ID user Trưởng bộ môn thẩm định',
+    dept_reviewed_at DATETIME NULL,
+    dept_notes TEXT NULL COMMENT 'Ý kiến thẩm định chuyên môn',
+    
+    -- Cấp 2: Phê duyệt Phòng Đào tạo
+    approved_by BIGINT NULL COMMENT 'ID user cán bộ Phòng Đào tạo duyệt cuối',
+    approved_at DATETIME NULL,
+    
+    -- Lý do từ chối (nếu bị REJECTED)
+    rejection_reason TEXT NULL COMMENT 'Lý do từ chối',
+    
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_gct_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_gct_section FOREIGN KEY (class_section_id) REFERENCES course_sections(id) ON DELETE CASCADE,
+    CONSTRAINT fk_gct_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_gct_dept_reviewer FOREIGN KEY (dept_reviewer_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_gct_approved_by FOREIGN KEY (approved_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT ck_gct_new_score CHECK (new_score >= 0.00 AND new_score <= 10.00),
+    INDEX idx_gct_section_student (class_section_id, student_id),
+    INDEX idx_gct_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 2. Nâng cấp bảng grade_audit_logs để liên kết với ticket_id, student_id, ip_address
+SET @col_ticket = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS 
+    WHERE TABLE_SCHEMA = 'student_management' 
+    AND TABLE_NAME = 'grade_audit_logs' 
+    AND COLUMN_NAME = 'ticket_id'
+);
+SET @sql_ticket = IF(@col_ticket = 0, 
+    'ALTER TABLE grade_audit_logs ADD COLUMN ticket_id BIGINT NULL AFTER id, ADD CONSTRAINT fk_grade_audit_ticket FOREIGN KEY (ticket_id) REFERENCES grade_change_tickets(id) ON DELETE SET NULL', 
+    'SELECT 1'
+);
+PREPARE stmt_t FROM @sql_ticket;
+EXECUTE stmt_t;
+DEALLOCATE PREPARE stmt_t;
+
+SET @col_student = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS 
+    WHERE TABLE_SCHEMA = 'student_management' 
+    AND TABLE_NAME = 'grade_audit_logs' 
+    AND COLUMN_NAME = 'student_id'
+);
+SET @sql_student = IF(@col_student = 0, 
+    'ALTER TABLE grade_audit_logs ADD COLUMN student_id BIGINT NULL AFTER ticket_id, ADD CONSTRAINT fk_grade_audit_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE SET NULL', 
+    'SELECT 1'
+);
+PREPARE stmt_s FROM @sql_student;
+EXECUTE stmt_s;
+DEALLOCATE PREPARE stmt_s;
+
+SET @col_ip = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS 
+    WHERE TABLE_SCHEMA = 'student_management' 
+    AND TABLE_NAME = 'grade_audit_logs' 
+    AND COLUMN_NAME = 'ip_address'
+);
+SET @sql_ip = IF(@col_ip = 0, 
+    'ALTER TABLE grade_audit_logs ADD COLUMN ip_address VARCHAR(50) NULL AFTER changed_by', 
+    'SELECT 1'
+);
+PREPARE stmt_ip FROM @sql_ip;
+EXECUTE stmt_ip;
+DEALLOCATE PREPARE stmt_ip;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 13 : migrate_luong2_grade_submission_and_appeals.sql
+-- =====================================================================================
+-- ============================================================
+-- MIGRATION: Luồng 2 - Nhập điểm, khóa sổ và phúc khảo
+-- ============================================================
+
+-- 1. Bổ sung Trưởng bộ môn / Trưởng khoa vào bảng departments
+ALTER TABLE departments
+    ADD COLUMN head_lecturer_id BIGINT NULL AFTER is_active,
+    ADD CONSTRAINT fk_departments_head_lecturer 
+        FOREIGN KEY (head_lecturer_id) REFERENCES lecturers (id) ON DELETE SET NULL;
+
+-- 2. Bổ sung thời điểm phát hành và lý do trả về vào course_sections
+ALTER TABLE course_sections
+    ADD COLUMN published_at DATETIME NULL AFTER grade_submission_status,
+    ADD COLUMN grade_return_reason TEXT NULL AFTER published_at;
+
+-- 3. Nâng cấp bảng grade_appeals để hỗ trợ phân công chấm độc lập và ký duyệt điện tử cấp Khoa
+ALTER TABLE grade_appeals
+    MODIFY COLUMN status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    ADD COLUMN assigned_lecturer_id BIGINT NULL AFTER status,
+    ADD COLUMN assigned_at DATETIME NULL AFTER assigned_lecturer_id,
+    ADD COLUMN has_mechanical_error BOOLEAN NOT NULL DEFAULT FALSE AFTER assigned_at,
+    ADD COLUMN score_diff DECIMAL(4,2) NULL AFTER has_mechanical_error,
+    ADD COLUMN exceeds_threshold BOOLEAN NOT NULL DEFAULT FALSE AFTER score_diff,
+    ADD COLUMN head_reviewer_id BIGINT NULL AFTER exceeds_threshold,
+    ADD COLUMN head_approved_at DATETIME NULL AFTER head_reviewer_id,
+    ADD COLUMN head_signature_hash VARCHAR(128) NULL AFTER head_approved_at,
+    ADD COLUMN head_review_notes TEXT NULL AFTER head_signature_hash,
+    ADD COLUMN final_adjustment_reason TEXT NULL AFTER head_review_notes,
+    ADD COLUMN applied_by_user_id BIGINT NULL AFTER final_adjustment_reason,
+    ADD COLUMN applied_at DATETIME NULL AFTER applied_by_user_id,
+    ADD CONSTRAINT fk_appeal_assigned_lecturer FOREIGN KEY (assigned_lecturer_id) REFERENCES lecturers (id) ON DELETE SET NULL,
+    ADD CONSTRAINT fk_appeal_head_reviewer FOREIGN KEY (head_reviewer_id) REFERENCES users (id) ON DELETE SET NULL,
+    ADD CONSTRAINT fk_appeal_applied_by FOREIGN KEY (applied_by_user_id) REFERENCES users (id) ON DELETE SET NULL;
+
+CREATE INDEX idx_appeals_assigned_lecturer ON grade_appeals (assigned_lecturer_id);
+CREATE INDEX idx_appeals_head_reviewer ON grade_appeals (head_reviewer_id);
+
+-- Cập nhật mặc định Trưởng khoa cho các khoa hiện có nếu có giảng viên tương ứng
+UPDATE departments d
+JOIN lecturers l ON l.department_id = d.id
+SET d.head_lecturer_id = l.id
+WHERE d.head_lecturer_id IS NULL
+  AND l.id = (SELECT MIN(l2.id) FROM lecturers l2 WHERE l2.department_id = d.id);
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 14 : migrate_examination_officer_role_and_audit.sql
+-- =====================================================================================
+-- ============================================================
+-- Migration: Add EXAMINATION_OFFICER Role and Seed Demo User
+-- Implements BR-07, BR-Exam02, BR-Grade09 (RBAC & Audit Trail)
+-- ============================================================
+
+-- 1. Mở rộng độ dài trường name bảng roles và cập nhật check constraint
+ALTER TABLE roles MODIFY COLUMN name VARCHAR(30) NOT NULL;
+
+-- Drop check constraint if exists and re-add
+SET @constraint_name = (
+    SELECT CONSTRAINT_NAME
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'roles'
+      AND CONSTRAINT_TYPE = 'CHECK'
+    LIMIT 1
+);
+
+SET @drop_stmt = IF(@constraint_name IS NOT NULL,
+    CONCAT('ALTER TABLE roles DROP CHECK ', @constraint_name),
+    'SELECT 1');
+PREPARE stmt FROM @drop_stmt;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+ALTER TABLE roles ADD CONSTRAINT ck_roles_name CHECK (name IN ('ADMIN', 'LECTURER', 'STUDENT', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'EXAMINATION_OFFICER'));
+
+-- 2. Thêm vai trò EXAMINATION_OFFICER (ID = 5)
+INSERT INTO roles (id, name) VALUES (5, 'EXAMINATION_OFFICER')
+ON DUPLICATE KEY UPDATE name = 'EXAMINATION_OFFICER';
+
+-- 3. Thêm tài khoản mẫu Cán bộ Khảo thí 'khaothi'
+-- Mật khẩu: Khaothi@2026!
+-- BCrypt Hash: $2a$10$wEkgvPfxH.wYnC5eE2p7Eepx6Vq3qPqA8rD0K3N2w1h3f0i5b7sK.
+INSERT INTO users (username, password, email, role_id, is_active, must_change_password, created_at, updated_at)
+SELECT 'khaothi', '$2a$10$eE5I4W4Oa5I2qB5N4xW8eeM0E7zJ5j3v7g5y3l1t2b3c4d5e6f7g8', 'khaothi@sms.edu.vn', 5, TRUE, FALSE, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'khaothi');
+
+-- 4. Thêm Index tối ưu hóa truy vấn cho Nhật ký kiểm toán điểm (BR-Grade09)
+CREATE INDEX IF NOT EXISTS idx_audit_logs_student_created ON grade_audit_logs(student_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_grade ON grade_audit_logs(grade_id);
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 15 : migrate_exam_management_and_scoring.sql
+-- =====================================================================================
+-- ============================================================
+-- Migration: Exam Management & Exam Room Grade Import System
+-- Module: Quản lý Khảo thí, Phòng thi & Nhập điểm thi
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS exam_sessions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    semester_id INT NOT NULL,
+    subject_id INT NOT NULL,
+    session_name VARCHAR(150) NOT NULL,
+    exam_date DATE NOT NULL,
+    start_time VARCHAR(10) NOT NULL,
+    end_time VARCHAR(10) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_exam_sessions_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exam_sessions_subject FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS exam_rooms (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_id BIGINT NOT NULL,
+    room_code VARCHAR(50) NOT NULL,
+    room_location VARCHAR(100),
+    capacity INT NOT NULL DEFAULT 40,
+    status VARCHAR(20) NOT NULL DEFAULT 'SCHEDULED',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_exam_rooms_session FOREIGN KEY (session_id) REFERENCES exam_sessions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS exam_rosters (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    exam_room_id BIGINT NOT NULL,
+    enrollment_id BIGINT NOT NULL,
+    student_id BIGINT NOT NULL,
+    sbd VARCHAR(30) NOT NULL,
+    score DECIMAL(4,2),
+    special_grade VARCHAR(10) NOT NULL DEFAULT 'NONE',
+    violation_note TEXT,
+    scored_at DATETIME,
+    scored_by BIGINT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_exam_rosters_room FOREIGN KEY (exam_room_id) REFERENCES exam_rooms(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exam_rosters_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exam_rosters_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_exam_rosters_scored_by FOREIGN KEY (scored_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_exam_rosters_sbd (sbd),
+    INDEX idx_exam_rosters_student (student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS grade_audit_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    grade_id BIGINT NOT NULL,
+    exam_room_id BIGINT,
+    component VARCHAR(20) NOT NULL DEFAULT 'FINAL',
+    old_score DECIMAL(4,2),
+    new_score DECIMAL(4,2),
+    old_special_grade VARCHAR(10),
+    new_special_grade VARCHAR(10),
+    reason TEXT,
+    changed_by BIGINT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_grade_audit_logs_grade FOREIGN KEY (grade_id) REFERENCES grades(id) ON DELETE CASCADE,
+    CONSTRAINT fk_grade_audit_logs_exam_room FOREIGN KEY (exam_room_id) REFERENCES exam_rooms(id) ON DELETE SET NULL,
+    CONSTRAINT fk_grade_audit_logs_changed_by FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 16 : migrate_past_semesters_and_exams.sql
+-- =====================================================================================
 -- =============================================================================
 -- COMPREHENSIVE SEED: PAST SEMESTERS & COMPLETE EXAM MANAGEMENT
 -- =============================================================================
@@ -4252,3 +5598,633 @@ WHERE cs.semester_id IN (1, 2, 3) AND e.status != 'CANCELLED'
 
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- =====================================================================================
+-- BẢN MIGRATION 17 : migrate_academic_affairs_role.sql
+-- =====================================================================================
+-- ============================================================
+-- Migration: Add ACADEMIC_AFFAIRS Role and Seed Demo User
+-- Conforms to Role-Permission Matrix (Separation of Duties)
+-- ============================================================
+
+-- 1. Cập nhật Check Constraint bảng roles
+ALTER TABLE roles DROP CHECK ck_roles_name;
+ALTER TABLE roles ADD CONSTRAINT ck_roles_name CHECK (name IN ('ADMIN', 'LECTURER', 'STUDENT', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF'));
+
+-- 2. Thêm vai trò ACADEMIC_AFFAIRS (ID = 4)
+INSERT INTO roles (id, name) VALUES (4, 'ACADEMIC_AFFAIRS')
+ON DUPLICATE KEY UPDATE name = 'ACADEMIC_AFFAIRS';
+
+-- 3. Thêm tài khoản mẫu Cán bộ Đào tạo 'daotao'
+-- Mật khẩu tuân thủ chuẩn an toàn quốc tế (>=12 ký tự, chữ hoa, chữ thường, số, ký tự đặc biệt): Daotao@2026!
+-- BCrypt Hash: $2a$10$QrVpwhAW3aIYp9zMBzzl9ewuNuQdDkJO.6TUzUSkQKzzmF/kC7EDS
+INSERT INTO users (username, password, email, role_id, is_active, must_change_password)
+SELECT 'daotao', '$2a$10$QrVpwhAW3aIYp9zMBzzl9ewuNuQdDkJO.6TUzUSkQKzzmF/kC7EDS', 'daotao@sms.edu.vn', 4, TRUE, FALSE
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'daotao');
+
+-- 4. Hỗ trợ trạng thái PROPOSED cho luồng phúc khảo 2 bước (Giảng viên đề xuất -> Cán bộ đào tạo duyệt)
+ALTER TABLE grade_appeals MODIFY COLUMN status ENUM('PENDING', 'IN_REVIEW', 'PROPOSED', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING';
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 18 : migrate_academic_summary_and_warning.sql
+-- =====================================================================================
+-- ============================================================
+-- Migration: Bảng tổng hợp học vụ Snapshot (Academic Summary) & Cảnh báo học vụ
+-- Mục C: BR-Grade04 & Quy chế xử lý học vụ tự động
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS academic_summaries (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    semester_id INT NOT NULL,
+    semester_gpa DECIMAL(4,2),
+    cumulative_cpa DECIMAL(4,2),
+    semester_credits INT DEFAULT 0,
+    accumulated_credits INT DEFAULT 0,
+    debt_credits INT DEFAULT 0,
+    warning_level INT NOT NULL DEFAULT 0,
+    max_allowed_credits INT DEFAULT 24,
+    warning_notice TEXT,
+    calculated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uk_student_semester_summary UNIQUE (student_id, semester_id),
+    CONSTRAINT fk_summary_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_summary_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Thêm cột academic_warning_level vào bảng students nếu chưa có
+SET @dbname = DATABASE();
+SET @tablename = "students";
+SET @columnname = "academic_warning_level";
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (table_name = @tablename)
+      AND (table_schema = @dbname)
+      AND (column_name = @columnname)
+  ) > 0,
+  "SELECT 1",
+  "ALTER TABLE students ADD COLUMN academic_warning_level INT NOT NULL DEFAULT 0;"
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- Cấu hình mặc định khử trùng lặp CPA
+INSERT INTO system_configs (config_key, config_value, description, created_at, updated_at)
+VALUES ('cpa_deduplication_strategy', 'HIGHEST_SCORE', 'Chiến lược tính CPA khi học lại môn: HIGHEST_SCORE (lấy điểm cao nhất) hoặc LATEST_ATTEMPT (lấy lần thi gần nhất)', NOW(), NOW())
+ON DUPLICATE KEY UPDATE updated_at = NOW();
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 19 : migrate_phase1_student_profile_conduct.sql
+-- =====================================================================================
+-- ============================================================
+-- MIGRATION: Phase 1 - Student Profile, Status & Conduct Management
+-- File: migrate_phase1_student_profile_conduct.sql
+-- ============================================================
+
+USE student_management;
+
+DROP PROCEDURE IF EXISTS add_student_profile_columns;
+
+DELIMITER $$
+CREATE PROCEDURE add_student_profile_columns()
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE table_schema = DATABASE() AND table_name = 'students' AND column_name = 'citizen_id') THEN
+        ALTER TABLE students ADD COLUMN citizen_id VARCHAR(20) NULL AFTER student_code;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE table_schema = DATABASE() AND table_name = 'students' AND column_name = 'hometown') THEN
+        ALTER TABLE students ADD COLUMN hometown VARCHAR(200) NULL AFTER address;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE table_schema = DATABASE() AND table_name = 'students' AND column_name = 'emergency_contact_name') THEN
+        ALTER TABLE students ADD COLUMN emergency_contact_name VARCHAR(100) NULL AFTER hometown;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE table_schema = DATABASE() AND table_name = 'students' AND column_name = 'emergency_contact_phone') THEN
+        ALTER TABLE students ADD COLUMN emergency_contact_phone VARCHAR(20) NULL AFTER emergency_contact_name;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.COLUMNS WHERE table_schema = DATABASE() AND table_name = 'students' AND column_name = 'emergency_contact_relationship') THEN
+        ALTER TABLE students ADD COLUMN emergency_contact_relationship VARCHAR(50) NULL AFTER emergency_contact_phone;
+    END IF;
+END $$
+DELIMITER ;
+
+CALL add_student_profile_columns();
+DROP PROCEDURE IF EXISTS add_student_profile_columns;
+
+-- Cập nhật cột status để có thêm 'RESERVED' (Bảo lưu)
+ALTER TABLE students 
+    MODIFY COLUMN status ENUM('ACTIVE', 'INACTIVE', 'GRADUATED', 'SUSPENDED', 'RESERVED') NOT NULL DEFAULT 'ACTIVE';
+
+-- 2. BẢNG: student_achievements_disciplines (Khen thưởng & Kỷ luật)
+CREATE TABLE IF NOT EXISTS student_achievements_disciplines (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    semester_id INT NULL,
+    type ENUM('REWARD', 'DISCIPLINE') NOT NULL,
+    decision_number VARCHAR(50) NOT NULL,
+    issue_date DATE NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NULL,
+    level VARCHAR(50) NOT NULL DEFAULT 'TRUONG' COMMENT 'TRUONG, KHOA, CAP_TINH, BO_NGANH, QUOC_GIA',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_sad_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_sad_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE SET NULL,
+    INDEX idx_sad_student (student_id),
+    INDEX idx_sad_type (type),
+    INDEX idx_sad_semester (semester_id),
+    INDEX idx_sad_issue_date (issue_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3. BẢNG: student_training_points (Điểm rèn luyện theo kỳ)
+CREATE TABLE IF NOT EXISTS student_training_points (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    semester_id INT NOT NULL,
+    score INT NOT NULL,
+    evaluation_grade VARCHAR(30) NOT NULL COMMENT 'XUAT_SAC, TOT, KHA, TRUNG_BINH, YEU, KEM',
+    notes TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_stp_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_stp_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    CONSTRAINT uq_stp_student_semester UNIQUE (student_id, semester_id),
+    CONSTRAINT ck_stp_score CHECK (score >= 0 AND score <= 100),
+    INDEX idx_stp_student (student_id),
+    INDEX idx_stp_semester (semester_id),
+    INDEX idx_stp_score (score)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Cập nhật dữ liệu mẫu cho CCCD và liên lạc khẩn cấp của các sinh viên hiện có
+UPDATE students 
+SET citizen_id = CONCAT('00120300', LPAD(id, 4, '0')),
+    hometown = 'Hà Nội',
+    emergency_contact_name = 'Phụ huynh SV',
+    emergency_contact_phone = '0988776655',
+    emergency_contact_relationship = 'Bố/Mẹ'
+WHERE citizen_id IS NULL;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 20 : migrate_special_class_billing.sql
+-- =====================================================================================
+-- BA feature: regular-section cancellation and special-class billing.
+-- Run after the base schema and before deploying the matching backend.
+
+ALTER TABLE course_sections
+    ADD COLUMN section_type ENUM('REGULAR', 'SPECIAL') NOT NULL DEFAULT 'REGULAR',
+    ADD COLUMN min_students INT NOT NULL DEFAULT 1,
+    ADD COLUMN scale_coefficient DECIMAL(3,2) NOT NULL DEFAULT 1.00,
+    ADD COLUMN base_tuition_rate DECIMAL(12,2) NOT NULL DEFAULT 0.00;
+
+ALTER TABLE course_sections
+    MODIFY COLUMN status ENUM('OPEN', 'ACTIVE', 'CLOSED', 'CANCELLED', 'PENDING_FEE', 'LOCKED_BILLING')
+        NOT NULL DEFAULT 'OPEN';
+
+CREATE TABLE class_opening_requests (
+    id           BIGINT       NOT NULL AUTO_INCREMENT,
+    student_id   BIGINT       NOT NULL,
+    subject_id   INT          NOT NULL,
+    semester_id  INT          NOT NULL,
+    request_type ENUM('LEARN_AGAIN', 'IMPROVE', 'NEW') NOT NULL,
+    status       ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_class_opening_requests PRIMARY KEY (id),
+    CONSTRAINT uq_opening_request_student_course_semester UNIQUE (student_id, subject_id, semester_id),
+    CONSTRAINT fk_opening_request_student FOREIGN KEY (student_id) REFERENCES students (id),
+    CONSTRAINT fk_opening_request_subject FOREIGN KEY (subject_id) REFERENCES subjects (id),
+    CONSTRAINT fk_opening_request_semester FOREIGN KEY (semester_id) REFERENCES semesters (id)
+);
+
+CREATE TABLE fee_scale_rules (
+    id           BIGINT       NOT NULL AUTO_INCREMENT,
+    min_students INT          NOT NULL,
+    max_students INT          NOT NULL,
+    coefficient  DECIMAL(3,2) NOT NULL,
+    CONSTRAINT pk_fee_scale_rules PRIMARY KEY (id),
+    CONSTRAINT ck_fee_scale_range CHECK (min_students >= 0 AND max_students >= min_students),
+    CONSTRAINT ck_fee_scale_coefficient CHECK (coefficient > 0)
+);
+
+INSERT INTO fee_scale_rules (min_students, max_students, coefficient)
+VALUES (0, 4, 2.00), (5, 9, 1.50), (10, 19, 1.30),
+       (20, 29, 1.20), (30, 39, 1.10), (40, 2147483647, 1.00);
+
+CREATE TABLE student_invoices (
+    id          BIGINT         NOT NULL AUTO_INCREMENT,
+    student_id  BIGINT         NOT NULL,
+    section_id  BIGINT         NOT NULL,
+    credits     INT            NOT NULL,
+    base_rate   DECIMAL(12,2)  NOT NULL,
+    coefficient DECIMAL(3,2)   NOT NULL,
+    amount      DECIMAL(14,2)  NOT NULL,
+    status      ENUM('UNPAID', 'PAID', 'CANCELLED') NOT NULL DEFAULT 'UNPAID',
+    created_at  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_student_invoices PRIMARY KEY (id),
+    CONSTRAINT uq_invoice_student_section UNIQUE (student_id, section_id),
+    CONSTRAINT fk_invoice_student FOREIGN KEY (student_id) REFERENCES students (id),
+    CONSTRAINT fk_invoice_section FOREIGN KEY (section_id) REFERENCES course_sections (id)
+);
+
+CREATE TABLE notifications (
+    id         BIGINT       NOT NULL AUTO_INCREMENT,
+    student_id BIGINT       NOT NULL,
+    message    VARCHAR(500) NOT NULL,
+    created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT pk_notifications PRIMARY KEY (id),
+    CONSTRAINT fk_notifications_student FOREIGN KEY (student_id) REFERENCES students (id)
+);
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 21 : migrate_admin_coordination_and_tuition.sql
+-- =====================================================================================
+-- Migration: Admin Coordination, Cashier Desk & Tuition Deadline
+-- Bổ sung các trường phục vụ thu ngân tiền mặt và hạn nộp học phí
+
+ALTER TABLE semesters
+    ADD COLUMN tuition_deadline DATE NULL AFTER registration_end;
+
+ALTER TABLE student_invoices
+    ADD COLUMN paid_at DATETIME NULL AFTER status,
+    ADD COLUMN paid_method VARCHAR(30) NULL DEFAULT 'CASH' AFTER paid_at,
+    ADD COLUMN receipt_number VARCHAR(50) NULL AFTER paid_method,
+    ADD COLUMN cashier_user_id BIGINT NULL AFTER receipt_number,
+    ADD COLUMN extended_deadline DATE NULL AFTER cashier_user_id,
+    ADD COLUMN extension_reason VARCHAR(255) NULL AFTER extended_deadline;
+
+-- Khởi tạo hóa đơn học phí ban đầu cho các enrollments hiện có mà chưa có hóa đơn
+INSERT IGNORE INTO student_invoices (student_id, section_id, credits, base_rate, coefficient, amount, status, created_at)
+SELECT 
+    e.student_id,
+    e.section_id,
+    COALESCE(sub.credits, 3) AS credits,
+    CASE 
+        WHEN cs.base_tuition_rate > 0 THEN cs.base_tuition_rate 
+        ELSE 450000.00 
+    END AS base_rate,
+    COALESCE(cs.scale_coefficient, 1.00) AS coefficient,
+    (COALESCE(sub.credits, 3) * CASE WHEN cs.base_tuition_rate > 0 THEN cs.base_tuition_rate ELSE 450000.00 END * COALESCE(cs.scale_coefficient, 1.00)) AS amount,
+    'UNPAID' AS status,
+    NOW() AS created_at
+FROM enrollments e
+JOIN course_sections cs ON e.section_id = cs.id
+JOIN subjects sub ON cs.subject_id = sub.id
+WHERE e.status = 'ENROLLED';
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 22 : migrate_student_balance_and_business_rules.sql
+-- =====================================================================================
+-- Migration: Add balance to students and support tuition wallet & business rules
+ALTER TABLE students ADD COLUMN IF NOT EXISTS balance DECIMAL(14, 2) NOT NULL DEFAULT 0.00;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 23 : migrate_luong3_rule_b_financial_hold.sql
+-- =====================================================================================
+-- ============================================================
+-- MIGRATION: Luồng 3 - Bộ máy Kích hoạt Tự động liên thông (Cross-cutting Rule Engine)
+-- Quy tắc liên thông B: Hạn học phí -> Đóng băng dịch vụ học vụ (FINANCIAL_HOLD)
+-- ============================================================
+
+ALTER TABLE students
+    ADD COLUMN financial_hold BOOLEAN NOT NULL DEFAULT FALSE AFTER balance;
+
+CREATE INDEX idx_students_financial_hold ON students (financial_hold);
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 24 : migrate_luong3_rule_engine.sql
+-- =====================================================================================
+-- ============================================================
+-- MIGRATION: Luồng 3 - Bộ máy Kích hoạt Tự động liên thông (Cross-cutting Rule Engine)
+-- Quy tắc liên thông A: Điểm danh -> Cấm thi tự động
+-- ============================================================
+
+-- 1. Bổ sung cột attendance_status vào bảng enrollments để theo dõi điều kiện dự thi
+ALTER TABLE enrollments
+    ADD COLUMN attendance_status VARCHAR(20) NOT NULL DEFAULT 'QUALIFIED' AFTER enrollment_type;
+
+CREATE INDEX idx_enrollments_attendance_status ON enrollments (attendance_status);
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 25 : migrate_notifications_upgrade.sql
+-- =====================================================================================
+-- Migration: Nâng cấp bảng notifications hỗ trợ thông báo đẩy in-app thời gian thực
+-- Kịch bản: Bổ sung title, type, related_id, is_read và các index tăng tốc
+
+ALTER TABLE notifications
+    ADD COLUMN title VARCHAR(255) NOT NULL DEFAULT 'Thông báo' AFTER student_id,
+    ADD COLUMN type VARCHAR(50) NOT NULL DEFAULT 'GRADE_UPDATED' AFTER message,
+    ADD COLUMN related_id BIGINT NULL AFTER type,
+    ADD COLUMN is_read BOOLEAN NOT NULL DEFAULT FALSE AFTER related_id;
+
+-- Mở rộng độ dài cột message lên 1000 ký tự
+ALTER TABLE notifications MODIFY COLUMN message VARCHAR(1000) NOT NULL;
+
+-- Indexes tối ưu truy vấn đếm unread và lấy thông báo mới nhất theo sinh viên
+CREATE INDEX idx_notifications_student_read ON notifications (student_id, is_read);
+CREATE INDEX idx_notifications_student_created ON notifications (student_id, created_at DESC);
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 26 : migrate_v3_actors_and_modules.sql
+-- =====================================================================================
+-- ============================================================
+-- MIGRATION: SMS v3.0 - 4 ACTORS & NEW FUNCTIONAL MODULES
+-- Targets: ACADEMIC_STAFF role, System Configs, Audit Logs,
+-- Backup Histories, Academic Exceptions, Graduation Records,
+-- Conduct Scores, Student Service Requests, Grade Submission Status
+-- ============================================================
+
+USE student_management;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 1. UPDATE ROLES TABLE CONSTRAINT & ADD ACADEMIC_STAFF
+ALTER TABLE roles DROP CHECK ck_roles_name;
+ALTER TABLE roles ADD CONSTRAINT ck_roles_name CHECK (name IN ('ADMIN', 'ACADEMIC_STAFF', 'LECTURER', 'STUDENT'));
+
+INSERT INTO roles (id, name) VALUES (4, 'ACADEMIC_STAFF')
+ON DUPLICATE KEY UPDATE name = 'ACADEMIC_STAFF';
+
+-- 2. CREATE STAFF USER (Password: 123456)
+INSERT INTO users (username, password, email, role_id, is_active, must_change_password)
+VALUES ('staff', '$2a$10$s2ivIIT7Cjhf0iL2WrXiteC.rcBvNLSbPq2c3CwV38YrpDgh4h0wm', 'daotao@sms.edu.vn', 4, TRUE, FALSE)
+ON DUPLICATE KEY UPDATE role_id = 4, is_active = TRUE;
+
+-- 3. ADD GRADE SUBMISSION STATUS TO COURSE_SECTIONS
+SET @col_exists = (
+    SELECT COUNT(*) FROM information_schema.COLUMNS 
+    WHERE TABLE_SCHEMA = 'student_management' 
+    AND TABLE_NAME = 'course_sections' 
+    AND COLUMN_NAME = 'grade_submission_status'
+);
+
+SET @stmt = IF(@col_exists = 0, 
+    'ALTER TABLE course_sections ADD COLUMN grade_submission_status VARCHAR(20) NOT NULL DEFAULT ''DRAFT''', 
+    'SELECT 1'
+);
+PREPARE stmt_exec FROM @stmt;
+EXECUTE stmt_exec;
+DEALLOCATE PREPARE stmt_exec;
+
+-- 4. SYSTEM CONFIGS TABLE (Cấu hình tham số hệ thống)
+CREATE TABLE IF NOT EXISTS system_configs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    config_key VARCHAR(100) NOT NULL,
+    config_value TEXT NOT NULL,
+    description VARCHAR(255),
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uq_system_configs_key UNIQUE (config_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO system_configs (config_key, config_value, description) VALUES
+('CURRENT_SEMESTER_ID', '1', 'ID học kỳ hiện tại đang hoạt động'),
+('CREDIT_TUITION_FEE_VND', '450000', 'Mức học phí chuẩn mỗi tín chỉ (VND)'),
+('MIN_ENROLLMENT_CREDITS', '10', 'Số tín chỉ đăng ký tối thiểu mỗi kỳ'),
+('MAX_ENROLLMENT_CREDITS', '24', 'Số tín chỉ đăng ký tối đa mỗi kỳ'),
+('ABSENCE_BAN_THRESHOLD_PERCENT', '20', 'Ngưỡng phần trăm số tiết vắng mặt tối đa trước khi bị cấm thi'),
+('APPEAL_WINDOW_DAYS', '7', 'Số ngày mở cửa sổ phúc khảo sau khi công bố điểm'),
+('ENROLLMENT_PORTAL_OPEN', 'true', 'Trạng thái mở cổng đăng ký tín chỉ trực tuyến (true/false)')
+ON DUPLICATE KEY UPDATE config_value = VALUES(config_value), description = VALUES(description);
+
+-- 5. AUDIT LOGS TABLE (Nhật ký truy cập và thao tác nhạy cảm)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT,
+    username VARCHAR(50),
+    role VARCHAR(50),
+    action VARCHAR(100) NOT NULL,
+    module VARCHAR(100) NOT NULL,
+    ip_address VARCHAR(50),
+    details TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_audit_logs_action (action),
+    INDEX idx_audit_logs_module (module),
+    INDEX idx_audit_logs_created_at (created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 6. BACKUP HISTORIES TABLE (Lịch sử sao lưu CSDL)
+CREATE TABLE IF NOT EXISTS backup_histories (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size_bytes BIGINT NOT NULL DEFAULT 0,
+    record_count BIGINT DEFAULT 0,
+    status VARCHAR(30) NOT NULL DEFAULT 'SUCCESS',
+    created_by BIGINT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_backup_histories_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_backup_histories_created_at (created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. ACADEMIC EXCEPTIONS TABLE (Ngoại lệ học vụ: Rút môn, Miễn giảm tín chỉ)
+CREATE TABLE IF NOT EXISTS academic_exceptions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    exception_type VARCHAR(50) NOT NULL, -- COURSE_WITHDRAWAL, CREDIT_EXEMPTION, TUITION_REDUCTION, LATE_ENROLLMENT
+    course_section_id BIGINT,
+    subject_id INT,
+    semester_id INT,
+    reason TEXT NOT NULL,
+    attachment_url VARCHAR(500),
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
+    reviewed_by BIGINT,
+    reviewer_note TEXT,
+    reviewed_at DATETIME,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_academic_exceptions_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_academic_exceptions_section FOREIGN KEY (course_section_id) REFERENCES course_sections(id) ON DELETE SET NULL,
+    CONSTRAINT fk_academic_exceptions_subject FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE SET NULL,
+    CONSTRAINT fk_academic_exceptions_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE SET NULL,
+    CONSTRAINT fk_academic_exceptions_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_academic_exceptions_status (status),
+    INDEX idx_academic_exceptions_student (student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8. GRADUATION RECORDS TABLE (Xét tốt nghiệp bán tự động)
+CREATE TABLE IF NOT EXISTS graduation_records (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    cohort_id INT,
+    total_credits_accumulated INT NOT NULL DEFAULT 0,
+    cumulative_gpa DECIMAL(4,2) NOT NULL DEFAULT 0.00,
+    tuition_cleared BOOLEAN NOT NULL DEFAULT FALSE,
+    physical_education_passed BOOLEAN NOT NULL DEFAULT FALSE,
+    defense_education_passed BOOLEAN NOT NULL DEFAULT FALSE,
+    english_certificate_status BOOLEAN NOT NULL DEFAULT FALSE,
+    system_recommendation VARCHAR(30) NOT NULL DEFAULT 'DISQUALIFIED', -- QUALIFIED, DISQUALIFIED
+    official_status VARCHAR(30) NOT NULL DEFAULT 'PENDING', -- PENDING, APPROVED, REJECTED
+    graduation_decision_no VARCHAR(100),
+    decision_date DATE,
+    assessed_by BIGINT,
+    note TEXT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_graduation_records_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_graduation_records_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts(id) ON DELETE SET NULL,
+    CONSTRAINT fk_graduation_records_assessed_by FOREIGN KEY (assessed_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_graduation_records_student (student_id),
+    INDEX idx_graduation_records_status (official_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9. CONDUCT SCORES TABLE (Điểm rèn luyện)
+CREATE TABLE IF NOT EXISTS conduct_scores (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    semester_id INT NOT NULL,
+    score INT NOT NULL DEFAULT 80,
+    classification VARCHAR(30) NOT NULL DEFAULT 'TOT', -- XUAT_SAC, TOT, KHA, TRUNG_BINH, YEU, KEM
+    note TEXT,
+    rated_by BIGINT,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_conduct_scores_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_conduct_scores_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    CONSTRAINT fk_conduct_scores_rated_by FOREIGN KEY (rated_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT uq_student_semester_conduct UNIQUE (student_id, semester_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 10. STUDENT SERVICE REQUESTS TABLE (Dịch vụ sinh viên 1 cửa)
+CREATE TABLE IF NOT EXISTS student_service_requests (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    request_type VARCHAR(50) NOT NULL, -- STUDENT_CONFIRMATION, TRANSCRIPT_COPY, MILITARY_DEFERRAL, LOAN_CONFIRMATION
+    quantity INT NOT NULL DEFAULT 1,
+    purpose TEXT,
+    verification_code VARCHAR(64) NOT NULL,
+    pickup_method VARCHAR(30) NOT NULL DEFAULT 'ONLINE_PDF', -- ONLINE_PDF, OFFICE_PICKUP
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING', -- PENDING, PROCESSING, COMPLETED, REJECTED
+    processed_by BIGINT,
+    admin_note TEXT,
+    completed_at DATETIME,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_service_requests_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_service_requests_processed_by FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT uq_service_verification_code UNIQUE (verification_code),
+    INDEX idx_service_requests_status (status),
+    INDEX idx_service_requests_student (student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 11. SEED CONDUCT SCORES FOR EXISTING STUDENTS (Demo data)
+INSERT IGNORE INTO conduct_scores (student_id, semester_id, score, classification, note)
+SELECT s.id, 1, 85, 'TOT', 'Tích cực tham gia phong trào Đoàn - Hội'
+FROM students s;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- =====================================================================================
+-- BẢN MIGRATION 27 : fix_vietnamese_encoding.sql
+-- =====================================================================================
+USE student_management;
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
+-- 1. DEPARTMENTS
+UPDATE departments SET name = 'Khoa Công nghệ Thông tin & Máy tính', description = 'Đào tạo Trí tuệ nhân tạo, Khoa học dữ liệu, Kỹ thuật phần mềm, An ninh mạng và Thiết kế vi mạch bán dẫn' WHERE code = 'CNTT';
+UPDATE departments SET name = 'Khoa Kinh tế & Quản trị Kinh doanh', description = 'Đào tạo Logistics, Quản lý chuỗi cung ứng, Thương mại điện tử, Digital Marketing, Phân tích kinh doanh và Fintech' WHERE code = 'KT_QTKD';
+UPDATE departments SET name = 'Khoa Kỹ thuật & Công nghệ Tự động', description = 'Đào tạo Kỹ thuật Cơ điện tử, Robotics, Công nghệ Kỹ thuật Ô tô điện và Năng lượng tái tạo' WHERE code = 'KT_TDH';
+UPDATE departments SET name = 'Khoa Cơ khí & Công nghệ Ô tô', description = 'Đào tạo Kỹ thuật Cơ khí, Cơ điện tử, Công nghệ Ô tô và Chế tạo máy' WHERE code = 'COKHI';
+UPDATE departments SET name = 'Khoa Ngoại ngữ', description = 'Đào tạo Ngôn ngữ Anh, Trung, Hàn, Nhật thương mại, Biên phiên dịch và Tiếng Anh chuyên ngành' WHERE code = 'NN';
+UPDATE departments SET name = 'Khoa Kế toán - Kiểm toán', description = 'Đào tạo Kế toán doanh nghiệp, Kiểm toán tài chính, Thuế và Kế toán công' WHERE code = 'KT';
+UPDATE departments SET name = 'Khoa Luật & Quốc tế học', description = 'Đào tạo Luật kinh tế, Luật thương mại quốc tế và Quan hệ quốc tế' WHERE code = 'LUAT';
+UPDATE departments SET name = 'Khoa Kỹ thuật Xây dựng', description = 'Đào tạo Kỹ thuật công trình xây dựng, Quản lý dự án xây dựng và Hạ tầng thông minh' WHERE code = 'XD';
+UPDATE departments SET name = 'Khoa Y Dược', description = 'Đào tạo Y đa khoa, Dược học, Điều dưỡng và Kỹ thuật xét nghiệm y học' WHERE code = 'YD';
+
+-- 2. MAJORS
+UPDATE majors SET name = 'Công nghệ thông tin', description = 'Kỹ thuật phần mềm, trí tuệ nhân tạo, an toàn thông tin' WHERE code = 'CNTT';
+UPDATE majors SET name = 'Quản trị kinh doanh', description = 'Quản trị doanh nghiệp, marketing và thương mại điện tử' WHERE code = 'QTKD';
+UPDATE majors SET name = 'Điện - Điện tử', description = 'Điện tử viễn thông, điều khiển và hệ thống nhúng' WHERE code = 'DTVT';
+UPDATE majors SET name = 'Cơ khí', description = 'Cơ điện tử, kỹ thuật ô tô và chế tạo máy' WHERE code = 'CK';
+UPDATE majors SET name = 'Ngoại ngữ', description = 'Ngôn ngữ Anh, Nhật và biên phiên dịch' WHERE code = 'NN';
+UPDATE majors SET name = 'Kế toán - Kiểm toán', description = 'Kế toán tài chính và kiểm toán' WHERE code = 'KT';
+UPDATE majors SET name = 'Luật', description = 'Luật kinh tế và pháp luật công' WHERE code = 'LUAT';
+UPDATE majors SET name = 'Kỹ thuật Xây dựng', description = 'Kỹ thuật xây dựng và quản lý công trình' WHERE code = 'XD';
+UPDATE majors SET name = 'Y Dược', description = 'Y khoa, dược học và chăm sóc sức khỏe' WHERE code = 'YD';
+UPDATE majors SET name = 'Du lịch', description = 'Quản trị du lịch, khách sạn và dịch vụ' WHERE code = 'DL';
+UPDATE majors SET name = 'Truyền thông', description = 'Truyền thông số, báo chí và quan hệ công chúng' WHERE code = 'TT';
+UPDATE majors SET name = 'Khoa học Xã hội', description = 'Tâm lý, xã hội học và quản trị nhân lực' WHERE code = 'XH';
+UPDATE majors SET name = 'Ngôn ngữ', description = 'Ngôn ngữ ứng dụng và giao tiếp liên văn hóa' WHERE code = 'NNG';
+
+-- 3. COHORTS
+UPDATE cohorts SET name = 'Khóa 16' WHERE code = 'K16';
+UPDATE cohorts SET name = 'Khóa 17' WHERE code = 'K17';
+UPDATE cohorts SET name = 'Khóa 18' WHERE code = 'K18';
+UPDATE cohorts SET name = 'Khóa 19' WHERE code = 'K19';
+
+-- 4. CURRICULUM PROGRAMS
+UPDATE curriculum_programs p
+JOIN majors m ON p.major_id = m.id
+JOIN cohorts c ON p.cohort_id = c.id
+SET p.name = CONCAT('Chương trình đào tạo ', m.name, ' - ', c.name);
+
+-- 5. CURRICULUM BLOCKS
+UPDATE curriculum_blocks
+SET name = CASE code
+    WHEN 'GDDC' THEN 'Khối kiến thức giáo dục đại cương'
+    WHEN 'CSNG' THEN 'Khối kiến thức cơ sở ngành'
+    WHEN 'CN' THEN 'Khối kiến thức chuyên ngành'
+    WHEN 'TN' THEN 'Thực tập'
+    WHEN 'TNK' THEN 'Khóa luận tốt nghiệp'
+    WHEN 'TC01' THEN 'Giáo dục thể chất'
+    WHEN 'TC02' THEN 'Giáo dục quốc phòng - an ninh'
+    WHEN 'TC03' THEN 'Khối kiến thức bổ trợ'
+    WHEN 'TC04' THEN 'Khối kiến thức điều kiện'
+    WHEN 'TC05' THEN 'Khối kiến thức chuyên ngành tự chọn 1'
+    WHEN 'TC06' THEN 'Khối kiến thức chuyên ngành tự chọn 2'
+    WHEN 'TC07' THEN 'Đồ án/Khóa luận tốt nghiệp tự chọn'
+    ELSE name
+END;
+
+-- 6. SUBJECTS (37 subjects)
+UPDATE subjects SET subject_name = 'Giải tích 1', description = 'Giới hạn, đạo hàm, vi phân và tích phân hàm một biến' WHERE subject_code = 'MATH101';
+UPDATE subjects SET subject_name = 'Đại số tuyến tính', description = 'Ma trận, định thức, hệ phương trình tuyến tính và không gian vector' WHERE subject_code = 'MATH102';
+UPDATE subjects SET subject_name = 'Vật lý đại cương 1', description = 'Cơ học, nhiệt học và điện từ học cơ bản' WHERE subject_code = 'PHYS101';
+UPDATE subjects SET subject_name = 'Triết học Mác - Lênin', description = 'Những nguyên lý cơ bản của triết học Mác - Lênin' WHERE subject_code = 'PHIL101';
+UPDATE subjects SET subject_name = 'Pháp luật đại cương', description = 'Những vấn đề cơ bản về nhà nước và pháp luật Việt Nam' WHERE subject_code = 'LAW101';
+UPDATE subjects SET subject_name = 'Nhập môn lập trình', description = 'Tư duy thuật toán và lập trình căn bản' WHERE subject_code = 'CS101';
+UPDATE subjects SET subject_name = 'Lập trình hướng đối tượng', description = 'Lập trình hướng đối tượng, kế thừa và đa hình' WHERE subject_code = 'CS201';
+UPDATE subjects SET subject_name = 'Cơ sở dữ liệu', description = 'Mô hình quan hệ, chuẩn hóa và truy vấn SQL' WHERE subject_code = 'CS202';
+UPDATE subjects SET subject_name = 'Cấu trúc dữ liệu và giải thuật', description = 'Cấu trúc dữ liệu, thuật toán tìm kiếm và sắp xếp' WHERE subject_code = 'CS203';
+UPDATE subjects SET subject_name = 'Phát triển ứng dụng Web', description = 'Kiến trúc và phát triển ứng dụng Web' WHERE subject_code = 'CS301';
+UPDATE subjects SET subject_name = 'Mạng máy tính', description = 'Mô hình mạng, giao thức TCP/IP và định tuyến' WHERE subject_code = 'CS302';
+UPDATE subjects SET subject_name = 'Trí tuệ nhân tạo', description = 'Các phương pháp tìm kiếm, học máy và mạng nơ-ron' WHERE subject_code = 'CS303';
+UPDATE subjects SET subject_name = 'Công nghệ phần mềm', description = 'Phân tích, thiết kế và quản lý quy trình phát triển phần mềm' WHERE subject_code = 'CS304';
+UPDATE subjects SET subject_name = 'Kiểm thử phần mềm', description = 'Kỹ thuật và quy trình kiểm thử phần mềm' WHERE subject_code = 'CS305';
+UPDATE subjects SET subject_name = 'An toàn thông tin', description = 'Mật mã, an ninh mạng và an toàn ứng dụng' WHERE subject_code = 'CS401';
+UPDATE subjects SET subject_name = 'Kiến trúc và thiết kế phần mềm', description = 'Kiến trúc hệ thống, mẫu thiết kế và thiết kế phần mềm' WHERE subject_code = 'CS402';
+UPDATE subjects SET subject_name = 'DevOps và điện toán đám mây', description = 'Tích hợp liên tục, container và triển khai ứng dụng trên đám mây' WHERE subject_code = 'CS403';
+UPDATE subjects SET subject_name = 'Nguyên lý quản trị', description = 'Hoạch định, tổ chức, lãnh đạo và kiểm soát' WHERE subject_code = 'BUS101';
+UPDATE subjects SET subject_name = 'Kinh tế vi mô', description = 'Cung cầu, thị trường và hành vi doanh nghiệp' WHERE subject_code = 'ECO101';
+UPDATE subjects SET subject_name = 'Kinh tế vĩ mô', description = 'Tăng trưởng, lạm phát, thất nghiệp và chính sách kinh tế' WHERE subject_code = 'ECO102';
+UPDATE subjects SET subject_name = 'Marketing căn bản', description = 'Hành vi khách hàng, sản phẩm, giá và truyền thông' WHERE subject_code = 'MKT201';
+UPDATE subjects SET subject_name = 'Kế toán tài chính 1', description = 'Nguyên lý kế toán và lập báo cáo tài chính' WHERE subject_code = 'ACC201';
+UPDATE subjects SET subject_name = 'Tài chính doanh nghiệp', description = 'Giá trị thời gian của tiền và quyết định đầu tư' WHERE subject_code = 'FIN301';
+UPDATE subjects SET subject_name = 'Quản trị nguồn nhân lực', description = 'Tuyển dụng, đào tạo, đánh giá và đãi ngộ' WHERE subject_code = 'HRM301';
+UPDATE subjects SET subject_name = 'Mạch điện 1', description = 'Mạch điện một chiều, xoay chiều và các định luật cơ bản' WHERE subject_code = 'EE101';
+UPDATE subjects SET subject_name = 'Kỹ thuật điện tử', description = 'Linh kiện bán dẫn, mạch khuếch đại và mạch số' WHERE subject_code = 'EE201';
+UPDATE subjects SET subject_name = 'Điều khiển tự động', description = 'Mô hình hóa, hàm truyền và bộ điều khiển PID' WHERE subject_code = 'EE202';
+UPDATE subjects SET subject_name = 'Đo lường và cảm biến', description = 'Đo lường điện và cảm biến trong hệ thống kỹ thuật' WHERE subject_code = 'EE301';
+UPDATE subjects SET subject_name = 'Hệ thống nhúng và Internet vạn vật', description = 'Vi điều khiển, giao thức kết nối và ứng dụng IoT' WHERE subject_code = 'EE302';
+UPDATE subjects SET subject_name = 'Cơ học kỹ thuật', description = 'Tĩnh học, động học và động lực học cơ hệ' WHERE subject_code = 'ME101';
+UPDATE subjects SET subject_name = 'Vẽ kỹ thuật và CAD', description = 'Tiêu chuẩn bản vẽ kỹ thuật và thiết kế hỗ trợ máy tính' WHERE subject_code = 'ME201';
+UPDATE subjects SET subject_name = 'Động cơ đốt trong', description = 'Nguyên lý, kết cấu và hệ thống của động cơ đốt trong' WHERE subject_code = 'ME202';
+UPDATE subjects SET subject_name = 'Sức bền vật liệu', description = 'Ứng suất, biến dạng và tính bền kết cấu' WHERE subject_code = 'ME301';
+UPDATE subjects SET subject_name = 'Công nghệ chế tạo máy', description = 'Quy trình gia công và công nghệ CNC' WHERE subject_code = 'ME302';
+UPDATE subjects SET subject_name = 'Tiếng Anh 1', description = 'Kỹ năng tiếng Anh nền tảng trong môi trường đại học' WHERE subject_code = 'ENG101';
+UPDATE subjects SET subject_name = 'Tiếng Anh chuyên ngành Công nghệ thông tin', description = 'Thuật ngữ và đọc hiểu tài liệu công nghệ thông tin' WHERE subject_code = 'ENG201';
+UPDATE subjects SET subject_name = 'Tiếng Anh chuyên ngành Kỹ thuật', description = 'Tiếng Anh chuyên ngành kỹ thuật và công nghệ' WHERE subject_code = 'ENG202';
+

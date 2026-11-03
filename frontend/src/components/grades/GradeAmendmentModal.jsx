@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, UploadCloud, FileText, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { X, UploadCloud, CheckCircle2, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { gradeAmendmentService } from '../../services/dataService';
 
@@ -51,8 +51,6 @@ export default function GradeAmendmentModal({
     const sId = g.enrollment?.student?.id || g.studentId;
     return String(sId) === String(selectedStudentId);
   });
-
-  const studentInfo = selectedGradeObj?.enrollment?.student || student;
 
   // Lấy điểm cũ của cột tương ứng
   const selectedCompConfig = COMPONENT_OPTIONS.find((c) => c.value === componentType);

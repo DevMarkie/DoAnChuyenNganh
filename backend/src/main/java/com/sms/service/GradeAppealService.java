@@ -182,8 +182,8 @@ public class GradeAppealService {
         }
 
         Lecturer lecturer = lecturerRepository.findByUserId(lecturerUserId).orElse(null);
-        if (lecturer != null && appeal.getAssignedLecturer() != null
-                && !lecturer.getId().equals(appeal.getAssignedLecturer().getId())) {
+        if (lecturer != null && (appeal.getAssignedLecturer() == null
+                || !lecturer.getId().equals(appeal.getAssignedLecturer().getId()))) {
             throw new AccessDeniedException("Bạn không phải là cán bộ chấm độc lập được phân công cho đơn này");
         }
 
@@ -420,6 +420,11 @@ public class GradeAppealService {
      */
     @Transactional
     public GradeAppeal finalizeAppeal(Long staffUserId, Long appealId, GradeAppealReviewRequest request) {
+        User staffUser = userRepository.findById(staffUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy cán bộ xử lý"));
+        if (staffUser.getRole() != null && Role.LECTURER.equalsIgnoreCase(staffUser.getRole().getName())) {
+            throw new AccessDeniedException("Giảng viên không có quyền phê duyệt chốt kết quả phúc khảo");
+        }
         if (request.getStatus() == GradeAppeal.AppealStatus.REJECTED) {
             GradeAppeal appeal = appealRepository.findById(appealId)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn phúc khảo"));

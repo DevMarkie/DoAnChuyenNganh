@@ -8,7 +8,6 @@ import {
   Printer,
   AlertTriangle,
   Clock,
-  HelpCircle,
   X,
   Send,
 } from 'lucide-react';

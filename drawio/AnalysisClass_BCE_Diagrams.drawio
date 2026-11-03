@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mxfile host="app.diagrams.net" modified="2026-09-11T11:00:00.000Z" agent="Antigravity AI Agent" version="21.0.0" type="device">
+<mxfile host="app.diagrams.net" modified="2026-09-12T07:45:00.000Z" agent="Antigravity AI Agent" version="21.0.0" type="device">
   <diagram id="bce_login" name="1. Đăng nhập hệ thống">
     <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1460" pageHeight="920" background="#ffffff">
       <root>
@@ -1466,7 +1466,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="bce_grd_finalize" name="14. Chốt bảng điểm &amp; Cửa sổ 7 ngày">
+  <diagram id="bce_grd_finalize" name="14. Chốt bảng điểm">
     <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1460" pageHeight="840" background="#ffffff">
       <root>
         <mxCell id="0"/>
@@ -2026,6 +2026,399 @@
           <mxGeometry as="geometry" relative="1" y="-12"/>
         </mxCell>
         <mxCell id="edge_attendance_5" value="lưu AttendanceRecord" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.65;entryX=0;entryY=0.5;" parent="1" edge="1" source="ctrl_attendance_1" target="ent_attendance_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="bce_exam" name="19. Khảo thí &amp; Quản lý phòng thi">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1460" pageHeight="920" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t_main" value="BIỂU ĐỒ LỚP PHÂN TÍCH (BCE) - CHỨC NĂNG: 19. Khảo thí &amp; Quản lý phòng thi" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=15;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="20" width="980" height="25"/>
+        </mxCell>
+        <mxCell id="st_main" value="Kiến trúc phân tầng: Tác nhân -&gt; Giao diện (Boundary) -&gt; Điều khiển (Control) -&gt; Thực thể (Entity)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=0;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#444444;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="48" width="1080" height="20"/>
+        </mxCell>
+        <mxCell id="hdr_bnd_exam" value="&lt;b&gt;«Boundary» GIAO DIỆN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Client UI &amp;amp; REST API Endpoints)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_bnd_exam" style="shape=umlBoundary;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="172" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ctrl_exam" value="&lt;b&gt;«Control» ĐIỀU KHIỂN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Business Logic &amp;amp; Security Services)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ctrl_exam" style="shape=umlControl;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="612" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ent_exam" value="&lt;b&gt;«Entity» THỰC THỂ&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Domain Entities, Tables &amp;amp; DTOs)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ent_exam" style="shape=umlEntity;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1052" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="flow_hdr1_exam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_bnd_exam" target="hdr_ctrl_exam">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="flow_hdr2_exam" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_ctrl_exam" target="hdr_ent_exam">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="bnd_exam_1" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;ExamRoomsPage&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="145" width="340" height="252"/>
+        </mxCell>
+        <mxCell id="bnd_exam_1_attrs" value="- selectedSemester: Integer&#10;- selectedSection: Long&#10;- roomCapacity: int&#10;- examSessionsTable: DataTable&#10;- examRosterGrid: DataTable" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="bnd_exam_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="146" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_exam_1_methods" value="+ taiDanhSachDotThi(): void&#10;+ taoCaThiMoi(): void&#10;+ phanBoPhongTuDong(): void&#10;+ xuatDanhSachThiSinhExcel(): void&#10;+ nhapDiemThiTheoTui(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="150" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="bnd_exam_2" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;ExamController&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="400" width="340" height="216"/>
+        </mxCell>
+        <mxCell id="bnd_exam_2_attrs" value="- examService: ExamService&#10;- excelExportService: ExcelExportService&#10;- excelImportService: ExcelImportService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="bnd_exam_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="110" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_exam_2_methods" value="+ getExamSessions(semesterId): ApiResponse&#10;+ createExamSession(req): ApiResponse&#10;+ autoAssignExamRooms(req): ApiResponse&#10;+ getExamRoster(roomId): ApiResponse&#10;+ exportExamRosterExcel(roomId): ResponseEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="114" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="act_exam" value="Cán bộ Khảo thí / Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
+        </mxCell>
+        <mxCell id="e_act_exam" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_exam" target="bnd_exam_1">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ctrl_exam_1" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;ExamService&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="400" width="340" height="234"/>
+        </mxCell>
+        <mxCell id="ctrl_exam_1_attrs" value="- examSessionRepo: ExamSessionRepository&#10;- examRoomRepo: ExamRoomRepository&#10;- enrollmentRepo: EnrollmentRepository&#10;- gradeRepo: GradeRepository" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="ctrl_exam_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="128" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_exam_1_methods" value="+ createExamSession(request): ExamSessionResponse&#10;+ autoAssignRooms(request): List&lt;ExamRoomResponse&gt;&#10;+ validateExamEligibility(sectionId): List&lt;Student&gt;&#10;+ generateExamNumbers(roomId): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="132" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="ctrl_exam_2" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;ExamRoomRepository&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="640" width="340" height="144"/>
+        </mxCell>
+        <mxCell id="ctrl_exam_2_attrs" value="- entityManager: EntityManager" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="30"/>
+        </mxCell>
+        <mxCell id="ctrl_exam_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="74" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_exam_2_methods" value="+ findByExamSessionId(sessionId): List&lt;ExamRoom&gt;&#10;+ save(room): ExamRoom&#10;+ countByRoomAndPeriod(room, date, period): long" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="78" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="ent_exam_1" value="&lt;i&gt;«Thực thể»&lt;/i&gt;&lt;br&gt;&lt;b&gt;ExamRoom&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="400" width="340" height="234"/>
+        </mxCell>
+        <mxCell id="ent_exam_1_attrs" value="- id: Long&#10;- sessionId: Long&#10;- roomNumber: String&#10;- capacity: int&#10;- currentAssigned: int&#10;- supervisorName: String&#10;- status: RoomStatus" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="138"/>
+        </mxCell>
+        <mxCell id="ent_exam_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="182" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_exam_1_methods" value="+ isAvailable(): boolean&#10;+ assignStudent(studentId): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_exam_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="186" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="ent_exam_2" value="&lt;i&gt;«Truyền dữ liệu»&lt;/i&gt;&lt;br&gt;&lt;b&gt;ExamRosterResponse&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="640" width="340" height="198"/>
+        </mxCell>
+        <mxCell id="ent_exam_2_attrs" value="- roomNumber: String&#10;- examDate: LocalDate&#10;- startTime: String&#10;- totalStudents: int&#10;- candidates: List&lt;CandidateDto&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="ent_exam_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="146" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_exam_2_methods" value="+ layTongThiSinh(): int&#10;+ layDanhSachSBD(): List&lt;String&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_exam_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="150" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="edge_exam_1" value="yêu cầu xếp phòng thi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="bnd_exam_1" target="bnd_exam_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_exam_2" value="điều phối nghiệp vụ khảo thí" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" edge="1" source="bnd_exam_2" target="ctrl_exam_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_exam_3" value="truy vấn phòng &amp; lưu phân bổ" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="ctrl_exam_1" target="ctrl_exam_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_exam_4" value="cập nhật thực thể ExamRoom" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.35;entryX=0;entryY=0.35;" parent="1" edge="1" source="ctrl_exam_2" target="ent_exam_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_exam_5" value="đóng gói danh sách ExamRosterResponse" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.65;entryX=0;entryY=0.5;" parent="1" edge="1" source="ctrl_exam_1" target="ent_exam_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="bce_amendment" name="20. Quy trình Đính chính điểm 3 cấp">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1460" pageHeight="920" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t_main" value="BIỂU ĐỒ LỚP PHÂN TÍCH (BCE) - CHỨC NĂNG: 20. Quy trình Đính chính điểm 3 cấp" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=15;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="20" width="980" height="25"/>
+        </mxCell>
+        <mxCell id="st_main" value="Kiến trúc phân tầng: Tác nhân -&gt; Giao diện (Boundary) -&gt; Điều khiển (Control) -&gt; Thực thể (Entity)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=0;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#444444;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="48" width="1080" height="20"/>
+        </mxCell>
+        <mxCell id="hdr_bnd_amendment" value="&lt;b&gt;«Boundary» GIAO DIỆN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Client UI &amp;amp; REST API Endpoints)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_bnd_amendment" style="shape=umlBoundary;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="172" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ctrl_amendment" value="&lt;b&gt;«Control» ĐIỀU KHIỂN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Business Logic &amp;amp; Security Services)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ctrl_amendment" style="shape=umlControl;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="612" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ent_amendment" value="&lt;b&gt;«Entity» THỰC THỂ&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Domain Entities, Tables &amp;amp; DTOs)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ent_amendment" style="shape=umlEntity;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1052" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="flow_hdr1_amendment" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_bnd_amendment" target="hdr_ctrl_amendment">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="flow_hdr2_amendment" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_ctrl_amendment" target="hdr_ent_amendment">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="bnd_amendment_1" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GradeAmendmentsPage&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="145" width="340" height="216"/>
+        </mxCell>
+        <mxCell id="bnd_amendment_1_attrs" value="- pendingTicketsTable: DataTable&#10;- amendmentDetailModal: Modal&#10;- reviewCommentInput: String&#10;- proofDocViewer: ImageViewer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="bnd_amendment_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="128" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_amendment_1_methods" value="+ taiDanhSachDonYeuCau(): void&#10;+ taoDonDinhChinhMoi(): void&#10;+ truongBoMonThamDinh(id, approve): void&#10;+ phongDaoTaoPheDuyet(id, approve): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="132" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="bnd_amendment_2" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GradeAmendmentController&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="400" width="340" height="198"/>
+        </mxCell>
+        <mxCell id="bnd_amendment_2_attrs" value="- gradeAmendmentService: GradeAmendmentService&#10;- gradeAuditLogService: GradeAuditLogService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="bnd_amendment_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="92" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_amendment_2_methods" value="+ create(req): ApiResponse&#10;+ deptReview(id, req): ApiResponse&#10;+ academicApprove(id, req): ApiResponse&#10;+ getMyTickets(): ApiResponse&#10;+ getAuditLogs(gradeId): ApiResponse" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="96" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="act_amendment" value="Giảng viên &amp; Trưởng BM &amp; P.ĐT" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
+        </mxCell>
+        <mxCell id="e_act_amendment" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_amendment" target="bnd_amendment_1">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ctrl_amendment_1" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GradeAmendmentService&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="400" width="340" height="216"/>
+        </mxCell>
+        <mxCell id="ctrl_amendment_1_attrs" value="- ticketRepo: GradeChangeTicketRepository&#10;- gradeRepo: GradeRepository&#10;- auditLogRepo: GradeAuditLogRepository&#10;- transcriptService: TranscriptService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="ctrl_amendment_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="128" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_amendment_1_methods" value="+ createTicket(request): GradeChangeTicket&#10;+ deptReview(ticketId, approved, note): void&#10;+ academicApproval(ticketId, approved, note): void&#10;+ applyGradeChangeWithAudit(ticket): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="132" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="ctrl_amendment_2" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GradeAuditLogRepository&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="640" width="340" height="144"/>
+        </mxCell>
+        <mxCell id="ctrl_amendment_2_attrs" value="- entityManager: EntityManager" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="30"/>
+        </mxCell>
+        <mxCell id="ctrl_amendment_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="74" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_amendment_2_methods" value="+ findByGradeIdOrderByTimestampDesc(gradeId): List&lt;GradeAuditLog&gt;&#10;+ save(log): GradeAuditLog" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="78" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="ent_amendment_1" value="&lt;i&gt;«Thực thể»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GradeChangeTicket&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="400" width="340" height="288"/>
+        </mxCell>
+        <mxCell id="ent_amendment_1_attrs" value="- id: Long&#10;- studentId: Long&#10;- sectionId: Long&#10;- componentType: String&#10;- oldScore: Double&#10;- newScore: Double&#10;- reason: String&#10;- proofUrl: String&#10;- status: TicketStatus" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="174"/>
+        </mxCell>
+        <mxCell id="ent_amendment_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="218" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_amendment_1_methods" value="+ approveDept(): void&#10;+ approveAcademic(): void&#10;+ reject(reason): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_amendment_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="222" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="ent_amendment_2" value="&lt;i&gt;«Thực thể»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GradeAuditLog&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="640" width="340" height="252"/>
+        </mxCell>
+        <mxCell id="ent_amendment_2_attrs" value="- id: Long&#10;- gradeId: Long&#10;- modifierId: Long&#10;- action: String&#10;- oldTotal: Double&#10;- newTotal: Double&#10;- timestamp: LocalDateTime&#10;- reason: String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="156"/>
+        </mxCell>
+        <mxCell id="ent_amendment_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="200" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_amendment_2_methods" value="+ getAuditSnapshot(): String&#10;+ isValidChecksum(): boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_amendment_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="204" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="edge_amendment_1" value="gửi yêu cầu đính chính" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="bnd_amendment_1" target="bnd_amendment_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_amendment_2" value="điều phối quy trình 3 cấp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" edge="1" source="bnd_amendment_2" target="ctrl_amendment_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_amendment_3" value="ghi vết kiểm toán" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="ctrl_amendment_1" target="ctrl_amendment_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_amendment_4" value="quản lý GradeChangeTicket" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.35;entryX=0;entryY=0.35;" parent="1" edge="1" source="ctrl_amendment_1" target="ent_amendment_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_amendment_5" value="lưu lịch sử GradeAuditLog" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.65;entryX=0;entryY=0.5;" parent="1" edge="1" source="ctrl_amendment_2" target="ent_amendment_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="bce_graduation" name="21. Thẩm định chuẩn tốt nghiệp (Degree Audit)">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1460" pageHeight="920" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t_main" value="BIỂU ĐỒ LỚP PHÂN TÍCH (BCE) - CHỨC NĂNG: 21. Thẩm định chuẩn tốt nghiệp (Degree Audit)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=15;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="20" width="980" height="25"/>
+        </mxCell>
+        <mxCell id="st_main" value="Kiến trúc phân tầng: Tác nhân -&gt; Giao diện (Boundary) -&gt; Điều khiển (Control) -&gt; Thực thể (Entity)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=0;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#444444;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="48" width="1080" height="20"/>
+        </mxCell>
+        <mxCell id="hdr_bnd_graduation" value="&lt;b&gt;«Boundary» GIAO DIỆN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Client UI &amp;amp; REST API Endpoints)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_bnd_graduation" style="shape=umlBoundary;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="172" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ctrl_graduation" value="&lt;b&gt;«Control» ĐIỀU KHIỂN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Business Logic &amp;amp; Security Services)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ctrl_graduation" style="shape=umlControl;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="612" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ent_graduation" value="&lt;b&gt;«Entity» THỰC THỂ&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Domain Entities, Tables &amp;amp; DTOs)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ent_graduation" style="shape=umlEntity;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1052" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="flow_hdr1_graduation" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_bnd_graduation" target="hdr_ctrl_graduation">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="flow_hdr2_graduation" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_ctrl_graduation" target="hdr_ent_graduation">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="bnd_graduation_1" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GraduationPageView&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="145" width="340" height="216"/>
+        </mxCell>
+        <mxCell id="bnd_graduation_1_attrs" value="- selectedCohort: Integer&#10;- candidateGrid: DataTable&#10;- auditCriteriaModal: Modal&#10;- exportDecisionBtn: Button" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="bnd_graduation_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="128" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_graduation_1_methods" value="+ taiDanhSachSinhVienKhoa(): void&#10;+ thamDinhTotNghiepKhoa(): void&#10;+ xemChiTietTieuChiSV(id): void&#10;+ xuatQuyetDinhTotNghiep(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="132" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="bnd_graduation_2" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GraduationController&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="400" width="340" height="198"/>
+        </mxCell>
+        <mxCell id="bnd_graduation_2_attrs" value="- graduationService: GraduationService&#10;- userRepository: UserRepository" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="bnd_graduation_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="92" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_graduation_2_methods" value="+ evaluateCohort(cohortId): ApiResponse&#10;+ assessStudent(studentId): ApiResponse&#10;+ getGraduationCandidates(cohortId, pageable): ApiResponse&#10;+ exportGraduationList(cohortId): ResponseEntity" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="96" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="act_graduation" value="Cán bộ Đào tạo / Sinh viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
+        </mxCell>
+        <mxCell id="e_act_graduation" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_graduation" target="bnd_graduation_1">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ctrl_graduation_1" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GraduationService&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="400" width="340" height="288"/>
+        </mxCell>
+        <mxCell id="ctrl_graduation_1_attrs" value="- studentRepo: StudentRepository&#10;- gradeRepo: GradeRepository&#10;- curriculumRepo: CurriculumRepository&#10;- graduationRecordRepo: GraduationRecordRepository&#10;- tuitionService: TuitionService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="ctrl_graduation_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="146" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_graduation_1_methods" value="+ assessCohortCandidates(cohortId): List&lt;GraduationRecord&gt;&#10;+ assessCandidate(student, curriculum): GraduationRecord&#10;+ checkCreditAndCpa(student, curr): boolean&#10;+ checkCertificatesAndConduct(student): boolean&#10;+ determineHonorsCategory(cpa, retakePct): String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="150" width="340" height="138"/>
+        </mxCell>
+        <mxCell id="ctrl_graduation_2" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GraduationRecordRepository&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="640" width="340" height="162"/>
+        </mxCell>
+        <mxCell id="ctrl_graduation_2_attrs" value="- entityManager: EntityManager" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="30"/>
+        </mxCell>
+        <mxCell id="ctrl_graduation_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="74" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_graduation_2_methods" value="+ findByCohortId(cohortId): List&lt;GraduationRecord&gt;&#10;+ findByStudentId(studentId): Optional&lt;GraduationRecord&gt;&#10;+ saveAll(records): List&lt;GraduationRecord&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="78" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="ent_graduation_1" value="&lt;i&gt;«Thực thể»&lt;/i&gt;&lt;br&gt;&lt;b&gt;GraduationRecord&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="400" width="340" height="288"/>
+        </mxCell>
+        <mxCell id="ent_graduation_1_attrs" value="- id: Long&#10;- studentId: Long&#10;- cohortId: Integer&#10;- isEligible: boolean&#10;- totalCreditsEarned: int&#10;- finalCpa: double&#10;- honorsLevel: HonorsLevel&#10;- missingRequirements: String&#10;- decisionNumber: String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="174"/>
+        </mxCell>
+        <mxCell id="ent_graduation_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="218" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_graduation_1_methods" value="+ isGraduated(): boolean&#10;+ layHangTotNghiep(): String&#10;+ layLyDoChuaDat(): String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_graduation_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="222" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="ent_graduation_2" value="&lt;i&gt;«Truyền dữ liệu»&lt;/i&gt;&lt;br&gt;&lt;b&gt;DegreeAuditResultDTO&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="640" width="340" height="216"/>
+        </mxCell>
+        <mxCell id="ent_graduation_2_attrs" value="- studentCode: String&#10;- passedRequiredCredits: boolean&#10;- passedCpaThreshold: boolean&#10;- passedLanguageCert: boolean&#10;- clearedFinancialDebt: boolean&#10;- finalStatus: String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="120"/>
+        </mxCell>
+        <mxCell id="ent_graduation_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="164" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_graduation_2_methods" value="+ kiemTraDuDieuKien(): boolean&#10;+ layTomTatKetQua(): String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_graduation_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="168" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="edge_graduation_1" value="gửi yêu cầu xét tốt nghiệp" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="bnd_graduation_1" target="bnd_graduation_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_graduation_2" value="kích hoạt Degree Audit Engine" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" edge="1" source="bnd_graduation_2" target="ctrl_graduation_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_graduation_3" value="lưu trữ GraduationRecord" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="ctrl_graduation_1" target="ctrl_graduation_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_graduation_4" value="bền vững hóa thực thể GraduationRecord" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.35;entryX=0;entryY=0.35;" parent="1" edge="1" source="ctrl_graduation_2" target="ent_graduation_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_graduation_5" value="đóng gói kết quả DegreeAuditResultDTO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.65;entryX=0;entryY=0.5;" parent="1" edge="1" source="ctrl_graduation_1" target="ent_graduation_2">
           <mxGeometry as="geometry" relative="1" y="-12"/>
         </mxCell>
       </root>

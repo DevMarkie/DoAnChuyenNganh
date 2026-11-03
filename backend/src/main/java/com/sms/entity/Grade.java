@@ -169,6 +169,10 @@ public class Grade {
             return totalScore.doubleValue() >= 4.0
                     && (finalScore == null || finalScore.compareTo(new BigDecimal("3.0")) >= 0);
         }
+        if (gpaPoint != null) {
+            return gpaPoint.compareTo(BigDecimal.ONE) >= 0
+                    && (finalScore == null || finalScore.compareTo(new BigDecimal("3.0")) >= 0);
+        }
         return null;
     }
 

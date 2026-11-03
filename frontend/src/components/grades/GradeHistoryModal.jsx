@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, History, ShieldAlert, User, Clock, ArrowRight, Laptop } from 'lucide-react';
 import { gradeService } from '../../services/dataService';
 
-export default function GradeHistoryModal({ grade, student, section, isOpen, onClose }) {
+export default function GradeHistoryModal({ grade, student, _section, isOpen, onClose }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

@@ -1204,6 +1204,166 @@ def build_bce_18_live_attendance():
         ]
     )
 
+
+# 19. KHẢO THÍ & QUẢN LÝ PHÒNG THI (EXAM MANAGEMENT)
+def build_bce_19_exam_management():
+    return build_single_function_tab(
+        func_code="exam",
+        func_title="19. Khảo thí & Quản lý phòng thi",
+        comp_title="Khảo thí & Phân bổ phòng thi",
+        comp_example="ExamController",
+        actor_name="Cán bộ Khảo thí / Admin",
+        bnd_classes=[
+            {
+                'name': "ExamRoomsPage", 'stereo': "Giao diện",
+                'attrs': ["- selectedSemester: Integer", "- selectedSection: Long", "- roomCapacity: int", "- examSessionsTable: DataTable", "- examRosterGrid: DataTable"],
+                'methods': ["+ taiDanhSachDotThi(): void", "+ taoCaThiMoi(): void", "+ phanBoPhongTuDong(): void", "+ xuatDanhSachThiSinhExcel(): void", "+ nhapDiemThiTheoTui(): void"]
+            },
+            {
+                'name': "ExamController", 'stereo': "Giao diện",
+                'attrs': ["- examService: ExamService", "- excelExportService: ExcelExportService", "- excelImportService: ExcelImportService"],
+                'methods': ["+ getExamSessions(semesterId): ApiResponse", "+ createExamSession(req): ApiResponse", "+ autoAssignExamRooms(req): ApiResponse", "+ getExamRoster(roomId): ApiResponse", "+ exportExamRosterExcel(roomId): ResponseEntity"]
+            }
+        ],
+        ctrl_classes=[
+            {
+                'name': "ExamService", 'stereo': "Điều khiển",
+                'attrs': ["- examSessionRepo: ExamSessionRepository", "- examRoomRepo: ExamRoomRepository", "- enrollmentRepo: EnrollmentRepository", "- gradeRepo: GradeRepository"],
+                'methods': ["+ createExamSession(request): ExamSessionResponse", "+ autoAssignRooms(request): List<ExamRoomResponse>", "+ validateExamEligibility(sectionId): List<Student>", "+ generateExamNumbers(roomId): void"]
+            },
+            {
+                'name': "ExamRoomRepository", 'stereo': "Điều khiển",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findByExamSessionId(sessionId): List<ExamRoom>", "+ save(room): ExamRoom", "+ countByRoomAndPeriod(room, date, period): long"]
+            }
+        ],
+        ent_classes=[
+            {
+                'name': "ExamRoom", 'stereo': "Thực thể",
+                'attrs': ["- id: Long", "- sessionId: Long", "- roomNumber: String", "- capacity: int", "- currentAssigned: int", "- supervisorName: String", "- status: RoomStatus"],
+                'methods': ["+ isAvailable(): boolean", "+ assignStudent(studentId): void"]
+            },
+            {
+                'name': "ExamRosterResponse", 'stereo': "Truyền dữ liệu",
+                'attrs': ["- roomNumber: String", "- examDate: LocalDate", "- startTime: String", "- totalStudents: int", "- candidates: List<CandidateDto>"],
+                'methods': ["+ layTongThiSinh(): int", "+ layDanhSachSBD(): List<String>"]
+            }
+        ],
+        edges=[
+            ("bnd_exam_1", "bnd_exam_2", "yêu cầu xếp phòng thi", False),
+            ("bnd_exam_2", "ctrl_exam_1", "điều phối nghiệp vụ khảo thí", False),
+            ("ctrl_exam_1", "ctrl_exam_2", "truy vấn phòng & lưu phân bổ", False),
+            ("ctrl_exam_2", "ent_exam_1", "cập nhật thực thể ExamRoom", True),
+            ("ctrl_exam_1", "ent_exam_2", "đóng gói danh sách ExamRosterResponse", True)
+        ]
+    )
+
+# 20. QUY TRÌNH ĐÍNH CHÍNH ĐIỂM 3 CẤP (3-TIER GRADE AMENDMENT)
+def build_bce_20_grade_amendment():
+    return build_single_function_tab(
+        func_code="amendment",
+        func_title="20. Quy trình Đính chính điểm 3 cấp",
+        comp_title="Đính chính điểm & Kiểm toán số liệu",
+        comp_example="GradeAmendmentController",
+        actor_name="Giảng viên & Trưởng BM & P.ĐT",
+        bnd_classes=[
+            {
+                'name': "GradeAmendmentsPage", 'stereo': "Giao diện",
+                'attrs': ["- pendingTicketsTable: DataTable", "- amendmentDetailModal: Modal", "- reviewCommentInput: String", "- proofDocViewer: ImageViewer"],
+                'methods': ["+ taiDanhSachDonYeuCau(): void", "+ taoDonDinhChinhMoi(): void", "+ truongBoMonThamDinh(id, approve): void", "+ phongDaoTaoPheDuyet(id, approve): void"]
+            },
+            {
+                'name': "GradeAmendmentController", 'stereo': "Giao diện",
+                'attrs': ["- gradeAmendmentService: GradeAmendmentService", "- gradeAuditLogService: GradeAuditLogService"],
+                'methods': ["+ create(req): ApiResponse", "+ deptReview(id, req): ApiResponse", "+ academicApprove(id, req): ApiResponse", "+ getMyTickets(): ApiResponse", "+ getAuditLogs(gradeId): ApiResponse"]
+            }
+        ],
+        ctrl_classes=[
+            {
+                'name': "GradeAmendmentService", 'stereo': "Điều khiển",
+                'attrs': ["- ticketRepo: GradeChangeTicketRepository", "- gradeRepo: GradeRepository", "- auditLogRepo: GradeAuditLogRepository", "- transcriptService: TranscriptService"],
+                'methods': ["+ createTicket(request): GradeChangeTicket", "+ deptReview(ticketId, approved, note): void", "+ academicApproval(ticketId, approved, note): void", "+ applyGradeChangeWithAudit(ticket): void"]
+            },
+            {
+                'name': "GradeAuditLogRepository", 'stereo': "Điều khiển",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findByGradeIdOrderByTimestampDesc(gradeId): List<GradeAuditLog>", "+ save(log): GradeAuditLog"]
+            }
+        ],
+        ent_classes=[
+            {
+                'name': "GradeChangeTicket", 'stereo': "Thực thể",
+                'attrs': ["- id: Long", "- studentId: Long", "- sectionId: Long", "- componentType: String", "- oldScore: Double", "- newScore: Double", "- reason: String", "- proofUrl: String", "- status: TicketStatus"],
+                'methods': ["+ approveDept(): void", "+ approveAcademic(): void", "+ reject(reason): void"]
+            },
+            {
+                'name': "GradeAuditLog", 'stereo': "Thực thể",
+                'attrs': ["- id: Long", "- gradeId: Long", "- modifierId: Long", "- action: String", "- oldTotal: Double", "- newTotal: Double", "- timestamp: LocalDateTime", "- reason: String"],
+                'methods': ["+ getAuditSnapshot(): String", "+ isValidChecksum(): boolean"]
+            }
+        ],
+        edges=[
+            ("bnd_amendment_1", "bnd_amendment_2", "gửi yêu cầu đính chính", False),
+            ("bnd_amendment_2", "ctrl_amendment_1", "điều phối quy trình 3 cấp", False),
+            ("ctrl_amendment_1", "ctrl_amendment_2", "ghi vết kiểm toán", False),
+            ("ctrl_amendment_1", "ent_amendment_1", "quản lý GradeChangeTicket", True),
+            ("ctrl_amendment_2", "ent_amendment_2", "lưu lịch sử GradeAuditLog", True)
+        ]
+    )
+
+# 21. THẨM ĐỊNH CHUẨN TỐT NGHIỆP (DEGREE AUDIT TT08)
+def build_bce_21_graduation_audit():
+    return build_single_function_tab(
+        func_code="graduation",
+        func_title="21. Thẩm định chuẩn tốt nghiệp (Degree Audit)",
+        comp_title="Thẩm định tốt nghiệp & Cấp bằng",
+        comp_example="GraduationController",
+        actor_name="Cán bộ Đào tạo / Sinh viên",
+        bnd_classes=[
+            {
+                'name': "GraduationPageView", 'stereo': "Giao diện",
+                'attrs': ["- selectedCohort: Integer", "- candidateGrid: DataTable", "- auditCriteriaModal: Modal", "- exportDecisionBtn: Button"],
+                'methods': ["+ taiDanhSachSinhVienKhoa(): void", "+ thamDinhTotNghiepKhoa(): void", "+ xemChiTietTieuChiSV(id): void", "+ xuatQuyetDinhTotNghiep(): void"]
+            },
+            {
+                'name': "GraduationController", 'stereo': "Giao diện",
+                'attrs': ["- graduationService: GraduationService", "- userRepository: UserRepository"],
+                'methods': ["+ evaluateCohort(cohortId): ApiResponse", "+ assessStudent(studentId): ApiResponse", "+ getGraduationCandidates(cohortId, pageable): ApiResponse", "+ exportGraduationList(cohortId): ResponseEntity"]
+            }
+        ],
+        ctrl_classes=[
+            {
+                'name': "GraduationService", 'stereo': "Điều khiển",
+                'attrs': ["- studentRepo: StudentRepository", "- gradeRepo: GradeRepository", "- curriculumRepo: CurriculumRepository", "- graduationRecordRepo: GraduationRecordRepository", "- tuitionService: TuitionService"],
+                'methods': ["+ assessCohortCandidates(cohortId): List<GraduationRecord>", "+ assessCandidate(student, curriculum): GraduationRecord", "+ checkCreditAndCpa(student, curr): boolean", "+ checkCertificatesAndConduct(student): boolean", "+ determineHonorsCategory(cpa, retakePct): String"]
+            },
+            {
+                'name': "GraduationRecordRepository", 'stereo': "Điều khiển",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findByCohortId(cohortId): List<GraduationRecord>", "+ findByStudentId(studentId): Optional<GraduationRecord>", "+ saveAll(records): List<GraduationRecord>"]
+            }
+        ],
+        ent_classes=[
+            {
+                'name': "GraduationRecord", 'stereo': "Thực thể",
+                'attrs': ["- id: Long", "- studentId: Long", "- cohortId: Integer", "- isEligible: boolean", "- totalCreditsEarned: int", "- finalCpa: double", "- honorsLevel: HonorsLevel", "- missingRequirements: String", "- decisionNumber: String"],
+                'methods': ["+ isGraduated(): boolean", "+ layHangTotNghiep(): String", "+ layLyDoChuaDat(): String"]
+            },
+            {
+                'name': "DegreeAuditResultDTO", 'stereo': "Truyền dữ liệu",
+                'attrs': ["- studentCode: String", "- passedRequiredCredits: boolean", "- passedCpaThreshold: boolean", "- passedLanguageCert: boolean", "- clearedFinancialDebt: boolean", "- finalStatus: String"],
+                'methods': ["+ kiemTraDuDieuKien(): boolean", "+ layTomTatKetQua(): String"]
+            }
+        ],
+        edges=[
+            ("bnd_graduation_1", "bnd_graduation_2", "gửi yêu cầu xét tốt nghiệp", False),
+            ("bnd_graduation_2", "ctrl_graduation_1", "kích hoạt Degree Audit Engine", False),
+            ("ctrl_graduation_1", "ctrl_graduation_2", "lưu trữ GraduationRecord", False),
+            ("ctrl_graduation_2", "ent_graduation_1", "bền vững hóa thực thể GraduationRecord", True),
+            ("ctrl_graduation_1", "ent_graduation_2", "đóng gói kết quả DegreeAuditResultDTO", True)
+        ]
+    )
+
 def main():
     mxfile = ET.Element('mxfile', {
         'host': 'app.diagrams.net',
@@ -1232,6 +1392,9 @@ def main():
         ('bce_dashboard', '16. Báo cáo Thống kê & Dashboard', build_bce_16_analytics_dashboard()),
         ('bce_tuition', '17. Quản lý & Thu học phí', build_bce_17_tuition_management()),
         ('bce_attendance', '18. Điểm danh lớp học & Check-in trực tiếp', build_bce_18_live_attendance()),
+        ('bce_exam', '19. Khảo thí & Quản lý phòng thi', build_bce_19_exam_management()),
+        ('bce_amendment', '20. Quy trình Đính chính điểm 3 cấp', build_bce_20_grade_amendment()),
+        ('bce_graduation', '21. Thẩm định chuẩn tốt nghiệp (Degree Audit)', build_bce_21_graduation_audit()),
     ]
 
     for diag_id, diag_name, model in tabs_data:

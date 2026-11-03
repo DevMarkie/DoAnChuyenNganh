@@ -89,6 +89,19 @@ public class GradeService {
         }
     }
 
+    public void assertCanViewGrade(Long userId, Long gradeId) {
+        Lecturer lecturer = lecturerRepository.findByUserId(userId).orElse(null);
+        if (lecturer == null) {
+            return; // admin / phòng đào tạo — toàn quyền xem
+        }
+        Grade grade = gradeRepository.findById(gradeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy điểm"));
+        CourseSection section = grade.getEnrollment() != null ? grade.getEnrollment().getSection() : null;
+        if (section == null || section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
+            throw new AccessDeniedException("Bạn không có quyền xem lịch sử sửa điểm của học phần này");
+        }
+    }
+
     /**
      * Nhập/cập nhật điểm cho một enrollment
      * BR-07: Giảng viên chỉ được nhập điểm cho HP mình phụ trách
@@ -297,8 +310,11 @@ public class GradeService {
             if ("SUBMITTED".equalsIgnoreCase(submissionStatus)) {
                 throw new BadRequestException("Bảng điểm đã được gửi duyệt & khóa sổ. Giảng viên không thể tự ý sửa điểm.");
             }
-            if ("PUBLISHED".equalsIgnoreCase(submissionStatus) || Boolean.TRUE.equals(grade.getIsFinalized())) {
+            if ("PUBLISHED".equalsIgnoreCase(submissionStatus)) {
                 throw new BadRequestException("Bảng điểm đã được Phòng Đào tạo phát hành chính thức. Giảng viên không thể tự ý sửa điểm.");
+            }
+            if (grade.isEditWindowExpired()) {
+                throw new BadRequestException("Bảng điểm đã khóa hoặc quá hạn ân hạn sửa đổi (7 ngày). Giảng viên không thể tự ý sửa điểm.");
             }
 
             // BR-Exam02: Giảng viên chỉ nhập điểm quá trình, không được nhập/sửa điểm thi kết thúc học phần

@@ -312,11 +312,11 @@ public class EnrollmentService {
             throw new BadRequestException("Học phần đã đầy");
         }
 
-        // Cập nhật giá trị hiển thị trên in-memory entity
+        // Cập nhật giá trị hiển thị trên in-memory entity của luồng hiện tại
+        // Tuyệt đối không gọi courseSectionRepository.save(section) ở đây để tránh ghi đè kết quả atomic SQL
         if (section.getCurrentStudents() != null) {
             section.setCurrentStudents(section.getCurrentStudents() + 1);
         }
-        courseSectionRepository.save(section);
 
         Enrollment enrollment = existingEnrollment != null ? existingEnrollment : new Enrollment();
         enrollment.setStudent(student);
@@ -395,7 +395,6 @@ public class EnrollmentService {
             if (section.getCurrentStudents() != null && section.getCurrentStudents() > 0) {
                 section.setCurrentStudents(section.getCurrentStudents() - 1);
             }
-            courseSectionRepository.save(section);
 
             // Hoàn lại slot trên Redis
             if (redisCourseSectionService != null) {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   ShieldCheck, Search, Filter, RotateCcw, ChevronLeft, ChevronRight,
-  ArrowRight, Clock, User, Laptop, Calendar, CheckCircle2, AlertCircle
+  ArrowRight, Clock, User, Laptop, CheckCircle2, AlertCircle, Loader2
 } from 'lucide-react';
 import { gradeService } from '../../services/dataService';
 
@@ -77,229 +77,276 @@ export default function GradeAuditLogsPage() {
   const getComponentBadge = (comp) => {
     switch (comp) {
       case 'CC1':
-        return <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">CC1 (Chuyên cần)</span>;
+        return <span className="badge badge-primary">CC1 (Chuyên cần)</span>;
       case 'CC2':
-        return <span className="px-2 py-0.5 rounded text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">CC2 (Bài tập)</span>;
+        return <span className="badge badge-purple">CC2 (Bài tập)</span>;
       case 'MIDTERM':
-        return <span className="px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">Giữa kỳ</span>;
+        return <span className="badge badge-warning">Giữa kỳ</span>;
       case 'FINAL':
-        return <span className="px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-800 border border-rose-200">Cuối kỳ (Khảo thí)</span>;
+        return <span className="badge badge-danger">Cuối kỳ (Khảo thí)</span>;
       default:
-        return <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">{comp}</span>;
+        return <span className="badge badge-secondary">{comp}</span>;
     }
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fadeIn">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-            <ShieldCheck className="w-8 h-8" />
+      <div className="page-header" style={{ marginBottom: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{
+            padding: '12px',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            color: '#2563eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <ShieldCheck size={28} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               Nhật ký Kiểm toán Sửa điểm (Grade Audit Trail)
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '13px' }}>
               Quy chuẩn kiểm toán BR-Grade09: Giám sát toàn vẹn mọi lịch sử sửa đổi điểm số của sinh viên
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-          <span className="text-sm font-medium text-slate-700">
-            Tổng số bản ghi kiểm toán: <strong className="text-indigo-600">{totalElements}</strong>
-          </span>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 16px',
+          borderRadius: '10px',
+          backgroundColor: 'var(--bg-subtle)',
+          border: '1px solid var(--border-color)',
+          fontSize: '13px',
+          fontWeight: 500,
+          color: 'var(--text-secondary)',
+        }}>
+          <CheckCircle2 size={16} color="#10b981" />
+          <span>Tổng số bản ghi kiểm toán: <strong style={{ color: 'var(--primary)' }}>{totalElements}</strong></span>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <form onSubmit={handleSearch} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* MSSV */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              Mã sinh viên (MSSV)
-            </label>
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+      <div className="card" style={{ padding: '20px' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+            {/* MSSV */}
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Mã sinh viên (MSSV)
+              </label>
+              <div style={{ position: 'relative' }}>
+                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                <input
+                  type="text"
+                  placeholder="Nhập MSSV..."
+                  value={studentCode}
+                  onChange={(e) => setStudentCode(e.target.value)}
+                  className="form-control"
+                  style={{ paddingLeft: '36px', height: '40px' }}
+                />
+              </div>
+            </div>
+
+            {/* Thành phần điểm */}
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Đầu điểm
+              </label>
+              <select
+                value={component}
+                onChange={(e) => setComponent(e.target.value)}
+                className="form-select"
+                style={{ height: '40px' }}
+              >
+                <option value="">Tất cả đầu điểm</option>
+                <option value="CC1">CC1 (Chuyên cần)</option>
+                <option value="CC2">CC2 (Bài tập/Phát biểu)</option>
+                <option value="MIDTERM">Giữa kỳ</option>
+                <option value="FINAL">Cuối kỳ (Khảo thí)</option>
+              </select>
+            </div>
+
+            {/* Từ ngày */}
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Từ ngày
+              </label>
               <input
-                type="text"
-                placeholder="Nhập MSSV..."
-                value={studentCode}
-                onChange={(e) => setStudentCode(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-              />
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="form-control"
+                style={{ height: '40px' }}
+              >
+              </input>
+            </div>
+
+            {/* Đến ngày */}
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Đến ngày
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="form-control"
+                style={{ height: '40px' }}
+              >
+              </input>
             </div>
           </div>
 
-          {/* Thành phần điểm */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              Đầu điểm
-            </label>
-            <select
-              value={component}
-              onChange={(e) => setComponent(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: '10px',
+            paddingTop: '14px',
+            borderTop: '1px solid var(--border-color)'
+          }}>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="btn btn-secondary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <option value="">Tất cả đầu điểm</option>
-              <option value="CC1">CC1 (Chuyên cần)</option>
-              <option value="CC2">CC2 (Bài tập/Phát biểu)</option>
-              <option value="MIDTERM">Giữa kỳ</option>
-              <option value="FINAL">Cuối kỳ (Khảo thí)</option>
-            </select>
+              <RotateCcw size={16} />
+              <span>Đặt lại</span>
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Filter size={16} />
+              <span>Lọc kiểm toán</span>
+            </button>
           </div>
-
-          {/* Từ ngày */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              Từ ngày
-            </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"
-            />
-          </div>
-
-          {/* Đến ngày */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-              Đến ngày
-            </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white transition"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span>Đặt lại</span>
-          </button>
-          <button
-            type="submit"
-            className="flex items-center gap-1.5 px-5 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition"
-          >
-            <Filter className="w-4 h-4" />
-            <span>Lọc kiểm toán</span>
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
 
       {/* Audit Log Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 border-b border-gray-100 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="table-container" style={{ margin: 0 }}>
+          <table className="table" style={{ margin: 0, width: '100%' }}>
+            <thead>
               <tr>
-                <th className="px-5 py-3.5">Thời điểm</th>
-                <th className="px-5 py-3.5">Sinh viên</th>
-                <th className="px-5 py-3.5">Học phần</th>
-                <th className="px-5 py-3.5">Đầu điểm</th>
-                <th className="px-5 py-3.5">Biến động điểm</th>
-                <th className="px-5 py-3.5">Lý do sửa</th>
-                <th className="px-5 py-3.5">Người thực hiện</th>
-                <th className="px-5 py-3.5">Địa chỉ IP</th>
+                <th style={{ width: '170px' }}>Thời điểm</th>
+                <th>Sinh viên</th>
+                <th>Học phần</th>
+                <th style={{ textAlign: 'center' }}>Đầu điểm</th>
+                <th style={{ textAlign: 'center' }}>Biến động điểm</th>
+                <th>Lý do sửa</th>
+                <th>Người thực hiện</th>
+                <th style={{ width: '120px' }}>Địa chỉ IP</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="8" className="px-5 py-16 text-center text-gray-500">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                      <Loader2 size={32} className="animate-spin" color="var(--primary)" />
                       <span>Đang tải nhật ký kiểm toán...</span>
                     </div>
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="px-5 py-16 text-center text-gray-500">
-                    <AlertCircle className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-                    <p className="font-medium text-gray-700">Không tìm thấy bản ghi kiểm toán nào</p>
-                    <p className="text-xs text-gray-400 mt-1">Hãy thử thay đổi điều kiện lọc tìm kiếm.</p>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                    <AlertCircle size={40} style={{ margin: '0 auto 10px', color: 'var(--text-light)' }} />
+                    <p style={{ fontWeight: 600, color: 'var(--text-main)', margin: '0 0 4px' }}>Không tìm thấy bản ghi kiểm toán nào</p>
+                    <p style={{ fontSize: '13px', margin: 0 }}>Hãy thử thay đổi điều kiện lọc tìm kiếm.</p>
                   </td>
                 </tr>
               ) : (
                 logs.map((log) => {
                   const isIncrease = Number(log.newScore) >= Number(log.oldScore);
                   return (
-                    <tr key={log.id} className="hover:bg-slate-50/70 transition">
+                    <tr key={log.id}>
                       {/* Thời điểm */}
-                      <td className="px-5 py-3.5 whitespace-nowrap text-xs text-gray-500 font-mono">
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                      <td style={{ whiteSpace: 'nowrap', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)' }}>
+                          <Clock size={14} color="var(--text-light)" />
                           <span>{formatDateTime(log.createdAt)}</span>
                         </div>
                       </td>
 
                       {/* Sinh viên */}
-                      <td className="px-5 py-3.5">
-                        <div className="font-semibold text-gray-900">{log.studentName || '—'}</div>
-                        <div className="text-xs text-indigo-600 font-mono">{log.studentCode || '—'}</div>
+                      <td>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{log.studentName || '—'}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--primary)', fontFamily: 'var(--font-mono)' }}>{log.studentCode || '—'}</div>
                       </td>
 
                       {/* Học phần */}
-                      <td className="px-5 py-3.5">
-                        <div className="font-medium text-gray-800">{log.subjectName || log.sectionCode || '—'}</div>
-                        <div className="text-xs text-gray-400">{log.sectionCode}</div>
+                      <td>
+                        <div style={{ fontWeight: 500, color: 'var(--text-main)' }}>{log.subjectName || log.sectionCode || '—'}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{log.sectionCode}</div>
                       </td>
 
                       {/* Đầu điểm */}
-                      <td className="px-5 py-3.5 whitespace-nowrap">
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                         {getComponentBadge(log.component)}
                       </td>
 
                       {/* Biến động điểm */}
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-200">
-                          <span className="font-mono text-gray-400 line-through text-xs">
+                      <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          backgroundColor: 'var(--bg-subtle)',
+                          border: '1px solid var(--border-color)'
+                        }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', textDecoration: 'line-through', color: 'var(--text-light)', fontSize: '12px' }}>
                             {log.oldScore != null ? Number(log.oldScore).toFixed(1) : (log.oldSpecialGrade || '—')}
                           </span>
-                          <ArrowRight className="w-3.5 h-3.5 text-gray-400" />
-                          <span className={`font-mono font-bold text-sm ${isIncrease ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          <ArrowRight size={13} color="var(--text-light)" />
+                          <span style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontWeight: 700,
+                            fontSize: '13px',
+                            color: isIncrease ? '#15803d' : '#b91c1c'
+                          }}>
                             {log.newScore != null ? Number(log.newScore).toFixed(1) : (log.newSpecialGrade || '—')}
                           </span>
                         </div>
                       </td>
 
                       {/* Lý do */}
-                      <td className="px-5 py-3.5 max-w-xs">
-                        <p className="text-xs text-gray-700 truncate hover:whitespace-normal transition-all" title={log.reason}>
+                      <td style={{ maxWidth: '220px' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }} title={log.reason}>
                           {log.reason || '—'}
-                        </p>
+                        </span>
                       </td>
 
                       {/* Người thực hiện */}
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5 text-xs text-gray-700">
-                          <User className="w-3.5 h-3.5 text-indigo-500" />
-                          <span className="font-semibold">{log.changedByUsername || 'Hệ thống'}</span>
+                      <td style={{ whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px' }}>
+                          <User size={14} color="var(--primary)" />
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{log.changedByUsername || 'Hệ thống'}</span>
                         </div>
                         {log.changedByRole && (
-                          <span className="text-[10px] text-gray-400 uppercase tracking-wider block">
+                          <span style={{ fontSize: '10px', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginTop: '2px' }}>
                             {log.changedByRole}
                           </span>
                         )}
                       </td>
 
                       {/* IP */}
-                      <td className="px-5 py-3.5 whitespace-nowrap text-xs text-gray-400 font-mono">
-                        <div className="flex items-center gap-1">
-                          <Laptop className="w-3.5 h-3.5" />
+                      <td style={{ whiteSpace: 'nowrap', fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <Laptop size={14} color="var(--text-light)" />
                           <span>{log.ipAddress || '—'}</span>
                         </div>
                       </td>
@@ -313,24 +360,35 @@ export default function GradeAuditLogsPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="px-5 py-4 border-t border-gray-100 bg-slate-50 flex items-center justify-between text-xs text-gray-500">
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 20px',
+            borderTop: '1px solid var(--border-color)',
+            backgroundColor: 'var(--bg-subtle)',
+            fontSize: '13px',
+            color: 'var(--text-muted)'
+          }}>
             <div>
-              Hiển thị trang <strong>{page + 1}</strong> / <strong>{totalPages}</strong> (Tổng {totalElements} bản ghi)
+              Hiển thị trang <strong>{page + 1}</strong> / <strong>{totalPages}</strong> (Tổng <strong>{totalElements}</strong> bản ghi)
             </div>
-            <div className="flex items-center gap-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button
                 disabled={page === 0}
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
-                className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="btn btn-secondary"
+                style={{ padding: '6px 10px', height: '32px' }}
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft size={16} />
               </button>
               <button
                 disabled={page >= totalPages - 1}
                 onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                className="p-1.5 rounded border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="btn btn-secondary"
+                style={{ padding: '6px 10px', height: '32px' }}
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight size={16} />
               </button>
             </div>
           </div>

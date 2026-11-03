@@ -7,7 +7,7 @@ import './Layout.css';
 import {
   LayoutDashboard, Users, Building2, BookOpen, UserCog,
   CalendarDays, Calendar, Layers, ClipboardList, BookMarked, School, Award, AlertTriangle, Menu,
-  ChevronLeft, KeyRound, UserPlus, X, GraduationCap, DollarSign, ShieldCheck
+  ChevronLeft, X, GraduationCap, DollarSign, ShieldCheck, KeyRound
 } from 'lucide-react';
 
 const adminNavGroups = [
@@ -22,6 +22,8 @@ const adminNavGroups = [
     items: [
       { path: '/admin/students', icon: Users, label: 'Quản lý tài khoản SV' },
       { path: '/admin/lecturers', icon: UserCog, label: 'Giảng viên' },
+      { path: '/admin/password-resets', icon: KeyRound, label: 'Cấp lại mật khẩu', showBadge: true },
+      { path: '/admin/student-conduct', icon: Award, label: 'Điểm rèn luyện SV' },
     ]
   },
   {

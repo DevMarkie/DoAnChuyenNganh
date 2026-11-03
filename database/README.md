@@ -234,11 +234,12 @@ GROUP BY s.id, s.student_code, s.full_name;
 
 ## 6. Sổ tay Migration & Lịch sử nâng cấp CSDL (27 bản vá)
 
-Toàn bộ tiến trình phát triển và hoàn thiện dữ liệu hệ thống được ghi nhận qua 27 tệp migration chuẩn mực tại thư mục `database/migrations/`:
+Toàn bộ tiến trình phát triển và hoàn thiện dữ liệu hệ thống (27 bản vá) đã được gộp hợp nhất vào một tệp duy nhất [database/migrations/consolidated_migrations.sql](migrations/consolidated_migrations.sql) theo đúng trình tự:
 
 ```text
 database/migrations/
-├── 01. migration_academic_structure.sql              # Tái cấu trúc mô hình Khoa -> Ngành -> Khóa -> CTĐT 5 khối
+└── consolidated_migrations.sql (Gộp toàn bộ 27 bản vá nâng cấp CSDL)
+    ├── 01. migration_academic_structure.sql              # Tái cấu trúc mô hình Khoa -> Ngành -> Khóa -> CTĐT 5 khối
 ├── 02. populate_curriculum_subjects.sql              # Nạp dữ liệu môn học vào các khối kiến thức cho 28 ngành
 ├── 03. migrate_curriculum_block_names_vi.sql         # Chuẩn hóa tên các khối kiến thức bằng tiếng Việt có dấu
 ├── 04. validate_academic_catalog.sql                 # Kiểm định tính toàn vẹn giữa danh mục môn học và khung CTĐT

@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router-dom";
 import {
   Layers,
   Save,
-  Clock,
   Download,
   Lock,
   Filter,
@@ -282,7 +281,6 @@ export default function GradeEntryPage() {
   const isSubmitted = submissionStatus === "SUBMITTED";
   const isPublished = submissionStatus === "PUBLISHED";
   const isReturned = submissionStatus === "RETURNED";
-  const isDraft = submissionStatus === "DRAFT";
   // Bảng điểm bị khoá cứng (Read-only) khi đã nộp duyệt hoặc đã công bố
   const isLocked = isSubmitted || isPublished;
 

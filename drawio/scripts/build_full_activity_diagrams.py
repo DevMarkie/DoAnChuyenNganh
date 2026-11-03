@@ -52,6 +52,9 @@ def add_cell(root, id_val, value="", style="", vertex=False, edge=False, source=
     
     cell = ET.SubElement(root, 'mxCell', attribs)
     
+    if geometry is None and edge:
+        geometry = {'relative': '1'}
+
     if geometry:
         geom_attribs = {'as': 'geometry'}
         for k, v in geometry.items():
@@ -929,6 +932,175 @@ build_act_18_attendance = build_act_18_live_attendance
 # ==========================================
 # GHI TẤT CẢ 18 TAB VÀO Activity_Diagrams.drawio
 # ==========================================
+
+# ==========================================
+# 19. KHẢO THÍ & QUẢN LÝ PHÒNG THI (EXAM MANAGEMENT)
+# ==========================================
+def build_act_19_exam_management():
+    model, root = create_base_model(1180, 1100)
+    setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: KHẢO THÍ & QUẢN LÝ PHÒNG THI",
+                          "Quy trình thiết lập đợt thi, phân bổ phòng thi tự động, đối soát điều kiện dự thi và xuất danh sách phòng thi",
+                          "Cán bộ Khảo thí / Quản trị viên", "Hệ thống (ExamService & MySQL Database)", lane_h=980)
+
+    # Actor Lane (Center x=240)
+    add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 115, 'width': 25, 'height': 25})
+    add_cell(root, "act_open", "Truy cập Phân hệ Khảo thí\n(/admin/exam-rooms)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 165, 'width': 200, 'height': 45})
+    add_cell(root, "act_choose_sec", "Chọn Kỳ thi & Lớp học phần\ncần tổ chức thi kết thúc môn", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 240, 'width': 200, 'height': 45})
+    add_cell(root, "act_config", "Cấu hình ca thi, số phòng\nvà sức chứa tối đa mỗi phòng", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 480, 'width': 200, 'height': 45})
+    add_cell(root, "act_click_assign", "Bấm 'Phân bổ phòng thi tự động'\n(POST /api/exam/rooms/auto-assign)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 555, 'width': 200, 'height': 45})
+    add_cell(root, "act_view_roster", "Xem bảng phân phòng, số báo danh\nvà danh sách cấm thi do vắng", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 780, 'width': 200, 'height': 45})
+    add_cell(root, "act_export", "Xuất file Excel danh sách phòng thi\nvà mẫu phiếu ghi điểm cho Giám thị", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 860, 'width': 200, 'height': 45})
+    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 940, 'width': 25, 'height': 25})
+
+    # System Lane (Center x=620, Error x=910)
+    add_cell(root, "act_val_sec", "Kiểm tra điều kiện lớp HP:\nĐã chốt sổ điểm quá trình chưa?", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 240, 'width': 220, 'height': 45})
+    add_cell(root, "dec_sec", "Đủ điều kiện mở thi?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 315, 'width': 130, 'height': 50})
+    add_cell(root, "act_err_sec", "Báo lỗi: Lớp HP chưa chốt điểm\nhoặc chưa kết thúc thời khóa biểu", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 317.5, 'width': 200, 'height': 45})
+    add_cell(root, "end_err_sec", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 390, 'width': 25, 'height': 25})
+
+    add_cell(root, "act_check_room", "Kiểm tra phòng thi trống\ntrong khung giờ ca thi đã chọn", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 555, 'width': 220, 'height': 45})
+    add_cell(root, "dec_room", "Phòng trống & không trùng?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 630, 'width': 130, 'height': 50})
+    add_cell(root, "act_err_room", "Báo lỗi: Phòng thi đã bị trùng\nhoặc vượt công suất tòa nhà", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 632.5, 'width': 200, 'height': 45})
+    add_cell(root, "end_err_room", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 705, 'width': 25, 'height': 25})
+
+    add_cell(root, "act_auto_assign", "Chạy thuật toán xếp chỗ tự động:\nLoại SV cấm thi, chia phòng, sinh SBD", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 710, 'width': 220, 'height': 45})
+    add_cell(root, "act_save_db", "Lưu ExamRoom & ExamRoster vào CSDL,\ncập nhật trạng thái đợt thi SCHEDULED", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 780, 'width': 220, 'height': 45})
+    add_cell(root, "act_gen_export", "Đóng gói ExamRosterResponse &\nsinh biểu mẫu nhập điểm thi chuẩn", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 860, 'width': 220, 'height': 45})
+
+    # Flows
+    add_cell(root, "f1", "", STYLE_FLOW, edge=True, source="start", target="act_open")
+    add_cell(root, "f2", "", STYLE_FLOW, edge=True, source="act_open", target="act_choose_sec")
+    add_cell(root, "f3", "", STYLE_FLOW, edge=True, source="act_choose_sec", target="act_val_sec")
+    add_cell(root, "f4", "", STYLE_FLOW, edge=True, source="act_val_sec", target="dec_sec")
+    add_cell(root, "f5", "[Không]", STYLE_FLOW, edge=True, source="dec_sec", target="act_err_sec")
+    add_cell(root, "f6", "", STYLE_FLOW, edge=True, source="act_err_sec", target="end_err_sec")
+    add_cell(root, "f7", "[Hợp lệ]", STYLE_FLOW, edge=True, source="dec_sec", target="act_config")
+    add_cell(root, "f8", "", STYLE_FLOW, edge=True, source="act_config", target="act_click_assign")
+    add_cell(root, "f9", "", STYLE_FLOW, edge=True, source="act_click_assign", target="act_check_room")
+    add_cell(root, "f10", "", STYLE_FLOW, edge=True, source="act_check_room", target="dec_room")
+    add_cell(root, "f11", "[Trùng/Lỗi]", STYLE_FLOW, edge=True, source="dec_room", target="act_err_room")
+    add_cell(root, "f12", "", STYLE_FLOW, edge=True, source="act_err_room", target="end_err_room")
+    add_cell(root, "f13", "[Hợp lệ]", STYLE_FLOW, edge=True, source="dec_room", target="act_auto_assign")
+    add_cell(root, "f14", "", STYLE_FLOW, edge=True, source="act_auto_assign", target="act_save_db")
+    add_cell(root, "f15", "", STYLE_FLOW, edge=True, source="act_save_db", target="act_view_roster")
+    add_cell(root, "f16", "", STYLE_FLOW, edge=True, source="act_view_roster", target="act_gen_export")
+    add_cell(root, "f17", "", STYLE_FLOW, edge=True, source="act_gen_export", target="act_export")
+    add_cell(root, "f18", "", STYLE_FLOW, edge=True, source="act_export", target="end_ok")
+
+    return model
+
+# ==========================================
+# 20. ĐÍNH CHÍNH ĐIỂM 3 CẤP (3-TIER GRADE AMENDMENT)
+# ==========================================
+def build_act_20_grade_amendment():
+    model, root = create_base_model(1180, 1100)
+    setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: ĐÍNH CHÍNH ĐIỂM 3 CẤP",
+                          "Quy trình đính chính điểm sau khóa sổ 7 ngày: Giảng viên đề nghị -> Bộ môn thẩm định -> Phòng Đào tạo phê duyệt",
+                          "Giảng viên & Trưởng Bộ môn & P. Đào tạo", "Hệ thống (GradeAmendmentService & Audit Logs)", lane_h=980)
+
+    # Actor Lane (Center x=240)
+    add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 115, 'width': 25, 'height': 25})
+    add_cell(root, "act_open", "Giảng viên phát hiện sai sót,\nmở trang /shared/grade-amendments", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 165, 'width': 200, 'height': 45})
+    add_cell(root, "act_create_ticket", "Tạo đơn đề nghị: Nhập MSSV, Lớp HP,\nđiểm cũ, điểm đề xuất & minh chứng", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 240, 'width': 200, 'height': 45})
+    add_cell(root, "act_dept_review", "Trưởng Bộ môn truy cập hệ thống,\nthẩm định hồ sơ đính chính của GV", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 480, 'width': 200, 'height': 45})
+    add_cell(root, "dec_dept", "Bộ môn chấp thuận?", STYLE_DECISION, vertex=True, geometry={'x': 175, 'y': 555, 'width': 130, 'height': 50})
+    add_cell(root, "act_dept_reject", "Ghi lý do từ chối và thông báo cho GV", STYLE_ACTIVITY, vertex=True, geometry={'x': 40, 'y': 635, 'width': 180, 'height': 45})
+    add_cell(root, "end_dept_rej", "", STYLE_END, vertex=True, geometry={'x': 117.5, 'y': 710, 'width': 25, 'height': 25})
+
+    add_cell(root, "act_academic_review", "Cán bộ Phòng Đào tạo / BGH\nxem xét quyết định phê duyệt cuối", STYLE_ACTIVITY, vertex=True, geometry={'x': 220, 'y': 635, 'width': 200, 'height': 45})
+    add_cell(root, "dec_acad", "P. Đào tạo duyệt?", STYLE_DECISION, vertex=True, geometry={'x': 255, 'y': 710, 'width': 130, 'height': 50})
+    add_cell(root, "act_acad_reject", "Bác đơn và gửi thông báo lý do", STYLE_ACTIVITY, vertex=True, geometry={'x': 120, 'y': 790, 'width': 180, 'height': 45})
+    add_cell(root, "end_acad_rej", "", STYLE_END, vertex=True, geometry={'x': 197.5, 'y': 860, 'width': 25, 'height': 25})
+
+    add_cell(root, "act_notify_done", "Nhận thông báo điểm cập nhật thành công;\nSV & GV kiểm tra lại bảng điểm", STYLE_ACTIVITY, vertex=True, geometry={'x': 230, 'y': 875, 'width': 190, 'height': 45})
+    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 312.5, 'y': 945, 'width': 25, 'height': 25})
+
+    # System Lane (Center x=620, Error x=910)
+    add_cell(root, "act_val_ticket", "Kiểm tra: Điểm đã khóa sổ (>7 ngày),\nđiểm mới hợp lệ (0..10), có minh chứng", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 240, 'width': 220, 'height': 45})
+    add_cell(root, "dec_val", "Hồ sơ hợp lệ?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 315, 'width': 130, 'height': 50})
+    add_cell(root, "act_err_val", "Báo lỗi: Hồ sơ thiếu minh chứng\nhoặc chưa qua thời hạn khóa sổ", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 317.5, 'width': 200, 'height': 45})
+    add_cell(root, "end_err_val", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 390, 'width': 25, 'height': 25})
+
+    add_cell(root, "act_save_pending", "Tạo GradeChangeTicket (status='PENDING_DEPT')\nvà gửi thông báo tới Trưởng Bộ môn", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 400, 'width': 220, 'height': 45})
+    add_cell(root, "act_update_dept", "Cập nhật ticket status='DEPT_APPROVED'\nchuyển tiếp tới hàng đợi Phòng Đào tạo", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 555, 'width': 220, 'height': 45})
+    add_cell(root, "act_apply_approval", "Trong 1 Transaction: (1) Cập nhật Grade,\n(2) Ghi vết GradeAuditLog, (3) Tính lại CPA", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 710, 'width': 220, 'height': 45})
+    add_cell(root, "act_finalize_ticket", "Cập nhật ticket status='ACADEMIC_APPROVED'\nvà phát hành sự kiện Audit Event", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 790, 'width': 220, 'height': 45})
+
+    # Flows
+    add_cell(root, "f1", "", STYLE_FLOW, edge=True, source="start", target="act_open")
+    add_cell(root, "f2", "", STYLE_FLOW, edge=True, source="act_open", target="act_create_ticket")
+    add_cell(root, "f3", "", STYLE_FLOW, edge=True, source="act_create_ticket", target="act_val_ticket")
+    add_cell(root, "f4", "", STYLE_FLOW, edge=True, source="act_val_ticket", target="dec_val")
+    add_cell(root, "f5", "[Không]", STYLE_FLOW, edge=True, source="dec_val", target="act_err_val")
+    add_cell(root, "f6", "", STYLE_FLOW, edge=True, source="act_err_val", target="end_err_val")
+    add_cell(root, "f7", "[Hợp lệ]", STYLE_FLOW, edge=True, source="dec_val", target="act_save_pending")
+    add_cell(root, "f8", "", STYLE_FLOW, edge=True, source="act_save_pending", target="act_dept_review")
+    add_cell(root, "f9", "", STYLE_FLOW, edge=True, source="act_dept_review", target="dec_dept")
+    add_cell(root, "f10", "[Bác]", STYLE_FLOW, edge=True, source="dec_dept", target="act_dept_reject")
+    add_cell(root, "f11", "", STYLE_FLOW, edge=True, source="act_dept_reject", target="end_dept_rej")
+    add_cell(root, "f12", "[Duyệt]", STYLE_FLOW, edge=True, source="dec_dept", target="act_update_dept")
+    add_cell(root, "f13", "", STYLE_FLOW, edge=True, source="act_update_dept", target="act_academic_review")
+    add_cell(root, "f14", "", STYLE_FLOW, edge=True, source="act_academic_review", target="dec_acad")
+    add_cell(root, "f15", "[Từ chối]", STYLE_FLOW, edge=True, source="dec_acad", target="act_acad_reject")
+    add_cell(root, "f16", "", STYLE_FLOW, edge=True, source="act_acad_reject", target="end_acad_rej")
+    add_cell(root, "f17", "[Chấp thuận]", STYLE_FLOW, edge=True, source="dec_acad", target="act_apply_approval")
+    add_cell(root, "f18", "", STYLE_FLOW, edge=True, source="act_apply_approval", target="act_finalize_ticket")
+    add_cell(root, "f19", "", STYLE_FLOW, edge=True, source="act_finalize_ticket", target="act_notify_done")
+    add_cell(root, "f20", "", STYLE_FLOW, edge=True, source="act_notify_done", target="end_ok")
+
+    return model
+
+# ==========================================
+# 21. THẨM ĐỊNH CHUẨN TỐT NGHIỆP (DEGREE AUDIT TT08)
+# ==========================================
+def build_act_21_graduation_audit():
+    model, root = create_base_model(1180, 1100)
+    setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: THẨM ĐỊNH CHUẨN TỐT NGHIỆP",
+                          "Quy trình thẩm định tự động đa tiêu chí theo Thông tư 08/2021/TT-BGDĐT: Tín chỉ, CPA, Chuẩn đầu ra, Kỷ luật & Học phí",
+                          "Cán bộ Đào tạo / Sinh viên", "Hệ thống (GraduationService & Audit Engine)", lane_h=980)
+
+    # Actor Lane (Center x=240)
+    add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 115, 'width': 25, 'height': 25})
+    add_cell(root, "act_open", "Cán bộ Đào tạo truy cập Phân hệ\nXét tốt nghiệp (/academic/graduation)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 165, 'width': 200, 'height': 45})
+    add_cell(root, "act_choose_cohort", "Chọn Khóa sinh viên (Cohort)\nvà Chương trình đào tạo (Curriculum)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 240, 'width': 200, 'height': 45})
+    add_cell(root, "act_click_eval", "Bấm 'Thẩm định tốt nghiệp toàn khóa'\n(POST /api/graduation/evaluate-cohort/{id})", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 315, 'width': 200, 'height': 45})
+    add_cell(root, "act_review_table", "Xem bảng phân loại: Đạt chuẩn (ELIGIBLE)\nvà Chưa đạt chuẩn (NOT_ELIGIBLE)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 690, 'width': 200, 'height': 45})
+    add_cell(root, "act_filter_detail", "Xem chi tiết nợ chuẩn của từng SV:\nThiếu tín chỉ, nợ môn, chưa nộp ngoại ngữ", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 765, 'width': 200, 'height': 45})
+    add_cell(root, "act_export_dec", "Xuất Quyết định công nhận tốt nghiệp,\nBảng điểm toàn khóa và Sổ cấp phát bằng", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 860, 'width': 200, 'height': 45})
+    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 940, 'width': 25, 'height': 25})
+
+    # System Lane (Center x=620, Error x=910)
+    add_cell(root, "act_fetch_students", "Truy vấn toàn bộ SV thuộc Khóa,\nbảng điểm tích lũy và hồ sơ rèn luyện", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 315, 'width': 220, 'height': 45})
+    add_cell(root, "act_run_audit", "Kích hoạt Degree Audit Engine:\nKiểm tra đồng thời 7 tiêu chí TT08", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 390, 'width': 220, 'height': 45})
+    add_cell(root, "dec_rules", "Thỏa mãn 100% 7 tiêu chí?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 465, 'width': 130, 'height': 50})
+    
+    add_cell(root, "act_mark_fail", "Gắn nhãn NOT_ELIGIBLE, ghi rõ lý do:\nThiếu tín chỉ, CPA < 2.0, nợ học phí...", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 467.5, 'width': 200, 'height': 45})
+    add_cell(root, "act_save_fail", "Lưu GraduationRecord (is_eligible=false)\nvào CSDL kèm danh mục nợ chuẩn", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 550, 'width': 200, 'height': 45})
+
+    add_cell(root, "act_mark_pass", "Gắn nhãn ELIGIBLE, tính toán Xếp hạng\ntốt nghiệp: Xuất sắc / Giỏi / Khá / TB", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 550, 'width': 220, 'height': 45})
+    add_cell(root, "act_check_down", "Áp quy tắc TT08: Giảm 1 bậc xếp loại\nnếu khối lượng thi lại vượt quá 5%", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 625, 'width': 220, 'height': 45})
+    add_cell(root, "act_save_records", "Lưu kết quả GraduationRecord vào CSDL,\nsinh mã Quyết định tốt nghiệp chính thức", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 700, 'width': 220, 'height': 45})
+
+    # Flows
+    add_cell(root, "f1", "", STYLE_FLOW, edge=True, source="start", target="act_open")
+    add_cell(root, "f2", "", STYLE_FLOW, edge=True, source="act_open", target="act_choose_cohort")
+    add_cell(root, "f3", "", STYLE_FLOW, edge=True, source="act_choose_cohort", target="act_click_eval")
+    add_cell(root, "f4", "", STYLE_FLOW, edge=True, source="act_click_eval", target="act_fetch_students")
+    add_cell(root, "f5", "", STYLE_FLOW, edge=True, source="act_fetch_students", target="act_run_audit")
+    add_cell(root, "f6", "", STYLE_FLOW, edge=True, source="act_run_audit", target="dec_rules")
+    add_cell(root, "f7", "[Chưa đạt]", STYLE_FLOW, edge=True, source="dec_rules", target="act_mark_fail")
+    add_cell(root, "f8", "", STYLE_FLOW, edge=True, source="act_mark_fail", target="act_save_fail")
+    add_cell(root, "f9", "[Đạt chuẩn]", STYLE_FLOW, edge=True, source="dec_rules", target="act_mark_pass")
+    add_cell(root, "f10", "", STYLE_FLOW, edge=True, source="act_mark_pass", target="act_check_down")
+    add_cell(root, "f11", "", STYLE_FLOW, edge=True, source="act_check_down", target="act_save_records")
+    add_cell(root, "f12", "", STYLE_FLOW, edge=True, source="act_save_records", target="act_review_table")
+    add_cell(root, "f13", "", STYLE_FLOW, edge=True, source="act_save_fail", target="act_review_table")
+    add_cell(root, "f14", "", STYLE_FLOW, edge=True, source="act_review_table", target="act_filter_detail")
+    add_cell(root, "f15", "", STYLE_FLOW, edge=True, source="act_filter_detail", target="act_export_dec")
+    add_cell(root, "f16", "", STYLE_FLOW, edge=True, source="act_export_dec", target="end_ok")
+
+    return model
+
 def generate_all_activity_diagrams():
     tabs = [
         ("1. Đăng nhập hệ thống", build_act_1_login()),
@@ -949,6 +1121,9 @@ def generate_all_activity_diagrams():
         ("16. Báo cáo Thống kê & Dashboard", build_act_16_dashboard()),
         ("17. Quản lý & Thu học phí", build_act_17_tuition_management()),
         ("18. Điểm danh lớp học & Check-in trực tiếp", build_act_18_live_attendance()),
+        ("19. Khảo thí & Quản lý phòng thi", build_act_19_exam_management()),
+        ("20. Quy trình Đính chính điểm 3 cấp", build_act_20_grade_amendment()),
+        ("21. Thẩm định chuẩn tốt nghiệp (Degree Audit)", build_act_21_graduation_audit()),
     ]
 
     mxfile = ET.Element('mxfile', {

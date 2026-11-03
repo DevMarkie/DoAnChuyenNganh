@@ -61,6 +61,7 @@ public class GradeController {
     public ResponseEntity<ApiResponse<List<com.sms.dto.response.GradeAuditLogResponse>>> getGradeAuditLogs(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long gradeId) {
+        gradeService.assertCanViewGrade(user.getId(), gradeId);
         List<com.sms.dto.response.GradeAuditLogResponse> logs = gradeService.getGradeAuditLogs(gradeId)
                 .stream()
                 .map(com.sms.dto.response.GradeAuditLogResponse::from)

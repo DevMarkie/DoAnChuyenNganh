@@ -111,7 +111,14 @@ public class SemesterService {
             semester.setRegistrationEnd(null);
         }
         if (request.getTuitionDeadline() != null && !request.getTuitionDeadline().isBlank()) {
-            semester.setTuitionDeadline(LocalDate.parse(request.getTuitionDeadline()));
+            LocalDate tuitionDeadline = LocalDate.parse(request.getTuitionDeadline());
+            if (tuitionDeadline.isBefore(startDate)) {
+                throw new BadRequestException("Hạn nộp học phí không thể trước ngày bắt đầu học kỳ");
+            }
+            if (semester.getRegistrationEnd() != null && tuitionDeadline.isBefore(semester.getRegistrationEnd())) {
+                throw new BadRequestException("Hạn nộp học phí không thể trước ngày kết thúc đợt đăng ký tín chỉ");
+            }
+            semester.setTuitionDeadline(tuitionDeadline);
         } else {
             semester.setTuitionDeadline(null);
         }

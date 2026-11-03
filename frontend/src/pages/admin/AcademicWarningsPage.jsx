@@ -1,5 +1,5 @@
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { AlertTriangle, Download, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { academicWarningService, semesterService } from '../../services/dataService';
@@ -26,7 +26,7 @@ export default function AcademicWarningsPage() {
 
 
 
-  const fetchWarnings = async () => {
+  const fetchWarnings = useCallback(async () => {
     try {
       setLoading(true);
       const params = { page, size: pageSize };
@@ -42,11 +42,11 @@ export default function AcademicWarningsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, level, semesterId]);
 
   useEffect(() => {
     fetchWarnings();
-  }, [level, semesterId, page]);
+  }, [fetchWarnings]);
 
   const handleScanAcademicStanding = async () => {
     const semName = semesters.find(s => s.id === Number(semesterId))?.semesterName || 'toàn trường / học kỳ gần nhất';

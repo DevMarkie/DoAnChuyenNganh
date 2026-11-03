@@ -154,7 +154,7 @@ public class GradeAppealController {
      * Tương thích ngược: review
      */
     @PutMapping("/{id}/review")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<GradeAppealResponse>> review(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long id,

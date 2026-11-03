@@ -22,14 +22,22 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     List<Enrollment> findByStudentId(Long studentId);
     List<Enrollment> findBySectionId(Long sectionId);
-    Optional<Enrollment> findByStudentIdAndSectionId(Long studentId, Long sectionId);
+
+    @Query("SELECT e FROM Enrollment e " +
+           "LEFT JOIN FETCH e.section cs " +
+           "LEFT JOIN FETCH cs.subject " +
+           "WHERE e.student.id = :studentId AND e.section.id = :sectionId")
+    Optional<Enrollment> findByStudentIdAndSectionId(@Param("studentId") Long studentId, @Param("sectionId") Long sectionId);
+
     boolean existsByStudentIdAndSectionId(Long studentId, Long sectionId);
 
     @Query("SELECT e FROM Enrollment e " +
-          "WHERE e.student.id = :studentId " +
-          "AND e.section.semester.id = :semesterId " +
-          "AND e.section.subject.id = :subjectId " +
-          "AND e.status = 'ENROLLED'")
+           "JOIN FETCH e.section cs " +
+           "JOIN FETCH cs.subject sub " +
+           "WHERE e.student.id = :studentId " +
+           "AND cs.semester.id = :semesterId " +
+           "AND sub.id = :subjectId " +
+           "AND e.status = 'ENROLLED'")
     Optional<Enrollment> findActiveEnrollmentBySubject(
            @Param("studentId") Long studentId,
            @Param("semesterId") Integer semesterId,

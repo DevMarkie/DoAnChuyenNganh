@@ -73,18 +73,39 @@ async function run() {
 
   // 3. Giảng viên tạo đơn sửa điểm (Bước 1)
   console.log('\n3. Giảng viên tạo đơn sửa điểm sau khóa sổ (Bước 1: Ticket Creation)...');
-  const createRes = await request('/grade-amendments', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${lecturerToken}` },
-    body: {
-      classSectionId: 2,
-      studentId: 95,
-      componentType: 'FINAL',
-      newScore: 9.0,
-      reason: 'Cộng sót câu 4 tự luận trong bài thi cuối kỳ (chấm lại sau phúc khảo)',
-      evidenceUrl,
-    },
-  });
+  let createRes;
+  try {
+    createRes = await request('/grade-amendments', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${lecturerToken}` },
+      body: {
+        classSectionId: 2,
+        studentId: 95,
+        componentType: 'FINAL',
+        newScore: 9.0,
+        reason: 'Cộng sót câu 4 tự luận trong bài thi cuối kỳ (chấm lại sau phúc khảo)',
+        evidenceUrl,
+      },
+    });
+  } catch (err) {
+    if (err.message && err.message.includes('phải khác điểm hiện tại')) {
+      console.log('   ℹ️ Điểm hiện tại của SV đã là 9.0 (từ lần test trước), tự động đề xuất 8.5...');
+      createRes = await request('/grade-amendments', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${lecturerToken}` },
+        body: {
+          classSectionId: 2,
+          studentId: 95,
+          componentType: 'FINAL',
+          newScore: 8.5,
+          reason: 'Cộng sót câu 4 tự luận trong bài thi cuối kỳ (chấm lại sau phúc khảo)',
+          evidenceUrl,
+        },
+      });
+    } else {
+      throw err;
+    }
+  }
 
   const ticket = createRes.data;
   console.log('   ✓ Tạo Ticket thành công! Ticket ID:', ticket.id);

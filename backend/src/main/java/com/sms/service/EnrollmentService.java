@@ -252,9 +252,12 @@ public class EnrollmentService {
                                 || (!newSch.getStartDate().isAfter(stuSch.getEndDate())
                                     && !newSch.getEndDate().isBefore(stuSch.getStartDate()));
                         if (periodOverlap && dateOverlap) {
+                            String conflictSectionCode = (stuSch.getSection() != null) ? stuSch.getSection().getSectionCode() : "N/A";
+                            String conflictSubjectName = (stuSch.getSection() != null && stuSch.getSection().getSubject() != null)
+                                    ? stuSch.getSection().getSubject().getSubjectName() : "Đã đăng ký";
                             throw new BadRequestException(String.format(
                                     "Trùng lịch học! Học phần này trùng thời gian với lớp %s (%s) vào %s (Tiết %d - %d).",
-                                    stuSch.getSection().getSectionCode(), stuSch.getSection().getSubject().getSubjectName(),
+                                    conflictSectionCode, conflictSubjectName,
                                     stuSch.getDayOfWeekName(), stuSch.getStartPeriod(), stuSch.getEndPeriod()
                             ));
                         }

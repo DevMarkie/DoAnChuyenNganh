@@ -3,7 +3,7 @@
 > **Chuẩn mô hình hóa:** OMG UML 2.5 (Unified Modeling Language) & Phân tích BCE (Boundary - Control - Entity)  
 > **Bộ sơ đồ bao gồm:** 5 Tập sơ đồ Master (76 Tabs tổng cộng: ERD 8 tabs, UseCase 5 tabs, Activity 21 tabs, Sequence 21 tabs, BCE 21 tabs) + 5 Sơ đồ Use Case đơn phân hệ  
 > **Quy chuẩn thiết kế:** Academic Monochrome High-Contrast (Nền trắng, viền đen 1.5px, Zero Overlap, tối ưu in ấn đồ án)  
-> **Tác giả:** Nguyễn Duy Minh (MSV: 21010696) · Khoa Công Nghệ Thông Tin · Đại học Phenikaa
+> **Tác giả:** Nguyễn Duy Minh (MSV: 23010359) · Khoa Công Nghệ Thông Tin · Đại học Phenikaa
 
 ---
 

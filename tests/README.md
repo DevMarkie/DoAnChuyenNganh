@@ -2,7 +2,7 @@
 ## HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS / UAMS)
 > **Kiến trúc kiểm thử:** 8 Trụ cột Đảm bảo Chất lượng (8 Pillars of QA)  
 > **Phạm vi kiểm thử:** Backend Unit Tests (285+) · Frontend Component Tests (43+) · E2E Regression (65+) · Stress Testing (600 SV)  
-> **Tác giả:** Nguyễn Duy Minh (MSV: 21010696)
+> **Tác giả:** Nguyễn Duy Minh (MSV: 23010359)
 
 ---
 

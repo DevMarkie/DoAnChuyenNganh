@@ -3,7 +3,7 @@
 > **Dự án:** Hệ Thống Quản Lý Đào Tạo & Sinh Viên (SMS / UAMS)  
 > **Hệ quản trị CSDL:** MySQL 8.0 (InnoDB Engine, Character set: `utf8mb4`, Collation: `utf8mb4_unicode_ci`)  
 > **Quy mô dữ liệu thực nghiệm:** 41 Bảng quan hệ · 2 Database Views · 27 Bản migration · 3.000 Sinh viên · 80 Giảng viên · 5 Học kỳ  
-> **Tác giả:** Nguyễn Duy Minh (MSV: 21010696)
+> **Tác giả:** Nguyễn Duy Minh (MSV: 23010359)
 
 ---
 

@@ -1,7 +1,7 @@
 # 🧠 MÁY CHỦ DỊCH VỤ BACKEND (REST API & BUSINESS ENGINES)
 ## HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS / UAMS)
 > **Spring Boot 3.5.6 · Java 23 LTS · MySQL 8.0 · Redis 7 Alpine · Spring Security · JWT**  
-> **Tác giả:** Nguyễn Duy Minh (MSV: 21010696)  
+> **Tác giả:** Nguyễn Duy Minh (MSV: 23010359)  
 > **Vị trí trong kiến trúc:** Tầng xử lý nghiệp vụ doanh nghiệp trung tâm (Core Application Tier)
 
 ---

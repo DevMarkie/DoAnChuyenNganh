@@ -2,7 +2,7 @@
 ## HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS / UAMS)
 > **React 19.2 · Vite 8.2 · Tailwind CSS · Zustand 5 · Recharts 3.10 · Native Fetch Client**  
 > **Ngôn ngữ thiết kế:** Apple Vision & Aurora Glassmorphism (Hỗ trợ Dark / Light Theme)  
-> **Tác giả:** Nguyễn Duy Minh (MSV: 21010696)  
+> **Tác giả:** Nguyễn Duy Minh (MSV: 23010359)  
 > **Vị trí trong kiến trúc:** Tầng tương tác người dùng (Client Presentation Tier)
 
 ---

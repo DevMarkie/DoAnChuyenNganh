@@ -257,10 +257,13 @@
           <mxGeometry as="geometry" relative="1"/>
         </mxCell>
         <mxCell id="uc2_sub_lock" value="Khóa / Mở khóa tài khoản đăng nhập" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="740" y="195" width="240" height="45"/>
+          <mxGeometry as="geometry" x="740" y="180" width="260" height="42"/>
         </mxCell>
         <mxCell id="uc2_sub_role" value="Cấu hình vai trò &amp; Quyền hạn" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="740" y="250" width="240" height="45"/>
+          <mxGeometry as="geometry" x="740" y="230" width="260" height="42"/>
+        </mxCell>
+        <mxCell id="uc2_sub_staff" value="Quản lý Cán bộ &amp; Nhân viên (Staff)" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="280" width="260" height="42"/>
         </mxCell>
         <mxCell id="inc_user_lock" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc2_user" target="uc2_sub_lock">
           <mxGeometry as="geometry" relative="1"/>
@@ -268,16 +271,25 @@
         <mxCell id="inc_user_role" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc2_user" target="uc2_sub_role">
           <mxGeometry as="geometry" relative="1"/>
         </mxCell>
+        <mxCell id="inc_user_staff" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc2_user" target="uc2_sub_staff">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
         <mxCell id="uc2_sub_mask" value="Bảo vệ thông tin &amp; Ẩn danh Email" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="740" y="355" width="250" height="45"/>
+          <mxGeometry as="geometry" x="740" y="345" width="260" height="42"/>
         </mxCell>
         <mxCell id="uc2_sub_genpwd" value="Sinh mật khẩu ngẫu nhiên an toàn 8 ký tự" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="740" y="410" width="250" height="45"/>
+          <mxGeometry as="geometry" x="740" y="395" width="260" height="42"/>
+        </mxCell>
+        <mxCell id="uc2_sub_bulkpwd" value="Đặt lại mật khẩu toàn trường (ddmmyyyya@)" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="740" y="445" width="260" height="42"/>
         </mxCell>
         <mxCell id="inc_pwd_mask" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc2_pwdreset" target="uc2_sub_mask">
           <mxGeometry as="geometry" relative="1"/>
         </mxCell>
         <mxCell id="inc_pwd_gen" value="«bao gồm»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc2_pwdreset" target="uc2_sub_genpwd">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ext_pwd_bulk" value="«mở rộng»" style="html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;" parent="1" edge="1" source="uc2_sub_bulkpwd" target="uc2_pwdreset">
           <mxGeometry as="geometry" relative="1"/>
         </mxCell>
         <mxCell id="uc2_sub_logtrace" value="Truy vết người sửa, điểm cũ, điểm mới" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontStyle=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;" parent="1" vertex="1">

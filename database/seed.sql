@@ -169779,4 +169779,6 @@ SET enrolled_count = (
     WHERE e.section_id = cs.id AND e.status != 'CANCELLED'
 );
 
+UPDATE users SET date_of_birth = '1990-01-01' WHERE username = 'admin';
+
 SET FOREIGN_KEY_CHECKS = 1;

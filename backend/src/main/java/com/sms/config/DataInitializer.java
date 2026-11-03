@@ -10,6 +10,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         initRoles();
+        initAdminUser();
         initAcademicAffairsUser();
         initExaminationOfficerUser();
         initSystemConfigs();
@@ -40,8 +43,27 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
+    private void initAdminUser() {
+        userRepository.findByUsername("admin").ifPresent(admin -> {
+            boolean changed = false;
+            if (admin.getDateOfBirth() == null) {
+                admin.setDateOfBirth(LocalDate.of(1990, 1, 1));
+                changed = true;
+            }
+            if (admin.getFullName() == null) {
+                admin.setFullName("Quản trị viên hệ thống");
+                changed = true;
+            }
+            if (changed) {
+                userRepository.save(admin);
+                log.info("Cập nhật thông tin cho tài khoản 'admin': DOB=1990-01-01, fullName=Quản trị viên hệ thống");
+            }
+        });
+    }
+
     private void initAcademicAffairsUser() {
-        if (!userRepository.existsByUsername("daotao")) {
+        User user = userRepository.findByUsername("daotao").orElse(null);
+        if (user == null) {
             Role role = roleRepository.findByName("ACADEMIC_AFFAIRS")
                     .orElseGet(() -> {
                         Role r = new Role();
@@ -49,22 +71,56 @@ public class DataInitializer implements CommandLineRunner {
                         return roleRepository.save(r);
                     });
 
-            User user = new User();
+            user = new User();
             user.setUsername("daotao");
-            // Mật khẩu tuân thủ chuẩn an toàn quốc tế (chữ hoa, chữ thường, số, ký tự đặc biệt, độ dài >= 12)
-            user.setPassword(passwordEncoder.encode("Daotao@2026!"));
+            user.setFullName("Nguyễn Văn Đào (Phòng Đào tạo)");
+            user.setPassword(passwordEncoder.encode("15051985a@"));
             user.setEmail("daotao@sms.edu.vn");
             user.setRole(role);
+            user.setDateOfBirth(LocalDate.of(1985, 5, 15));
             user.setIsActive(true);
             user.setMustChangePassword(false);
 
             userRepository.save(user);
-            log.info("Khởi tạo tài khoản Cán bộ Đào tạo mẫu 'daotao' thành công (Password: Daotao@2026!)");
+            log.info("Khởi tạo tài khoản Cán bộ Đào tạo mẫu 'daotao' thành công (DOB: 1985-05-15, Password: 15051985a@)");
+        } else {
+            boolean changed = false;
+            if (user.getDateOfBirth() == null) {
+                user.setDateOfBirth(LocalDate.of(1985, 5, 15));
+                changed = true;
+            }
+            if (user.getFullName() == null) {
+                user.setFullName("Nguyễn Văn Đào (Phòng Đào tạo)");
+                changed = true;
+            }
+            if (changed) {
+                userRepository.save(user);
+                log.info("Cập nhật thông tin cho tài khoản 'daotao': DOB=1985-05-15, fullName=Nguyễn Văn Đào");
+            }
+        }
+
+        // Tạo thêm chuyên viên Đào tạo mẫu: daotao01 (DOB: 1994-08-15 -> password 15081994a@)
+        if (!userRepository.existsByUsername("daotao01")) {
+            Role role = roleRepository.findByName("ACADEMIC_AFFAIRS").orElse(null);
+            if (role != null) {
+                User staff = new User();
+                staff.setUsername("daotao01");
+                staff.setFullName("Lê Thị Thanh (Chuyên viên Đào tạo)");
+                staff.setDateOfBirth(LocalDate.of(1994, 8, 15));
+                staff.setPassword(passwordEncoder.encode("15081994a@"));
+                staff.setEmail("daotao01@sms.edu.vn");
+                staff.setRole(role);
+                staff.setIsActive(true);
+                staff.setMustChangePassword(false);
+                userRepository.save(staff);
+                log.info("Khởi tạo nhân viên Đào tạo mẫu 'daotao01' thành công (DOB: 1994-08-15, Password: 15081994a@)");
+            }
         }
     }
 
     private void initExaminationOfficerUser() {
-        if (!userRepository.existsByUsername("khaothi")) {
+        User user = userRepository.findByUsername("khaothi").orElse(null);
+        if (user == null) {
             Role role = roleRepository.findByName("EXAMINATION_OFFICER")
                     .orElseGet(() -> {
                         Role r = new Role();
@@ -72,16 +128,32 @@ public class DataInitializer implements CommandLineRunner {
                         return roleRepository.save(r);
                     });
 
-            User user = new User();
+            user = new User();
             user.setUsername("khaothi");
-            user.setPassword(passwordEncoder.encode("Khaothi@2026!"));
+            user.setFullName("Trần Thị Khảo (Phòng Khảo thí & ĐBCL)");
+            user.setPassword(passwordEncoder.encode("20101988a@"));
             user.setEmail("khaothi@sms.edu.vn");
             user.setRole(role);
+            user.setDateOfBirth(LocalDate.of(1988, 10, 20));
             user.setIsActive(true);
             user.setMustChangePassword(false);
 
             userRepository.save(user);
-            log.info("Khởi tạo tài khoản Cán bộ Khảo thí mẫu 'khaothi' thành công (Password: Khaothi@2026!)");
+            log.info("Khởi tạo tài khoản Cán bộ Khảo thí mẫu 'khaothi' thành công (DOB: 1988-10-20, Password: 20101988a@)");
+        } else {
+            boolean changed = false;
+            if (user.getDateOfBirth() == null) {
+                user.setDateOfBirth(LocalDate.of(1988, 10, 20));
+                changed = true;
+            }
+            if (user.getFullName() == null) {
+                user.setFullName("Trần Thị Khảo (Phòng Khảo thí & ĐBCL)");
+                changed = true;
+            }
+            if (changed) {
+                userRepository.save(user);
+                log.info("Cập nhật thông tin cho tài khoản 'khaothi': DOB=1988-10-20, fullName=Trần Thị Khảo");
+            }
         }
     }
 

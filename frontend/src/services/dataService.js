@@ -66,6 +66,13 @@ export const lecturerService = {
   resetPassword: (id) => api.post(`/lecturers/${id}/reset-password`),
 };
 
+export const staffService = {
+  getAll: () => api.get('/admin/staffs'),
+  create: (data) => api.post('/admin/staffs', data),
+  update: (id, data) => api.put(`/admin/staffs/${id}`, data),
+  resetPassword: (id) => api.post(`/admin/staffs/${id}/reset-password`),
+};
+
 export const subjectService = {
   getAll: () => api.get('/subjects'),
   getById: (id) => api.get(`/subjects/${id}`),

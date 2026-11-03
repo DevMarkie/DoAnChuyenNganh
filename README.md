@@ -13,7 +13,7 @@
 [![Redis](https://img.shields.io/badge/Redis-7_Alpine-DC382D?style=flat-square&logo=redis&logoColor=white)](docker-compose.yml)
 [![Nginx](https://img.shields.io/badge/Nginx-Reverse_Proxy-009639?style=flat-square&logo=nginx&logoColor=white)](frontend/nginx.conf)
 [![Docker](https://img.shields.io/badge/Docker-Cluster_Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](docker-compose.cluster.yml)
-[![Tests](https://img.shields.io/badge/Tests-285+_Backend_|_80_Frontend_|_70+_E2E-success?style=flat-square&logo=checkmarx&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-288_Backend_|_80_Frontend_|_70+_E2E-success?style=flat-square&logo=checkmarx&logoColor=white)](tests/)
 
 </div>
 
@@ -107,7 +107,7 @@ flowchart TD
 | **High Concurrency** | Redis, Lettuce Pool, Commons Pool 2 | Redis 7-alpine, Lettuce 6.x | Bộ nhớ đệm phân tán, cơ chế khóa phân tán Redis Lock cho ghi danh môn học, chống quá tải sĩ số. |
 | **Cơ sở dữ liệu** | MySQL Server, InnoDB Engine, HikariCP | MySQL 8.0, HikariCP 5.1 | 41 bảng quan hệ chuẩn 3NF, 2 Database Views tối ưu N+1, `utf8mb4_unicode_ci` hỗ trợ tiếng Việt chuẩn xác. |
 | **Điều phối tải** | Nginx Reverse Proxy & HTTP Load Balancing | Nginx 1.25 Alpine | Điều hướng tải Round-Robin qua cụm 3 Backend Replicas, phục vụ tài nguyên tĩnh SPA. |
-| **Bộ kiểm thử QA** | JUnit 5, Mockito, Vitest, Node.js E2E | JUnit 5, Mockito 5, Vitest 5.0 | 285+ Backend tests, 80 Frontend tests, 70+ E2E tests, bài test 600 SV đồng thời, kiểm tra lỗ hổng OWASP. |
+| **Bộ kiểm thử QA** | JUnit 5, Mockito, Vitest, Node.js E2E | JUnit 5, Mockito 5, Vitest 5.0 | 288 Backend tests, 80 Frontend tests, 70+ E2E tests, bài test 600 SV đồng thời, kiểm tra lỗ hổng OWASP. |
 
 ---
 
@@ -179,9 +179,11 @@ flowchart LR
 
 ### 1. Phân hệ Quản trị viên (Admin)
 * Quản lý cây cơ cấu học thuật toàn diện: Khoa ➜ Ngành ➜ Khóa ➜ Lớp hành chính ➜ Môn học.
-* Thiết lập khung chương trình đào tạo chuẩn 5 khối kiến thức và cây môn tiên quyết.
+* Thiết lập khung chương trình đào tạo chuẩn 5 khối kiến thức và cây môn tiên quyết (DAG).
 * Mở lớp học phần, điều phối số lượng sinh viên, xếp thời khóa biểu và phân công giảng viên.
-* Phân quyền tài khoản (RBAC), phê duyệt yêu cầu cấp lại mật khẩu, cấu hình tham số hệ thống và sao lưu CSDL.
+* **Quản trị Nhân sự & Chuyên viên Đào tạo (`StaffsPage`):** Quản lý hồ sơ cán bộ học vụ (`ACADEMIC_STAFF`, `ACADEMIC_AFFAIRS`, `EXAMINATION_OFFICER`), cấp mới tài khoản, chỉnh sửa thông tin, phân quyền chức danh và khóa/mở khóa tài khoản.
+* **Cấp lại mật khẩu hàng loạt (Bulk Password Reset):** Duyệt yêu cầu và đặt lại mật khẩu cho nhiều tài khoản sinh viên/giảng viên/cán bộ cùng lúc chỉ với 1 thao tác, tự động áp đặt cờ bắt buộc đổi mật khẩu (`must_change_password`) ở lần đăng nhập tiếp theo.
+* Phân quyền tài khoản bảo mật 2 lớp (RBAC), cấu hình tham số hệ thống động và sao lưu CSDL an toàn.
 
 ### 2. Phân hệ Chuyên viên Học vụ (Academic Affairs)
 * **Academic Dashboard:** Bảng theo dõi tổng quan sinh viên theo tình trạng, phân tích phổ điểm và tiến độ học tập toàn trường.
@@ -217,12 +219,12 @@ flowchart LR
 DoAnChuyenNganh/
 ├── backend/                       # Máy chủ dịch vụ Spring Boot 3 (REST API & Business Engines)
 │   ├── src/main/java/com/sms/     #   33 Controllers, 20+ Services, 41 JPA Entities, DTOs, Security
-│   ├── src/test/java/com/sms/     #   43 Test Classes, 285+ Unit & Integration Tests (JUnit 5 + Mockito)
+│   ├── src/test/java/com/sms/     #   43 Test Classes, 288 Unit & Integration Tests (JUnit 5 + Mockito)
 │   ├── pom.xml                    #   Cấu hình Maven (Java 23, Spring Boot 3.5.6, Redis, JWT, Apache POI)
 │   └── README.md                  #   👉 Cẩm nang kiến trúc Backend, REST API & Hướng dẫn phát triển
 ├── frontend/                      # Cổng thông tin giao diện người dùng React 19 + Vite SPA
 │   ├── src/components/            #   Layouts, Navigation, Modals, Shared Glassmorphism Components
-│   ├── src/pages/                 #   Màn hình theo vai trò (Admin, Academic, Lecturer, Student, Auth)
+│   ├── src/pages/                 #   Màn hình theo vai trò (Admin, Staffs, Academic, Lecturer, Student, Auth)
 │   ├── src/services/              #   Native Fetch Client (Zero Dep), API routing, Zustand stores
 │   ├── src/tests/                 #   18 Test Files, 80 Component & Logic Tests tự động (Vitest)
 │   ├── nginx.conf                 #   Cấu hình Nginx Reverse Proxy & Static Host trong Docker
@@ -251,8 +253,6 @@ DoAnChuyenNganh/
 │   ├── security/                  #   Kiểm thử bảo mật (SQL Injection, IDOR, Tampered JWT, Brute-Force)
 │   ├── run_all_tests.mjs          #   Master Test Runner điều phối kiểm thử liên hoàn 10 bài test chủ lực
 │   └── README.md                  #   👉 Cẩm nang hướng dẫn thực thi toàn bộ kịch bản kiểm thử QA
-├── BaoCaoDoAn.pdf                 # Báo cáo đồ án chuyên ngành hoàn chỉnh (Toàn văn định dạng PDF)
-├── BaoCaoDoAn_ChinhSua_HoanThien.docx # Bản thảo báo cáo đồ án toàn văn Microsoft Word (.docx)
 ├── docker-compose.yml             # Khởi chạy Docker tiêu chuẩn (MySQL, Redis, 1 Backend, Nginx Frontend)
 ├── docker-compose.cluster.yml     # Khởi chạy mở rộng cụm (3 Backend Replicas + Nginx Load Balancer)
 ├── start_dev.bat                  # Script 1-Click khởi chạy môi trường phát triển cục bộ Windows
@@ -389,7 +389,7 @@ node tests/run_all_tests.mjs
 ### Các kịch bản kiểm thử độc lập:
 
 ```bash
-# 1. Kiểm thử Backend Spring Boot (43 test classes, 285+ tests JUnit 5 & Mockito)
+# 1. Kiểm thử Backend Spring Boot (43 test classes, 288 tests JUnit 5 & Mockito)
 cd backend && .\mvnw.cmd test -Dtest=*Test
 
 # 2. Kiểm thử Frontend React SPA (18 test files, 80 tests Vitest)

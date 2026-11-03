@@ -20,6 +20,7 @@ const DepartmentsPage = lazy(() => import('./pages/admin/DepartmentsPage'));
 const ClassesPage = lazy(() => import('./pages/admin/ClassesPage'));
 const SubjectsPage = lazy(() => import('./pages/admin/SubjectsPage'));
 const LecturersPage = lazy(() => import('./pages/admin/LecturersPage'));
+const StaffsPage = lazy(() => import('./pages/admin/StaffsPage'));
 const SemestersPage = lazy(() => import('./pages/admin/SemestersPage'));
 const TuitionCashierPage = lazy(() => import('./pages/admin/TuitionCashierPage'));
 const CourseSectionsPage = lazy(() => import('./pages/admin/CourseSectionsPage'));
@@ -154,6 +155,7 @@ export default function App() {
             <Route path="/admin/classes" element={<ClassesPage />} />
             <Route path="/admin/subjects" element={<SubjectsPage />} />
             <Route path="/admin/lecturers" element={<LecturersPage />} />
+            <Route path="/admin/staffs" element={<StaffsPage />} />
             <Route path="/admin/semesters" element={<SemestersPage />} />
             <Route path="/admin/tuition" element={<TuitionCashierPage />} />
             <Route path="/admin/course-sections" element={<CourseSectionsPage readOnly={true} />} />

@@ -142,7 +142,8 @@ def build_erd_01_overview():
     
     add_table(root, 'users', 'users', [
         ('id', 'BIGINT', 'PK'), ('username', 'VARCHAR(50)', 'UQ'), ('email', 'VARCHAR(100)', 'UQ'),
-        ('role_id', 'INT', 'FK'), ('is_active', 'BOOLEAN', ''), ('must_change_password', 'BOOLEAN', '')
+        ('role_id', 'INT', 'FK'), ('full_name', 'VARCHAR(100)', ''), ('date_of_birth', 'DATE', ''),
+        ('is_active', 'BOOLEAN', ''), ('must_change_password', 'BOOLEAN', '')
     ], 340, 90, 250)
     
     add_table(root, 'departments', 'departments', [
@@ -321,7 +322,8 @@ def build_erd_02_system_users():
     
     add_table(root, 'users', 'users', [
         ('id', 'BIGINT', 'PK'), ('username', 'VARCHAR(50)', 'UQ'), ('password_hash', 'VARCHAR(255)', ''),
-        ('email', 'VARCHAR(100)', 'UQ'), ('role_id', 'INT', 'FK'), ('is_active', 'BOOLEAN', ''),
+        ('email', 'VARCHAR(100)', 'UQ'), ('role_id', 'INT', 'FK'), ('full_name', 'VARCHAR(100)', ''),
+        ('date_of_birth', 'DATE', ''), ('is_active', 'BOOLEAN', ''),
         ('must_change_password', 'BOOLEAN', ''), ('created_at', 'DATETIME', ''), ('updated_at', 'DATETIME', '')
     ], 440, 120, 280)
     

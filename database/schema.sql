@@ -71,6 +71,8 @@ CREATE TABLE users (
     password             VARCHAR(255) NOT NULL,
     email                VARCHAR(100) NOT NULL,
     role_id              INT          NOT NULL,
+    full_name            VARCHAR(100) NULL,
+    date_of_birth        DATE         NULL,
     is_active            BOOLEAN      NOT NULL DEFAULT TRUE,
     must_change_password BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,

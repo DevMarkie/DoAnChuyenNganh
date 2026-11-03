@@ -3,7 +3,9 @@ package com.sms.service;
 import com.sms.dto.request.ApproveResetRequest;
 import com.sms.dto.request.ForgotPasswordRequest;
 import com.sms.dto.request.RejectResetRequest;
+import com.sms.dto.response.BulkResetPasswordResponse;
 import com.sms.dto.response.PasswordResetResult;
+import com.sms.entity.Lecturer;
 import com.sms.entity.PasswordResetRequest;
 import com.sms.entity.Role;
 import com.sms.entity.Student;
@@ -21,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -276,5 +279,112 @@ public class PasswordResetServiceTest {
         assertEquals("encodedPassword", user.getPassword());
         assertFalse(user.getMustChangePassword());
         verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void resetAllPasswordsToDateOfBirth_successWithStudentAndLecturerAndAdminWithStaffSkipped() {
+        // User 1: Student with DOB 2002-03-15 -> expected password "15032002a@"
+        Role studentRole = new Role();
+        studentRole.setName("STUDENT");
+        User studentUser = new User();
+        studentUser.setId(101L);
+        studentUser.setUsername("sv001");
+        studentUser.setRole(studentRole);
+
+        Student studentProfile = new Student();
+        studentProfile.setId(201L);
+        studentProfile.setUser(studentUser);
+        studentProfile.setDateOfBirth(LocalDate.of(2002, 3, 15));
+
+        // User 2: Lecturer with DOB 1980-11-05 -> expected password "05111980a@"
+        Role lecturerRole = new Role();
+        lecturerRole.setName("LECTURER");
+        User lecturerUser = new User();
+        lecturerUser.setId(102L);
+        lecturerUser.setUsername("gv001");
+        lecturerUser.setRole(lecturerRole);
+
+        Lecturer lecturerProfile = new Lecturer();
+        lecturerProfile.setId(202L);
+        lecturerProfile.setUser(lecturerUser);
+        lecturerProfile.setDateOfBirth(LocalDate.of(1980, 11, 5));
+
+        // User 3: Admin with DOB on User entity: 1990-01-01 -> expected password "01011990a@"
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN");
+        User adminUser = new User();
+        adminUser.setId(103L);
+        adminUser.setUsername("admin");
+        adminUser.setRole(adminRole);
+        adminUser.setDateOfBirth(LocalDate.of(1990, 1, 1));
+
+        // User 4: Staff without DOB -> should be skipped
+        Role staffRole = new Role();
+        staffRole.setName("ACADEMIC_AFFAIRS");
+        User staffUser = new User();
+        staffUser.setId(104L);
+        staffUser.setUsername("daotao_nodob");
+        staffUser.setRole(staffRole);
+        staffUser.setDateOfBirth(null);
+
+        when(userRepository.findAll()).thenReturn(List.of(studentUser, lecturerUser, adminUser, staffUser));
+        when(studentRepository.findByUserId(101L)).thenReturn(Optional.of(studentProfile));
+        when(lecturerRepository.findByUserId(102L)).thenReturn(Optional.of(lecturerProfile));
+        when(passwordEncoder.encode("15032002a@")).thenReturn("HASH_15032002a@");
+        when(passwordEncoder.encode("05111980a@")).thenReturn("HASH_05111980a@");
+        when(passwordEncoder.encode("01011990a@")).thenReturn("HASH_01011990a@");
+
+        BulkResetPasswordResponse response = passwordResetService.resetAllPasswordsToDateOfBirth();
+
+        assertNotNull(response);
+        assertEquals(3, response.getResetCount());
+        assertEquals(1, response.getSkippedCount());
+        assertEquals(1, response.getSkippedUsers().size());
+        assertEquals("daotao_nodob", response.getSkippedUsers().get(0).getUsername());
+        assertTrue(response.getSkippedUsers().get(0).getReason().contains("ACADEMIC_AFFAIRS"));
+
+        // Verify passwords updated
+        assertEquals("HASH_15032002a@", studentUser.getPassword());
+        assertEquals("HASH_05111980a@", lecturerUser.getPassword());
+        assertEquals("HASH_01011990a@", adminUser.getPassword());
+
+        // Verify DOB synced to User entity
+        assertEquals(LocalDate.of(2002, 3, 15), studentUser.getDateOfBirth());
+        assertEquals(LocalDate.of(1980, 11, 5), lecturerUser.getDateOfBirth());
+
+        verify(passwordEncoder).encode("15032002a@");
+        verify(passwordEncoder).encode("05111980a@");
+        verify(passwordEncoder).encode("01011990a@");
+        verify(userRepository).save(studentUser);
+        verify(userRepository).save(lecturerUser);
+        verify(userRepository).save(adminUser);
+        verify(userRepository, never()).save(staffUser);
+    }
+
+    @Test
+    void resetAllPasswordsToDateOfBirth_allSkippedWhenStudentHasNullDob() {
+        Role studentRole = new Role();
+        studentRole.setName("STUDENT");
+        User studentUser = new User();
+        studentUser.setId(104L);
+        studentUser.setUsername("sv_nodob");
+        studentUser.setRole(studentRole);
+
+        Student studentProfile = new Student();
+        studentProfile.setId(204L);
+        studentProfile.setUser(studentUser);
+        studentProfile.setDateOfBirth(null); // null DOB
+
+        when(userRepository.findAll()).thenReturn(List.of(studentUser));
+        when(studentRepository.findByUserId(104L)).thenReturn(Optional.of(studentProfile));
+
+        BulkResetPasswordResponse response = passwordResetService.resetAllPasswordsToDateOfBirth();
+
+        assertNotNull(response);
+        assertEquals(0, response.getResetCount());
+        assertEquals(1, response.getSkippedCount());
+        assertEquals("sv_nodob", response.getSkippedUsers().get(0).getUsername());
+        verify(userRepository, never()).save(studentUser);
+        verify(passwordEncoder, never()).encode(anyString());
     }
 }

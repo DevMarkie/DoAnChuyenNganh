@@ -186,16 +186,20 @@ def build_diagram_2_admin():
     add_cell(root, "inc_kpi2", "«bao gồm»", STYLE_INC, edge=True, source="uc2_kpi", target="uc2_sub_stat")
 
     # 2. User & RBAC
-    add_cell(root, "uc2_sub_lock", "Khóa / Mở khóa tài khoản đăng nhập", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 195, 'width': 240, 'height': 45})
-    add_cell(root, "uc2_sub_role", "Cấu hình vai trò & Quyền hạn", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 250, 'width': 240, 'height': 45})
+    add_cell(root, "uc2_sub_lock", "Khóa / Mở khóa tài khoản đăng nhập", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 180, 'width': 260, 'height': 42})
+    add_cell(root, "uc2_sub_role", "Cấu hình vai trò & Quyền hạn", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 230, 'width': 260, 'height': 42})
+    add_cell(root, "uc2_sub_staff", "Quản lý Cán bộ & Nhân viên (Staff)", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 280, 'width': 260, 'height': 42})
     add_cell(root, "inc_user_lock", "«bao gồm»", STYLE_INC, edge=True, source="uc2_user", target="uc2_sub_lock")
     add_cell(root, "inc_user_role", "«bao gồm»", STYLE_INC, edge=True, source="uc2_user", target="uc2_sub_role")
+    add_cell(root, "inc_user_staff", "«bao gồm»", STYLE_INC, edge=True, source="uc2_user", target="uc2_sub_staff")
 
     # 3. Password Reset
-    add_cell(root, "uc2_sub_mask", "Bảo vệ thông tin & Ẩn danh Email", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 355, 'width': 250, 'height': 45})
-    add_cell(root, "uc2_sub_genpwd", "Sinh mật khẩu ngẫu nhiên an toàn 8 ký tự", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 410, 'width': 250, 'height': 45})
+    add_cell(root, "uc2_sub_mask", "Bảo vệ thông tin & Ẩn danh Email", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 345, 'width': 260, 'height': 42})
+    add_cell(root, "uc2_sub_genpwd", "Sinh mật khẩu ngẫu nhiên an toàn 8 ký tự", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 395, 'width': 260, 'height': 42})
+    add_cell(root, "uc2_sub_bulkpwd", "Đặt lại mật khẩu toàn trường (ddmmyyyya@)", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 445, 'width': 260, 'height': 42})
     add_cell(root, "inc_pwd_mask", "«bao gồm»", STYLE_INC, edge=True, source="uc2_pwdreset", target="uc2_sub_mask")
     add_cell(root, "inc_pwd_gen", "«bao gồm»", STYLE_INC, edge=True, source="uc2_pwdreset", target="uc2_sub_genpwd")
+    add_cell(root, "ext_pwd_bulk", "«mở rộng»", STYLE_EXT, edge=True, source="uc2_sub_bulkpwd", target="uc2_pwdreset")
 
     # 4. Audit Log
     add_cell(root, "uc2_sub_logtrace", "Truy vết người sửa, điểm cũ, điểm mới", STYLE_UC_SUB, vertex=True, geometry={'x': 740, 'y': 515, 'width': 250, 'height': 45})

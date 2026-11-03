@@ -1,4 +1,4 @@
-﻿-- =====================================================================================
+-- =====================================================================================
 -- HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS / UAMS)
 -- TỔNG HỢP TOÀN BỘ 27 BẢN MIGRATION LỊCH SỬ (CONSOLIDATED MIGRATIONS ARCHIVE)
 -- Đã gộp từ 27 bản vá riêng lẻ theo đúng trình tự tiến hóa kiến trúc CSDL.
@@ -6227,4 +6227,14 @@ UPDATE subjects SET subject_name = 'Công nghệ chế tạo máy', description 
 UPDATE subjects SET subject_name = 'Tiếng Anh 1', description = 'Kỹ năng tiếng Anh nền tảng trong môi trường đại học' WHERE subject_code = 'ENG101';
 UPDATE subjects SET subject_name = 'Tiếng Anh chuyên ngành Công nghệ thông tin', description = 'Thuật ngữ và đọc hiểu tài liệu công nghệ thông tin' WHERE subject_code = 'ENG201';
 UPDATE subjects SET subject_name = 'Tiếng Anh chuyên ngành Kỹ thuật', description = 'Tiếng Anh chuyên ngành kỹ thuật và công nghệ' WHERE subject_code = 'ENG202';
+
+-- =====================================================================================
+-- BẢN MIGRATION 28 : migration_users_date_of_birth.sql
+-- Thêm cột full_name và date_of_birth vào users để hỗ trợ Admin & Staff đổi mật khẩu theo ddmmyyyya@
+-- =====================================================================================
+ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(100) NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE NULL;
+UPDATE users SET full_name = 'Quản trị viên hệ thống', date_of_birth = '1990-01-01' WHERE username = 'admin';
+UPDATE users SET full_name = 'Cán bộ Đào tạo', date_of_birth = '1985-05-15' WHERE username = 'daotao';
+UPDATE users SET full_name = 'Cán bộ Khảo thí', date_of_birth = '1988-10-20' WHERE username = 'khaothi';
 

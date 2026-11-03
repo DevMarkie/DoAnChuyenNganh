@@ -29,7 +29,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.sms.dto.request.SendOtpRequest;
 import com.sms.dto.request.VerifyOtpResetRequest;
+import com.sms.dto.response.BulkResetPasswordResponse;
 import com.sms.dto.response.SendOtpResponse;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -422,5 +427,78 @@ public class PasswordResetService {
             return local.charAt(0) + "***" + domain;
         }
         return local.charAt(0) + "*****" + local.charAt(local.length() - 1) + domain;
+    }
+
+    // =========================================================================
+    // BULK RESET: đặt lại mật khẩu toàn bộ người dùng = ddmmyyyya@
+    // =========================================================================
+
+    /**
+     * Reset mật khẩu tất cả người dùng về dạng <b>ddmmyyyya@</b>
+     * (lấy từ ngày sinh của Student/Lecturer).
+     * Tài khoản không có ngày sinh sẽ bị bỏ qua và trả về trong danh sách skippedUsers.
+     *
+     * @return thống kê số tài khoản đã reset, số bỏ qua, danh sách bỏ qua
+     */
+    @Transactional
+    public BulkResetPasswordResponse resetAllPasswordsToDateOfBirth() {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("ddMMyyyy");
+
+        List<User> allUsers = userRepository.findAll();
+        List<BulkResetPasswordResponse.SkippedUser> skipped = new ArrayList<>();
+        int resetCount = 0;
+
+        for (User user : allUsers) {
+            String roleName = user.getRole() != null ? user.getRole().getName() : "";
+            java.time.LocalDate dob = null;
+
+            if ("STUDENT".equalsIgnoreCase(roleName)) {
+                Optional<Student> studentOpt = studentRepository.findByUserId(user.getId());
+                if (studentOpt.isPresent() && studentOpt.get().getDateOfBirth() != null) {
+                    dob = studentOpt.get().getDateOfBirth();
+                    user.setDateOfBirth(dob); // Đồng bộ ngày sinh vào bảng users
+                }
+            } else if ("LECTURER".equalsIgnoreCase(roleName)) {
+                Optional<Lecturer> lecturerOpt = lecturerRepository.findByUserId(user.getId());
+                if (lecturerOpt.isPresent() && lecturerOpt.get().getDateOfBirth() != null) {
+                    dob = lecturerOpt.get().getDateOfBirth();
+                    user.setDateOfBirth(dob); // Đồng bộ ngày sinh vào bảng users
+                }
+            }
+
+            // Với Admin, Staff hoặc tài khoản đã lưu ngày sinh trực tiếp trên User:
+            if (dob == null && user.getDateOfBirth() != null) {
+                dob = user.getDateOfBirth();
+            }
+
+            if (dob == null) {
+                skipped.add(BulkResetPasswordResponse.SkippedUser.builder()
+                        .username(user.getUsername())
+                        .reason("Không tìm thấy ngày sinh trong hệ thống (role: " + roleName + ")")
+                        .build());
+                log.warn("[BULK RESET] Bỏ qua tài khoản '{}' (role={}) — không có ngày sinh", user.getUsername(), roleName);
+                continue;
+            }
+
+            // Tạo mật khẩu dạng ddmmyyyya@  (ví dụ: 15032002a@)
+            String rawPassword = dob.format(fmt) + "a@";
+            user.setPassword(passwordEncoder.encode(rawPassword));
+            userRepository.save(user);
+            resetCount++;
+            log.info("[BULK RESET] Đã reset mật khẩu tài khoản '{}' thành công", user.getUsername());
+        }
+
+        String message = String.format(
+                "Đã reset mật khẩu thành công %d tài khoản. Bỏ qua %d tài khoản do thiếu ngày sinh.",
+                resetCount, skipped.size());
+
+        log.info("[BULK RESET] Hoàn tất: {}", message);
+
+        return BulkResetPasswordResponse.builder()
+                .resetCount(resetCount)
+                .skippedCount(skipped.size())
+                .skippedUsers(skipped)
+                .message(message)
+                .build();
     }
 }

@@ -14,7 +14,6 @@
 [![Nginx](https://img.shields.io/badge/Nginx-Reverse_Proxy-009639?style=flat-square&logo=nginx&logoColor=white)](frontend/nginx.conf)
 [![Docker](https://img.shields.io/badge/Docker-Cluster_Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](docker-compose.cluster.yml)
 [![Tests](https://img.shields.io/badge/Tests-285+_Backend_|_80_Frontend_|_70+_E2E-success?style=flat-square&logo=checkmarx&logoColor=white)](tests/)
-[![Institution](https://img.shields.io/badge/Phenikaa_University-K15_CNTT-00529B?style=flat-square)](https://phenikaa-uni.edu.vn)
 
 </div>
 
@@ -30,8 +29,7 @@
 6. [Hướng dẫn cài đặt & Khởi chạy nhanh](#-hướng-dẫn-cài-đặt--khởi-chạy-nhanh)
 7. [Tài khoản kiểm thử nghiệm thu (Credentials)](#-tài-khoản-kiểm-thử-nghiệm-thu-credentials)
 8. [Bộ kiểm thử tự động & Đảm bảo chất lượng (QA Center)](#-bộ-kiểm-thử-tự-động--đảm-bảo-chất-lượng-qa-center)
-9. [Bộ hồ sơ tài liệu đặc tả & Báo cáo đồ án](#-bộ-hồ-sơ-tài-liệu-đặc-tả--báo-cáo-đồ-án)
-10. [Thông tin đồ án & Tác giả](#-thông-tin-đồ-án--tác-giả)
+9. [Bộ hồ sơ tài liệu đặc tả](#-bộ-hồ-sơ-tài-liệu-đặc-tả)
 
 ---
 
@@ -425,7 +423,7 @@ node tests/performance/simulate_600_enrollment.js
 
 ---
 
-## 📚 Bộ hồ sơ tài liệu đặc tả & Báo cáo đồ án
+## 📚 Bộ hồ sơ tài liệu đặc tả
 
 Hệ thống được tài liệu hóa chi tiết và đồng bộ thông qua 5 cẩm nang kỹ thuật chuyên sâu theo từng tầng kiến trúc trong kho lưu trữ:
 
@@ -437,22 +435,9 @@ Hệ thống được tài liệu hóa chi tiết và đồng bộ thông qua 5 
 | **Cẩm nang Sơ đồ UML Draw.io** | [drawio/README.md](drawio/README.md) | 5 Tập sơ đồ Master (76 tabs) chuẩn OMG UML 2.5: Use Case, Sequence (21 tabs), Activity (21 tabs), BCE (21 tabs), ERD (8 tabs). |
 | **Cẩm nang Kiểm thử QA** | [tests/README.md](tests/README.md) | Khung 8 Trụ cột QA, 285+ Backend tests, 80 Frontend tests, 70+ E2E flows, kiểm thử đồng thời 600 SV và Visual Dashboard. |
 
-> 📌 **Ghi chú về Hồ sơ Luận văn & Dữ liệu Khảo sát thực trạng:**  
-> Toàn văn cuốn báo cáo đồ án chuyên ngành (`BaoCaoDoAn.pdf` & `BaoCaoDoAn_ChinhSua_HoanThien.docx`) cùng hồ sơ minh chứng khảo sát thực trạng ẩn danh (`docs/minh-chung/MinhChung_KhaoSat_ThucTrang.xlsx` với 30 Cán bộ/GV + 150 SV K15-K17) được lưu trữ tại môi trường cục bộ và đính kèm trong hồ sơ nộp Hội đồng chấm thi nhằm tối ưu hóa dung lượng kho lưu trữ mã nguồn Git.
-
----
-
-## 👨‍💻 Thông tin đồ án & Tác giả
-
-* **Học phần:** Đồ Án Chuyên Ngành Công Nghệ Thông Tin (Khoa Công Nghệ Thông Tin – Trường Đại học Phenikaa)
-* **Sinh viên thực hiện:** **Nguyễn Duy Minh**
-* **Mã sinh viên:** **21010696**
-* **Khóa đào tạo:** K15 (2021 – 2025)
-* **Chuyên ngành:** Công Nghệ Phần Mềm (Software Engineering)
-
 ---
 
 <div align="center">
   <sub>Đồ Án Chuyên Ngành Công Nghệ Thông Tin — Trường Đại học Phenikaa · 2026</sub><br/>
-  <sub>Phát triển với tinh thần cống hiến, chuẩn mực kỹ thuật và tinh thần học thuật nghiêm túc.</sub>
+  <sub>Sinh viên thực hiện: <strong>Nguyễn Duy Minh</strong> (MSV: 23010359)</sub>
 </div>

@@ -13,6 +13,8 @@ netstat -ano | findstr ":3308 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo [MySQL] Phát hiện MySQL Docker Container đang chạy trên cổng 3308.
     set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3308/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+    set "SPRING_DATASOURCE_USERNAME=sms_app"
+    set "SPRING_DATASOURCE_PASSWORD=sms_dev_pw"
     goto :db_ready
 )
 
@@ -20,6 +22,8 @@ netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo [MySQL] Phát hiện MySQL Database cục bộ đang chạy trên cổng 3306.
     set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+    set "SPRING_DATASOURCE_USERNAME=root"
+    set "SPRING_DATASOURCE_PASSWORD="
     goto :db_ready
 )
 
@@ -30,6 +34,8 @@ netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo [MySQL] Khởi động MySQL80 thành công trên cổng 3306.
     set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+    set "SPRING_DATASOURCE_USERNAME=root"
+    set "SPRING_DATASOURCE_PASSWORD="
     goto :db_ready
 )
 
@@ -40,6 +46,8 @@ if %ERRORLEVEL% NEQ 0 (
     docker compose up -d db >nul 2>&1
 )
 set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3308/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
+set "SPRING_DATASOURCE_USERNAME=sms_app"
+set "SPRING_DATASOURCE_PASSWORD=sms_dev_pw"
 
 :db_ready
 echo [MySQL] Sẵn sàng kết nối cơ sở dữ liệu.

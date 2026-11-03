@@ -116,6 +116,15 @@ cloudflared.exe
 *.ico
 report/assets/
 
+# Office & Report documents (Excel, Word, PDF, lock files)
+*.xlsx
+*.xls
+*.docx
+*.doc
+*.pdf
+~$*
+docs/
+
 # Agent metadata
 .claude/
 .agents/

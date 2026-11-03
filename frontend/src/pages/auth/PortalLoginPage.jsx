@@ -80,7 +80,7 @@ const PORTAL_CONFIG = {
     userLabel: 'Tài khoản Cán bộ Đào tạo',
     userPlaceholder: 'VD: daotao',
     defaultUser: 'daotao',
-    defaultPass: 'Daotao@2026!',
+    defaultPass: '123456',
     rejectMsg: 'Từ chối truy cập: Tài khoản không thuộc phân hệ Cán bộ Đào tạo! Vui lòng đăng nhập đúng cổng.',
     features: [
       'Quản lý hồ sơ sinh viên, khung chương trình đào tạo & khối kiến thức',
@@ -238,12 +238,17 @@ export default function PortalLoginPage({ portalType = 'student' }) {
       const res = await authService.login({ username, password });
       const data = res.data.data;
 
-      // STRICT ROLE ENFORCEMENT: Reject if user does not match the portal's designated role!
+      // Smart Role Routing: Chuyển hướng thông minh đến đúng cổng nếu người dùng đăng nhập chéo cổng
+      let targetPath = config.redirectPath;
       const allowedRoles = Array.isArray(config.role) ? config.role : [config.role];
       if (!allowedRoles.includes(data.role)) {
-        toast.error(config.rejectMsg);
-        setLoading(false);
-        return;
+        if (data.role === 'ADMIN') targetPath = '/admin/dashboard';
+        else if (data.role === 'ACADEMIC_AFFAIRS' || data.role === 'ACADEMIC_STAFF') targetPath = '/academic/dashboard';
+        else if (data.role === 'LECTURER') targetPath = '/lecturer/dashboard';
+        else if (data.role === 'STUDENT') targetPath = '/student/dashboard';
+        else if (data.role === 'EXAMINATION_OFFICER') targetPath = '/exam/rooms';
+
+        toast.info(`Tài khoản thuộc phân hệ ${data.role}. Đang chuyển đến đúng cổng...`);
       }
 
       login(data.token, {
@@ -255,14 +260,10 @@ export default function PortalLoginPage({ portalType = 'student' }) {
       });
 
       toast.success(`Đăng nhập thành công! Xin chào ${data.username}`);
-      // BR-SEC-01: tài khoản dùng mật khẩu tạm/được Admin cấp lại buộc phải đổi
-      // mật khẩu. Không điều hướng riêng nữa — modal buộc đổi mật khẩu (mount ở
-      // Layout) sẽ tự bật và khoá điều hướng cho đến khi đổi xong, áp dụng cho
-      // mọi phân hệ (kể cả Admin, vốn không có trang hồ sơ).
       if (data.mustChangePassword) {
         toast.warning('Bạn đang dùng mật khẩu tạm/được cấp lại. Vui lòng đổi mật khẩu ngay để tiếp tục.');
       }
-      navigate(config.redirectPath);
+      navigate(targetPath);
     } catch (err) {
       const msg = err.response?.data?.message || 'Đăng nhập thất bại. Kiểm tra lại thông tin tài khoản, mật khẩu!';
       toast.error(msg);
@@ -409,7 +410,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
             marginBottom: '20px', fontSize: '0.8rem',
           }}>
             <span style={{ color: 'var(--text-muted)' }}>
-              Tài khoản mẫu: <strong style={{ color: 'var(--text-secondary)' }}>{config.defaultUser}</strong>{portalType === 'admin' && <> / <strong style={{ color: 'var(--text-secondary)' }}>staff</strong></>}
+              Tài khoản mẫu: <strong style={{ color: 'var(--text-secondary)' }}>{config.defaultUser}</strong>{portalType === 'academic' && <> / <strong style={{ color: 'var(--text-secondary)' }}>staff</strong></>}
             </span>
             <button
               type="button"

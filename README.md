@@ -2,18 +2,17 @@
   <img src="https://img.icons8.com/color/120/graduation-cap.png" alt="SMS Logo" width="100" />
   <h1>Hệ Thống Quản Lý Đào Tạo & Sinh Viên (SMS / UAMS)</h1>
   <p><strong>University Academic & Student Management System — Đại học theo học chế tín chỉ</strong></p>
-  <p>Giải pháp toàn diện quản lý khung chương trình đào tạo, xếp thời khóa biểu thông minh, đăng ký tín chỉ chịu tải cao với Redis Distributed Lock, sổ điểm điện tử 4 thành phần tích hợp khóa sổ 7 ngày, kiểm soát học phí và tự động xét tốt nghiệp.</p>
+  <p>Giải pháp toàn diện quản trị chương trình đào tạo, xếp thời khóa biểu ma trận, đăng ký tín chỉ chịu tải cao với Redis Distributed Lock, sổ điểm điện tử 4 thành phần khóa sổ 7 ngày, phân quyền Giáo vụ Khoa linh hoạt, phúc khảo điểm thi trực tuyến và tự động xét tốt nghiệp Thông tư 08.</p>
 
 [![Java](https://img.shields.io/badge/Java-23_LTS-ED8B00?style=flat-square&logo=openjdk&logoColor=white)](backend/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.6-6DB33F?style=flat-square&logo=spring-boot&logoColor=white)](backend/)
 [![React](https://img.shields.io/badge/React-19.2-20232A?style=flat-square&logo=react&logoColor=61DAFB)](frontend/)
 [![Vite](https://img.shields.io/badge/Vite-8.2-646CFF?style=flat-square&logo=vite&logoColor=white)](frontend/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](frontend/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)](database/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0_(39_Tables)-4479A1?style=flat-square&logo=mysql&logoColor=white)](database/)
 [![Redis](https://img.shields.io/badge/Redis-7_Alpine-DC382D?style=flat-square&logo=redis&logoColor=white)](docker-compose.yml)
-[![Nginx](https://img.shields.io/badge/Nginx-Reverse_Proxy-009639?style=flat-square&logo=nginx&logoColor=white)](frontend/nginx.conf)
-[![Docker](https://img.shields.io/badge/Docker-Cluster_Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](docker-compose.cluster.yml)
-[![Tests](https://img.shields.io/badge/Tests-288_Backend_|_80_Frontend_|_70+_E2E-success?style=flat-square&logo=checkmarx&logoColor=white)](tests/)
+[![Draw.io](https://img.shields.io/badge/UML_2.5-82_Draw.io_Tabs-F08705?style=flat-square&logo=diagramsdotnet&logoColor=white)](drawio/)
+[![Tests](https://img.shields.io/badge/Tests-297_Backend_|_89_Frontend_|_65_E2E-success?style=flat-square&logo=checkmarx&logoColor=white)](tests/)
 
 </div>
 
@@ -24,32 +23,35 @@
 1. [Tổng quan hệ thống & Điểm nhấn cốt lõi](#-tổng-quan-hệ-thống--điểm-nhấn-cốt-lõi)
 2. [Kiến trúc công nghệ & Mô hình phân tầng](#-kiến-trúc-công-nghệ--mô-hình-phân-tầng)
 3. [Các hạt nhân nghiệp vụ chuyên sâu (Business Engines)](#-các-hạt-nhân-nghiệp-vụ-chuyên-sâu-business-engines)
-4. [Mô hình 5 Phân hệ & Vai trò người dùng (RBAC)](#-mô-hình-5-phân-hệ--vai-trò-người-dùng-rbac)
+4. [Mô hình 6 Phân hệ & Ma trận phân quyền (RBAC)](#-mô-hình-6-phân-hệ--ma-trận-phân-quyền-rbac)
 5. [Cấu trúc mã nguồn & Thư mục dự án](#-cấu-trúc-mã-nguồn--thư-mục-dự-án)
-6. [Hướng dẫn cài đặt & Khởi chạy nhanh](#-hướng-dẫn-cài-đặt--khởi-chạy-nhanh)
-7. [Tài khoản kiểm thử nghiệm thu (Credentials)](#-tài-khoản-kiểm-thử-nghiệm-thu-credentials)
-8. [Bộ kiểm thử tự động & Đảm bảo chất lượng (QA Center)](#-bộ-kiểm-thử-tự-động--đảm-bảo-chất-lượng-qa-center)
-9. [Bộ hồ sơ tài liệu đặc tả](#-bộ-hồ-sơ-tài-liệu-đặc-tả)
+6. [Hệ thống 82 Sơ đồ UML Draw.io Suite](#-hệ-thống-82-sơ-đồ-uml-drawio-suite)
+7. [Hướng dẫn cài đặt & Khởi chạy nhanh](#-hướng-dẫn-cài-đặt--khởi-chạy-nhanh)
+8. [Tài khoản kiểm thử nghiệm thu (Credentials)](#-tài-khoản-kiểm-thử-nghiệm-thu-credentials)
+9. [Bộ kiểm thử tự động & Đảm bảo chất lượng (QA Center)](#-bộ-kiểm-thử-tự-động--đảm-bảo-chất-lượng-qa-center)
+10. [Bộ hồ sơ tài liệu đặc tả](#-bộ-hồ-sơ-tài-liệu-đặc-tả)
 
 ---
 
 ## 📌 Tổng quan hệ thống & Điểm nhấn cốt lõi
 
-Hệ thống **SMS (Student Management System / UAMS)** được nghiên cứu và xây dựng nhằm chuẩn hóa và tự động hóa toàn bộ quy trình quản trị đào tạo đại học theo học chế tín chỉ (tuân thủ **Thông tư 08/2021/TT-BGDĐT** của Bộ Giáo dục & Đào tạo): từ quản trị danh mục học thuật, tổ chức học kỳ, xếp thời khóa biểu và phòng thi, mở cổng đăng ký tín chỉ chịu tải cao, sổ điểm điện tử đa cấp, quản trị tài chính học phí đến xét cảnh báo học vụ và tự động công nhận tốt nghiệp.
+Hệ thống **SMS (Student Management System / UAMS)** được nghiên cứu và xây dựng nhằm chuẩn hóa và tự động hóa toàn diện quy trình quản trị đào tạo đại học theo học chế tín chỉ (tuân thủ **Thông tư 08/2021/TT-BGDĐT** của Bộ Giáo dục & Đào tạo): từ quản trị danh mục học thuật, tổ chức học kỳ, mở lớp học phần, xếp thời khóa biểu và ca thi, cổng đăng ký tín chỉ chịu tải cao, sổ điểm điện tử 4 thành phần khóa sổ 7 ngày, tiếp nhận phúc khảo trực tuyến, quản trị tài chính học phí đến xét cảnh báo học vụ và tự động công nhận tốt nghiệp.
 
-### 🌟 6 Giá trị đột phá của hệ thống:
+### 🌟 7 Điểm sáng công nghệ & Nghiệp vụ nổi bật:
 
 1. **Khung CTĐT chuẩn 5 khối kiến thức & Đồ thị tiên quyết DAG:**  
    Mô hình hóa chương trình đào tạo thành đồ thị có hướng không chu trình (Directed Acyclic Graph - DAG). Giải thuật duyệt đồ thị kiểm soát chặt chẽ điều kiện tiên quyết, học trước, song hành, tương đương và loại trừ triệt để chu trình phụ thuộc vòng kín (Circular Dependency).
 2. **Đăng ký tín chỉ chịu tải cực hạn (High-Concurrency Enrollment Engine):**  
-   Kết hợp 3 tầng phòng thủ kiên cố: Khóa phân tán Redis (`RedisLockService`), bộ đếm nguyên tử (`Atomic Capacity Counter`) trên Redis cache và khóa bi quan CSDL (`PESSIMISTIC_WRITE`). Cam kết dữ liệu toàn vẹn tuyệt đối khi **600 sinh viên đồng thời tranh chấp ghi danh trong 1 giây**, triệt tiêu 100% hiện tượng vượt quá sĩ số (`enrolled <= max_students`).
-3. **Sổ điểm điện tử 4 thành phần & Cửa sổ ân hạn 7 ngày:**  
-   Nhập điểm trực tiếp hoặc Import từ tệp Excel chuẩn tỷ lệ: **`CC1 5% · CC2 5% · GK 30% · CK 60%`**. Tự động tổng kết và quy đổi thang điểm (Hệ 10 ➔ Hệ 4 ➔ Điểm chữ). Sổ điểm tự động khóa bảo mật sau cửa sổ ân hạn 7 ngày. Sau 7 ngày, mọi điều chỉnh điểm bắt buộc thông qua quy trình đề xuất sửa điểm 3 cấp và lưu vết trong nhật ký kiểm toán (`grade_audit_logs`).
-4. **Điểm danh trực tiếp thời gian thực bằng mã PIN bảo mật:**  
-   Giảng viên chủ động kích hoạt phiên điểm danh tại lớp với mã PIN ngẫu nhiên 6 chữ số và giới hạn thời gian mở phiên (ví dụ 10–15 phút). Sinh viên đăng nhập portal nhập mã PIN để xác nhận có mặt; hệ thống ngăn chặn điểm danh hộ và cập nhật tỷ lệ chuyên cần tức thì.
-5. **Kiểm soát tài chính học phí & Thực thi Quy tắc B (Financial Hold):**  
-   Tự động tính học phí theo đơn giá tín chỉ và chính sách miễn giảm; tính học phí lớp riêng theo thang sĩ số linh hoạt. Tự động áp dụng **Rule B (Financial Hold)** chặn quyền truy cập cổng đăng ký học phần đối với sinh viên còn nợ học phí quá hạn từ các kỳ học trước.
-6. **Động cơ xét tốt nghiệp tự động (Degree Audit Engine) & Thuật toán "Best-Grade":**  
+   Kết hợp 3 tầng phòng thủ: Khóa phân tán Redis (`RedisLockService`), bộ đếm nguyên tử (`Atomic Capacity Counter`) trên Redis cache và câu lệnh SQL nguyên tử / khóa bi quan (`PESSIMISTIC_WRITE`). Cam kết dữ liệu toàn vẹn tuyệt đối khi **hàng trăm sinh viên đồng thời tranh chấp ghi danh trong 1 giây**, triệt tiêu 100% hiện tượng vượt quá sĩ số (`enrolled <= max_students`).
+3. **Khóa lạc quan chống xung đột dữ liệu học vụ (`@Version` Optimistic Locking):**  
+   Áp dụng cơ chế `@Version` trên các thực thể cốt lõi (`CourseSection`, `Subject`, `Schedule`) kết hợp bắt lỗi `OptimisticLockException`. Ngăn chặn triệt để hiện tượng ghi đè mất mát dữ liệu (Lost Update) khi nhiều cán bộ đào tạo cùng điều chỉnh sĩ số hoặc lịch học cùng thời điểm.
+4. **Phân quyền Giáo vụ Khoa chuyên trách (Faculty-Scoped RBAC):**  
+   Tách bạch vai trò Cán bộ Đào tạo cấp Trường (`ACADEMIC_AFFAIRS` - toàn trường) và Giáo vụ Khoa (`ACADEMIC_STAFF` - gắn với `department_id`). Giáo vụ Khoa chỉ có quyền mở lớp, quản lý môn học, lớp sinh hoạt và duyệt sửa điểm thuộc phạm vi sinh viên/giảng viên của Khoa mình phụ trách.
+5. **Sổ điểm điện tử 4 thành phần & Quy trình Đính chính điểm 3 cấp:**  
+   Nhập điểm trực tiếp hoặc Import từ tệp Excel chuẩn tỷ lệ: **`CC1 5% · CC2 5% · GK 30% · CK 60%`**. Tự động tổng kết và quy đổi thang điểm (Hệ 10 ➔ Hệ 4 ➔ Điểm chữ). Sổ điểm tự động khóa bảo mật sau cửa sổ ân hạn 7 ngày. Sau 7 ngày, mọi điều chỉnh điểm bắt buộc thông qua quy trình phê duyệt 3 cấp (Giảng viên ➜ Khoa ➜ P. Đào tạo) và lưu vết bất biến trong nhật ký kiểm toán (`grade_audit_logs`).
+6. **Tiếp nhận & Xử lý Phúc khảo điểm thi trực tuyến (`GradeAppealsPage`):**  
+   Sinh viên chủ động nộp đơn phúc khảo trực tiếp trên cổng cá nhân; Cán bộ Khảo thí thẩm định đơn, chấm lại bài thi, cập nhật điểm đính chính và tự động đồng bộ sang bảng điểm học kỳ của sinh viên.
+7. **Động cơ xét tốt nghiệp tự động (Degree Audit Engine) & Thuật toán "Best-Grade":**  
    Tự động rà soát tiến độ hoàn thành 5 khối kiến thức, tổng số tín chỉ tích lũy (130–135 TC), điểm trung bình tích lũy CPA ≥ 2.00, điểm rèn luyện và chứng chỉ chuẩn đầu ra. Thuật toán **Best-Grade** tự động nhận diện các môn học lại/học cải thiện và chỉ lấy điểm cao nhất đưa vào CPA tích lũy.
 
 ---
@@ -62,7 +64,7 @@ Hệ thống được thiết kế theo mô hình **3-Tier Layered Architecture*
 flowchart TD
     subgraph ClientLayer ["1. TẦNG TRÌNH DIỄN (CLIENT PRESENTATION TIER)"]
         Browser["🌐 Trình duyệt Web SPA (React 19 + Vite 8.2)"]
-        Mobile["📱 Thiết bị di động (Responsive Glassmorphism UI)"]
+        Mobile["📱 Thiết bị di động (Responsive Apple & Aurora Glassmorphism UI)"]
         LoadTestUI["📊 Concurrency Dashboard (Web Realtime Port 5050)"]
     end
 
@@ -79,6 +81,7 @@ flowchart TD
     subgraph ServiceCore ["4. CÁC HẠT NHÂN NGHIỆP VỤ (BUSINESS ENGINE CORE)"]
         DAGEngine["🔗 PrerequisiteGraphEngine (DAG)"]
         LockService["🔒 RedisLockService (Distributed Lock)"]
+        OptLock["⚡ OptimisticLockingEngine (@Version)"]
         RuleEngine["⚙️ Cross-Cutting Rule Engine (Rules A, B, C, D)"]
         AuditEngine["🎓 DegreeAuditEngine (Best-Grade Algorithm)"]
     end
@@ -102,12 +105,12 @@ flowchart TD
 
 | Tầng kiến trúc | Công nghệ sử dụng | Phiên bản | Vai trò & Đặc tính kỹ thuật nổi bật |
 | :--- | :--- | :--- | :--- |
-| **Frontend SPA** | React, Vite, Tailwind CSS, Zustand | React 19.2, Vite 8.2, Tailwind 3.4, Zustand 5 | Giao diện hiện đại Apple Glassmorphism & Aurora UI, Dark/Light Mode, Native Fetch Client (Zero External Axios Dep). |
-| **Backend API** | Java LTS, Spring Boot, Spring Security | Java 23, Spring Boot 3.5.6, JWT 0.12.6 | 33 REST Controllers, 20+ Services, xác thực 2 lớp Access/Refresh Token, phân quyền RBAC 5 vai trò. |
+| **Frontend SPA** | React, Vite, Tailwind CSS, Zustand | React 19.2, Vite 8.2, Tailwind 3.4, Zustand 5 | Giao diện Apple Glassmorphism & Aurora UI, Dark/Light Mode, Native Fetch Client (Zero External Axios Dep). |
+| **Backend API** | Java LTS, Spring Boot, Spring Security | Java 23, Spring Boot 3.5.6, JWT 0.12.6 | 33 REST Controllers, 20+ Services, xác thực 2 lớp Access/Refresh Token, phân quyền RBAC 6 vai trò. |
 | **High Concurrency** | Redis, Lettuce Pool, Commons Pool 2 | Redis 7-alpine, Lettuce 6.x | Bộ nhớ đệm phân tán, cơ chế khóa phân tán Redis Lock cho ghi danh môn học, chống quá tải sĩ số. |
 | **Cơ sở dữ liệu** | MySQL Server, InnoDB Engine, HikariCP | MySQL 8.0, HikariCP 5.1 | 39 bảng quan hệ chuẩn 3NF, 2 Database Views tối ưu N+1, `utf8mb4_unicode_ci` hỗ trợ tiếng Việt chuẩn xác. |
 | **Điều phối tải** | Nginx Reverse Proxy & HTTP Load Balancing | Nginx 1.25 Alpine | Điều hướng tải Round-Robin qua cụm 3 Backend Replicas, phục vụ tài nguyên tĩnh SPA. |
-| **Bộ kiểm thử QA** | JUnit 5, Mockito, Vitest, Node.js E2E | JUnit 5, Mockito 5, Vitest 5.0 | 288 Backend tests, 80 Frontend tests, 70+ E2E tests, bài test 600 SV đồng thời, kiểm tra lỗ hổng OWASP. |
+| **Bộ kiểm thử QA** | JUnit 5, Mockito, Vitest, Node.js E2E | JUnit 5, Mockito 5, Vitest 5.0 | 297 Backend tests, 89 Frontend tests, 65+ E2E tests, bài test 600 SV đồng thời, kiểm tra lỗ hổng OWASP. |
 
 ---
 
@@ -132,7 +135,7 @@ flowchart TD
     CheckPrereq -->|Thỏa mãn| AcquireLock["4. Đạt khóa phân tán Redis\n(RedisLockService)"]
     AcquireLock --> CheckRedisSlot{"5. Sĩ số lớp còn chỗ trống?\n(Redis Atomic Capacity Counter)"}
     CheckRedisSlot -->|Đã đầy lớp| RejectFull["❌ Từ chối: Lớp học phần đã kín sĩ số"]
-    CheckRedisSlot -->|Còn chỗ| DBLock["6. Khóa bi quan CSDL\n(PESSIMISTIC_WRITE trên course_sections)"]
+    CheckRedisSlot -->|Còn chỗ| DBLock["6. Khóa nguyên tử CSDL\n(Atomic Increment & Optimistic Lock)"]
     DBLock --> CheckConflict{"7. Trùng lịch học / Phòng học?\n(Rule C: Conflict Detection)"}
     CheckConflict -->|Trùng lịch| RejectConflict["❌ Từ chối: Xung đột thời khóa biểu hoặc phòng"]
     CheckConflict -->|Hợp lệ| Commit["✅ Ghi nhận Enrollment thành công & Giải phóng khóa"]
@@ -151,13 +154,14 @@ flowchart TD
 
 ---
 
-## 👥 Mô hình 5 Phân hệ & Vai trò người dùng (RBAC)
+## 👥 Mô hình 6 Phân hệ & Ma trận phân quyền (RBAC)
 
 ```mermaid
 flowchart LR
-    subgraph Admins ["1. P. Đào Tạo & Quản Trị"]
+    subgraph Management ["1. Cán Bộ Quản Trị & Đào Tạo"]
         Admin["🧑‍💼 Quản Trị Viên (Admin)"]
-        AA["🏛️ Chuyên Viên Học Vụ"]
+        AA["🏛️ P. Đào Tạo (Toàn trường)"]
+        AS["🏢 Giáo Vụ Khoa (Faculty-scoped)"]
     end
     subgraph Faculty ["2. Giảng Viên & Khảo Thí"]
         Lecturer["👨‍🏫 Giảng Viên"]
@@ -167,49 +171,50 @@ flowchart LR
         Student["🎓 Sinh Viên"]
     end
 
-    Admin -->|Quản trị CTĐT & Mở lớp| CoursePool["📚 Lớp Học Phần & TKB"]
-    AA -->|Cảnh báo học vụ & Xét tốt nghiệp| DegreeAudit["🎓 Tốt Nghiệp & Học Vụ"]
+    Admin -->|Quản trị nhân sự & Cấu hình| Management
+    AA -->|Phê duyệt toàn trường & Tốt nghiệp| DegreeAudit["🎓 Tốt Nghiệp & Học Vụ"]
+    AS -->|Quản lý lớp HP & Môn theo Khoa| CoursePool["📚 Lớp Học Phần & TKB"]
     CoursePool -->|Mở cổng đăng ký| Student
-    Student -->|Đăng ký tín chỉ| CoursePool
+    Student -->|Đăng ký tín chỉ & Phúc khảo| CoursePool
     Lecturer -->|Điểm danh PIN & Nhập điểm| GradeBook["📊 Sổ Điểm Điện Tử"]
-    ExamOfficer -->|Quản lý phòng thi & Điểm thi| GradeBook
+    ExamOfficer -->|Chia phòng thi & Điểm thi| GradeBook
     GradeBook -->|Tính GPA / CPA tự động| Student
-    GradeBook -->|Rà soát điều kiện học vụ| AA
+    GradeBook -->|Thẩm định sửa điểm 3 cấp| AS
+    AS -->|Trình duyệt cấp 2| AA
 ```
 
-### 1. Phân hệ Quản trị viên (Admin)
-* Quản lý cây cơ cấu học thuật toàn diện: Khoa ➜ Ngành ➜ Khóa ➜ Lớp hành chính ➜ Môn học.
-* Thiết lập khung chương trình đào tạo chuẩn 5 khối kiến thức và cây môn tiên quyết (DAG).
-* Mở lớp học phần, điều phối số lượng sinh viên, xếp thời khóa biểu và phân công giảng viên.
-* **Quản trị Nhân sự & Chuyên viên Đào tạo (`StaffsPage`):** Quản lý hồ sơ cán bộ học vụ (`ACADEMIC_STAFF`, `ACADEMIC_AFFAIRS`, `EXAMINATION_OFFICER`), cấp mới tài khoản, chỉnh sửa thông tin, phân quyền chức danh và khóa/mở khóa tài khoản.
-* **Cấp lại mật khẩu hàng loạt (Bulk Password Reset):** Duyệt yêu cầu và đặt lại mật khẩu cho nhiều tài khoản sinh viên/giảng viên/cán bộ cùng lúc chỉ với 1 thao tác, tự động áp đặt cờ bắt buộc đổi mật khẩu (`must_change_password`) ở lần đăng nhập tiếp theo.
-* Phân quyền tài khoản bảo mật 2 lớp (RBAC), cấu hình tham số hệ thống động và sao lưu CSDL an toàn.
+### Chi tiết 6 phân hệ người dùng:
 
-### 2. Phân hệ Chuyên viên Học vụ (Academic Affairs)
-* **Academic Dashboard:** Bảng theo dõi tổng quan sinh viên theo tình trạng, phân tích phổ điểm và tiến độ học tập toàn trường.
-* Rà soát tự động cảnh báo học vụ theo từng kỳ (Mức 1: GPA < 1.0, Mức 2: 2 kỳ liên tiếp < 1.1, Buộc thôi học).
-* Vận hành quy trình xét tốt nghiệp tự động, xuất quyết định công nhận và in danh sách sinh viên đủ điều kiện tốt nghiệp.
-* Quản lý bàn thu ngân học phí: theo dõi hóa đơn, ghi nhận thanh toán tiền mặt/chuyển khoản, gia hạn nợ học phí và mở lớp học riêng.
+1. **Phân hệ Quản trị viên (Admin):**  
+   Toàn quyền quản trị cơ cấu hệ thống, bảo mật RBAC, quản trị nhân sự đào tạo (`StaffsPage`), cấp lại mật khẩu hàng loạt (`Bulk Password Reset` theo định dạng DOB `ddmmyyyya@` + cờ bắt buộc đổi mật khẩu), giám sát nhật ký kiểm toán hệ thống (`Security Audit Logs`).
+2. **Phân hệ Cán bộ Phòng Đào tạo (Academic Affairs - Cấp Trường):**  
+   Điều phối kế hoạch đào tạo toàn trường, phê duyệt cuối cùng quy trình sửa điểm sau khóa sổ (Cấp 2), vận hành thuật toán xét tốt nghiệp tự động Thông tư 08, quản lý bàn thu ngân học phí và áp dụng chế tài nợ học phí (Rule B).
+3. **Phân hệ Giáo vụ Khoa (Academic Staff - Phân quyền theo Khoa):**  
+   Quản lý danh mục môn học, mở lớp học phần, xếp thời khóa biểu và quản lý lớp sinh hoạt thuộc Khoa mình phụ trách (`department_id`). Thẩm định bước 1 (Cấp 1) các đề xuất đính chính điểm của giảng viên trong Khoa trước khi trình Phòng Đào tạo.
+4. **Phân hệ Cán bộ Khảo thí (Examination Officer):**  
+   Tổ chức đợt thi, phân bổ phòng thi, ca thi, đánh số báo danh tự động; nhập điểm thi kết thúc học phần độc lập; tiếp nhận và giải quyết đơn phúc khảo điểm thi trực tuyến của sinh viên.
+5. **Phân hệ Giảng viên (Lecturer):**  
+   Theo dõi lịch giảng dạy ma trận tuần thời gian thực, điểm danh trực tiếp qua mã PIN 6 số ngẫu nhiên, nhập điểm 4 thành phần (trực tiếp hoặc Import Excel), khóa sổ điểm (cửa sổ 7 ngày) và tạo yêu cầu sửa điểm đính kèm minh chứng.
+6. **Phân hệ Sinh viên (Student):**  
+   Cổng đăng ký học phần thông minh (chống trùng lịch, kiểm tra tiên quyết, nợ học phí), gợi ý lịch học tự động (Smart Schedule), tra cứu bảng điểm CPA/GPA, bản đồ tiến độ CTĐT (Roadmap), điểm danh PIN và gửi đơn phúc khảo bài thi trực tuyến.
 
-### 3. Phân hệ Giảng viên (Lecturer)
-* Tra cứu lịch giảng dạy dạng tuần trực quan theo thời gian thực.
-* Quản lý danh sách sinh viên lớp học phần, xuất danh sách điểm danh ra tệp Excel.
-* Điểm danh trực tiếp tại lớp học bằng mã PIN ngẫu nhiên 6 chữ số có giới hạn thời gian mở phiên.
-* Nhập điểm thành phần trực tiếp hoặc Import từ tệp Excel mẫu (`CC1 5% · CC2 5% · GK 30% · CK 60%`).
-* Khóa sổ điểm học phần (ân hạn 7 ngày); sau 7 ngày gửi đề xuất sửa điểm kèm lý do và minh chứng phê duyệt qua hệ thống.
+---
 
-### 4. Phân hệ Cán bộ Khảo thí (Examination Officer)
-* Quản lý danh mục kỳ thi (chính thức, thi phụ, thi lại), phân bổ phòng thi, ca thi và đánh số báo danh tự động.
-* Nhập điểm thi kết thúc học phần độc lập, đảm bảo tính khách quan của kỳ thi.
-* Tiếp nhận và xử lý đơn phúc khảo bài thi của sinh viên theo quy trình thẩm định đa cấp.
+## 📊 Hệ thống 82 Sơ đồ UML Draw.io Suite
 
-### 5. Phân hệ Sinh viên (Student)
-* Cổng đăng ký học phần thông minh: Tự động kiểm tra điều kiện tiên quyết, giới hạn tín chỉ (10–24 TC), ngăn ngừa 100% trùng lịch học.
-* **Gợi ý lịch học thông minh (Smart Schedule):** Thuật toán tự động tìm kiếm tổ hợp lớp học phần tối ưu không bị xung đột thời gian.
-* Tra cứu Thời khóa biểu tuần dạng ma trận Grid trực quan, hỗ trợ lọc theo học kỳ.
-* Tra cứu Bảng điểm học tập chi tiết, tự động quy đổi thang điểm (Hệ 10 ➔ Hệ 4 ➔ Điểm chữ), theo dõi CPA tích lũy.
-* Bản đồ lộ trình học tập (**Curriculum Roadmap**): Theo dõi trực quan tiến độ hoàn thành từng khối kiến thức theo khung CTĐT.
-* Điểm danh tức thì bằng mã PIN do giảng viên cung cấp, nộp đơn phúc khảo bài thi và gửi yêu cầu dịch vụ sinh viên một cửa.
+Toàn bộ mô hình phân tích và thiết kế hệ thống được xây dựng đồng bộ theo chuẩn **OMG UML 2.5** và phân tích **BCE (Boundary - Control - Entity)** với quy chuẩn thẩm mỹ **Academic Monochrome High-Contrast** (nền trắng tinh khiết, viền đen 1.5px, zero overlap, tối ưu in ấn và bảo vệ đồ án).
+
+Bạn có thể sử dụng **Extension Draw.io trên VS Code / Antigravity IDE** (`hediet.vscode-drawio`) để mở, xem trực quan và chuyển đổi dễ dàng giữa các tab ở thanh dưới màn hình:
+
+| STT | Tập sơ đồ Master (.drawio) | Chuẩn mô hình hóa | Số Tabs | Nội dung mô tả chi tiết |
+|:---:|:---|:---|:---:|:---|
+| **1** | [UseCase_Diagrams.drawio](drawio/UseCase_Diagrams.drawio) | UML 2.5 Use Case Diagram | **5 tabs** | 5 phân hệ ca sử dụng: Tổng quan toàn trường, Quản trị viên, Cán bộ Đào tạo, Giảng viên, Sinh viên. Phân định ranh giới hệ thống chuẩn mực, đầy đủ quan hệ `«include»` và `«extend»`. |
+| **2** | [ERD_Diagrams.drawio](drawio/ERD_Diagrams.drawio) | OMG UML / Relational ERD | **8 tabs** | Lược đồ Thực thể Quan hệ CSDL 2 tầng: 1 Tab Sơ đồ Tổng quan Thực thể Cốt lõi + 7 Tabs Lược đồ Phân hệ chi tiết mô hình hóa toàn bộ **39 bảng quan hệ** CSDL MySQL 8. |
+| **3** | [Activity_Diagrams.drawio](drawio/Activity_Diagrams.drawio) | UML 2.5 Activity Diagram | **23 tabs** | 23 biểu đồ hoạt động phân làn (Swimlanes): Làn Tác nhân (Actor Lane) và Làn Hệ thống (System Service & DB Lane), đầy đủ điểm rẽ nhánh quyết định và xử lý ngoại lệ. |
+| **4** | [AnalysisClass_BCE_Diagrams.drawio](drawio/AnalysisClass_BCE_Diagrams.drawio) | Boundary – Control – Entity | **23 tabs** | 23 biểu đồ phân tích kiến trúc BCE: Lớp Biên (Boundary UI), Lớp Điều khiển (Controller & Service), Lớp Thực thể (JPA Entity & DTO), khớp 1-1 với cấu trúc mã nguồn. |
+| **5** | [Sequence_Diagrams.drawio](drawio/Sequence_Diagrams.drawio) | UML 2.5 Sequence Diagram | **23 tabs** | 23 biểu đồ tuần tự cho 23 nghiệp vụ cốt lõi theo 6 đường sinh mệnh (Lifelines): `Tác nhân` ➜ `React SPA UI` ➜ `REST Controller` ➜ `Business Service` ➜ `JPA Repository` ➜ `CSDL MySQL`. |
+
+> 💡 **Tự động hóa hoàn toàn:** Toàn bộ 82 sơ đồ được tự động sinh bằng bộ kịch bản Python tại [drawio/scripts/](drawio/scripts/) và được xuất sang ảnh nét cao (Scale 2x, 300 DPI) bằng headless CLI `draw.io.exe`.
 
 ---
 
@@ -219,34 +224,29 @@ flowchart LR
 DoAnChuyenNganh/
 ├── backend/                       # Máy chủ dịch vụ Spring Boot 3 (REST API & Business Engines)
 │   ├── src/main/java/com/sms/     #   33 Controllers, 20+ Services, 41 JPA Entities, DTOs, Security
-│   ├── src/test/java/com/sms/     #   43 Test Classes, 288 Unit & Integration Tests (JUnit 5 + Mockito)
+│   ├── src/test/java/com/sms/     #   43 Test Classes, 297 Unit & Integration Tests (JUnit 5 + Mockito)
 │   ├── pom.xml                    #   Cấu hình Maven (Java 23, Spring Boot 3.5.6, Redis, JWT, Apache POI)
 │   └── README.md                  #   👉 Cẩm nang kiến trúc Backend, REST API & Hướng dẫn phát triển
 ├── frontend/                      # Cổng thông tin giao diện người dùng React 19 + Vite SPA
 │   ├── src/components/            #   Layouts, Navigation, Modals, Shared Glassmorphism Components
 │   ├── src/pages/                 #   Màn hình theo vai trò (Admin, Staffs, Academic, Lecturer, Student, Auth)
 │   ├── src/services/              #   Native Fetch Client (Zero Dep), API routing, Zustand stores
-│   ├── src/tests/                 #   18 Test Files, 80 Component & Logic Tests tự động (Vitest)
+│   ├── src/tests/                 #   18 Test Files, 89 Component & Logic Tests tự động (Vitest)
 │   ├── nginx.conf                 #   Cấu hình Nginx Reverse Proxy & Static Host trong Docker
 │   ├── nginx.cluster.conf         #   Cấu hình Nginx Cân bằng tải Round-Robin cho cụm 3 Backends
 │   └── README.md                  #   👉 Cẩm nang phát triển Frontend, Aurora UI & Testing
 ├── database/                      # Cơ sở dữ liệu quan hệ MySQL 8.0 (InnoDB, utf8mb4_unicode_ci)
 │   ├── schema.sql                 #   Canonical DDL: Toàn bộ 39 bảng quan hệ, 2 Views, Composite Indexes
 │   ├── seed.sql                   #   Dữ liệu mẫu thực nghiệm: 3.000 SV, 80 GV, 28 ngành, 8 khoa, 5 kỳ
-│   ├── migrations/                #   Kho lưu trữ migration hợp nhất (consolidated_migrations.sql)
+│   ├── migrations/                #   Kho lưu trữ migration hợp nhất (V14__faculty_scoped_rbac, etc.)
 │   └── README.md                  #   👉 Cẩm nang thiết kế CSDL, 39 bảng, Database Views & Indexing
 ├── drawio/                        # Hệ thống sơ đồ phân tích thiết kế chuẩn OMG UML 2.5
-│   ├── *.drawio                   #   5 Bộ sơ đồ Master (76 tabs): UseCase, Sequence, Activity, BCE, ERD
+│   ├── *.drawio                   #   5 Bộ sơ đồ Master (82 tabs): UseCase, Sequence, Activity, BCE, ERD
 │   ├── scripts/                   #   Bộ công cụ Python tự động sinh và kiểm toán toàn vẹn XML sơ đồ
-│   └── README.md                  #   👉 Danh mục và hướng dẫn khai thác toàn bộ 76 tabs sơ đồ
-├── docs/                          # Hệ thống tài liệu đặc tả, căn cứ pháp lý & khảo sát thực trạng
-│   ├── minh-chung/                #   Hồ sơ khảo sát thực trạng ẩn danh (30 GV/Cán bộ + 150 SV K15-K17)
-│   │   ├── MinhChung_KhaoSat_ThucTrang.xlsx # Bảng dữ liệu thô và công thức tự động khớp 100% tỷ lệ
-│   │   └── README.md              #   Thuyết minh phương pháp luận khảo sát và đối soát số liệu
-│   └── README.md                  #   👉 Mục lục và chỉ dẫn toàn bộ bộ hồ sơ tài liệu dự án
+│   └── README.md                  #   👉 Danh mục và cẩm nang khai thác toàn bộ 82 tabs sơ đồ
 ├── tests/                         # Trung tâm kiểm thử tự động đa tầng (Automated Test Suite)
 │   ├── smoke/                     #   Kiểm thử khói (Sanity Gate - Fail Fast < 30s)
-│   ├── e2e/                       #   Kiểm thử hồi quy toàn diện 70+ Cases (RBAC, Điểm, Học phí, Lớp riêng)
+│   ├── e2e/                       #   Kiểm thử hồi quy toàn diện 65+ Cases (RBAC, Điểm, Học phí, Lớp riêng)
 │   ├── integration/               #   Kiểm thử tích hợp (Điểm danh PIN 6 số, Quy trình Import Excel)
 │   ├── performance/               #   Kiểm thử áp lực & Tải đồng thời 600 SV (Redis Distributed Lock)
 │   │   └── demo_100/              #   Visual Concurrency Load Test Dashboard (Port 5050)
@@ -343,17 +343,21 @@ share_internet.bat
 
 Mật khẩu mặc định cho toàn bộ các tài khoản thử nghiệm trên hệ thống: **`123456`**
 
-### 1. Phân hệ Cán bộ Quản trị, Đào tạo, Khảo thí & Giảng viên:
+### 1. Cán bộ Quản trị, Đào tạo, Khảo thí & Giảng viên:
 
 | Phân hệ / Vai trò | Tên đăng nhập | Họ và tên | Chức năng & Phạm vi quyền hạn |
 | :--- | :--- | :--- | :--- |
-| **Phòng Đào Tạo (Admin)** | `admin` | Quản Trị Hệ Thống | Toàn quyền cấu hình CTĐT, mở lớp, phân quyền người dùng, xếp TKB, sao lưu dữ liệu. |
-| **Chuyên viên Học vụ** | `academic_affairs` | Chuyên Viên Học Vụ | Cảnh báo học vụ, xét tốt nghiệp, quản lý bàn thu ngân học phí, mở lớp quy mô riêng. |
-| **Cán bộ Khảo thí** | `exam_officer` | Cán Bộ Khảo Thí | Quản lý kỳ thi, chia phòng thi, đánh số báo danh, nhập điểm thi, duyệt đơn phúc khảo. |
-| **Giảng Viên CNTT** | `gv_gv001` | PGS.TS. Trần Văn Long | Trưởng BM Công nghệ phần mềm, Khoa CNTT. Quản lý sổ điểm, điểm danh PIN, chốt điểm. |
+| **Quản trị hệ thống (Admin)** | `admin` | Nguyễn Hoàng Long | Toàn quyền quản trị tài khoản, cấu hình tham số, phân quyền, bulk reset mật khẩu. |
+| **Quản trị kỹ thuật** | `admin_tech` | Lê Hoàng Nam | Quản trị hạ tầng kỹ thuật, nhật ký kiểm toán hệ thống. |
+| **P. Đào Tạo (Toàn trường)** | `daotao` | Nguyễn Văn Đào | Điều phối CTĐT, xếp TKB toàn trường, xét tốt nghiệp TT08, duyệt sửa điểm Cấp 2. |
+| **Giáo vụ Khoa CNTT** | `giaovu_cntt` | Lê Thị Thanh | Quản lý CTĐT, môn học, mở lớp HP và thẩm định sửa điểm Cấp 1 thuộc Khoa CNTT. |
+| **Giáo vụ Khoa Cơ khí & Ô tô** | `giaovu_oto` | Phạm Thanh Tùng | Quản lý mở lớp HP, xếp TKB và sinh viên thuộc Khoa Cơ khí & Ô tô. |
+| **Giáo vụ Khoa Kinh tế & QTKD** | `giaovu_kt` | Đặng Quốc Huy | Quản lý CTĐT và lớp học phần thuộc Khoa Kinh tế & QTKD. |
+| **Cán bộ Khảo thí** | `khaothi` | Trần Thị Khảo | Chia phòng thi, phân số báo danh, nhập điểm thi, giải quyết đơn phúc khảo điểm. |
+| **Giảng Viên CNTT** | `gv_gv001` | PGS.TS. Trần Văn Long | Trưởng BM CNPM, Khoa CNTT. Quản lý sổ điểm, điểm danh PIN, chốt điểm 7 ngày. |
 | **Giảng Viên QTKD** | `gv_gv006` | PGS.TS. Nguyễn Mạnh Cường | Khoa Kinh tế & QTKD. Quản lý điểm các học phần chuyên ngành kinh tế. |
 | **Giảng Viên ĐTVT** | `gv_gv011` | TS. Ngô Quang Đăng | Khoa KT Điện - Điện tử & TĐH. Quản lý lớp học phần thực hành mạch điện tử. |
-| *(45 Giảng viên)* | `gv_gv001` .. `gv_gv045` | 5 Giảng viên / Khoa × 9 Khoa | Điểm danh PIN 6 số, nhập điểm 4 thành phần trực tiếp hoặc Import Excel, chốt sổ 7 ngày. |
+| *(45 Giảng viên)* | `gv_gv001` .. `gv_gv045` | 5 Giảng viên / Khoa × 9 Khoa | Điểm danh PIN 6 số, nhập điểm 4 thành phần trực tiếp hoặc Import Excel. |
 
 ### 2. Sinh viên đại diện các Khóa & Ngành đào tạo:
 
@@ -389,10 +393,10 @@ node tests/run_all_tests.mjs
 ### Các kịch bản kiểm thử độc lập:
 
 ```bash
-# 1. Kiểm thử Backend Spring Boot (43 test classes, 288 tests JUnit 5 & Mockito)
+# 1. Kiểm thử Backend Spring Boot (43 test classes, 297 tests JUnit 5 & Mockito)
 cd backend && .\mvnw.cmd test -Dtest=*Test
 
-# 2. Kiểm thử Frontend React SPA (18 test files, 80 tests Vitest)
+# 2. Kiểm thử Frontend React SPA (18 test files, 89 tests Vitest)
 cd frontend && npm test -- --run
 
 # 3. Smoke Test kiểm tra kết nối API & Hạ tầng (< 30 giây)
@@ -410,7 +414,7 @@ node tests/integration/test_attendance_feature.js
 # 7. Kiểm thử Hành trình trải nghiệm cổng sinh viên (ĐKTC, TKB, GPA)
 node tests/e2e/user_experience_journey_test.js
 
-# 8. Bộ kiểm thử hồi quy toàn diện 70+ Test Cases liên hoàn
+# 8. Bộ kiểm thử hồi quy toàn diện 65 Test Cases liên hoàn
 node tests/e2e/comprehensive_system_test.js
 
 # 9. Kiểm thử an ninh bảo mật (SQL Injection, IDOR, Tampered JWT, Brute-Force)
@@ -429,11 +433,11 @@ Hệ thống được tài liệu hóa chi tiết và đồng bộ thông qua 5 
 
 | Tài liệu / Phân hệ | Đường dẫn liên kết | Mô tả nội dung kỹ thuật |
 | :--- | :--- | :--- |
-| **Cẩm nang Máy chủ Backend** | [backend/README.md](backend/README.md) | Kiến trúc REST API 33 Controllers, 20+ Services, 38 JPA Entities, JWT và cơ chế khóa phân tán Redis Lock. |
+| **Cẩm nang Máy chủ Backend** | [backend/README.md](backend/README.md) | Kiến trúc REST API 33 Controllers, 20+ Services, 41 JPA Entities, JWT và cơ chế khóa phân tán Redis Lock. |
 | **Cẩm nang Giao diện Frontend** | [frontend/README.md](frontend/README.md) | React 19 SPA, Zustand stores, Native Fetch Client (Zero Dep), Apple Vision & Aurora Glassmorphism UI. |
 | **Cẩm nang Cơ sở dữ liệu** | [database/README.md](database/README.md) | 39 bảng quan hệ chuẩn 3NF, 2 Database Views, consolidated migrations và chiến lược Indexing tối ưu tải cao. |
-| **Cẩm nang Sơ đồ UML Draw.io** | [drawio/README.md](drawio/README.md) | 5 Tập sơ đồ Master (76 tabs) chuẩn OMG UML 2.5: Use Case, Sequence (21 tabs), Activity (21 tabs), BCE (21 tabs), ERD (8 tabs). |
-| **Cẩm nang Kiểm thử QA** | [tests/README.md](tests/README.md) | Khung 8 Trụ cột QA, 285+ Backend tests, 80 Frontend tests, 70+ E2E flows, kiểm thử đồng thời 600 SV và Visual Dashboard. |
+| **Cẩm nang Sơ đồ UML Draw.io** | [drawio/README.md](drawio/README.md) | 5 Tập sơ đồ Master (82 tabs) chuẩn OMG UML 2.5: Use Case (5 tabs), Sequence (23 tabs), Activity (23 tabs), BCE (23 tabs), ERD (8 tabs). |
+| **Cẩm nang Kiểm thử QA** | [tests/README.md](tests/README.md) | Khung 8 Trụ cột QA, 297 Backend tests, 89 Frontend tests, 65+ E2E flows, kiểm thử đồng thời 600 SV và Visual Dashboard. |
 
 ---
 

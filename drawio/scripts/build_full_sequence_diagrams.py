@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Biểu đồ Trình tự (Sequence Diagrams) chuẩn UML 2.5 khớp 100% kiến trúc dự án thực tế:
-Tác nhân (Actor) -> Giao diện React (Boundary) -> Spring REST Controller -> Business Service -> JPA Repository -> Cơ sở dữ liệu MySQL
+Biểu đồ Trình tự (Sequence Diagrams) chuẩn OMG UML 2.5 khớp 100% kiến trúc dự án thực tế:
+Tác nhân (Actor) -> Giao diện React (Boundary) -> Spring REST Controller -> Business Service -> JPA Repository -> Cơ sở dữ liệu MySQL (+ Redis Sentinel Lock)
 
 Đặc điểm thiết kế chuẩn học thuật:
-1. Khớp 100% các Class, Controller, Service, Repository, DTO và Endpoint có thật trong source code dự án.
-2. Thiết kế Trắng & Đen (Monochrome) độ tương phản cao, rõ nét, thanh lịch, dễ nhìn và dễ hiểu.
+1. Khớp 100% các Class, Controller, Service, Repository, DTO và Endpoint có thật trong source code backend/ và frontend/.
+2. Thiết kế Trắng & Đen (Monochrome) độ tương phản cao, rõ nét, thanh lịch, dễ nhìn và tối ưu in ấn đồ án.
 3. Nhãn thông điệp có nền trắng (labelBackgroundColor=#ffffff) chống bị đường lifeline cắt ngang chữ.
-4. Tọa độ mũi tên ngang chuẩn xác từng pixel, khoảng cách giữa các thông điệp rộng rãi (45-55px).
+4. Tọa độ mũi tên ngang chuẩn xác từng pixel, khoảng cách giữa các thông điệp rộng rãi (40-50px).
 5. Thanh kích hoạt (Activation boxes) khớp chính xác từng chu kỳ gọi và hoàn trả.
-6. Đầy đủ 16 tab chức năng độc lập, đồng bộ 1-1 với Use Case, BCE và Activity Diagrams.
+6. Đầy đủ 23 tab chức năng nghiệp vụ độc lập, đồng bộ 1-1 với Ma trận Chức năng cốt lõi đồ án.
 """
 
 import xml.etree.ElementTree as ET
@@ -78,27 +78,25 @@ def add_message(root, id_val, text, x1, x2, y, is_reply=False, is_self=False):
     if is_self:
         ET.SubElement(geom, 'mxPoint', {'x': str(x1), 'y': str(y), 'as': 'sourcePoint'})
         ET.SubElement(geom, 'mxPoint', {'x': str(x1 + 4), 'y': str(y + 30), 'as': 'targetPoint'})
-        array = ET.SubElement(geom, 'Array', {'as': 'points'})
-        ET.SubElement(array, 'mxPoint', {'x': str(x1 + 45), 'y': str(y)})
-        ET.SubElement(array, 'mxPoint', {'x': str(x1 + 45), 'y': str(y + 30)})
     else:
         ET.SubElement(geom, 'mxPoint', {'x': str(x1), 'y': str(y), 'as': 'sourcePoint'})
         ET.SubElement(geom, 'mxPoint', {'x': str(x2), 'y': str(y), 'as': 'targetPoint'})
-
     return cell
 
-# --- STYLES ---
-STYLE_SD_FRAME = "shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;width=420;height=30;fontStyle=1;fontSize=12;fontColor=#000000;align=left;spacingLeft=10;"
-STYLE_LIFELINE_ACTOR = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=12;fontColor=#000000;size=65;"
-STYLE_LIFELINE = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;"
-STYLE_ACTIVATION = "html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;"
-STYLE_COMBINED_FRAGMENT = "shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=1.2;width=520;height=26;fontStyle=1;fontSize=11;fontColor=#000000;dashed=1;align=left;spacingLeft=10;"
+# STYLES - MONOCHROME HIGH CONTRAST (OMG UML 2.5)
+STYLE_LIFELINE = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;"
+STYLE_LIFELINE_ACTOR = "shape=umlLifeline;participant=umlActor;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;"
+STYLE_ACTIVATION = "html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;"
+STYLE_SD_FRAME = "shape=umlFrame;whiteSpace=wrap;html=1;width=280;height=30;strokeColor=#000000;strokeWidth=1.5;fillColor=none;fontColor=#000000;fontStyle=1;fontSize=12;"
+STYLE_COMBINED_FRAGMENT = "shape=umlFrame;whiteSpace=wrap;html=1;width=90;height=20;strokeColor=#000000;strokeWidth=1.2;fillColor=none;fontColor=#000000;fontStyle=2;fontSize=11;dashed=1;"
 
 def create_base_model(page_w=1380, page_h=900):
     model = ET.Element('mxGraphModel', {
-        'dx': '1422', 'dy': '900', 'grid': '1', 'gridSize': '10', 'guides': '1',
-        'tooltips': '1', 'connect': '1', 'arrows': '1', 'fold': '1', 'page': '1',
-        'pageScale': '1', 'pageWidth': str(page_w), 'pageHeight': str(page_h), 'background': '#ffffff'
+        'dx': '1422', 'dy': '794', 'grid': '1', 'gridSize': '10',
+        'guides': '1', 'tooltips': '1', 'connect': '1', 'arrows': '1',
+        'fold': '1', 'page': '1', 'pageScale': '1',
+        'pageWidth': str(page_w), 'pageHeight': str(page_h),
+        'background': '#ffffff', 'math': '0', 'shadow': '0'
     })
     root = ET.SubElement(model, 'root')
     add_cell(root, "0")
@@ -106,16 +104,6 @@ def create_base_model(page_w=1380, page_h=900):
     return model, root
 
 def setup_6_lifelines(root, actor_name, ui_name, ctrl_name, srv_name, repo_name, db_name="Database (MySQL)", height=760):
-    """
-    Sets up the 6 real-world project lifelines:
-    Centers:
-    - Actor:      x = 80   (box x=40, w=80)
-    - Boundary:   x = 310  (box x=220, w=180)
-    - Controller: x = 550  (box x=460, w=180)
-    - Service:    x = 790  (box x=700, w=180)
-    - Repository: x = 1030 (box x=940, w=180)
-    - Database:   x = 1250 (box x=1170, w=160)
-    """
     add_cell(root, "ll_act", f":{actor_name}", STYLE_LIFELINE_ACTOR, vertex=True, geometry={'x': 40, 'y': 65, 'width': 80, 'height': height})
     add_cell(root, "ll_ui", f":{ui_name}\n«boundary»", STYLE_LIFELINE, vertex=True, geometry={'x': 220, 'y': 65, 'width': 180, 'height': height})
     add_cell(root, "ll_ctrl", f":{ctrl_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 460, 'y': 65, 'width': 180, 'height': height})
@@ -123,859 +111,582 @@ def setup_6_lifelines(root, actor_name, ui_name, ctrl_name, srv_name, repo_name,
     add_cell(root, "ll_repo", f":{repo_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 940, 'y': 65, 'width': 180, 'height': height})
     add_cell(root, "ll_db", f":{db_name}\n«entity»", STYLE_LIFELINE, vertex=True, geometry={'x': 1170, 'y': 65, 'width': 160, 'height': height})
 
+def setup_7_lifelines(root, actor_name, ui_name, ctrl_name, srv_name, redis_name, repo_name, db_name="Database (MySQL)", height=780):
+    add_cell(root, "ll_act", f":{actor_name}", STYLE_LIFELINE_ACTOR, vertex=True, geometry={'x': 30, 'y': 65, 'width': 80, 'height': height})
+    add_cell(root, "ll_ui", f":{ui_name}\n«boundary»", STYLE_LIFELINE, vertex=True, geometry={'x': 190, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_ctrl", f":{ctrl_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 400, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_srv", f":{srv_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 610, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_redis", f":{redis_name}\n«service»", STYLE_LIFELINE, vertex=True, geometry={'x': 820, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_repo", f":{repo_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 1030, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_db", f":{db_name}\n«entity»", STYLE_LIFELINE, vertex=True, geometry={'x': 1240, 'y': 65, 'width': 160, 'height': height})
+
 # ==========================================================
-# 16 BIỂU ĐỒ TRÌNH TỰ CHUẨN DỰ ÁN (RÕ NÉT - ĐÚNG CODE - ĐỘC LẬP)
+# 23 BIỂU ĐỒ TRÌNH TỰ CHUẨN DỰ ÁN (RÕ NÉT - ĐÚNG CODE - ĐỘC LẬP)
 # ==========================================================
 
 # 1. ĐĂNG NHẬP HỆ THỐNG
 def build_seq_1_login():
     model, root = create_base_model(1380, 940)
     add_cell(root, "frame_login", "sd UC-01: Đăng nhập & Xác thực hệ thống", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    setup_6_lifelines(root, "Người dùng", "PortalLoginPage", "AuthController", "AuthService", "UserRepository", "Database (MySQL)", height=800)
 
-    setup_6_lifelines(root, "Người dùng", "LoginPage", "AuthController", "AuthService", "UserRepository", "Database (MySQL)", height=800)
-
-    # Activations
     add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 640})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 230, 'width': 10, 'height': 430})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 275, 'width': 10, 'height': 340})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 320, 'width': 10, 'height': 100})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 360, 'width': 10, 'height': 50})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 540})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 450})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 150})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 90})
 
-    # Messages
     add_message(root, "m1", "1: Nhập username, password & Click Đăng nhập", 80, 305, 135)
-    add_message(root, "m2", "2: validateForm(username, password)", 315, 315, 180, is_self=True)
-    add_message(root, "m3", "3: POST /api/auth/login (LoginRequest)", 315, 545, 230)
-    add_message(root, "m4", "4: login(LoginRequest request)", 555, 785, 275)
-    add_message(root, "m5", "5: authenticate(UsernamePasswordAuthenticationToken)", 785, 1025, 320)
-    add_message(root, "m6", "6: SELECT * FROM users WHERE username = ?", 1035, 1245, 360)
-    add_message(root, "m7", "7: Trả về bản ghi User (password_hash, role, is_active, must_change_pwd)", 1245, 1035, 405, is_reply=True)
-    add_message(root, "m8", "8: Trả về UserPrincipal (thông tin người dùng)", 1025, 785, 435, is_reply=True)
-    add_message(root, "m9", "9: passwordEncoder.matches(raw, hash) & check isActive", 795, 795, 475, is_self=True)
-    add_message(root, "m10", "10: jwtUtil.generateToken(userPrincipal)", 795, 795, 525, is_self=True)
-    add_message(root, "m11", "11: Trả về LoginResponse(token, role, username, userId, mustChangePassword)", 785, 555, 575, is_reply=True)
-    add_message(root, "m12", "12: 200 OK + ApiResponse.success(LoginResponse)", 545, 315, 620, is_reply=True)
-    add_message(root, "m13", "13: localStorage.setItem('token', token) & kiểm tra mustChangePassword", 315, 315, 665, is_self=True)
-    add_message(root, "m14", "14: [mustChangePassword == false] -> Hiển thị Dashboard phân hệ", 305, 80, 705, is_reply=True)
+    add_message(root, "m2", "2: validateForm(username, password)", 315, 315, 160, is_self=True)
+    add_message(root, "m3", "3: POST /api/auth/login (LoginRequest)", 315, 545, 185)
+    add_message(root, "m4", "4: login(LoginRequest request)", 555, 785, 230)
+    add_message(root, "m5", "5: authenticate(UsernamePasswordAuthenticationToken)", 795, 795, 255, is_self=True)
+    add_message(root, "m6", "6: findByUsername(username)", 795, 1025, 275)
+    add_message(root, "m7", "7: SELECT * FROM users WHERE username = ?", 1035, 1245, 315)
+    add_message(root, "m8", "8: Trả về bản ghi User (password, role, is_active, must_change_pwd)", 1245, 1025, 355, is_reply=True)
+    add_message(root, "m9", "9: Trả về UserPrincipal (thông tin người dùng)", 1025, 785, 385, is_reply=True)
+    add_message(root, "m10", "10: passwordEncoder.matches(raw, hash) & check isActive", 795, 795, 415, is_self=True)
+    add_message(root, "m11", "11: jwtTokenProvider.generateToken(userPrincipal)", 795, 795, 450, is_self=True)
+    add_message(root, "m12", "12: Trả về LoginResponse(token, role, username, userId, mustChangePassword)", 785, 545, 485, is_reply=True)
+    add_message(root, "m13", "13: 200 OK + ApiResponse.success(LoginResponse)", 545, 315, 520, is_reply=True)
+    add_message(root, "m14", "14: localStorage.setItem('token', token) & check mustChangePassword", 315, 315, 555, is_self=True)
+    add_message(root, "m15", "15: [mustChangePassword == false] -> Điều hướng Dashboard theo Role", 315, 80, 595, is_reply=True)
 
-    # Alt must change password
-    add_cell(root, "alt_must_pwd", "alt [mustChangePassword == true (Yêu cầu đổi mật khẩu lần đầu)]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 730, 'width': 1050, 'height': 65})
-    add_message(root, "m_pwd1", "Chuyển hướng bắt buộc sang trang /change-password", 315, 315, 750, is_self=True)
-    add_message(root, "m_pwd2", "Hiển thị màn hình đổi mật khẩu bắt buộc cho người dùng", 305, 80, 775, is_reply=True)
+    add_cell(root, "alt_pwd", "alt [mustChangePassword == true]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 635, 'width': 1050, 'height': 80})
+    add_message(root, "m_alt_pwd1", "Chuyển hướng bắt buộc sang ForcePasswordChangeModal", 315, 80, 665, is_reply=True)
+    add_message(root, "m_alt_pwd2", "Hiển thị form yêu cầu đổi mật khẩu lần đầu", 305, 80, 695, is_reply=True)
 
-    # Opt error
-    add_cell(root, "alt_auth", "opt [Sai mật khẩu hoặc Tài khoản bị khóa]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 805, 'width': 1050, 'height': 75})
-    add_message(root, "m_alt1", "400 Bad Request: BadRequestException (khóa 15 phút sau 5 lần sai - LoginAttemptService)", 545, 315, 830, is_reply=True)
-    add_message(root, "m_alt2", "Hiển thị thông báo: Tên đăng nhập hoặc mật khẩu không đúng", 305, 80, 860, is_reply=True)
-
+    add_cell(root, "alt_err", "opt [Xác thực thất bại / Tài khoản bị khóa]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 730, 'width': 1050, 'height': 80})
+    add_message(root, "m_err1", "401 Unauthorized / 400 Bad Request: Sai thông tin hoặc tài khoản bị khóa", 545, 315, 760, is_reply=True)
+    add_message(root, "m_err2", "Hiển thị thông báo: Tên đăng nhập hoặc mật khẩu không chính xác", 305, 80, 790, is_reply=True)
     return model
 
 # 2. ĐỔI MẬT KHẨU
 def build_seq_2_change_password():
-    model, root = create_base_model(1380, 880)
-    add_cell(root, "frame_pwd", "sd UC-02: Đổi mật khẩu tài khoản", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 830})
+    model, root = create_base_model(1380, 940)
+    add_cell(root, "frame_chgpwd", "sd UC-02: Đổi mật khẩu tài khoản cá nhân", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    setup_6_lifelines(root, "Người dùng", "ChangePasswordModal", "AuthController", "AuthService", "UserRepository", "Database (MySQL)", height=800)
 
-    setup_6_lifelines(root, "Người dùng", "ChangePasswordModal", "AuthController", "AuthService", "UserRepository", "Database (MySQL)", height=740)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 640})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 540})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 450})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 240})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 225, 'width': 10, 'height': 440})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 270, 'width': 10, 'height': 350})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 250})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 200})
-
-    # Messages
     add_message(root, "m1", "1: Nhập currentPassword, newPassword, confirmPassword", 80, 305, 135)
-    add_message(root, "m2", "2: validate(newPassword == confirmPassword && newPassword != currentPassword)", 315, 315, 175, is_self=True)
-    add_message(root, "m3", "3: PUT /api/auth/change-password (ChangePasswordRequest)", 315, 545, 215)
-    add_message(root, "m4", "4: changePassword(user.getId(), request)", 555, 785, 255)
-    add_message(root, "m5", "5: findById(userId)", 795, 1025, 295)
-    add_message(root, "m6", "6: SELECT * FROM users WHERE id = ?", 1035, 1245, 335)
-    add_message(root, "m7", "7: Trả về User entity", 1245, 1035, 375, is_reply=True)
-    add_message(root, "m8", "8: Trả về Optional<User>", 1025, 795, 405, is_reply=True)
-    add_message(root, "m9", "9: passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())", 795, 795, 440, is_self=True)
-    add_message(root, "m10", "10: validate(!passwordEncoder.matches(newPassword, user.getPassword()))", 795, 795, 475, is_self=True)
-    add_message(root, "m11", "11: user.setPassword(encode(newPassword)); user.setMustChangePassword(false)", 795, 795, 510, is_self=True)
-    add_message(root, "m12", "12: save(user)", 795, 1025, 545)
-    add_message(root, "m13", "13: UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?", 1035, 1245, 570)
-    add_message(root, "m14", "14: Hoàn tất cập nhật & Ghi nhận Security Audit Log", 1245, 1025, 595, is_reply=True)
-    add_message(root, "m15", "15: Trả về kết quả thành công", 1025, 785, 610, is_reply=True)
-    add_message(root, "m16", "16: 200 OK + ApiResponse.success('Đổi mật khẩu thành công')", 545, 315, 635, is_reply=True)
-    add_message(root, "m17", "17: Hiển thị toast thành công & Tự động logout() chuyển về /login", 305, 80, 675, is_reply=True)
+    add_message(root, "m2", "2: validate(newPassword == confirmPassword && length >= 6)", 315, 315, 160, is_self=True)
+    add_message(root, "m3", "3: PUT /api/auth/change-password (ChangePasswordRequest)", 315, 545, 185)
+    add_message(root, "m4", "4: changePassword(userPrincipal.getId(), request)", 555, 785, 230)
+    add_message(root, "m5", "5: findById(userId)", 795, 1025, 275)
+    add_message(root, "m6", "6: SELECT * FROM users WHERE id = ?", 1035, 1245, 315)
+    add_message(root, "m7", "7: Trả về User entity", 1245, 1025, 355, is_reply=True)
+    add_message(root, "m8", "8: passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())", 795, 795, 395, is_self=True)
+    add_message(root, "m9", "9: user.setPassword(bCrypt(newPassword)); user.setMustChangePassword(false)", 795, 795, 435, is_self=True)
+    add_message(root, "m10", "10: userRepository.save(user)", 795, 1025, 475)
+    add_message(root, "m11", "11: UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?", 1035, 1245, 505)
+    add_message(root, "m12", "12: Ghi nhận AuditLog('CHANGE_PASSWORD_SUCCESS', userId)", 795, 795, 535, is_self=True)
+    add_message(root, "m13", "13: 200 OK + ApiResponse.success('Đổi mật khẩu thành công')", 545, 315, 575, is_reply=True)
+    add_message(root, "m14", "14: Hiển thị toast thành công & Tự động logout chuyển về /login", 305, 80, 615, is_reply=True)
 
-    # Opt error
-    add_cell(root, "alt_pwd", "opt [Sai mật khẩu cũ HOẶC Mật khẩu mới trùng mật khẩu cũ]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 715, 'width': 1050, 'height': 85})
-    add_message(root, "m_alt1", "400 Bad Request: Mật khẩu cũ không đúng / Trùng mật khẩu hiện tại", 545, 315, 740, is_reply=True)
-    add_message(root, "m_alt2", "Hiển thị thông báo lỗi trên form đổi mật khẩu", 305, 80, 775, is_reply=True)
-
+    add_cell(root, "alt_err", "opt [Mật khẩu cũ không chính xác / Trùng mật khẩu hiện tại]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 660, 'width': 1050, 'height': 80})
+    add_message(root, "m_err1", "400 Bad Request: Mật khẩu hiện tại không đúng", 545, 315, 690, is_reply=True)
+    add_message(root, "m_err2", "Hiển thị thông báo lỗi trên form đổi mật khẩu", 305, 80, 720, is_reply=True)
     return model
 
 # 3. THÊM MỚI SINH VIÊN
 def build_seq_3_student_create():
-    model, root = create_base_model(1380, 920)
-    add_cell(root, "frame_stu_add", "sd UC-03: Thêm mới Sinh viên & Cấp tài khoản", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 870})
-
-    setup_6_lifelines(root, "Quản trị viên", "StudentsPage", "StudentController", "StudentService", "StudentRepository", "Database (MySQL)", height=780)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 630})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 225, 'width': 10, 'height': 490})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 270, 'width': 10, 'height': 400})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 310})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 260})
-
-    # Messages
-    add_message(root, "m1", "1: Nhập mã SV, họ tên, email, lớp, ngày sinh, giới tính...", 80, 305, 135)
-    add_message(root, "m2", "2: validateForm() trên client", 315, 315, 180, is_self=True)
-    add_message(root, "m3", "3: POST /api/students (StudentRequest)", 315, 545, 225)
-    add_message(root, "m4", "4: create(StudentRequest request)", 555, 785, 270)
-    add_message(root, "m5", "5: existsByStudentCode(code) & existsByEmail(email)", 795, 1025, 315)
-    add_message(root, "m6", "6: SELECT COUNT(*) FROM students WHERE student_code = ? OR email = ?", 1035, 1245, 355)
-    add_message(root, "m7", "7: Trả về count = 0 (chưa tồn tại)", 1245, 1035, 395, is_reply=True)
-    add_message(root, "m8", "8: Trả về false", 1025, 795, 425, is_reply=True)
-    add_message(root, "m9", "9: classRepository.findById() & roleRepository.findByName('STUDENT')", 795, 795, 465, is_self=True)
-    add_message(root, "m10", "10: Tạo User: username=studentCode, pass=123456 (encoded), role=STUDENT", 795, 795, 510, is_self=True)
-    add_message(root, "m11", "11: userRepository.save(user) & studentRepository.save(student)", 795, 1025, 555)
-    add_message(root, "m12", "12: INSERT INTO users ... ; INSERT INTO students ...", 1035, 1245, 585)
-    add_message(root, "m13", "13: Trả về bản ghi Student vừa sinh", 1245, 1035, 615, is_reply=True)
-    add_message(root, "m14", "14: Trả về Student entity hoàn chỉnh", 1025, 785, 630, is_reply=True)
-    add_message(root, "m15", "15: 200 OK + ApiResponse.success('Thêm sinh viên thành công', student)", 545, 315, 660, is_reply=True)
-    add_message(root, "m16", "16: loadStudents() - Làm mới danh sách sinh viên", 315, 315, 700, is_self=True)
-    add_message(root, "m17", "17: Hiển thị thông báo: Thêm sinh viên thành công & Đóng Modal", 305, 80, 740, is_reply=True)
-
-    # Opt duplicate
-    add_cell(root, "alt_stu", "opt [Trùng mã sinh viên hoặc email]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 770, 'width': 1050, 'height': 80})
-    add_message(root, "m_alt1", "400 Bad Request: Mã sinh viên hoặc Email đã tồn tại", 545, 315, 795, is_reply=True)
-    add_message(root, "m_alt2", "Hiển thị thông báo lỗi trùng lặp dữ liệu trên form", 305, 80, 830, is_reply=True)
-
-    return model
-
-# 4. QUẢN LÝ HỒ SƠ VÀ TRẠNG THÁI SINH VIÊN
-def build_seq_4_student_manage():
-    model, root = create_base_model(1380, 900)
-    add_cell(root, "frame_stu_mgr", "sd UC-04: Quản lý Hồ sơ & Khóa tài khoản Sinh viên", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
-
-    setup_6_lifelines(root, "Quản trị viên", "StudentsPage", "StudentController", "StudentService", "StudentRepository", "Database (MySQL)", height=760)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 600})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 500})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 410})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 260})
-
-    # Messages
-    add_message(root, "m1", "1: Chọn sinh viên & Chuyển trạng thái sang SUSPENDED (Đình chỉ)", 80, 305, 135)
-    add_message(root, "m2", "2: PUT /api/students/{id}/status?status=SUSPENDED", 315, 545, 185)
-    add_message(root, "m3", "3: updateStatus(id, 'SUSPENDED')", 555, 785, 230)
-    add_message(root, "m4", "4: findById(id)", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT * FROM students WHERE id = ?", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về Student entity và User liên kết", 1245, 1035, 355, is_reply=True)
-    add_message(root, "m7", "7: Trả về Student", 1025, 795, 385, is_reply=True)
-    add_message(root, "m8", "8: student.setStatus(SUSPENDED)", 795, 795, 425, is_self=True)
-    add_message(root, "m9", "9: BR-Lifecycle: user.setIsActive(false) (Khóa tài khoản đăng nhập)", 795, 795, 470, is_self=True)
-    add_message(root, "m10", "10: studentRepository.save(student) & userRepository.save(user)", 795, 1025, 515)
-    add_message(root, "m11", "11: UPDATE students SET status = 'SUSPENDED'; UPDATE users SET is_active = 0", 1035, 1245, 545)
-    add_message(root, "m12", "12: Xác nhận hoàn tất cập nhật", 1245, 1025, 575, is_reply=True)
-    add_message(root, "m13", "13: Cập nhật thành công", 1025, 785, 595, is_reply=True)
-    add_message(root, "m14", "14: 200 OK + ApiResponse.success('Cập nhật trạng thái thành công')", 545, 315, 630, is_reply=True)
-    add_message(root, "m15", "15: Cập nhật badge hiển thị trạng thái sinh viên trên bảng", 315, 315, 675, is_self=True)
-    add_message(root, "m16", "16: Hiển thị toast: Đã khóa tài khoản và đình chỉ sinh viên", 305, 80, 715, is_reply=True)
-
-    return model
-
-# 5. KHOA, CHUYÊN NGÀNH VÀ LỚP SINH HOẠT
-def build_seq_5_academic_structure():
-    model, root = create_base_model(1380, 890)
-    add_cell(root, "frame_class", "sd UC-05: Quản lý Khoa & Lớp sinh hoạt", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 840})
-
-    setup_6_lifelines(root, "Quản trị viên", "ClassesPage", "ClassController", "ClassService", "ClassRepository", "Database (MySQL)", height=750)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 590})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 490})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 300})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 250})
-
-    # Messages
-    add_message(root, "m1", "1: Nhập mã lớp, tên lớp, chọn Khoa (departmentId), niên khóa (academicYear)", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/classes (ClassRequest)", 315, 545, 185)
-    add_message(root, "m3", "3: create(ClassRequest request)", 555, 785, 230)
-    add_message(root, "m4", "4: existsByCode(request.getCode())", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT COUNT(*) FROM classes WHERE code = ?", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về count = 0 (chưa tồn tại)", 1245, 1035, 355, is_reply=True)
-    add_message(root, "m7", "7: Trả về false", 1025, 795, 385, is_reply=True)
-    add_message(root, "m8", "8: departmentRepository.findById(request.getDepartmentId())", 795, 795, 425, is_self=True)
-    add_message(root, "m9", "9: Khởi tạo ClassEntity (code, name, department, academicYear, isActive=true)", 795, 795, 470, is_self=True)
-    add_message(root, "m10", "10: save(ClassEntity cls)", 795, 1025, 515)
-    add_message(root, "m11", "11: INSERT INTO classes (code, name, department_id, academic_year)", 1035, 1245, 545)
-    add_message(root, "m12", "12: Trả về bản ghi ClassEntity vừa lưu", 1245, 1035, 575, is_reply=True)
-    add_message(root, "m13", "13: Trả về ClassEntity", 1025, 785, 595, is_reply=True)
-    add_message(root, "m14", "14: 200 OK + ApiResponse.success('Tạo lớp thành công', cls)", 545, 315, 625, is_reply=True)
-    add_message(root, "m15", "15: Tải lại danh sách lớp sinh hoạt & Đóng modal", 315, 315, 665, is_self=True)
-    add_message(root, "m16", "16: Hiển thị thông báo: Tạo lớp sinh hoạt thành công", 305, 80, 700, is_reply=True)
-
-    return model
-
-# 6. QUẢN LÝ GIẢNG VIÊN
-def build_seq_6_lecturer_manage():
-    model, root = create_base_model(1380, 900)
-    add_cell(root, "frame_lec", "sd UC-06: Quản lý Giảng viên & Cấp tài khoản", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
-
-    setup_6_lifelines(root, "Quản trị viên", "LecturersPage", "LecturerController", "LecturerService", "LecturerRepository", "Database (MySQL)", height=760)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 600})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 500})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 410})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 260})
-
-    # Messages
-    add_message(root, "m1", "1: Nhập lecturerCode, fullName, email, departmentId, degree, specialization", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/lecturers (LecturerRequest)", 315, 545, 185)
-    add_message(root, "m3", "3: create(LecturerRequest request)", 555, 785, 230)
-    add_message(root, "m4", "4: existsByLecturerCode(code) & existsByEmail(email)", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT COUNT(*) FROM lecturers WHERE lecturer_code = ? OR email = ?", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về count = 0 (chưa tồn tại)", 1245, 1035, 355, is_reply=True)
-    add_message(root, "m7", "7: Trả về false", 1025, 795, 385, is_reply=True)
-    add_message(root, "m8", "8: departmentRepository.findById() & roleRepository.findByName('LECTURER')", 795, 795, 425, is_self=True)
-    add_message(root, "m9", "9: Tạo User: username=code, pass=123456 (encoded), role=LECTURER", 795, 795, 470, is_self=True)
-    add_message(root, "m10", "10: userRepository.save(user) & lecturerRepository.save(lecturer)", 795, 1025, 515)
-    add_message(root, "m11", "11: INSERT INTO users ... ; INSERT INTO lecturers ...", 1035, 1245, 545)
-    add_message(root, "m12", "12: Trả về bản ghi Lecturer vừa tạo", 1245, 1035, 575, is_reply=True)
-    add_message(root, "m13", "13: Trả về Lecturer entity", 1025, 785, 595, is_reply=True)
-    add_message(root, "m14", "14: 200 OK + ApiResponse.success('Thêm giảng viên thành công', lecturer)", 545, 315, 625, is_reply=True)
-    add_message(root, "m15", "15: Làm mới bảng danh sách giảng viên & Đóng modal", 315, 315, 665, is_self=True)
-    add_message(root, "m16", "16: Hiển thị thông báo: Cấp tài khoản & thêm giảng viên thành công", 305, 80, 705, is_reply=True)
-
-    return model
-
-# 7. QUẢN LÝ MÔN HỌC
-def build_seq_7_subject_manage():
-    model, root = create_base_model(1380, 880)
-    add_cell(root, "frame_sub", "sd UC-07: Quản lý Danh mục Môn học & Tín chỉ", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 830})
-
-    setup_6_lifelines(root, "Quản trị viên", "SubjectsPage", "SubjectController", "SubjectService", "SubjectRepository", "Database (MySQL)", height=740)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 390})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 240})
-
-    # Messages
-    add_message(root, "m1", "1: Nhập subjectCode, subjectName, credits, departmentId, description", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/subjects (SubjectRequest)", 315, 545, 185)
-    add_message(root, "m3", "3: create(SubjectRequest request)", 555, 785, 230)
-    add_message(root, "m4", "4: existsBySubjectCode(request.getSubjectCode())", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT COUNT(*) FROM subjects WHERE subject_code = ?", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về count = 0 (hợp lệ)", 1245, 1035, 355, is_reply=True)
-    add_message(root, "m7", "7: Trả về false", 1025, 795, 385, is_reply=True)
-    add_message(root, "m8", "8: departmentRepository.findById(deptId)", 795, 795, 425, is_self=True)
-    add_message(root, "m9", "9: Khởi tạo Subject (code, name, credits 1..10, dept, prerequisites, isActive=true)", 795, 795, 470, is_self=True)
-    add_message(root, "m10", "10: save(subject)", 795, 1025, 515)
-    add_message(root, "m11", "11: INSERT INTO subjects (subject_code, subject_name, credits, department_id...)", 1035, 1245, 545)
-    add_message(root, "m12", "12: Trả về Subject entity đã lưu & @CacheEvict('subjects')", 1245, 1025, 575, is_reply=True)
-    add_message(root, "m13", "13: Trả về SubjectResponse (DTO)", 1025, 785, 595, is_reply=True)
-    add_message(root, "m14", "14: 200 OK + ApiResponse.success('Tạo môn học thành công', subjectResponse)", 545, 315, 625, is_reply=True)
-    add_message(root, "m15", "15: Làm mới danh mục môn học trên bảng", 315, 315, 665, is_self=True)
-    add_message(root, "m16", "16: Hiển thị thông báo: Tạo môn học thành công", 305, 80, 700, is_reply=True)
-
-    return model
-
-# 8. CẤU HÌNH HỌC KỲ
-def build_seq_8_semester_config():
-    model, root = create_base_model(1380, 890)
-    add_cell(root, "frame_sem", "sd UC-08: Quản lý Học kỳ & Thiết lập Học kỳ hiện tại", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 840})
-
-    setup_6_lifelines(root, "Quản trị viên", "SemestersPage", "SemesterController", "SemesterService", "SemesterRepository", "Database (MySQL)", height=750)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 390})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 300})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 250})
-
-    # Messages
-    add_message(root, "m1", "1: Chọn học kỳ và click Đặt làm học kỳ hiện tại", 80, 305, 135)
-    add_message(root, "m2", "2: PUT /api/semesters/{id}/set-current", 315, 545, 185)
-    add_message(root, "m3", "3: setCurrent(id)", 555, 785, 230)
-    add_message(root, "m4", "4: clearCurrentSemester(id)", 795, 795, 275, is_self=True)
-    add_message(root, "m5", "5: UPDATE semesters SET is_current = false WHERE is_current = true", 795, 1245, 315)
-    add_message(root, "m6", "6: Xóa trạng thái học kỳ cũ thành công", 1245, 795, 355, is_reply=True)
-    add_message(root, "m7", "7: findById(id)", 795, 1025, 395)
-    add_message(root, "m8", "8: SELECT * FROM semesters WHERE id = ?", 1035, 1245, 430)
-    add_message(root, "m9", "9: Trả về Semester entity", 1245, 1035, 460, is_reply=True)
-    add_message(root, "m10", "10: semester.setIsCurrent(true) & save(semester)", 795, 1025, 495)
-    add_message(root, "m11", "11: UPDATE semesters SET is_current = true WHERE id = ?", 1035, 1245, 530)
-    add_message(root, "m12", "12: Xác nhận cập nhật & @CacheEvict('semesters')", 1245, 1025, 560, is_reply=True)
-    add_message(root, "m13", "13: Hoàn tất chuyển đổi học kỳ", 1025, 785, 580, is_reply=True)
-    add_message(root, "m14", "14: 200 OK + ApiResponse.success('Thiết lập học kỳ hiện tại thành công')", 545, 315, 615, is_reply=True)
-    add_message(root, "m15", "15: Cập nhật thẻ HỌC KỲ HIỆN TẠI trên toàn hệ thống", 315, 315, 660, is_self=True)
-    add_message(root, "m16", "16: Hiển thị toast: Đã kích hoạt học kỳ mới thành công", 305, 80, 700, is_reply=True)
-
-    return model
-
-# 9. MỞ LỚP HỌC PHẦN
-def build_seq_9_course_section_open():
-    model, root = create_base_model(1380, 910)
-    add_cell(root, "frame_sec", "sd UC-09: Mở & Điều phối Lớp học phần", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 860})
-
-    setup_6_lifelines(root, "Quản trị viên", "CourseSectionsPage", "CourseSectionController", "CourseSectionService", "CourseSectionRepository", "Database (MySQL)", height=770)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 600})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 500})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 410})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 260})
-
-    # Messages
-    add_message(root, "m1", "1: Nhập mã HP, chọn môn học, giảng viên, học kỳ, sĩ số tối đa (maxStudents)", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/course-sections (CourseSectionRequest)", 315, 545, 185)
-    add_message(root, "m3", "3: create(CourseSectionRequest request)", 555, 785, 230)
-    add_message(root, "m4", "4: existsBySectionCode(request.getSectionCode())", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT COUNT(*) FROM course_sections WHERE section_code = ?", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về count = 0 (hợp lệ)", 1245, 1035, 355, is_reply=True)
-    add_message(root, "m7", "7: Trả về false", 1025, 795, 385, is_reply=True)
-    add_message(root, "m8", "8: subjectRepo.findById() & lecturerRepo.findById() & semesterRepo.findById()", 795, 795, 425, is_self=True)
-    add_message(root, "m9", "9: Khởi tạo CourseSection: status=OPEN, currentStudents=0, maxStudents=40", 795, 795, 470, is_self=True)
-    add_message(root, "m10", "10: save(section)", 795, 1025, 515)
-    add_message(root, "m11", "11: INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id...)", 1035, 1245, 545)
-    add_message(root, "m12", "12: Trả về bản ghi CourseSection vừa mở", 1245, 1035, 575, is_reply=True)
-    add_message(root, "m13", "13: Trả về CourseSection", 1025, 785, 595, is_reply=True)
-    add_message(root, "m14", "14: 200 OK + ApiResponse.success('Mở học phần thành công', section)", 545, 315, 625, is_reply=True)
-    add_message(root, "m15", "15: Cập nhật danh sách học phần hiển thị trên bảng", 315, 315, 665, is_self=True)
-    add_message(root, "m16", "16: Hiển thị thông báo: Mở lớp học phần thành công!", 305, 80, 705, is_reply=True)
-
-    return model
-
-# 10. XẾP THỜI KHÓA BIỂU
-def build_seq_10_schedule_manage():
-    model, root = create_base_model(1380, 930)
-    add_cell(root, "frame_sch", "sd UC-10: Xếp Thời khóa biểu & Kiểm tra xung đột lịch", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 880})
-
-    setup_6_lifelines(root, "Quản trị viên", "SchedulesPage", "ScheduleController", "ScheduleService", "ScheduleRepository", "Database (MySQL)", height=790)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 630})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 530})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 440})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 300})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 240})
-
-    # Messages
-    add_message(root, "m1", "1: Chọn sectionId, phòng học (room), thứ (dayOfWeek), tiết (start-end), ngày", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/schedules (ScheduleRequest)", 315, 545, 185)
-    add_message(root, "m3", "3: create(ScheduleRequest request)", 555, 785, 230)
-    add_message(root, "m4", "4: validatePeriodsAndDates(startPeriod <= endPeriod & startDate <= endDate)", 795, 795, 275, is_self=True)
-    add_message(root, "m5", "5: checkRoomConflict(room, dayOfWeek, startPeriod, endPeriod, dates)", 795, 1025, 315)
-    add_message(root, "m6", "6: SELECT * FROM schedules WHERE room = ? AND day_of_week = ? ...", 1035, 1245, 355)
-    add_message(root, "m7", "7: Trả về rỗng (Không có xung đột phòng học)", 1245, 1025, 395, is_reply=True)
-    add_message(root, "m8", "8: checkLecturerConflict(lecturerId, dayOfWeek, periods, dates)", 795, 1025, 435)
-    add_message(root, "m9", "9: SELECT * FROM schedules WHERE lecturer_id = ? ...", 1035, 1245, 470)
-    add_message(root, "m10", "10: Trả về rỗng (Không có xung đột giảng viên)", 1245, 1025, 500, is_reply=True)
-    add_message(root, "m11", "11: save(Schedule.builder().section().room().dayOfWeek()...build())", 795, 1025, 535)
-    add_message(root, "m12", "12: INSERT INTO schedules (section_id, room, day_of_week, start_period...)", 1035, 1245, 565)
-    add_message(root, "m13", "13: Trả về bản ghi Schedule đã lưu", 1245, 1025, 595, is_reply=True)
-    add_message(root, "m14", "14: 200 OK + ApiResponse.success(schedule)", 545, 315, 630, is_reply=True)
-    add_message(root, "m15", "15: Vẽ ô lịch vào lưới Thời khóa biểu tuần", 315, 315, 675, is_self=True)
-    add_message(root, "m16", "16: Hiển thị toast: Xếp lịch học thành công", 305, 80, 715, is_reply=True)
-
-    # Opt conflict
-    add_cell(root, "alt_sch", "opt [Trùng phòng hoặc Trùng lịch giảng viên]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 745, 'width': 1050, 'height': 80})
-    add_message(root, "m_alt1", "400 Bad Request: Trùng phòng học / Trùng lịch giảng viên!", 545, 315, 775, is_reply=True)
-    add_message(root, "m_alt2", "Cảnh báo xung đột chi tiết lên giao diện xếp lịch", 305, 80, 810, is_reply=True)
-
-    return model
-
-# 11. ĐĂNG KÝ LỚP HỌC PHẦN
-def build_seq_11_enrollment():
     model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_enr", "sd UC-11: Sinh viên Đăng ký lớp học phần", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    add_cell(root, "frame_std", "sd UC-03: Thêm mới Sinh viên & Cấp tài khoản tự động", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    setup_6_lifelines(root, "Quản trị viên", "StudentsPage", "StudentController", "StudentService", "StudentRepository", "Database (MySQL)", height=800)
 
-    setup_6_lifelines(root, "Sinh viên", "EnrollPage", "EnrollmentController", "EnrollmentService", "CourseSectionRepository", "Database (MySQL)", height=800)
-
-    # Activations
     add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 640})
     add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 540})
     add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 450})
     add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
     add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 250})
 
-    # Messages
-    add_message(root, "m1", "1: Chọn lớp học phần và click Đăng ký (sectionId)", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/enrollments (EnrollmentRequest: sectionId)", 315, 545, 185)
-    add_message(root, "m3", "3: enroll(user.getId(), request.getSectionId())", 555, 785, 230)
-    add_message(root, "m4", "4: findByIdForEnrollment(sectionId) (Khóa bi quan PESSIMISTIC_WRITE)", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT * FROM course_sections WHERE id = ? FOR UPDATE", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về CourseSection (Khóa bản ghi thành công)", 1245, 1035, 355, is_reply=True)
-    add_message(root, "m7", "7: BR: status == OPEN & trong hạn đăng ký học kỳ", 795, 795, 395, is_self=True)
-    add_message(root, "m8", "8: BR: thuộc khung CTĐT & đã đạt môn tiên quyết & chưa đăng ký lớp khác cùng môn", 795, 795, 435, is_self=True)
-    add_message(root, "m9", "9: BR: còn chỗ (currentStudents < maxStudents) & không trùng lịch & tổng TC <= 30", 795, 795, 475, is_self=True)
-    add_message(root, "m10", "10: save(Enrollment: status = ENROLLED)", 795, 1025, 515)
-    add_message(root, "m11", "11: INSERT INTO enrollments (student_id, section_id, status='ENROLLED')", 1035, 1245, 545)
-    add_message(root, "m12", "12: Trigger after_enrollment_insert: enrolled_count = enrolled_count + 1", 1245, 1245, 575, is_self=True)
-    add_message(root, "m13", "13: Trả về đối tượng Enrollment đã lưu", 1245, 785, 605, is_reply=True)
-    add_message(root, "m14", "14: 200 OK + ApiResponse.success('Đăng ký học phần thành công', enrollment)", 545, 315, 640, is_reply=True)
-    add_message(root, "m15", "15: Cập nhật sĩ số lớp học phần & Thêm vào TKB cá nhân", 315, 315, 685, is_self=True)
-    add_message(root, "m16", "16: Hiển thị toast: Đăng ký học phần thành công!", 305, 80, 725, is_reply=True)
+    add_message(root, "m1", "1: Nhập mã SV, họ tên, email, lớp sinh hoạt, ngày sinh...", 80, 305, 135)
+    add_message(root, "m2", "2: validateForm() trên client", 315, 315, 160, is_self=True)
+    add_message(root, "m3", "3: POST /api/students (StudentRequest)", 315, 545, 185)
+    add_message(root, "m4", "4: create(StudentRequest request)", 555, 785, 230)
+    add_message(root, "m5", "5: existsByStudentCode(code) || existsByEmail(email)", 795, 1025, 275)
+    add_message(root, "m6", "6: SELECT COUNT(*) FROM students WHERE student_code = ? OR email = ?", 1035, 1245, 315)
+    add_message(root, "m7", "7: Trả về count = 0 (Chưa tồn tại trùng lặp)", 1245, 1025, 355, is_reply=True)
+    add_message(root, "m8", "8: Khởi tạo User: username=studentCode, pass=123456 (bCrypt), role=STUDENT", 795, 795, 395, is_self=True)
+    add_message(root, "m9", "9: userRepository.save(user) & studentRepository.save(student)", 795, 1025, 435)
+    add_message(root, "m10", "10: INSERT INTO users ... ; INSERT INTO students ...", 1035, 1245, 475)
+    add_message(root, "m11", "11: Trả về bản ghi Student vừa được bền vững hóa", 1245, 1025, 515, is_reply=True)
+    add_message(root, "m12", "12: 201 Created + ApiResponse.success('Thêm sinh viên thành công', student)", 545, 315, 555, is_reply=True)
+    add_message(root, "m13", "13: loadStudents() - Làm mới danh sách sinh viên", 315, 315, 595, is_self=True)
+    add_message(root, "m14", "14: Hiển thị toast thành công & Đóng Modal", 305, 80, 630, is_reply=True)
 
-    # Opt error
-    add_cell(root, "alt_enr", "opt [Lớp đã đầy / Vượt quá 30 tín chỉ / Hết hạn đăng ký]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 755, 'width': 1050, 'height': 80})
-    add_message(root, "m_alt1", "400 Bad Request: Học phần đã đầy / Vượt quá tín chỉ tối đa", 545, 315, 785, is_reply=True)
-    add_message(root, "m_alt2", "Hiển thị thông báo lỗi chi tiết trên màn hình Đăng ký", 305, 80, 820, is_reply=True)
+    add_cell(root, "alt_dup", "opt [Mã sinh viên hoặc Email đã tồn tại]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 675, 'width': 1050, 'height': 80})
+    add_message(root, "m_dup1", "400 Bad Request: Mã sinh viên hoặc Email đã được sử dụng", 545, 315, 705, is_reply=True)
+    add_message(root, "m_dup2", "Hiển thị thông báo trùng lặp dữ liệu trên form", 305, 80, 735, is_reply=True)
+    return model
 
+# 4. QUẢN LÝ HỒ SƠ SINH VIÊN (STATUS / SUSPEND)
+def build_seq_4_student_manage():
+    model, root = create_base_model(1380, 940)
+    add_cell(root, "frame_std_stat", "sd UC-04: Quản lý hồ sơ Sinh viên & Đình chỉ đào tạo", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    setup_6_lifelines(root, "Quản trị viên", "StudentsPage", "StudentController", "StudentService", "StudentRepository", "Database (MySQL)", height=800)
+
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 600})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 500})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 420})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
+
+    add_message(root, "m1", "1: Chọn sinh viên & Chuyển trạng thái sang SUSPENDED (Đình chỉ)", 80, 305, 135)
+    add_message(root, "m2", "2: PUT /api/students/{id}/status?status=SUSPENDED", 315, 545, 185)
+    add_message(root, "m3", "3: updateStatus(id, 'SUSPENDED')", 555, 785, 230)
+    add_message(root, "m4", "4: findById(id)", 795, 1025, 275)
+    add_message(root, "m5", "5: SELECT * FROM students WHERE id = ?", 1035, 1245, 315)
+    add_message(root, "m6", "6: Trả về Student entity và User liên kết", 1245, 1025, 355, is_reply=True)
+    add_message(root, "m7", "7: student.setStatus(SUSPENDED); user.setIsActive(false)", 795, 795, 395, is_self=True)
+    add_message(root, "m8", "8: studentRepository.save(student) & userRepository.save(user)", 795, 1025, 435)
+    add_message(root, "m9", "9: UPDATE students SET status = 'SUSPENDED'; UPDATE users SET is_active = 0", 1035, 1245, 475)
+    add_message(root, "m10", "10: Ghi nhận AuditLog('UPDATE_STUDENT_STATUS', id, 'SUSPENDED')", 795, 795, 510, is_self=True)
+    add_message(root, "m11", "11: 200 OK + ApiResponse.success('Cập nhật trạng thái thành công')", 545, 315, 545, is_reply=True)
+    add_message(root, "m12", "12: Hiển thị toast thành công & Cập nhật màu trạng thái trên bảng", 305, 80, 585, is_reply=True)
+    return model
+
+# 5. KHOA & LỚP SINH HOẠT
+def build_seq_5_academic_structure():
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_cls", "sd UC-05: Quản lý Cơ cấu Đào tạo (Khoa, Ngành & Lớp)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Quản trị viên", "ClassesPage", "ClassController", "ClassService", "ClassRepository", "Database (MySQL)", height=760)
+
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 280})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 220})
+
+    add_message(root, "m1", "1: Nhập tên lớp (className), mã lớp, khoa, ngành, niên khóa", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/classes (ClassRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: create(ClassRequest request)", 555, 785, 230)
+    add_message(root, "m4", "4: existsByClassCode(request.getClassCode())", 795, 1025, 275)
+    add_message(root, "m5", "5: SELECT COUNT(*) FROM classes WHERE class_code = ?", 1035, 1245, 315)
+    add_message(root, "m6", "6: Trả về count = 0 (Mã lớp hợp lệ)", 1245, 1025, 355, is_reply=True)
+    add_message(root, "m7", "7: classRepository.save(new ClassEntity(...))", 795, 1025, 395)
+    add_message(root, "m8", "8: INSERT INTO classes (class_code, class_name, department_id, cohort_id...)", 1035, 1245, 435)
+    add_message(root, "m9", "9: 201 Created + ApiResponse.success('Tạo lớp sinh hoạt thành công', classDTO)", 545, 315, 485, is_reply=True)
+    add_message(root, "m10", "10: Hiển thị toast thành công & Nạp lại danh sách lớp", 305, 80, 525, is_reply=True)
+    return model
+
+# 6. QUẢN LÝ GIẢNG VIÊN
+def build_seq_6_lecturer_manage():
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_lec", "sd UC-06: Quản lý Giảng viên & Phân công đào tạo", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Quản trị viên", "LecturersPage", "LecturerController", "LecturerService", "LecturerRepository", "Database (MySQL)", height=760)
+
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
+
+    add_message(root, "m1", "1: Nhập mã GV, họ tên, email, học vị, khoa trực thuộc", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/lecturers (LecturerRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: create(LecturerRequest request)", 555, 785, 230)
+    add_message(root, "m4", "4: existsByLecturerCode(code) || existsByEmail(email)", 795, 1025, 275)
+    add_message(root, "m5", "5: SELECT COUNT(*) FROM lecturers WHERE lecturer_code = ? OR email = ?", 1035, 1245, 315)
+    add_message(root, "m6", "6: Trả về count = 0 (Chưa tồn tại)", 1245, 1025, 355, is_reply=True)
+    add_message(root, "m7", "7: Tạo User(role=LECTURER, pass=123456) & Lecturer entity", 795, 795, 395, is_self=True)
+    add_message(root, "m8", "8: INSERT INTO users ... ; INSERT INTO lecturers ...", 1035, 1245, 435)
+    add_message(root, "m9", "9: 201 Created + ApiResponse.success('Thêm giảng viên thành công', lecturer)", 545, 315, 485, is_reply=True)
+    add_message(root, "m10", "10: Hiển thị toast thành công & Nạp lại danh sách giảng viên", 305, 80, 525, is_reply=True)
+    return model
+
+# 7. QUẢN LÝ MÔN HỌC & TIÊN QUYẾT
+def build_seq_7_subject_manage():
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_sbj", "sd UC-07: Quản lý Môn học, Tín chỉ & Môn tiên quyết", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Quản trị viên", "SubjectsPage", "SubjectController", "SubjectService", "SubjectRepository", "Database (MySQL)", height=760)
+
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
+
+    add_message(root, "m1", "1: Nhập mã môn, tên môn, số TC (LT/TH), môn tiên quyết", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/subjects (SubjectRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: create(SubjectRequest request)", 555, 785, 230)
+    add_message(root, "m4", "4: checkCircularPrerequisite(subjectCode, prerequisiteIds) qua DAG", 795, 795, 275, is_self=True)
+    add_message(root, "m5", "5: subjectRepository.save(subject) & prerequisiteRepository.saveAll(...)", 795, 1025, 315)
+    add_message(root, "m6", "6: INSERT INTO subjects ... ; INSERT INTO subject_prerequisites ...", 1035, 1245, 355)
+    add_message(root, "m7", "7: Trả về Subject hoàn chỉnh kèm danh sách môn tiên quyết", 1245, 1025, 395, is_reply=True)
+    add_message(root, "m8", "8: 201 Created + ApiResponse.success('Thêm môn học thành công')", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Hiển thị toast thành công & Cập nhật danh mục môn học", 305, 80, 485, is_reply=True)
+    return model
+
+# 8. CẤU HÌNH HỌC KỲ
+def build_seq_8_semester_config():
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_sem", "sd UC-08: Cấu hình Học kỳ & Kích hoạt đợt đào tạo", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Quản trị viên", "SemestersPage", "SemesterController", "SemesterService", "SemesterRepository", "Database (MySQL)", height=760)
+
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
+
+    add_message(root, "m1", "1: Chọn học kỳ và bấm 'Đặt làm học kỳ hiện tại'", 80, 305, 135)
+    add_message(root, "m2", "2: PUT /api/semesters/{id}/set-current", 315, 545, 185)
+    add_message(root, "m3", "3: setCurrentSemester(id)", 555, 785, 230)
+    add_message(root, "m4", "4: semesterRepository.resetAllCurrentSemesters()", 795, 1025, 275)
+    add_message(root, "m5", "5: UPDATE semesters SET is_current = 0 WHERE is_current = 1", 1035, 1245, 315)
+    add_message(root, "m6", "6: UPDATE semesters SET is_current = 1 WHERE id = ?", 1035, 1245, 355)
+    add_message(root, "m7", "7: Xóa cache REDIS key: 'current_semester'", 795, 795, 395, is_self=True)
+    add_message(root, "m8", "8: 200 OK + ApiResponse.success('Cập nhật học kỳ hiện tại thành công')", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Hiển thị badge 'Học kỳ hiện tại' trên giao diện", 305, 80, 485, is_reply=True)
+    return model
+
+# 9. MỞ LỚP HỌC PHẦN
+def build_seq_9_course_section_open():
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_sec", "sd UC-09: Mở mới & Điều phối Lớp học phần", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Cán bộ Đào tạo", "CourseSectionsPage", "CourseSectionController", "CourseSectionService", "CourseSectionRepository", "Database (MySQL)", height=760)
+
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
+
+    add_message(root, "m1", "1: Chọn môn học, học kỳ, giảng viên, phòng học, sĩ số tối đa", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/course-sections (CourseSectionRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: create(CourseSectionRequest request)", 555, 785, 230)
+    add_message(root, "m4", "4: validateSemesterIsOpen & checkLecturerAvailable", 795, 795, 275, is_self=True)
+    add_message(root, "m5", "5: courseSectionRepository.save(newSection)", 795, 1025, 315)
+    add_message(root, "m6", "6: INSERT INTO course_sections (subject_id, semester_id, max_students...)", 1035, 1245, 355)
+    add_message(root, "m7", "7: Trả về Section Entity (status = 'OPEN', current_students = 0)", 1245, 1025, 395, is_reply=True)
+    add_message(root, "m8", "8: 201 Created + ApiResponse.success('Mở lớp học phần thành công')", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Hiển thị toast thành công & Hiển thị lớp trong danh sách", 305, 80, 485, is_reply=True)
+    return model
+
+# 10. XẾP THỜI KHÓA BIỂU
+def build_seq_10_schedule_manage():
+    model, root = create_base_model(1380, 940)
+    add_cell(root, "frame_sch", "sd UC-10: Xếp Thời khóa biểu & Chống va chạm phòng/giờ", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    setup_6_lifelines(root, "Cán bộ Đào tạo", "SchedulesPage", "ScheduleController", "ScheduleService", "ScheduleRepository", "Database (MySQL)", height=800)
+
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 640})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 540})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 450})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 250})
+
+    add_message(root, "m1", "1: Chọn sectionId, phòng học (room), thứ, tiết bắt đầu - kết thúc", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/schedules (ScheduleRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: create(ScheduleRequest request)", 555, 785, 230)
+    add_message(root, "m4", "4: checkRoomConflict(room, dayOfWeek, startPeriod, endPeriod, dates)", 795, 1025, 275)
+    add_message(root, "m5", "5: SELECT * FROM schedules WHERE room = ? AND day_of_week = ? ...", 1035, 1245, 315)
+    add_message(root, "m6", "6: checkLecturerConflict(lecturerId, dayOfWeek, periods, dates)", 795, 1025, 355)
+    add_message(root, "m7", "7: SELECT * FROM schedules WHERE lecturer_id = ? ...", 1035, 1245, 395)
+    add_message(root, "m8", "8: scheduleRepository.save(newSchedule)", 795, 1025, 435)
+    add_message(root, "m9", "9: INSERT INTO schedules (section_id, room, day_of_week, start_period...)", 1035, 1245, 475)
+    add_message(root, "m10", "10: 201 Created + ApiResponse.success(schedule)", 545, 315, 520, is_reply=True)
+    add_message(root, "m11", "11: Vẽ ô lịch vào lưới Thời khóa biểu tuần", 315, 80, 560, is_reply=True)
+
+    add_cell(root, "alt_sch", "opt [Trùng phòng hoặc Trùng lịch giảng viên]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 620, 'width': 1050, 'height': 80})
+    add_message(root, "m_err1", "400 Bad Request: Xung đột lịch phòng học / Trùng lịch giảng viên!", 545, 315, 650, is_reply=True)
+    add_message(root, "m_err2", "Cảnh báo xung đột chi tiết lên giao diện xếp lịch", 305, 80, 680, is_reply=True)
+    return model
+
+# 11. ĐĂNG KÝ LỚP HỌC PHẦN (REDIS LOCK & ATOMIC SQL INCREMENT)
+def build_seq_11_enrollment():
+    model, root = create_base_model(1480, 960)
+    add_cell(root, "frame_enr", "sd UC-11: Sinh viên Đăng ký Tín chỉ (Redis Sentinel Lock & Atomic DB)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1440, 'height': 910})
+    setup_7_lifelines(root, "Sinh viên", "EnrollPage", "EnrollmentController", "EnrollmentService", "RedisLockService", "CourseSectionRepo", "Database (MySQL)", height=820)
+
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 275, 'y': 135, 'width': 10, 'height': 690})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 485, 'y': 180, 'width': 10, 'height': 600})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 695, 'y': 220, 'width': 10, 'height': 520})
+    add_cell(root, "act_redis", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 905, 'y': 260, 'width': 10, 'height': 420})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1115, 'y': 440, 'width': 10, 'height': 170})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1315, 'y': 475, 'width': 10, 'height': 120})
+
+    add_message(root, "m1", "1: Chọn lớp học phần & Bấm 'Đăng ký' (sectionId)", 70, 275, 135)
+    add_message(root, "m2", "2: POST /api/enrollments (EnrollmentRequest: sectionId)", 285, 485, 180)
+    add_message(root, "m3", "3: enroll(studentId, request.getSectionId())", 495, 695, 220)
+    add_message(root, "m4", "4: tryConsumeUserRateLimit(studentId, 5 req/3s)", 705, 905, 260)
+    add_message(root, "m5", "5: true (Rate limit hợp lệ)", 905, 705, 295, is_reply=True)
+    add_message(root, "m6", "6: acquireUserActionLock(studentId, 'ENROLL', 2s)", 705, 905, 330)
+    add_message(root, "m7", "7: true (Đã chiếm giữ Idempotency lock chống spam click)", 905, 705, 365, is_reply=True)
+    add_message(root, "m8", "8: checkPrerequisitesDAG() & checkScheduleConflict()", 705, 705, 400, is_self=True)
+    add_message(root, "m9", "9: incrementCurrentStudentsAtomic(sectionId)", 705, 1115, 440)
+    add_message(root, "m10", "10: UPDATE course_sections SET current_students = current_students + 1 WHERE id = ? AND current_students < max_students", 1125, 1315, 475)
+    add_message(root, "m11", "11: 1 row affected (Chiếm giữ slot thành công)", 1315, 1125, 510, is_reply=True)
+    add_message(root, "m12", "12: enrollmentRepository.save(new Enrollment(ENROLLED))", 705, 1115, 545)
+    add_message(root, "m13", "13: INSERT INTO enrollments (student_id, section_id, status='ENROLLED')", 1125, 1315, 575)
+    add_message(root, "m14", "14: releaseUserActionLock(studentId, 'ENROLL')", 705, 905, 610)
+    add_message(root, "m15", "15: 200 OK + ApiResponse.success('Đăng ký thành công', enrollmentDTO)", 495, 285, 650, is_reply=True)
+    add_message(root, "m16", "16: Hiển thị toast thành công & Cập nhật Thời khóa biểu", 275, 70, 690, is_reply=True)
+
+    add_cell(root, "alt_enr_err", "opt [Lớp đã hết chỗ (rowsUpdated == 0) hoặc Spam click]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 735, 'width': 1200, 'height': 80})
+    add_message(root, "m_err1", "400 Bad Request: Lớp học phần đã hết chỗ / Yêu cầu đang được xử lý", 485, 285, 765, is_reply=True)
+    add_message(root, "m_err2", "Cảnh báo lỗi chi tiết trên màn hình Đăng ký tín chỉ", 275, 70, 795, is_reply=True)
     return model
 
 # 12. HỦY ĐĂNG KÝ HỌC PHẦN
 def build_seq_12_cancel_enrollment():
     model, root = create_base_model(1380, 900)
-    add_cell(root, "frame_cnl", "sd UC-12: Hủy đăng ký học phần & Hoàn trả sĩ số", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
-
+    add_cell(root, "frame_cnl", "sd UC-12: Hủy đăng ký Học phần & Hoàn trả sĩ số lớp", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
     setup_6_lifelines(root, "Sinh viên", "MyEnrollmentsPage", "EnrollmentController", "EnrollmentService", "EnrollmentRepository", "Database (MySQL)", height=760)
 
-    # Activations
     add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 600})
     add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 500})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 410})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 260})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 420})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 300})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 240})
 
-    # Messages
-    add_message(root, "m1", "1: Chọn học phần đã đăng ký & Bấm Hủy đăng ký", 80, 305, 135)
+    add_message(root, "m1", "1: Chọn học phần đã đăng ký & Bấm 'Hủy đăng ký'", 80, 305, 135)
     add_message(root, "m2", "2: DELETE /api/enrollments/{enrollmentId}", 315, 545, 185)
-    add_message(root, "m3", "3: cancelEnrollment(user.getId(), enrollmentId)", 555, 785, 230)
-    add_message(root, "m4", "4: findById(enrollmentId)", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT * FROM enrollments WHERE id = ?", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về Enrollment entity", 1245, 1035, 355, is_reply=True)
-    add_message(root, "m7", "7: BR: đúng chủ sở hữu & status == ENROLLED & trong hạn đăng ký & chưa có điểm", 795, 795, 395, is_self=True)
-    add_message(root, "m8", "8: courseSectionRepository.findByIdForEnrollment(sectionId) (Khóa hàng)", 795, 795, 440, is_self=True)
-    add_message(root, "m9", "9: enrollment.setStatus(CANCELLED) & save(enrollment)", 795, 1025, 485)
-    add_message(root, "m10", "10: UPDATE enrollments SET status = 'CANCELLED' WHERE id = ?", 1035, 1245, 515)
-    add_message(root, "m11", "11: Trigger after_enrollment_update: enrolled_count = enrolled_count - 1", 1245, 1245, 545, is_self=True)
-    add_message(root, "m12", "12: Hoàn tất hủy đăng ký & giải phóng chỗ", 1245, 1025, 575, is_reply=True)
-    add_message(root, "m13", "13: 200 OK + ApiResponse.success('Hủy đăng ký thành công')", 545, 315, 615, is_reply=True)
-    add_message(root, "m14", "14: Xóa học phần khỏi danh sách môn đã đăng ký của sinh viên", 315, 315, 660, is_self=True)
-    add_message(root, "m15", "15: Hiển thị toast: Hủy đăng ký học phần thành công", 305, 80, 700, is_reply=True)
-
+    add_message(root, "m3", "3: cancel(studentId, enrollmentId)", 555, 785, 230)
+    add_message(root, "m4", "4: findById(enrollmentId) & validateStudentOwnership", 795, 1025, 275)
+    add_message(root, "m5", "5: decrementCurrentStudentsAtomic(sectionId)", 795, 1025, 315)
+    add_message(root, "m6", "6: UPDATE course_sections SET current_students = current_students - 1 WHERE id = ?", 1035, 1245, 355)
+    add_message(root, "m7", "7: enrollmentRepository.delete(enrollment)", 795, 1025, 395)
+    add_message(root, "m8", "8: DELETE FROM enrollments WHERE id = ?", 1035, 1245, 435)
+    add_message(root, "m9", "9: 200 OK + ApiResponse.success('Hủy môn thành công, đã hoàn trả slot')", 545, 315, 485, is_reply=True)
+    add_message(root, "m10", "10: Gỡ môn khỏi bảng môn đã đăng ký & cập nhật tổng số TC", 305, 80, 525, is_reply=True)
     return model
 
 # 13. NHẬP ĐIỂM THÀNH PHẦN
 def build_seq_13_grade_entry():
-    model, root = create_base_model(1380, 930)
-    add_cell(root, "frame_grd", "sd UC-13: Giảng viên nhập điểm thành phần & Tính tổng kết", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 880})
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_grd", "sd UC-13: Giảng viên Nhập điểm thành phần & Tính GPA", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Giảng viên", "GradeEntryPage", "GradeController", "GradeService", "GradeRepository", "Database (MySQL)", height=760)
 
-    setup_6_lifelines(root, "Giảng viên", "GradeEntryPage", "GradeController", "GradeService", "GradeRepository", "Database (MySQL)", height=790)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 630})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 530})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 440})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 300})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 240})
-
-    # Messages
-    add_message(root, "m1", "1: Nhập điểm CC1 (5%), CC2 (5%), GK (30%), CK (60%) & Bấm Lưu tạm", 80, 305, 135)
-    add_message(root, "m2", "2: PUT /api/grades/batch (List<GradeRequest>, finalize=false)", 315, 545, 185)
-    add_message(root, "m3", "3: saveGrades(user.getId(), requests)", 555, 785, 230)
-    add_message(root, "m4", "4: lecturerRepository.findByUserId(userId) & check quyền giảng viên", 795, 795, 275, is_self=True)
-    add_message(root, "m5", "5: loop: findByEnrollmentId(request.getEnrollmentId())", 795, 1025, 315)
-    add_message(root, "m6", "6: SELECT * FROM grades WHERE enrollment_id = ?", 1035, 1245, 355)
-    add_message(root, "m7", "7: Trả về Grade entity (isFinalized == false hoặc trong hạn 7 ngày)", 1245, 1025, 395, is_reply=True)
-    add_message(root, "m8", "8: Set scores (cc1, cc2, midterm, final) & gọi grade.calculateTotalScore()", 795, 795, 435, is_self=True)
-    add_message(root, "m9", "9: Tự động tính: total = CC1*0.05 + CC2*0.05 + GK*0.3 + CK*0.6; nếu CK < 3.0 -> F", 795, 795, 480, is_self=True)
-    add_message(root, "m10", "10: save(grade)", 795, 1025, 525)
-    add_message(root, "m11", "11: UPDATE grades SET cc1_score=?, cc2_score=?, midterm_score=?, final_score=?, total_score=?...", 1035, 1245, 555)
-    add_message(root, "m12", "12: Hoàn tất lưu điểm tạm thời cho cả lớp", 1245, 1025, 585, is_reply=True)
-    add_message(root, "m13", "13: 200 OK + ApiResponse.success('Lưu điểm hàng loạt thành công')", 545, 315, 625, is_reply=True)
-    add_message(root, "m14", "14: Cập nhật cột Điểm TK, Điểm Chữ và GPA hiển thị trên lưới", 315, 315, 670, is_self=True)
-    add_message(root, "m15", "15: Hiển thị toast: Lưu bản nháp sổ điểm thành công", 305, 80, 715, is_reply=True)
-
+    add_message(root, "m1", "1: Giảng viên nhập điểm chuyên cần, giữa kỳ, thi cuối kỳ & bấm 'Lưu sổ điểm'", 80, 305, 135)
+    add_message(root, "m2", "2: PUT /api/grades/batch (BatchGradeRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: saveBatch(lecturerId, request)", 555, 785, 230)
+    add_message(root, "m4", "4: validateGradeRange(0.0 - 10.0) & calculateTotalFormula()", 795, 795, 275, is_self=True)
+    add_message(root, "m5", "5: convertToGradeLetter(score10) & convertToGrade4()", 795, 795, 315, is_self=True)
+    add_message(root, "m6", "6: gradeRepository.saveAll(grades)", 795, 1025, 355)
+    add_message(root, "m7", "7: BATCH UPDATE grades SET score_cc=?, score_gk=?, score_ck=?, total=...", 1035, 1245, 395)
+    add_message(root, "m8", "8: 200 OK + ApiResponse.success('Lưu điểm thành công')", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Hiển thị toast thành công & Cập nhật điểm chữ, điểm hệ 4 trên bảng", 305, 80, 485, is_reply=True)
     return model
 
-# 14. CHỐT BẢNG ĐIỂM HỌC PHẦN
+# 14. KHÓA SỔ ĐIỂM (FINALIZE & 7 DAYS GRACE PERIOD)
 def build_seq_14_grade_finalize():
-    model, root = create_base_model(1380, 960)
-    add_cell(root, "frame_fnl", "sd UC-14: Chốt sổ điểm, công bố & Quản lý cửa sổ sửa điểm 7 ngày", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 910})
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_fnl", "sd UC-14: Chốt sổ điểm & Cửa sổ ân hạn sửa điểm 7 ngày", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Giảng viên", "GradeEntryPage", "GradeController", "GradeService", "GradeRepository", "Database (MySQL)", height=760)
 
-    setup_6_lifelines(root, "Giảng viên", "GradeEntryPage", "GradeController", "GradeService", "GradeRepository", "Database (MySQL)", height=820)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 630})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 530})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 440})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 300})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 240})
-
-    # Messages
-    add_message(root, "m1", "1: Kiểm tra bảng điểm toàn lớp & Bấm Chốt bảng điểm", 80, 305, 135)
-    add_message(root, "m2", "2: PUT /api/grades (GradeRequest: finalize = true)", 315, 545, 185)
-    add_message(root, "m3", "3: saveGrade(user.getId(), request)", 555, 785, 230)
-    add_message(root, "m4", "4: check: grade.isFinalized == false || grade.isEditWindowExpired() == false", 795, 795, 275, is_self=True)
-    add_message(root, "m5", "5: check: Đã nhập đủ điểm CC1, CC2, GK, CK cho 100% sinh viên lớp", 795, 795, 320, is_self=True)
-    add_message(root, "m6", "6: grade.setIsFinalized(true) & setFinalizedAt(now) (Công bố kết quả cho SV)", 795, 795, 365, is_self=True)
-    add_message(root, "m7", "7: save(grade)", 795, 1025, 410)
-    add_message(root, "m8", "8: UPDATE grades SET is_finalized = true, finalized_at = ? WHERE enrollment_id = ?", 1035, 1245, 450)
-    add_message(root, "m9", "9: Xác nhận lưu trạng thái chốt sổ điểm thành công", 1245, 1025, 490, is_reply=True)
-    add_message(root, "m10", "10: Trả về đối tượng Grade đã chốt & công bố", 1025, 785, 520, is_reply=True)
-    add_message(root, "m11", "11: 200 OK + ApiResponse.success('Lưu điểm thành công', grade)", 545, 315, 560, is_reply=True)
-    add_message(root, "m12", "12: Hiển thị badge ĐÃ CÔNG BỐ (Mở cửa sổ 7 ngày cho phép GV sửa điểm)", 315, 315, 605, is_self=True)
-    add_message(root, "m13", "13: Thông báo: Điểm đã công bố tới sinh viên (còn hạn sửa 7 ngày)", 305, 80, 650, is_reply=True)
-
-    # Opt: Quá hạn 7 ngày / Admin mở khóa
-    add_cell(root, "alt_lock", "alt [Quá hạn 7 ngày: Khóa cứng — Chỉ Admin mở khóa]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 690, 'width': 1050, 'height': 85})
-    add_message(root, "m_lock1", "400 Bad Request: Bảng điểm đã khóa cứng quá 7 ngày (Admin mở khóa)", 545, 315, 715, is_reply=True)
-    add_message(root, "m_lock2", "Admin mở khóa: PUT /api/grades (finalize=false) -> đặt lại is_finalized=false", 545, 785, 745)
-
-    # Opt error thiếu điểm
-    add_cell(root, "alt_fnl", "opt [Chưa nhập đủ điểm thành phần 100% sinh viên]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 790, 'width': 1050, 'height': 80})
-    add_message(root, "m_alt1", "400 Bad Request: Không thể chốt điểm khi còn sinh viên thiếu điểm", 545, 315, 815, is_reply=True)
-    add_message(root, "m_alt2", "Cảnh báo lỗi: Yêu cầu hoàn tất điểm trước khi chốt sổ", 305, 80, 845, is_reply=True)
-
+    add_message(root, "m1", "1: Giảng viên bấm 'Chốt sổ điểm & Công bố'", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/grades/section/{sectionId}/publish", 315, 545, 185)
+    add_message(root, "m3", "3: publishGrades(sectionId, lecturerId)", 555, 785, 230)
+    add_message(root, "m4", "4: validateAllStudentsHaveGrades(sectionId)", 795, 795, 275, is_self=True)
+    add_message(root, "m5", "5: setStatus(FINALIZED) & setLockDeadline(now + 7 days)", 795, 795, 315, is_self=True)
+    add_message(root, "m6", "6: UPDATE grades SET is_final = 1, locked_at = ? WHERE section_id = ?", 1035, 1245, 355)
+    add_message(root, "m7", "7: Gửi Notification tới tất cả sinh viên trong lớp học phần", 795, 795, 395, is_self=True)
+    add_message(root, "m8", "8: 200 OK + ApiResponse.success('Đã công bố điểm chính thức')", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Chuyển giao diện sang chế độ Read-only & hiển thị đếm ngược 7 ngày", 305, 80, 485, is_reply=True)
     return model
 
-# 15. TRA CỨU BẢNG ĐIỂM VÀ ĐIỂM CPA
+# 15. TRA CỨU BẢNG ĐIỂM CPA
 def build_seq_15_transcript():
-    model, root = create_base_model(1380, 920)
-    add_cell(root, "frame_tra", "sd UC-15: Tra cứu bảng điểm, tính GPA học kỳ & CPA tích lũy", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 870})
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_tra", "sd UC-15: Tra cứu Bảng điểm, Tiến độ CTĐT & Điểm CPA", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Sinh viên", "TranscriptPage", "TranscriptController", "TranscriptService", "GradeRepository", "Database (MySQL)", height=760)
 
-    setup_6_lifelines(root, "Sinh viên", "TranscriptPage", "TranscriptController", "TranscriptService", "GradeRepository", "Database (MySQL)", height=780)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 620})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 520})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 430})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 150})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 80})
-
-    # Messages
-    add_message(root, "m1", "1: Truy cập màn hình Bảng điểm học tập", 80, 305, 135)
+    add_message(root, "m1", "1: Sinh viên truy cập trang 'Bảng điểm & Tiến độ học tập'", 80, 305, 135)
     add_message(root, "m2", "2: GET /api/transcript/me", 315, 545, 185)
-    add_message(root, "m3", "3: studentService.findByUserId(user.getId()) -> studentId", 555, 785, 230)
-    add_message(root, "m4", "4: getTranscript(studentId)", 555, 785, 275)
-    add_message(root, "m5", "5: findFinalizedByStudentId(studentId) (Chỉ lấy điểm đã chốt isFinalized=true)", 795, 1025, 315)
-    add_message(root, "m6", "6: SELECT * FROM grades g JOIN enrollments e ... WHERE e.student_id = ? AND is_finalized = true", 1035, 1245, 355)
-    add_message(root, "m7", "7: Trả về danh sách Grade records đã chốt", 1245, 1035, 395, is_reply=True)
-    add_message(root, "m8", "8: Trả về List<Grade>", 1025, 785, 425, is_reply=True)
-    add_message(root, "m9", "9: Group by semester: gom nhóm danh sách điểm theo từng học kỳ", 795, 795, 465, is_self=True)
-    add_message(root, "m10", "10: Tính GPA học kỳ: semGpa = sum(gpaPoint * credits) / semCredits", 795, 795, 510, is_self=True)
-    add_message(root, "m11", "11: Tính CPA tích lũy: cumulativeGpa = totalWeightedGpa / totalCredits", 795, 795, 555, is_self=True)
-    add_message(root, "m12", "12: Trả về TranscriptResponse(studentInfo, semesterGrades, cumulativeGpa)", 785, 555, 600, is_reply=True)
-    add_message(root, "m13", "13: 200 OK + ApiResponse.success(TranscriptResponse)", 545, 315, 640, is_reply=True)
-    add_message(root, "m14", "14: Hiển thị bảng điểm từng kỳ kèm GPA, tổng tín chỉ tích lũy & CPA", 305, 80, 685, is_reply=True)
-
+    add_message(root, "m3", "3: getMyTranscript(studentId)", 555, 785, 230)
+    add_message(root, "m4", "4: findFinalizedGradesByStudentId(studentId)", 795, 1025, 275)
+    add_message(root, "m5", "5: SELECT g, s FROM grades g JOIN subjects s WHERE g.student_id = ? AND is_final = 1", 1035, 1245, 315)
+    add_message(root, "m6", "6: calculateSemesterGPA() & calculateCumulativeCPA() theo Thông tư 08", 795, 795, 355, is_self=True)
+    add_message(root, "m7", "7: checkRetakePolicy() -> Giữ lại điểm cao nhất đối với môn học cải thiện", 795, 795, 395, is_self=True)
+    add_message(root, "m8", "8: 200 OK + ApiResponse.success(TranscriptDTO)", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Render biểu đồ CPA qua từng kỳ, thanh tiến độ tín chỉ tích lũy", 305, 80, 485, is_reply=True)
     return model
 
-# 16. BÁO CÁO THỐNG KÊ & DASHBOARD
+# 16. DASHBOARD & CẢNH BÁO HỌC VỤ
 def build_seq_16_dashboard():
-    model, root = create_base_model(1380, 910)
-    add_cell(root, "frame_dsh", "sd UC-16: Báo cáo Thống kê toàn trường & Dashboard", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 860})
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_dsh", "sd UC-16: Báo cáo Thống kê Toàn trường & Cảnh báo học vụ", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Quản trị viên", "DashboardPage", "DashboardController", "DashboardService", "StudentRepository", "Database (MySQL)", height=760)
 
-    setup_6_lifelines(root, "Quản trị viên", "DashboardPage", "DashboardController", "DashboardService", "StudentRepository", "Database (MySQL)", height=770)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 610})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 510})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 420})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 240})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 170})
-
-    # Messages
-    add_message(root, "m1", "1: Truy cập Dashboard tổng quan", 80, 305, 135)
+    add_message(root, "m1", "1: Quản trị viên truy cập Bảng điều khiển Trung tâm", 80, 305, 135)
     add_message(root, "m2", "2: GET /api/dashboard", 315, 545, 185)
-    add_message(root, "m3", "3: getDashboard()", 555, 785, 230)
-    add_message(root, "m4", "4: count() & countByStatus(ACTIVE, GRADUATED, SUSPENDED, INACTIVE)", 795, 1025, 275)
-    add_message(root, "m5", "5: countByDepartment(): SELECT dept_id, COUNT(*) FROM students GROUP BY dept_id", 795, 1025, 320)
-    add_message(root, "m6", "6: SELECT COUNT(*) ... từ các bảng departments, classes, subjects, lecturers...", 1035, 1245, 360)
-    add_message(root, "m7", "7: Trả về số liệu thống kê tổng hợp và cơ cấu sinh viên theo khoa", 1245, 1025, 410, is_reply=True)
-    add_message(root, "m8", "8: Trả về dữ liệu KPI", 1025, 785, 450, is_reply=True)
-    add_message(root, "m9", "9: Tổng hợp DashboardResponse (totalStudents, studentsByDept, studentsByStatus...)", 795, 795, 495, is_self=True)
-    add_message(root, "m10", "10: Trả về DashboardResponse", 785, 555, 545, is_reply=True)
-    add_message(root, "m11", "11: 200 OK + ApiResponse.success(DashboardResponse)", 545, 315, 590, is_reply=True)
-    add_message(root, "m12", "12: Vẽ biểu đồ cột (Sinh viên theo khoa), biểu đồ tròn (Trạng thái) & Thẻ KPI", 305, 80, 640, is_reply=True)
-
+    add_message(root, "m3", "3: getDashboardMetrics()", 555, 785, 230)
+    add_message(root, "m4", "4: countTotalStudents(), countActiveCourses(), countLecturers()", 795, 1025, 275)
+    add_message(root, "m5", "5: SELECT COUNT(*) FROM students; SELECT COUNT(*) FROM course_sections...", 1035, 1245, 315)
+    add_message(root, "m6", "6: queryAcademicWarningCandidates(cpa < 1.0 || cpa < 1.2)", 795, 1025, 355)
+    add_message(root, "m7", "7: 200 OK + ApiResponse.success(DashboardDTO: kpiMetrics, chartData)", 545, 315, 415, is_reply=True)
+    add_message(root, "m8", "8: Vẽ thẻ KPI (Tổng SV, Lớp HP, Tỷ lệ nộp học phí) và Biểu đồ cảnh báo học vụ", 305, 80, 465, is_reply=True)
     return model
 
-
-# 17. QUẢN LÝ & THU HỌC PHÍ (TUITION)
+# 17. QUẢN LÝ & THU HỌC PHÍ THEO TÍN CHỈ
 def build_seq_17_tuition_management():
-    model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_tui", "sd UC-17: Quản lý & Thu học phí (Tuition Management & Invoicing)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_tui", "sd UC-17: Quản lý Tài chính & Thu học phí theo tín chỉ", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Thu ngân / Admin", "TuitionCashierPage", "TuitionController", "TuitionService", "StudentInvoiceRepository", "Database (MySQL)", height=760)
 
-    setup_6_lifelines(root, "Thu ngân / Admin", "TuitionCashierPage", "TuitionController", "TuitionService", "StudentInvoiceRepository", "Database (MySQL)", height=800)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 550})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 480})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 380})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 300})
-
-    # Messages
-    add_message(root, "m1", "1: Tra cứu công nợ sinh viên (nhập MSSV & chọn học kỳ)", 80, 305, 135)
-    add_message(root, "m2", "2: GET /api/admin/tuition/student/{id}?semesterId={semId}", 315, 545, 185)
-    add_message(root, "m3", "3: getStudentTuitionSummary(studentId, semesterId)", 555, 785, 230)
-    add_message(root, "m4", "4: findByStudentIdAndSemesterId(studentId, semesterId)", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT * FROM student_invoices WHERE student_id=? AND semester_id=?", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về StudentInvoice (status=UNPAID/PARTIAL, balance, totalCredits)", 1245, 1025, 360, is_reply=True)
-    add_message(root, "m7", "7: Trả về Optional<StudentInvoice>", 1025, 785, 395, is_reply=True)
-    add_message(root, "m8", "8: Đóng gói TuitionSummaryResponse(invoice, balance, totalCredits)", 785, 555, 435, is_reply=True)
-    add_message(root, "m9", "9: 200 OK + ApiResponse.success(TuitionSummaryResponse)", 545, 315, 470, is_reply=True)
-    add_message(root, "m10", "10: Hiển thị bảng công nợ; Thu ngân nhập số tiền thu & hình thức", 305, 80, 505, is_reply=True)
-    add_message(root, "m11", "11: Xác nhận thu tiền mặt: POST /api/admin/tuition/collect-cash", 80, 305, 545)
-    add_message(root, "m12", "12: Gửi TuitionPaymentRequest(studentId, semesterId, amount, note)", 315, 545, 580)
-    add_message(root, "m13", "13: collectCash(request) -> Recalculate balance, update status (PAID)", 555, 785, 615)
-    add_message(root, "m14", "14: save(invoice) & UPDATE student_invoices SET paid_amount=?, status='PAID'", 795, 1245, 650)
-    add_message(root, "m15", "15: Trả về bản ghi đã lưu & Tạo ReceiptResponse(receiptNo, amount, cashier)", 1245, 785, 690, is_reply=True)
-    add_message(root, "m16", "16: 200 OK + ApiResponse.success(ReceiptResponse)", 785, 315, 725, is_reply=True)
-    add_message(root, "m17", "17: Xuất biên lai điện tử & in phiếu thu học phí cho sinh viên", 305, 80, 760, is_reply=True)
-
+    add_message(root, "m1", "1: Thu ngân quét mã SV, kiểm tra học phí kỳ hiện tại & bấm 'Thu tiền mặt'", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/admin/tuition/collect-cash (CashCollectionRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: collectCash(request, cashierId)", 555, 785, 230)
+    add_message(root, "m4", "4: findByStudentAndSemester(studentId, semesterId)", 795, 1025, 275)
+    add_message(root, "m5", "5: calculateDiscountPolicy(chính sách miễn giảm / học bổng)", 795, 795, 315, is_self=True)
+    add_message(root, "m6", "6: invoice.setPaidAmount(amount); invoice.setStatus(PAID)", 795, 795, 355, is_self=True)
+    add_message(root, "m7", "7: UPDATE student_invoices SET paid_amount=?, status='PAID' WHERE id=?", 1035, 1245, 395)
+    add_message(root, "m8", "8: 200 OK + ApiResponse.success('Thu tiền thành công', receiptDTO)", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Hiển thị biên lai điện tử & Gửi thông báo xác nhận thanh toán", 305, 80, 485, is_reply=True)
     return model
 
-# 18. ĐIỂM DANH LỚP HỌC & CHECK-IN TRỰC TIẾP (ATTENDANCE)
+# 18. ĐIỂM DANH LỚP HỌC TRỰC TIẾP QUA MÃ PIN 6 SỐ
 def build_seq_18_live_attendance():
     model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_att", "sd UC-18: Điểm danh buổi học & Check-in trực tiếp (Live Attendance)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    add_cell(root, "frame_att", "sd UC-18: Điểm danh lớp học trực tiếp qua mã PIN 6 số", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    setup_6_lifelines(root, "Giảng viên & Sinh viên", "AttendancePortalUI", "AttendanceController", "AttendanceService", "AttendanceSessionRepo", "Database (MySQL)", height=800)
 
-    setup_6_lifelines(root, "Giảng viên & Sinh viên", "AttendancePortalUI", "AttendanceController", "AttendanceService", "AttendanceSessionRepository", "Database (MySQL)", height=800)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 640})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 540})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 450})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 250})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 400})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 320})
+    add_message(root, "m1", "1: Giảng viên mở phiên điểm danh lớp học (sectionId, 15 phút)", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/attendance/session/start (StartSessionRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: startSession(sectionId, durationMinutes)", 555, 785, 230)
+    add_message(root, "m4", "4: Sinh mã PIN 6 số ngẫu nhiên & lưu cache REDIS (TTL = 15 phút)", 795, 795, 275, is_self=True)
+    add_message(root, "m5", "5: INSERT INTO attendance_sessions (section_id, pin_code, expires_at...)", 1035, 1245, 315)
+    add_message(root, "m6", "6: 200 OK: Trả về mã PIN lớn trên màn hình máy chiếu", 545, 305, 355, is_reply=True)
+    add_message(root, "m7", "7: Sinh viên nhập mã PIN 6 số trên điện thoại & bấm 'Check-in'", 80, 305, 395)
+    add_message(root, "m8", "8: POST /api/attendance/check-in (CheckInRequest: pin, studentId)", 315, 545, 435)
+    add_message(root, "m9", "9: checkIn(studentId, pin) -> validatePINAndExpiration()", 555, 785, 475)
+    add_message(root, "m10", "10: INSERT INTO attendance_records (session_id, student_id, status='PRESENT')", 1035, 1245, 515)
+    add_message(root, "m11", "11: 200 OK + ApiResponse.success('Điểm danh thành công')", 545, 315, 555, is_reply=True)
+    add_message(root, "m12", "12: Hiển thị trạng thái 'Đã điểm danh' và nhảy số sĩ số thời gian thực", 305, 80, 595, is_reply=True)
 
-    # Messages
-    add_message(root, "m1", "1: Giảng viên chọn lớp học phần & bấm 'Mở phiên điểm danh'", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/attendance/session/start (durationMinutes=10)", 315, 545, 185)
-    add_message(root, "m3", "3: startAttendanceSession(sectionId, durationMinutes)", 555, 785, 230)
-    add_message(root, "m4", "4: Sinh mã PIN ngẫu nhiên 6 chữ số (PIN '849201') & expiresAt = NOW() + 10m", 795, 795, 275, is_self=True)
-    add_message(root, "m5", "5: save(session) -> INSERT INTO attendance_sessions (pin_code, status='ACTIVE', ...)", 795, 1245, 320)
-    add_message(root, "m6", "6: Trả về phiên điểm danh mới tạo (AttendanceSession)", 1245, 785, 360, is_reply=True)
-    add_message(root, "m7", "7: 200 OK + ApiResponse.success(AttendanceLiveSessionResponse)", 785, 315, 400, is_reply=True)
-    add_message(root, "m8", "8: Trình chiếu mã PIN 6 số & đếm ngược thời gian thực trên lớp", 305, 80, 440, is_reply=True)
-    add_message(root, "m9", "9: Sinh viên nhập mã PIN trên Portal: POST /api/attendance/check-in", 80, 545, 480)
-    add_message(root, "m10", "10: checkInLive(studentId, pinCode) -> Kiểm tra PIN, thời hạn và sĩ số lớp", 555, 785, 520)
-    add_message(root, "m11", "11: INSERT INTO attendance_records (session_id, student_id, status='PRESENT', check_in_time=NOW())", 795, 1245, 560)
-    add_message(root, "m12", "12: 200 OK: Check-in thành công; cập nhật số lượng có mặt tức thời", 1245, 305, 600, is_reply=True)
-    add_message(root, "m13", "13: Giảng viên đối soát sĩ số lớp & bấm 'Chốt và Kết thúc ca điểm danh'", 80, 305, 640)
-    add_message(root, "m14", "14: POST /api/attendance/session (Chốt vắng các SV không check-in)", 315, 545, 675)
-    add_message(root, "m15", "15: finalizeSession(sessionId) -> UPDATE attendance_sessions SET is_finalized=true", 555, 1245, 715)
-    add_message(root, "m16", "16: 200 OK + Thông báo: Hoàn tất điểm danh & ghi nhận tỷ lệ chuyên cần", 1245, 80, 755, is_reply=True)
-
+    add_cell(root, "alt_att", "opt [Mã PIN sai hoặc Phiên điểm danh đã hết hạn]", STYLE_COMBINED_FRAGMENT, vertex=True, geometry={'x': 180, 'y': 650, 'width': 1050, 'height': 80})
+    add_message(root, "m_err1", "400 Bad Request: Mã PIN không đúng hoặc đã hết hạn điểm danh", 545, 315, 680, is_reply=True)
+    add_message(root, "m_err2", "Cảnh báo lỗi check-in không hợp lệ trên màn hình sinh viên", 305, 80, 710, is_reply=True)
     return model
 
-
-# 17. QUẢN LÝ & THU HỌC PHÍ (TUITION)
-def build_seq_17_tuition_management():
-    model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_tui", "sd UC-17: Quản lý & Thu học phí (Tuition Management & Invoicing)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
-
-    setup_6_lifelines(root, "Thu ngân / Admin", "TuitionCashierPage", "TuitionController", "TuitionService", "StudentInvoiceRepository", "Database (MySQL)", height=800)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 550})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 480})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 380})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 300})
-
-    # Messages
-    add_message(root, "m1", "1: Tra cứu công nợ sinh viên (nhập MSSV & chọn học kỳ)", 80, 305, 135)
-    add_message(root, "m2", "2: GET /api/admin/tuition/student/{id}?semesterId={semId}", 315, 545, 185)
-    add_message(root, "m3", "3: getStudentTuitionSummary(studentId, semesterId)", 555, 785, 230)
-    add_message(root, "m4", "4: findByStudentIdAndSemesterId(studentId, semesterId)", 795, 1025, 275)
-    add_message(root, "m5", "5: SELECT * FROM student_invoices WHERE student_id=? AND semester_id=?", 1035, 1245, 315)
-    add_message(root, "m6", "6: Trả về StudentInvoice (status=UNPAID/PARTIAL, balance, totalCredits)", 1245, 1025, 360, is_reply=True)
-    add_message(root, "m7", "7: Trả về Optional<StudentInvoice>", 1025, 785, 395, is_reply=True)
-    add_message(root, "m8", "8: Đóng gói TuitionSummaryResponse(invoice, balance, totalCredits)", 785, 555, 435, is_reply=True)
-    add_message(root, "m9", "9: 200 OK + ApiResponse.success(TuitionSummaryResponse)", 545, 315, 470, is_reply=True)
-    add_message(root, "m10", "10: Hiển thị bảng công nợ; Thu ngân nhập số tiền thu & hình thức", 305, 80, 505, is_reply=True)
-    add_message(root, "m11", "11: Xác nhận thu tiền mặt: POST /api/admin/tuition/collect-cash", 80, 305, 545)
-    add_message(root, "m12", "12: Gửi TuitionPaymentRequest(studentId, semesterId, amount, note)", 315, 545, 580)
-    add_message(root, "m13", "13: collectCash(request) -> Recalculate balance, update status (PAID)", 555, 785, 615)
-    add_message(root, "m14", "14: save(invoice) & UPDATE student_invoices SET paid_amount=?, status='PAID'", 795, 1245, 650)
-    add_message(root, "m15", "15: Trả về bản ghi đã lưu & Tạo ReceiptResponse(receiptNo, amount, cashier)", 1245, 785, 690, is_reply=True)
-    add_message(root, "m16", "16: 200 OK + ApiResponse.success(ReceiptResponse)", 785, 315, 725, is_reply=True)
-    add_message(root, "m17", "17: Xuất biên lai điện tử & in phiếu thu học phí cho sinh viên", 305, 80, 760, is_reply=True)
-
-    return model
-
-# 18. ĐIỂM DANH LỚP HỌC & CHECK-IN TRỰC TIẾP (ATTENDANCE)
-def build_seq_18_live_attendance():
-    model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_att", "sd UC-18: Điểm danh buổi học & Check-in trực tiếp (Live Attendance)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
-
-    setup_6_lifelines(root, "Giảng viên & Sinh viên", "AttendancePortalUI", "AttendanceController", "AttendanceService", "AttendanceSessionRepository", "Database (MySQL)", height=800)
-
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 400})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 320})
-
-    # Messages
-    add_message(root, "m1", "1: Giảng viên chọn lớp học phần & bấm 'Mở phiên điểm danh'", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/attendance/session/start (durationMinutes=10)", 315, 545, 185)
-    add_message(root, "m3", "3: startAttendanceSession(sectionId, durationMinutes)", 555, 785, 230)
-    add_message(root, "m4", "4: Sinh mã PIN ngẫu nhiên 6 chữ số (PIN '849201') & expiresAt = NOW() + 10m", 795, 795, 275, is_self=True)
-    add_message(root, "m5", "5: save(session) -> INSERT INTO attendance_sessions (pin_code, status='ACTIVE', ...)", 795, 1245, 320)
-    add_message(root, "m6", "6: Trả về phiên điểm danh mới tạo (AttendanceSession)", 1245, 785, 360, is_reply=True)
-    add_message(root, "m7", "7: 200 OK + ApiResponse.success(AttendanceLiveSessionResponse)", 785, 315, 400, is_reply=True)
-    add_message(root, "m8", "8: Trình chiếu mã PIN 6 số & đếm ngược thời gian thực trên lớp", 305, 80, 440, is_reply=True)
-    add_message(root, "m9", "9: Sinh viên nhập mã PIN trên Portal: POST /api/attendance/check-in", 80, 545, 480)
-    add_message(root, "m10", "10: checkInLive(studentId, pinCode) -> Kiểm tra PIN, thời hạn và sĩ số lớp", 555, 785, 520)
-    add_message(root, "m11", "11: INSERT INTO attendance_records (session_id, student_id, status='PRESENT', check_in_time=NOW())", 795, 1245, 560)
-    add_message(root, "m12", "12: 200 OK: Check-in thành công; cập nhật số lượng có mặt tức thời", 1245, 305, 600, is_reply=True)
-    add_message(root, "m13", "13: Giảng viên đối soát sĩ số lớp & bấm 'Chốt và Kết thúc ca điểm danh'", 80, 305, 640)
-    add_message(root, "m14", "14: POST /api/attendance/session (Chốt vắng các SV không check-in)", 315, 545, 675)
-    add_message(root, "m15", "15: finalizeSession(sessionId) -> UPDATE attendance_sessions SET is_finalized=true", 555, 1245, 715)
-    add_message(root, "m16", "16: 200 OK + Thông báo: Hoàn tất điểm danh & ghi nhận tỷ lệ chuyên cần", 1245, 80, 755, is_reply=True)
-
-    return model
-
-# Aliases for compatibility
-build_seq_6_lecturers = build_seq_6_lecturer_manage
-build_seq_7_subjects = build_seq_7_subject_manage
-build_seq_8_semesters = build_seq_8_semester_config
-build_seq_9_course_sections = build_seq_9_course_section_open
-build_seq_10_scheduling = build_seq_10_schedule_manage
-build_seq_12_course_drop = build_seq_12_cancel_enrollment
-build_seq_13_grading_entry = build_seq_13_grade_entry
-build_seq_14_grading_finalize = build_seq_14_grade_finalize
-build_seq_15_transcript_cpa = build_seq_15_transcript
-build_seq_16_analytics_dashboard = build_seq_16_dashboard
-build_seq_17_tuition = build_seq_17_tuition_management
-build_seq_18_attendance = build_seq_18_live_attendance
-build_seq_17_tuition = build_seq_17_tuition_management
-build_seq_18_attendance = build_seq_18_live_attendance
-
-# ==========================================================
-# GHI TẤT CẢ 16 TAB VÀO FILE Sequence_Diagrams.drawio
-# ==========================================================
-
-# 19. KHẢO THÍ & QUẢN LÝ PHÒNG THI (EXAM MANAGEMENT)
+# 19. KHẢO THÍ & TỰ ĐỘNG PHÂN BỔ PHÒNG THI
 def build_seq_19_exam_management():
-    model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_exam", "sd UC-19: Khảo thí & Quản lý phòng thi (Exam Management & Room Allocation)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_exm", "sd UC-19: Khảo thí & Tự động phân bổ phòng thi", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Cán bộ Khảo thí", "ExamRoomsPageUI", "ExamController", "ExamService", "ExamRoomRepository", "Database (MySQL)", height=760)
 
-    setup_6_lifelines(root, "Cán bộ Khảo thí", "ExamRoomsPageUI", "ExamController", "ExamService", "ExamRoomRepository", "Database (MySQL)", height=800)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 360})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 280})
-
-    # Messages
-    add_message(root, "m1", "1: Cán bộ Khảo thí truy cập trang phòng thi & chọn lớp HP", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/exam/sessions (sectionId, examDate, shift, duration)", 315, 545, 185)
-    add_message(root, "m3", "3: createExamSession(request) -> validateSectionStatus(sectionId)", 555, 785, 230)
-    add_message(root, "m4", "4: Kiểm tra điều kiện mở thi: Lớp HP đã chốt sổ điểm quá trình", 795, 795, 275, is_self=True)
-    add_message(root, "m5", "5: save(session) -> INSERT INTO exam_sessions (section_id, status='PLANNED')", 795, 1245, 320)
-    add_message(root, "m6", "6: Trả về phiên thi vừa tạo (ExamSessionResponse)", 1245, 785, 360, is_reply=True)
-    add_message(root, "m7", "7: 200 OK: Tạo đợt thi thành công", 785, 315, 400, is_reply=True)
-    add_message(root, "m8", "8: Cán bộ bấm 'Phân bổ phòng thi tự động' (maxPerRoom=35)", 80, 305, 440)
-    add_message(root, "m9", "9: POST /api/exam/rooms/auto-assign (sessionId, capacity, roomList)", 315, 545, 480)
-    add_message(root, "m10", "10: autoAssignRooms(request) -> Lọc SV đủ điều kiện, chia phòng & sinh SBD", 555, 785, 520)
-    add_message(root, "m11", "11: BATCH INSERT INTO exam_rooms & exam_rosters", 795, 1245, 560)
-    add_message(root, "m12", "12: Trả về danh sách phòng thi & túi bài thi đã phân bổ", 1245, 785, 600, is_reply=True)
-    add_message(root, "m13", "13: 200 OK + ApiResponse.success(List<ExamRoomResponse>)", 785, 315, 640, is_reply=True)
-    add_message(root, "m14", "14: Cán bộ bấm 'Xuất danh sách phòng thi Excel'", 80, 305, 675)
-    add_message(root, "m15", "15: GET /api/exam/rooms/{id}/export-excel -> Sinh file Excel danh sách thí sinh", 315, 1245, 715)
-    add_message(root, "m16", "16: 200 OK + File Excel danh sách thí sinh & biểu mẫu chấm điểm", 1245, 80, 755, is_reply=True)
-
+    add_message(root, "m1", "1: Khảo thí tạo đợt thi & bấm 'Tự động chia phòng thi'", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/exam-sessions/{sessionId}/auto-assign", 315, 545, 185)
+    add_message(root, "m3", "3: autoAssignExamRooms(sessionId)", 555, 785, 230)
+    add_message(root, "m4", "4: Lọc sinh viên đủ điều kiện dự thi (điểm danh >= 80% & không nợ học phí)", 795, 795, 275, is_self=True)
+    add_message(root, "m5", "5: Thuật toán chia đều thí sinh vào phòng thi (mỗi phòng tối đa 40 chỗ)", 795, 795, 315, is_self=True)
+    add_message(root, "m6", "6: saveAll(examRooms) & saveAll(examStudents)", 795, 1025, 355)
+    add_message(root, "m7", "7: INSERT INTO exam_rooms ... ; INSERT INTO exam_students ...", 1035, 1245, 395)
+    add_message(root, "m8", "8: 200 OK + ApiResponse.success('Phân phòng thi hoàn tất')", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Hiển thị danh sách phòng thi, SBD và nút Xuất danh sách điểm danh thi", 305, 80, 485, is_reply=True)
     return model
 
-# 20. QUY TRÌNH ĐÍNH CHÍNH ĐIỂM 3 CẤP (3-TIER GRADE AMENDMENT)
+# 20. THẨM ĐỊNH QUY TRÌNH ĐÍNH CHÍNH ĐIỂM 3 CẤP
 def build_seq_20_grade_amendment():
     model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_amd", "sd UC-20: Quy trình Đính chính điểm 3 cấp (3-Tier Grade Amendment Process)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    add_cell(root, "frame_amd", "sd UC-20: Thẩm định Quy trình Đính chính điểm 3 cấp", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    setup_6_lifelines(root, "GV & BM & Phòng ĐT", "GradeAmendmentsUI", "GradeAmendmentCtrl", "GradeAmendmentSrv", "GradeAuditLogRepo", "Database (MySQL)", height=800)
 
-    setup_6_lifelines(root, "GV & Trưởng BM & P.ĐT", "GradeAmendmentsUI", "GradeAmendmentController", "GradeAmendmentService", "GradeAuditLogRepository", "Database (MySQL)", height=800)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 640})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 540})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 450})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 310})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 250})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 400})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 320})
-
-    # Messages
-    add_message(root, "m1", "1: Giảng viên lập đơn: Nhập MSSV, Lớp HP, cột điểm & điểm đề xuất sửa", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/grade-amendments (CreateGradeAmendmentRequest)", 315, 545, 185)
-    add_message(root, "m3", "3: create(userId, request) -> Kiểm tra điểm đã khóa sổ và tính hợp lệ", 555, 785, 230)
-    add_message(root, "m4", "4: save(ticket) -> INSERT INTO grade_change_tickets (status='PENDING_DEPT')", 795, 1245, 275)
-    add_message(root, "m5", "5: Trả về đơn tạo thành công & gửi thông báo tới Trưởng Bộ môn", 1245, 785, 315, is_reply=True)
-    add_message(root, "m6", "6: 200 OK + ApiResponse.success(GradeAmendmentResponse)", 785, 315, 350, is_reply=True)
-    add_message(root, "m7", "7: Trưởng Bộ môn thẩm định minh chứng & bấm 'Duyệt cấp Bộ môn'", 80, 305, 390)
-    add_message(root, "m8", "8: PUT /api/grade-amendments/{id}/dept-review (approved=true)", 315, 545, 430)
-    add_message(root, "m9", "9: deptReview() -> UPDATE grade_change_tickets SET status='DEPT_APPROVED'", 555, 1245, 470)
-    add_message(root, "m10", "10: 200 OK: Chuyển tiếp hồ sơ lên hàng đợi Phòng Đào tạo", 1245, 315, 510, is_reply=True)
-    add_message(root, "m11", "11: Cán bộ Phòng Đào tạo / BGH xem xét và bấm 'Phê duyệt chính thức'", 80, 305, 550)
-    add_message(root, "m12", "12: PUT /api/grade-amendments/{id}/academic-approval (approved=true)", 315, 545, 590)
-    add_message(root, "m13", "13: academicApproval() -> @Transactional: (1) UPDATE grades, (2) INSERT audit_logs", 555, 785, 630)
-    add_message(root, "m14", "14: save(auditLog) & UPDATE grades SET score_ck=? WHERE id=?", 795, 1245, 670)
-    add_message(root, "m15", "15: recalculateGpaAndCpa(studentId) -> Cập nhật CPA tích lũy mới", 795, 795, 710, is_self=True)
-    add_message(root, "m16", "16: 200 OK: Điểm cập nhật chính thức; gửi thông báo kết quả tới GV và SV", 1245, 80, 755, is_reply=True)
-
+    add_message(root, "m1", "1: Giảng viên nộp đơn sửa điểm kèm minh chứng bài thi (upload file PDF/ảnh)", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/grade-amendments (GradeAmendmentRequest)", 315, 545, 185)
+    add_message(root, "m3", "3: createAmendmentRequest(request, lecturerId)", 555, 785, 230)
+    add_message(root, "m4", "4: INSERT INTO grade_change_tickets (status='PENDING_DEPT')", 1035, 1245, 275)
+    add_message(root, "m5", "5: Trưởng Bộ môn thẩm định minh chứng & bấm 'Duyệt cấp Bộ môn'", 80, 305, 315)
+    add_message(root, "m6", "6: PUT /api/grade-amendments/{id}/dept-review (approved=true)", 315, 545, 355)
+    add_message(root, "m7", "7: deptReview() -> UPDATE grade_change_tickets SET status='DEPT_APPROVED'", 1035, 1245, 395)
+    add_message(root, "m8", "8: Phòng Đào tạo thẩm định lần cuối & bấm 'Phê duyệt chính thức'", 80, 305, 435)
+    add_message(root, "m9", "9: PUT /api/grade-amendments/{id}/academic-approval (approved=true)", 315, 545, 475)
+    add_message(root, "m10", "10: academicApproval() -> @Transactional: (1) Cập nhật grades, (2) Ghi audit_logs", 795, 795, 515, is_self=True)
+    add_message(root, "m11", "11: UPDATE grades SET score_ck=? WHERE id=?; INSERT INTO audit_logs...", 1035, 1245, 555)
+    add_message(root, "m12", "12: recalculateGpaAndCpa(studentId) -> Đồng bộ CPA mới của sinh viên", 795, 795, 595, is_self=True)
+    add_message(root, "m13", "13: 200 OK: Điểm chính thức được điều chỉnh & thông báo tới GV, SV", 545, 315, 635, is_reply=True)
+    add_message(root, "m14", "14: Hiển thị trạng thái ticket: APPROVED và lịch sử kiểm toán toàn vẹn", 305, 80, 675, is_reply=True)
     return model
 
 # 21. THẨM ĐỊNH CHUẨN TỐT NGHIỆP (DEGREE AUDIT TT08)
 def build_seq_21_graduation_audit():
-    model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_grad", "sd UC-21: Thẩm định chuẩn tốt nghiệp theo Thông tư 08 (Degree Audit TT08)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    model, root = create_base_model(1380, 900)
+    add_cell(root, "frame_grd_adt", "sd UC-21: Thẩm định chuẩn tốt nghiệp đa tiêu chí TT08", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 850})
+    setup_6_lifelines(root, "Cán bộ Đào tạo", "GraduationAuditUI", "GraduationController", "GraduationService", "GraduationRecordRepo", "Database (MySQL)", height=760)
 
-    setup_6_lifelines(root, "Cán bộ Đào tạo", "GraduationAuditUI", "GraduationController", "GraduationService", "GraduationRecordRepository", "Database (MySQL)", height=800)
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 580})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 480})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 400})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 290})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 230})
 
-    # Activations
-    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
-    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
-    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
-    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 315, 'width': 10, 'height': 360})
-    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 355, 'width': 10, 'height': 280})
-
-    # Messages
     add_message(root, "m1", "1: Cán bộ Đào tạo chọn Khóa tốt nghiệp & bấm 'Thẩm định tốt nghiệp'", 80, 305, 135)
     add_message(root, "m2", "2: POST /api/graduation/evaluate-cohort/{cohortId}", 315, 545, 185)
-    add_message(root, "m3", "3: assessCohortCandidates(cohortId) -> Nạp toàn bộ hồ sơ sinh viên khóa", 555, 785, 230)
-    add_message(root, "m4", "4: SELECT s, c, g FROM students s JOIN curriculums c ... WHERE cohort_id = ?", 795, 1245, 275)
-    add_message(root, "m5", "5: Trả về danh sách sinh viên kèm toàn bộ bảng điểm học tập", 1245, 785, 315, is_reply=True)
-    add_message(root, "m6", "6: Kích hoạt Degree Audit Engine: Kiểm tra 7 tiêu chí TT08 (Tín chỉ, CPA, CC, Học phí)", 795, 795, 355, is_self=True)
-    add_message(root, "m7", "7: Xác định hạng tốt nghiệp (Xuất sắc/Giỏi/Khá/TB) & Kiểm tra hạ hạng do thi lại >5%", 795, 795, 395, is_self=True)
-    add_message(root, "m8", "8: saveAll(records) -> BATCH INSERT/UPDATE INTO graduation_records", 795, 1245, 435)
-    add_message(root, "m9", "9: Trả về kết quả thẩm định đã bền vững hóa trong CSDL", 1245, 785, 475, is_reply=True)
-    add_message(root, "m10", "10: 200 OK + ApiResponse.success(List<GraduationRecord>)", 785, 315, 515, is_reply=True)
-    add_message(root, "m11", "11: Hiển thị bảng tổng hợp tốt nghiệp: Danh sách đạt chuẩn & nợ chuẩn", 305, 80, 555, is_reply=True)
-    add_message(root, "m12", "12: Cán bộ bấm 'Xuất Quyết định công nhận tốt nghiệp' (PDF/Excel)", 80, 305, 600)
-    add_message(root, "m13", "13: GET /api/graduation/export-decision/{cohortId}", 315, 545, 640)
-    add_message(root, "m14", "14: exportGraduationDecision(cohortId) -> Sinh biểu mẫu Quyết định & Bảng điểm", 555, 1245, 680)
-    add_message(root, "m15", "15: 200 OK + File Quyết định công nhận tốt nghiệp & Sổ cấp bằng", 1245, 80, 725, is_reply=True)
-
+    add_message(root, "m3", "3: assessCohortCandidates(cohortId) -> nạp toàn bộ hồ sơ sinh viên khóa", 555, 785, 230)
+    add_message(root, "m4", "4: Kích hoạt Degree Audit Engine: 7 tiêu chí TT08 (Tín chỉ, CPA, CC, Công nợ)", 795, 795, 275, is_self=True)
+    add_message(root, "m5", "5: Xếp loại tốt nghiệp (Xuất sắc/Giỏi/Khá/TB) & Kiểm tra hạ hạng do thi lại >5%", 795, 795, 315, is_self=True)
+    add_message(root, "m6", "6: graduationRecordRepository.saveAll(records)", 795, 1025, 355)
+    add_message(root, "m7", "7: BATCH INSERT/UPDATE INTO graduation_records (status, honors, cpa...)", 1035, 1245, 395)
+    add_message(root, "m8", "8: 200 OK + ApiResponse.success(List<GraduationRecordDTO>)", 545, 315, 445, is_reply=True)
+    add_message(root, "m9", "9: Cán bộ bấm 'Phê duyệt tốt nghiệp hàng loạt': POST /api/graduation/batch-approve/{cohortId}", 80, 305, 485)
+    add_message(root, "m10", "10: 200 OK: Chuyển trạng thái sinh viên sang GRADUATED & cấp số Quyết định", 545, 80, 525, is_reply=True)
     return model
 
 # 22. QUẢN LÝ NHÂN SỰ ĐÀO TẠO (ADMIN STAFF MANAGEMENT)
 def build_seq_22_staff_management():
     model, root = create_base_model(1380, 940)
-    add_cell(root, "frame_staff", "sd UC-22: Quản lý Nhân sự Đào tạo (Admin Staff Management)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
-
+    add_cell(root, "frame_staff", "sd UC-22: Quản lý Nhân sự Đào tạo & Phân quyền cán bộ", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
     setup_6_lifelines(root, "Quản trị viên (Admin)", "StaffsPageView", "AdminSystemController", "UserService", "UserRepository", "Database (MySQL)", height=800)
 
-    # Activations
     add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
     add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
     add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
     add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 400})
     add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 320})
 
-    # Messages
     add_message(root, "m1", "1: Admin truy cập trang Quản trị Nhân sự /admin/staffs", 80, 305, 135)
     add_message(root, "m2", "2: GET /api/admin/staffs?keyword=&role=&page=0", 315, 545, 175)
     add_message(root, "m3", "3: getAllStaffs(keyword, role, pageable) -> lọc cán bộ chuyên trách", 555, 785, 215)
@@ -991,26 +702,22 @@ def build_seq_22_staff_management():
     add_message(root, "m13", "13: Trả về bản ghi User đã bền vững hóa trong CSDL", 1245, 785, 615, is_reply=True)
     add_message(root, "m14", "14: Ghi nhận AuditLog('CREATE_STAFF', targetUserId, adminId)", 795, 795, 655, is_self=True)
     add_message(root, "m15", "15: 201 Created + ApiResponse.success(StaffResponse)", 785, 80, 695, is_reply=True)
-
     return model
 
 # 23. ĐẶT LẠI MẬT KHẨU HÀNG LOẠT (BULK PASSWORD RESET)
 def build_seq_23_bulk_password_reset():
     model, root = create_base_model(1380, 940)
     add_cell(root, "frame_bulkpwd", "sd UC-23: Đặt lại Mật khẩu Hàng loạt (Bulk Password Reset)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+    setup_6_lifelines(root, "Quản trị viên (Admin)", "PasswordResetsView", "AdminSystemController", "UserService", "UserRepository", "Database (MySQL)", height=800)
 
-    setup_6_lifelines(root, "Quản trị viên (Admin)", "PasswordResetsView", "AdminSystemController", "PasswordResetService", "UserRepository", "Database (MySQL)", height=800)
-
-    # Activations
     add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
     add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
     add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
     add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 400})
     add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 320})
 
-    # Messages
     add_message(root, "m1", "1: Admin chọn 'Đặt lại mật khẩu hàng loạt' (chọn phạm vi toàn trường / khóa)", 80, 305, 135)
-    add_message(root, "m2", "2: POST /api/admin/bulk-reset-passwords (BulkResetPasswordRequest)", 315, 545, 175)
+    add_message(root, "m2", "2: POST /api/admin/users/bulk-reset-password (BulkResetPasswordRequest)", 315, 545, 175)
     add_message(root, "m3", "3: bulkResetPasswords(request) -> Kiểm tra quyền Quản trị viên ROLE_ADMIN", 555, 785, 215)
     add_message(root, "m4", "4: findTargetUsersForReset(scope, cohortId, deptId) -> nạp danh sách User", 795, 1025, 255)
     add_message(root, "m5", "5: SELECT u.id, u.username, s.date_of_birth FROM users u LEFT JOIN students s ...", 1035, 1245, 295)
@@ -1022,8 +729,11 @@ def build_seq_23_bulk_password_reset():
     add_message(root, "m11", "11: Gửi thông báo hệ thống Notification & ghi AuditLog('BULK_RESET_PWD')", 795, 795, 535, is_self=True)
     add_message(root, "m12", "12: 200 OK + ApiResponse.success(BulkResetPasswordResponse)", 785, 315, 575, is_reply=True)
     add_message(root, "m13", "13: Hiển thị hộp thoại tổng kết: Tổng số tài khoản, thành công, thất bại", 305, 80, 615, is_reply=True)
-
     return model
+
+# ==========================================================
+# GENERATE MASTER MULTI-PAGE DRAWIO FILE (23 TABS)
+# ==========================================================
 
 def generate_all_sequence_diagrams():
     tabs = [
@@ -1054,9 +764,10 @@ def generate_all_sequence_diagrams():
 
     mxfile = ET.Element('mxfile', {
         'host': 'app.diagrams.net',
-        'modified': '2026-09-11T19:40:00.000Z',
-        'agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        'version': '24.7.17',
+        'modified': '2026-11-06T09:30:00.000Z',
+        'agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'etag': 'seq-suite-master-v23',
+        'version': '24.0.0',
         'type': 'device'
     })
 
@@ -1067,17 +778,18 @@ def generate_all_sequence_diagrams():
         })
         diagram.append(model)
 
-    raw_xml = ET.tostring(mxfile, encoding='utf-8')
-    dom = minidom.parseString(raw_xml)
-    pretty_xml = dom.toprettyxml(indent='  ', encoding='utf-8')
+    xml_str = ET.tostring(mxfile, encoding='utf-8')
+    dom = minidom.parseString(xml_str)
+    pretty_xml = dom.toprettyxml(indent='  ', encoding='utf-8').decode('utf-8')
 
-    out_dir = 'drawio'
-    os.makedirs(out_dir, exist_ok=True)
-    out_file = os.path.join(out_dir, 'Sequence_Diagrams.drawio')
-    with open(out_file, 'wb') as f:
-        f.write(pretty_xml)
+    lines = [line for line in pretty_xml.split('\n') if line.strip()]
+    cleaned_xml = '\n'.join(lines)
 
-    print(f"XUẤT THÀNH CÔNG: {out_file} với {len(tabs)} tab biểu đồ tuần tự độc lập chuẩn UML!")
+    out_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Sequence_Diagrams.drawio')
+    with open(out_path, 'w', encoding='utf-8') as f:
+        f.write(cleaned_xml)
+
+    print(f"SUCCESS: Generated {len(tabs)} tabs in {out_path}")
 
 if __name__ == '__main__':
     generate_all_sequence_diagrams()

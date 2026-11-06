@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Biểu đồ Lớp Phân tích (Analysis Class Diagram - BCE) chuẩn UML theo kiến trúc
-Business Component (Boundary - Control - Entity) chuẩn mực:
-Mỗi chức năng (Use Case) được mô hình hóa riêng biệt thành 1 Tab chuyên biệt (không gộp lại),
-gồm thẻ Business Component chuẩn kiến trúc:
-📦 Business Component (e.g. "users")
-[ |--O boundary ] → [ ↻ control ] → [ _O entity ]
-kèm theo các lớp phân tích chi tiết (Giao diện, Điều khiển, Thực thể), kiểu dữ liệu chuẩn UML (int, String, boolean, double, Date, List, void...).
+Boundary - Control - Entity (BCE):
+Mỗi chức năng (Use Case) được mô hình hóa riêng biệt thành 1 Tab chuyên biệt (23 Tabs chuẩn hóa),
+gồm 3 cột phân tầng:
+  [ «Boundary» Giao diện & REST Endpoints ]
+    → [ «Control» Logic Nghiệp vụ & Dịch vụ Bảo mật ]
+      → [ «Entity» Thực thể Miền CSDL & DTOs ]
+Khớp 100% mã nguồn thực tế: Spring Boot 3 Backend + React SPA Frontend + MySQL Database.
 """
 
 import os
@@ -56,7 +57,7 @@ STYLE_TITLE = "text;html=1;strokeColor=none;fillColor=none;align=left;verticalAl
 STYLE_SUBTITLE = "text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=0;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#444444;"
 STYLE_ACTOR = "shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;"
 
-# Column Header Cards (Thẻ tiêu đề phân tầng chuẩn UML BCE, có icon phân tầng)
+# Column Header Cards
 STYLE_HDR_BND = "rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;"
 STYLE_HDR_CTRL = "rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;"
 STYLE_HDR_ENT = "rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;"
@@ -82,7 +83,7 @@ STYLE_ASSOC = "edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;stro
 STYLE_CALL_ARROW = "edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;"
 STYLE_DATA_ARROW = "edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;"
 
-def create_base_model(page_w=1460, page_h=980):
+def create_base_model(page_w=1480, page_h=980):
     model = ET.Element('mxGraphModel', {
         'dx': '1422', 'dy': '900', 'grid': '1', 'gridSize': '10', 'guides': '1',
         'tooltips': '1', 'connect': '1', 'arrows': '1', 'fold': '1', 'page': '1',
@@ -93,8 +94,8 @@ def create_base_model(page_w=1460, page_h=980):
     add_cell(root, "1")
     return model, root
 
-def calc_class_height(attrs, methods, w=340):
-    chars_per_line = int((w - 24) / 6.2)  # ~51 ký tự mỗi dòng
+def calc_class_height(attrs, methods, w=350):
+    chars_per_line = int((w - 24) / 6.2)
     num_attr_lines = 0
     if attrs:
         for a in attrs:
@@ -120,21 +121,21 @@ def add_class_box(root, cid, stereotype, name, x, y, w, attrs, methods):
     st_lower = stereotype.lower()
     if 'giao' in st_lower or 'bound' in st_lower:
         style_box = STYLE_CLASS_BND
-        st_vn = "Giao diện"
+        st_vn = "Boundary"
     elif 'điều' in st_lower or 'dieu' in st_lower or 'control' in st_lower:
         style_box = STYLE_CLASS_CTRL
-        st_vn = "Điều khiển"
+        st_vn = "Control"
     elif 'truyền' in st_lower or 'truyen' in st_lower or 'dto' in st_lower:
         style_box = STYLE_CLASS_DTO
-        st_vn = "Truyền dữ liệu"
+        st_vn = "DTO"
     else:
         style_box = STYLE_CLASS_ENT
-        st_vn = "Thực thể"
+        st_vn = "Entity"
 
     total_h, attr_h, method_h = calc_class_height(attrs, methods, w)
 
-    attr_text = "\n".join(attrs) if attrs else "(không có thuộc tính)"
-    method_text = "\n".join(methods) if methods else "(không có phương thức)"
+    attr_text = "\n".join(attrs) if attrs else "(no attributes)"
+    method_text = "\n".join(methods) if methods else "(no methods)"
     header_val = f"<i>«{st_vn}»</i><br><b>{name}</b>"
 
     add_cell(root, cid, header_val, style_box, vertex=True, geometry={'x': x, 'y': y, 'width': w, 'height': total_h})
@@ -147,61 +148,57 @@ def build_single_function_tab(func_code, func_title, comp_title, comp_example, a
                              bnd_classes, ctrl_classes, ent_classes, edges):
     """
     Xây dựng biểu đồ lớp phân tích BCE tối ưu hóa thẩm mỹ và tính học thuật:
-    - Bỏ hoàn toàn bảng bao ngoài cồng kềnh (No outer container table/box).
     - 3 Cột định hướng phân tầng rõ nét với Icon biểu tượng UML BCE chính quy.
-    - Trục ngang Row 2 (y = 400) khóa cứng [Controller] -> [Service] -> [Entity] giúp mũi tên đi ngang 100% thẳng thớm.
-    - Trục dọc phụ Row 3 (y = 640) và Row 4 (y = 840) thông thoáng, nhãn nền trắng rõ nét.
+    - Cột 1 (x=160, w=350): Lớp Biên (Boundary)
+    - Cột 2 (x=600, w=350): Lớp Điều khiển (Control)
+    - Cột 3 (x=1040, w=350): Lớp Thực thể & DTO (Entity/DTO)
+    - Mũi tên trực giao, không gạch ngang chữ, nhãn nền trắng.
     """
-    page_h = 1040 if len(ent_classes) >= 3 else (920 if len(ctrl_classes) > 1 or len(ent_classes) > 1 else 840)
-    model, root = create_base_model(1460, page_h)
+    page_h = 1060 if len(ent_classes) >= 3 else (940 if len(ctrl_classes) > 1 or len(ent_classes) > 1 else 860)
+    model, root = create_base_model(1480, page_h)
 
-    # 1. Tiêu đề trang chuẩn học thuật (Title & Subtitle)
+    # 1. Tiêu đề trang chuẩn học thuật
     add_cell(root, "t_main", f"BIỂU ĐỒ LỚP PHÂN TÍCH (BCE) - CHỨC NĂNG: {func_title}", STYLE_TITLE, vertex=True,
-             geometry={'x': 40, 'y': 20, 'width': 980, 'height': 25})
-    add_cell(root, "st_main", "Kiến trúc phân tầng: Tác nhân -> Giao diện (Boundary) -> Điều khiển (Control) -> Thực thể (Entity)",
-             STYLE_SUBTITLE, vertex=True, geometry={'x': 40, 'y': 48, 'width': 1080, 'height': 20})
+             geometry={'x': 40, 'y': 20, 'width': 1000, 'height': 25})
+    add_cell(root, "st_main", f"Kiến trúc phân tầng: {comp_title} | Tác nhân ➜ Boundary (Giao diện & API) ➜ Control (Nghiệp vụ) ➜ Entity (CSDL & DTO)",
+             STYLE_SUBTITLE, vertex=True, geometry={'x': 40, 'y': 48, 'width': 1100, 'height': 20})
 
-    # 2. Thẻ tiêu đề 3 Cột tích hợp Icon UML BCE chính quy (Không dùng bảng bao bọc)
-    # Cột 1: Giao diện (x = 160, w = 340)
+    # 2. Thẻ tiêu đề 3 Cột tích hợp Icon UML BCE chính quy
     bnd_hdr_id = f"hdr_bnd_{func_code}"
-    add_cell(root, bnd_hdr_id, "<b>«Boundary» GIAO DIỆN</b><br><span style=\"font-size:10px;font-weight:normal;color:#444444;\">(Client UI &amp; REST API Endpoints)</span>",
-             STYLE_HDR_BND, vertex=True, geometry={'x': 160, 'y': 78, 'width': 340, 'height': 42})
+    add_cell(root, bnd_hdr_id, "<b>«Boundary» GIAO DIỆN &amp; API</b><br><span style=\"font-size:10px;font-weight:normal;color:#444444;\">(React UI Page &amp; Spring Boot REST Endpoints)</span>",
+             STYLE_HDR_BND, vertex=True, geometry={'x': 160, 'y': 78, 'width': 350, 'height': 42})
     add_cell(root, f"icon_bnd_{func_code}", "", STYLE_ICON_BND, vertex=True,
              geometry={'x': 172, 'y': 84, 'width': 30, 'height': 30})
 
-    # Cột 2: Điều khiển (x = 600, w = 340)
     ctrl_hdr_id = f"hdr_ctrl_{func_code}"
-    add_cell(root, ctrl_hdr_id, "<b>«Control» ĐIỀU KHIỂN</b><br><span style=\"font-size:10px;font-weight:normal;color:#444444;\">(Business Logic &amp; Security Services)</span>",
-             STYLE_HDR_CTRL, vertex=True, geometry={'x': 600, 'y': 78, 'width': 340, 'height': 42})
+    add_cell(root, ctrl_hdr_id, "<b>«Control» ĐIỀU KHIỂN &amp; XỬ LÝ</b><br><span style=\"font-size:10px;font-weight:normal;color:#444444;\">(Business Logic, Security &amp; Repository Services)</span>",
+             STYLE_HDR_CTRL, vertex=True, geometry={'x': 600, 'y': 78, 'width': 350, 'height': 42})
     add_cell(root, f"icon_ctrl_{func_code}", "", STYLE_ICON_CTRL, vertex=True,
              geometry={'x': 612, 'y': 84, 'width': 30, 'height': 30})
 
-    # Cột 3: Thực thể (x = 1040, w = 340)
     ent_hdr_id = f"hdr_ent_{func_code}"
-    add_cell(root, ent_hdr_id, "<b>«Entity» THỰC THỂ</b><br><span style=\"font-size:10px;font-weight:normal;color:#444444;\">(Domain Entities, Tables &amp; DTOs)</span>",
-             STYLE_HDR_ENT, vertex=True, geometry={'x': 1040, 'y': 78, 'width': 340, 'height': 42})
+    add_cell(root, ent_hdr_id, "<b>«Entity» THỰC THỂ &amp; DTO</b><br><span style=\"font-size:10px;font-weight:normal;color:#444444;\">(Domain JPA Entities, Database Tables &amp; DTOs)</span>",
+             STYLE_HDR_ENT, vertex=True, geometry={'x': 1040, 'y': 78, 'width': 350, 'height': 42})
     add_cell(root, f"icon_ent_{func_code}", "", STYLE_ICON_ENT, vertex=True,
              geometry={'x': 1052, 'y': 84, 'width': 30, 'height': 30})
 
-    # Mũi tên tiến trình trực giao giữa 3 thẻ tiêu đề phân tầng
+    # Mũi tên tiến trình trực giao giữa 3 thẻ tiêu đề
     add_cell(root, f"flow_hdr1_{func_code}", "", STYLE_FLOW_ARROW, edge=True, source=bnd_hdr_id, target=ctrl_hdr_id)
     add_cell(root, f"flow_hdr2_{func_code}", "", STYLE_FLOW_ARROW, edge=True, source=ctrl_hdr_id, target=ent_hdr_id)
 
-    # 3. Phân bổ các lớp Giao diện (Column 1: x = 160, w = 340)
-    # bnd_1: Giao diện Client (Form / Modal / Page) đặt tại Row 1 (y = 145)
-    # bnd_2: Giao diện REST Controller đặt tại Row 2 (y = 400)
+    # 3. Phân bổ các lớp Giao diện (Column 1: x = 160, w = 350)
     bnd_ids = []
     if len(bnd_classes) > 0:
         cid1 = f"bnd_{func_code}_1"
         bnd_ids.append(cid1)
-        add_class_box(root, cid1, bnd_classes[0].get('stereo', 'Giao diện'), bnd_classes[0]['name'],
-                      160, 145, 340, bnd_classes[0].get('attrs', []), bnd_classes[0].get('methods', []))
+        add_class_box(root, cid1, bnd_classes[0].get('stereo', 'Boundary'), bnd_classes[0]['name'],
+                      160, 145, 350, bnd_classes[0].get('attrs', []), bnd_classes[0].get('methods', []))
 
     if len(bnd_classes) > 1:
         cid2 = f"bnd_{func_code}_2"
         bnd_ids.append(cid2)
-        add_class_box(root, cid2, bnd_classes[1].get('stereo', 'Giao diện'), bnd_classes[1]['name'],
-                      160, 400, 340, bnd_classes[1].get('attrs', []), bnd_classes[1].get('methods', []))
+        add_class_box(root, cid2, bnd_classes[1].get('stereo', 'Boundary'), bnd_classes[1]['name'],
+                      160, 410, 350, bnd_classes[1].get('attrs', []), bnd_classes[1].get('methods', []))
 
     # 4. Tác nhân (Actor): Đặt bên trái, thẳng hàng ngang với bnd_1
     act_id = f"act_{func_code}"
@@ -210,57 +207,47 @@ def build_single_function_tab(func_code, func_title, comp_title, comp_example, a
     if bnd_ids:
         add_cell(root, f"e_act_{func_code}", "tương tác", STYLE_ASSOC, edge=True, source=act_id, target=bnd_ids[0])
 
-    # 5. Phân bổ các lớp Điều khiển (Column 2: x = 600, w = 340)
-    # ctrl_1: Dịch vụ nghiệp vụ chính (Service) đặt tại Row 2 (y = 400) - CÙNG TỌA ĐỘ Y VỚI bnd_2
-    # ctrl_2 (nếu có): Đặt tại Row 3 (y = 640)
+    # 5. Phân bổ các lớp Điều khiển (Column 2: x = 600, w = 350)
     ctrl_ids = []
     if len(ctrl_classes) > 0:
         cid1 = f"ctrl_{func_code}_1"
         ctrl_ids.append(cid1)
-        add_class_box(root, cid1, ctrl_classes[0].get('stereo', 'Điều khiển'), ctrl_classes[0]['name'],
-                      600, 400, 340, ctrl_classes[0].get('attrs', []), ctrl_classes[0].get('methods', []))
+        add_class_box(root, cid1, ctrl_classes[0].get('stereo', 'Control'), ctrl_classes[0]['name'],
+                      600, 410, 350, ctrl_classes[0].get('attrs', []), ctrl_classes[0].get('methods', []))
 
     if len(ctrl_classes) > 1:
         cid2 = f"ctrl_{func_code}_2"
         ctrl_ids.append(cid2)
-        add_class_box(root, cid2, ctrl_classes[1].get('stereo', 'Điều khiển'), ctrl_classes[1]['name'],
-                      600, 640, 340, ctrl_classes[1].get('attrs', []), ctrl_classes[1].get('methods', []))
+        add_class_box(root, cid2, ctrl_classes[1].get('stereo', 'Control'), ctrl_classes[1]['name'],
+                      600, 660, 350, ctrl_classes[1].get('attrs', []), ctrl_classes[1].get('methods', []))
 
-    # 6. Phân bổ các lớp Thực thể (Column 3: x = 1040, w = 340)
-    # ent_1: Thực thể chính / DTO đặt tại Row 2 (y = 400) - CÙNG TỌA ĐỘ Y VỚI ctrl_1
-    # ent_2 (nếu có): Đặt tại Row 3 (y = 640)
-    # ent_3 (nếu có): Đặt tại Row 4 (y = 840)
+    # 6. Phân bổ các lớp Thực thể (Column 3: x = 1040, w = 350)
     ent_ids = []
-    ent_y_positions = [400, 640, 840]
+    ent_y_positions = [410, 660, 870]
     for i, cls in enumerate(ent_classes):
         cid = f"ent_{func_code}_{i+1}"
         ent_ids.append(cid)
-        y_pos = ent_y_positions[i] if i < len(ent_y_positions) else 400 + i * 220
-        add_class_box(root, cid, cls.get('stereo', 'Thực thể'), cls['name'],
-                      1040, y_pos, 340, cls.get('attrs', []), cls.get('methods', []))
+        y_pos = ent_y_positions[i] if i < len(ent_y_positions) else 410 + i * 220
+        add_class_box(root, cid, cls.get('stereo', 'Entity'), cls['name'],
+                      1040, y_pos, 350, cls.get('attrs', []), cls.get('methods', []))
 
-    # 7. Các đường liên kết nghiệp vụ giữa các lớp (Orthogonal, nhãn nổi ở khoảng giữa cột)
+    # 7. Các đường liên kết nghiệp vụ giữa các lớp
     for i, edge in enumerate(edges):
         src, tgt, lbl, is_data = edge
         base_style = STYLE_DATA_ARROW if is_data else STYLE_CALL_ARROW
-        # Determine exit/entry ports based on source and target types
         if src.startswith('bnd_') and tgt.startswith('bnd_'):
-            # Vertical connection within Column 1 (Form to Controller)
             edge_style = base_style + ";exitX=0.5;exitY=1;entryX=0.5;entryY=0;"
         elif src.startswith('ctrl_') and tgt.startswith('ctrl_'):
-            # Vertical connection within Column 2
             edge_style = base_style + ";exitX=0.5;exitY=1;entryX=0.5;entryY=0;"
         elif src.startswith('bnd_') and tgt.startswith('ctrl_'):
-            # Horizontal connection from Boundary to Control (Row 2)
             edge_style = base_style + ";exitX=1;exitY=0.5;entryX=0;entryY=0.5;"
         elif src.startswith('ctrl_') and tgt.startswith('ent_'):
-            # Horizontal connection from Control to Entity/DTO
             if tgt.endswith('_1'):
                 edge_style = base_style + ";exitX=1;exitY=0.35;entryX=0;entryY=0.35;"
             elif tgt.endswith('_2'):
-                edge_style = base_style + ";exitX=1;exitY=0.65;entryX=0;entryY=0.5;"
+                edge_style = base_style + ";exitX=1;exitY=0.65;entryX=0;entryY=0.35;"
             else:
-                edge_style = base_style + ";exitX=1;exitY=0.85;entryX=0;entryY=0.5;"
+                edge_style = base_style + ";exitX=1;exitY=0.85;entryX=0;entryY=0.35;"
         else:
             edge_style = base_style + ";exitX=1;exitY=0.5;entryX=0;entryY=0.5;"
         add_cell(root, f"edge_{func_code}_{i+1}", lbl, edge_style, edge=True, source=src, target=tgt,
@@ -270,995 +257,1047 @@ def build_single_function_tab(func_code, func_title, comp_title, comp_example, a
 
 
 # ==========================================================
-# 16 CHỨC NĂNG RIÊNG BIỆT (KHÔNG GỘP LẠI)
+# 23 CHỨC NĂNG CHUẨN HÓA KHỚP 100% CODEBASE DỰ ÁN
 # ==========================================================
 
-# 1. Đăng nhập hệ thống
+# 01. Đăng nhập hệ thống & Cấp phát JWT kép
 def build_bce_1_login():
     return build_single_function_tab(
         func_code="login",
-        func_title="ĐĂNG NHẬP HỆ THỐNG",
-        comp_title="Xác thực & Đăng nhập",
-        comp_example="auth_login",
+        func_title="01. Đăng nhập hệ thống & Cấp phát JWT kép",
+        comp_title="Xác thực & Quản lý Truy cập",
+        comp_example="AuthController",
         actor_name="Người dùng",
         bnd_classes=[
             {
-                'name': "LoginForm", 'stereo': "Giao diện",
-                'attrs': ["- txtTenDangNhap: String", "- txtMatKhau: String", "- btnDangNhap: Button"],
-                'methods': ["+ guiYeuCauDangNhap(): void", "+ kiemTraMustChangePassword(): boolean", "+ dieuHuongDoiMatKhau(): void"]
+                'name': "PortalLoginPage", 'stereo': "Boundary",
+                'attrs': ["- username: String", "- password: String", "- isSubmitting: boolean", "- showPassword: boolean"],
+                'methods': ["+ handleLogin(e: FormEvent): void", "+ validateCredentials(): boolean", "+ redirectByRole(role: Role): void"]
             },
             {
-                'name': "AuthController", 'stereo': "Giao diện",
-                'attrs': ["- path: POST /api/auth/login", "- authService: AuthService"],
-                'methods': ["+ dangNhap(thongTin: LoginRequest): ResponseEntity"]
+                'name': "AuthController", 'stereo': "Boundary",
+                'attrs': ["- authService: AuthService", "- path: POST /api/auth/login"],
+                'methods': ["+ login(request: LoginRequest): ResponseEntity<ApiResponse<LoginResponse>>", "+ logout(): ResponseEntity<ApiResponse<Void>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "AuthService", 'stereo': "Điều khiển",
-                'attrs': ["- authManager: AuthenticationManager", "- jwtUtil: JwtTokenUtil", "- userRepo: UserRepository"],
-                'methods': ["+ xacThucTaiKhoan(ten, mk): LoginResponse", "+ taoTokenTruyCap(user): String", "+ docCoMustChangePwd(user): boolean"]
+                'name': "AuthService", 'stereo': "Control",
+                'attrs': ["- authenticationManager: AuthenticationManager", "- tokenProvider: JwtTokenProvider", "- userRepository: UserRepository"],
+                'methods': ["+ authenticate(request: LoginRequest): LoginResponse", "+ generateTokenPair(user: User): TokenPair", "+ checkMustChangePassword(user: User): boolean"]
             },
             {
-                'name': "AuthenticationManager", 'stereo': "Điều khiển",
-                'attrs': ["- userDetailsService: CustomUserDetailsService"],
-                'methods': ["+ authenticate(auth): Authentication"]
+                'name': "AuthenticationManager", 'stereo': "Control",
+                'attrs': ["- userDetailsService: CustomUserDetailsService", "- passwordEncoder: PasswordEncoder"],
+                'methods': ["+ authenticate(auth: Authentication): Authentication"]
             }
         ],
         ent_classes=[
             {
-                'name': "User (Bảng users)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- username: String", "- password: String (BCrypt)", "- email: String", "- enabled: boolean", "- mustChangePassword: boolean"],
-                'methods': ["+ layDanhSachQuyen(): Set<Role>", "+ dangHoatDong(): boolean", "+ getMustChangePassword(): boolean"]
+                'name': "User", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- username: String", "- password: String (BCrypt)", "- email: String", "- role: Role", "- isActive: boolean", "- mustChangePassword: boolean"],
+                'methods': ["+ getAuthorities(): Collection<GrantedAuthority>", "+ isEnabled(): boolean", "+ isMustChangePassword(): boolean"]
             },
             {
-                'name': "LoginResponse (DTO)", 'stereo': "Thực thể",
-                'attrs': ["- token: String", "- username: String", "- role: String", "- userId: Long", "- mustChangePassword: Boolean"],
-                'methods': ["+ layToken(): String", "+ laDoiMatKhauBatBuoc(): boolean"]
+                'name': "LoginResponse", 'stereo': "DTO",
+                'attrs': ["- accessToken: String", "- refreshToken: String", "- tokenType: String", "- userId: Long", "- username: String", "- role: String", "- mustChangePassword: boolean"],
+                'methods': ["+ getAccessToken(): String", "+ getRole(): String"]
+            },
+            {
+                'name': "LoginRequest", 'stereo': "DTO",
+                'attrs': ["- username: String", "- password: String"],
+                'methods': ["+ getUsername(): String", "+ getPassword(): String"]
             }
         ],
         edges=[
-            ("bnd_login_1", "bnd_login_2", "gửi form đăng nhập", False),
-            ("bnd_login_2", "ctrl_login_1", "gọi dịch vụ auth", False),
-            ("ctrl_login_1", "ctrl_login_2", "ủy quyền xác thực", False),
-            ("ctrl_login_1", "ent_login_1", "truy vấn user & flag", True),
-            ("ctrl_login_1", "ent_login_2", "tạo phản hồi LoginResponse", True)
+            ("bnd_login_1", "bnd_login_2", "HTTP POST /api/auth/login", False),
+            ("bnd_login_2", "ctrl_login_1", "ủy quyền authenticate()", False),
+            ("ctrl_login_1", "ctrl_login_2", "ủy quyền xác thực Spring Security", False),
+            ("ctrl_login_1", "ent_login_1", "truy vấn thông tin User & flag", True),
+            ("ctrl_login_1", "ent_login_2", "đóng gói DTO LoginResponse", True)
         ]
     )
 
-# 2. Đổi mật khẩu tài khoản
+# 02. Đổi mật khẩu tài khoản cá nhân
 def build_bce_2_change_password():
     return build_single_function_tab(
         func_code="changepwd",
-        func_title="ĐỔI MẬT KHẨU TÀI KHOẢN",
+        func_title="02. Đổi mật khẩu tài khoản cá nhân",
         comp_title="Đổi mật khẩu người dùng",
-        comp_example="auth_password",
+        comp_example="AuthController",
         actor_name="Người dùng",
         bnd_classes=[
             {
-                'name': "ChangePasswordModal", 'stereo': "Giao diện",
-                'attrs': ["- matKhauHienTai: String", "- matKhauMoi: String", "- xacNhanMatKhau: String"],
-                'methods': ["+ guiYeuCauDoiMK(): void", "+ kiemTraKhopMatKhau(): boolean", "+ thongBaoThanhCong(): void"]
+                'name': "ChangePasswordModal", 'stereo': "Boundary",
+                'attrs': ["- currentPassword: String", "- newPassword: String", "- confirmPassword: String", "- errorMessage: String"],
+                'methods': ["+ handleSubmit(): void", "+ validatePasswordComplexity(): boolean", "+ resetForm(): void"]
             },
             {
-                'name': "AuthController", 'stereo': "Giao diện",
-                'attrs': ["- path: PUT /api/auth/change-password"],
-                'methods': ["+ doiMatKhau(req: ChangePasswordReq): ResponseEntity"]
+                'name': "AuthController", 'stereo': "Boundary",
+                'attrs': ["- authService: AuthService", "- path: PUT /api/auth/change-password"],
+                'methods': ["+ changePassword(user: UserPrincipal, req: ChangePasswordRequest): ResponseEntity<ApiResponse<Void>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "AuthService", 'stereo': "Điều khiển",
-                'attrs': ["- passwordEncoder: PasswordEncoder", "- userRepo: UserRepository"],
-                'methods': ["+ doiMatKhau(userId, req): void", "+ kiemTraMatKhauGoc(raw, enc): boolean"]
+                'name': "AuthService", 'stereo': "Control",
+                'attrs': ["- userRepository: UserRepository", "- passwordEncoder: PasswordEncoder", "- auditLogService: AuditLogService"],
+                'methods': ["+ changePassword(userId: Long, req: ChangePasswordRequest): void", "+ validateOldPassword(raw: String, encoded: String): boolean"]
             },
             {
-                'name': "PasswordEncoder", 'stereo': "Điều khiển",
-                'attrs': ["- thuatToan: BCryptPasswordEncoder"],
-                'methods': ["+ matches(raw, encoded): boolean", "+ encode(newRaw): String"]
+                'name': "PasswordEncoder", 'stereo': "Control",
+                'attrs': ["- encoder: BCryptPasswordEncoder(12)"],
+                'methods': ["+ matches(raw: CharSequence, encoded: String): boolean", "+ encode(raw: CharSequence): String"]
             }
         ],
         ent_classes=[
             {
-                'name': "User (Bảng users)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- username: String", "- password: String (mật khẩu mới đã băm)"],
-                'methods': ["+ capNhatMatKhau(mkMoi): void"]
+                'name': "User", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- username: String", "- password: String (Hashed)", "- mustChangePassword: boolean", "- updatedAt: LocalDateTime"],
+                'methods': ["+ setPassword(encoded: String): void", "+ setMustChangePassword(flag: boolean): void"]
+            },
+            {
+                'name': "ChangePasswordRequest", 'stereo': "DTO",
+                'attrs': ["- currentPassword: String", "- newPassword: String", "- confirmPassword: String"],
+                'methods': ["+ getCurrentPassword(): String", "+ getNewPassword(): String"]
             }
         ],
         edges=[
-            ("bnd_changepwd_1", "bnd_changepwd_2", "gửi form", False),
-            ("bnd_changepwd_2", "ctrl_changepwd_1", "gọi nghiệp vụ", False),
-            ("ctrl_changepwd_1", "ctrl_changepwd_2", "băm mật khẩu", False),
-            ("ctrl_changepwd_1", "ent_changepwd_1", "cập nhật mật khẩu", True)
+            ("bnd_changepwd_1", "bnd_changepwd_2", "HTTP PUT /api/auth/change-password", False),
+            ("bnd_changepwd_2", "ctrl_changepwd_1", "gọi changePassword()", False),
+            ("ctrl_changepwd_1", "ctrl_changepwd_2", "băm mật khẩu BCrypt", False),
+            ("ctrl_changepwd_1", "ent_changepwd_1", "cập nhật mật khẩu băm mới", True)
         ]
     )
 
-# 3. Thêm mới Sinh viên & Cấp tài khoản
+# 03. Thêm mới Sinh viên & Cấp tài khoản tự động
 def build_bce_3_student_create():
     return build_single_function_tab(
         func_code="stu_create",
-        func_title="THÊM MỚI SINH VIÊN & CẤP TÀI KHOẢN",
+        func_title="03. Thêm mới Sinh viên & Cấp tài khoản tự động",
         comp_title="Thêm mới Sinh viên",
-        comp_example="students_create",
-        actor_name="Quản trị viên",
+        comp_example="StudentController",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "StudentFormModal", 'stereo': "Giao diện",
-                'attrs': ["- maSinhVien: String", "- hoVaTen: String", "- ngaySinh: Date", "- gioiTinh: String", "- email: String", "- maLopSinhHoat: int"],
-                'methods': ["+ kiemTraHopLe(): boolean", "+ guiLuuThongTin(): void", "+ hienThiLoi(msg): void"]
+                'name': "StudentFormModal", 'stereo': "Boundary",
+                'attrs': ["- studentCode: String", "- fullName: String", "- email: String", "- dob: LocalDate", "- classId: Integer"],
+                'methods': ["+ onSubmit(data: StudentFormData): void", "+ generateStudentCode(): void", "+ handleValidation(): boolean"]
             },
             {
-                'name': "StudentController", 'stereo': "Giao diện",
-                'attrs': ["- path: POST /api/students"],
-                'methods': ["+ themMoiSinhVien(req: StudentReq): ResponseEntity"]
+                'name': "StudentController", 'stereo': "Boundary",
+                'attrs': ["- studentService: StudentService", "- path: POST /api/students"],
+                'methods': ["+ createStudent(request: StudentRequest): ResponseEntity<ApiResponse<Student>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "StudentService", 'stereo': "Điều khiển",
-                'attrs': ["- studentRepo: StudentRepository", "- userRepo: UserRepository", "- passwordEncoder: PasswordEncoder"],
-                'methods': ["+ taoMoiSinhVien(req): Student", "+ kiemTraTrungMaVaEmail(ma, email): boolean", "+ taoTaiKhoanTuDong(maSV, email): User"]
+                'name': "StudentService", 'stereo': "Control",
+                'attrs': ["- studentRepository: StudentRepository", "- userRepository: UserRepository", "- classRepository: ClassRepository", "- passwordEncoder: PasswordEncoder"],
+                'methods': ["+ createStudent(req: StudentRequest): Student", "+ autoProvisionUserAccount(student: Student): User", "+ validateUniqueStudentCodeAndEmail(code: String, email: String): void"]
+            },
+            {
+                'name': "UserRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ existsByUsername(username: String): boolean", "+ existsByEmail(email: String): boolean", "+ save(user: User): User"]
             }
         ],
         ent_classes=[
             {
-                'name': "Student (Bảng students)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- studentCode: String", "- fullName: String", "- dob: Date", "- email: String", "- status: String (Đang học)", "- classEntity: ClassEntity", "- user: User"],
-                'methods': ["+ layHoTen(): String"]
+                'name': "Student", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- studentCode: String", "- fullName: String", "- email: String", "- dob: LocalDate", "- status: StudentStatus", "- classEntity: ClassEntity", "- user: User"],
+                'methods': ["+ getStudentCode(): String", "+ getStatus(): StudentStatus", "+ setClassEntity(clazz: ClassEntity): void"]
             },
             {
-                'name': "User (Bảng users)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- username: String (mã SV)", "- password: String (BCrypt)", "- enabled: boolean"],
-                'methods': ["+ layTenDangNhap(): String"]
+                'name': "User", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- username: String (studentCode)", "- password: String (BCrypt)", "- role: Role.STUDENT", "- isActive: boolean", "- mustChangePassword: true"],
+                'methods': ["+ setRole(role: Role): void", "+ setActive(active: boolean): void"]
             },
             {
-                'name': "ClassEntity (Bảng classes)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- className: String", "- academicYear: String"],
-                'methods': ["+ layTenLop(): String"]
+                'name': "StudentRequest", 'stereo': "DTO",
+                'attrs': ["- studentCode: String", "- fullName: String", "- email: String", "- phone: String", "- classId: Integer", "- dob: LocalDate"],
+                'methods': ["+ getStudentCode(): String", "+ getClassId(): Integer"]
             }
         ],
         edges=[
-            ("bnd_stu_create_1", "bnd_stu_create_2", "gửi dữ liệu form", False),
-            ("bnd_stu_create_2", "ctrl_stu_create_1", "gọi nghiệp vụ", False),
-            ("ctrl_stu_create_1", "ent_stu_create_1", "lưu sinh viên", True),
-            ("ctrl_stu_create_1", "ent_stu_create_2", "sinh tài khoản", True),
-            ("ent_stu_create_1", "ent_stu_create_3", "thuộc lớp", False)
+            ("bnd_stu_create_1", "bnd_stu_create_2", "HTTP POST /api/students", False),
+            ("bnd_stu_create_2", "ctrl_stu_create_1", "ủy quyền createStudent()", False),
+            ("ctrl_stu_create_1", "ctrl_stu_create_2", "lưu tài khoản User", False),
+            ("ctrl_stu_create_1", "ent_stu_create_1", "bền vững hóa thực thể Student", True),
+            ("ctrl_stu_create_2", "ent_stu_create_2", "bền vững hóa thực thể User", True)
         ]
     )
 
-# 4. Cập nhật hồ sơ & Trạng thái Sinh viên
+# 04. Quản lý Hồ sơ Sinh viên & Đình chỉ đào tạo
 def build_bce_4_student_manage():
     return build_single_function_tab(
         func_code="stu_manage",
-        func_title="CẬP NHẬT HỒ SƠ & TRẠNG THÁI SINH VIÊN",
+        func_title="04. Quản lý Hồ sơ Sinh viên & Đình chỉ đào tạo",
         comp_title="Quản lý hồ sơ Sinh viên",
-        comp_example="students_manage",
-        actor_name="Quản trị viên",
+        comp_example="StudentController",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "StudentsPageView", 'stereo': "Giao diện",
-                'attrs': ["- tuKhoaTimKiem: String", "- lopDaChonId: int", "- danhSachSV: List<Student>"],
-                'methods': ["+ taiDanhSach(): void", "+ timKiem(tuKhoa): void", "+ doiTrangThaiSV(id, status): void"]
+                'name': "StudentsPageView", 'stereo': "Boundary",
+                'attrs': ["- students: List<Student>", "- searchKeyword: String", "- statusFilter: StudentStatus", "- selectedStudent: Student"],
+                'methods': ["+ fetchStudents(pageable: Pageable): void", "+ handleStatusChange(id: Long, status: StudentStatus): void", "+ handleSearch(keyword: String): void"]
             },
             {
-                'name': "StudentController", 'stereo': "Giao diện",
-                'attrs': ["- path: PUT /api/students/{id}", "- path: PUT /api/students/{id}/status"],
-                'methods': ["+ capNhatSinhVien(id, req): ResponseEntity", "+ capNhatTrangThai(id, status): ResponseEntity"]
+                'name': "StudentController", 'stereo': "Boundary",
+                'attrs': ["- studentService: StudentService", "- path: PUT /api/students/{id}/status, PUT /api/students/{id}"],
+                'methods': ["+ updateStudent(id: Long, req: StudentRequest): ResponseEntity<ApiResponse<Student>>", "+ updateStatus(id: Long, req: UpdateStudentStatusRequest): ResponseEntity<ApiResponse<Void>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "StudentService", 'stereo': "Điều khiển",
-                'attrs': ["- studentRepo: StudentRepository", "- userRepo: UserRepository"],
-                'methods': ["+ timKiem(tuKhoa): List<Student>", "+ capNhat(id, req): Student", "+ doiTrangThai(id, newStatus): Student"]
+                'name': "StudentService", 'stereo': "Control",
+                'attrs': ["- studentRepository: StudentRepository", "- userRepository: UserRepository", "- auditLogService: AuditLogService"],
+                'methods': ["+ updateStudent(id: Long, req: StudentRequest): Student", "+ updateStudentStatus(id: Long, status: StudentStatus): void", "+ syncUserStatus(student: Student, active: boolean): void"]
+            },
+            {
+                'name': "StudentRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findById(id: Long): Optional<Student>", "+ findByStudentCode(code: String): Optional<Student>", "+ save(student: Student): Student"]
             }
         ],
         ent_classes=[
             {
-                'name': "Student (Bảng students)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- studentCode: String", "- fullName: String", "- email: String", "- status: String (Đang học / Tốt nghiệp / Đình chỉ)"],
-                'methods': ["+ capNhatTrangThai(status): void", "+ layThongTinChiTiet(): String"]
+                'name': "Student", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- studentCode: String", "- fullName: String", "- status: StudentStatus", "- address: String", "- gender: String"],
+                'methods': ["+ setStatus(status: StudentStatus): void", "+ isActive(): boolean"]
+            },
+            {
+                'name': "AuditLog", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- action: String (UPDATE_STATUS)", "- performedBy: String", "- details: String", "- timestamp: LocalDateTime"],
+                'methods': ["+ getAction(): String", "+ getTimestamp(): LocalDateTime"]
             }
         ],
         edges=[
-            ("bnd_stu_manage_1", "bnd_stu_manage_2", "gọi cập nhật", False),
-            ("bnd_stu_manage_2", "ctrl_stu_manage_1", "thực hiện", False),
-            ("ctrl_stu_manage_1", "ent_stu_manage_1", "cập nhật trạng thái", True)
+            ("bnd_stu_manage_1", "bnd_stu_manage_2", "HTTP PUT /api/students/{id}/status", False),
+            ("bnd_stu_manage_2", "ctrl_stu_manage_1", "ủy quyền updateStudentStatus()", False),
+            ("ctrl_stu_manage_1", "ctrl_stu_manage_2", "truy vấn & cập nhật Student", False),
+            ("ctrl_stu_manage_2", "ent_stu_manage_1", "lưu trạng thái mới vào CSDL", True),
+            ("ctrl_stu_manage_1", "ent_stu_manage_2", "ghi nhật ký AuditLog", True)
         ]
     )
 
-# 5. Quản lý Khoa đào tạo & Lớp sinh hoạt
+# 05. Quản lý Cơ cấu Đào tạo (Khoa, Ngành, Lớp sinh hoạt)
 def build_bce_5_academic_structure():
     return build_single_function_tab(
         func_code="academic",
-        func_title="QUẢN LÝ KHOA & LỚP SINH HOẠT",
+        func_title="05. Cơ cấu Đào tạo (Khoa, Ngành, Lớp)",
         comp_title="Cơ cấu Khoa, Ngành & Lớp",
-        comp_example="departments_majors_classes",
-        actor_name="Quản trị viên",
+        comp_example="DepartmentController",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "AcademicStructurePageView", 'stereo': "Giao diện",
-                'attrs': ["- danhSachKhoa: List<Department>", "- danhSachLop: List<ClassEntity>"],
-                'methods': ["+ taiDanhSachKhoa(): void", "+ taiDanhSachLop(): void", "+ themLopSinhHoat(): void"]
+                'name': "AcademicStructurePageView", 'stereo': "Boundary",
+                'attrs': ["- departments: List<Department>", "- classes: List<ClassEntity>", "- selectedDeptId: Integer", "- isClassModalOpen: boolean"],
+                'methods': ["+ loadDepartments(): void", "+ loadClassesByDepartment(deptId: Integer): void", "+ handleCreateClass(req: ClassRequest): void"]
             },
             {
-                'name': "DepartmentController & ClassController", 'stereo': "Giao diện",
-                'attrs': ["- path: /api/departments", "- path: /api/classes"],
-                'methods': ["+ layTatCaKhoa(): ResponseEntity", "+ themLop(req: ClassRequest): ResponseEntity"]
+                'name': "DepartmentController & ClassController", 'stereo': "Boundary",
+                'attrs': ["- departmentService: DepartmentService", "- classService: ClassService", "- path: /api/departments, /api/classes"],
+                'methods': ["+ getAllDepartments(): ResponseEntity<ApiResponse<List<Department>>>", "+ createClass(req: ClassRequest): ResponseEntity<ApiResponse<ClassEntity>>", "+ getClassesByDept(deptId: Integer): ResponseEntity<ApiResponse<List<ClassEntity>>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "ClassService", 'stereo': "Điều khiển",
-                'attrs': ["- classRepo: ClassRepository", "- departmentRepo: DepartmentRepository"],
-                'methods': ["+ taoLop(req: ClassRequest): ClassEntity", "+ kiemTraTrungMaLop(code): boolean"]
+                'name': "DepartmentService & ClassService", 'stereo': "Control",
+                'attrs': ["- departmentRepository: DepartmentRepository", "- classRepository: ClassRepository"],
+                'methods': ["+ getAllDepartments(): List<Department>", "+ createClass(req: ClassRequest): ClassEntity", "+ validateClassCodeNotDuplicate(code: String): void"]
             },
             {
-                'name': "DepartmentService", 'stereo': "Điều khiển",
-                'attrs': ["- departmentRepo: DepartmentRepository"],
-                'methods': ["+ layDanhSachKhoa(): List<Department>", "+ kiemTraKhoaTonTai(id): Department"]
+                'name': "ClassRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findByDepartmentId(deptId: Integer): List<ClassEntity>", "+ existsByClassCode(code: String): boolean", "+ save(clazz: ClassEntity): ClassEntity"]
             }
         ],
         ent_classes=[
             {
-                'name': "Department (Bảng departments)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- deptCode: String", "- deptName: String"],
-                'methods': ["+ layTenKhoa(): String"]
+                'name': "Department", 'stereo': "Entity",
+                'attrs': ["- id: Integer", "- departmentCode: String", "- departmentName: String", "- phone: String", "- email: String", "- isActive: boolean"],
+                'methods': ["+ getDepartmentCode(): String", "+ getDepartmentName(): String"]
             },
             {
-                'name': "ClassEntity (Bảng classes)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- code: String", "- name: String", "- academicYear: String", "- department: Department", "- isActive: boolean"],
-                'methods': ["+ layTenLop(): String"]
+                'name': "ClassEntity", 'stereo': "Entity",
+                'attrs': ["- id: Integer", "- classCode: String", "- className: String", "- academicYear: String", "- department: Department", "- major: Major"],
+                'methods': ["+ getClassCode(): String", "+ getDepartment(): Department"]
+            },
+            {
+                'name': "ClassRequest", 'stereo': "DTO",
+                'attrs': ["- classCode: String", "- className: String", "- departmentId: Integer", "- majorId: Integer", "- academicYear: String"],
+                'methods': ["+ getClassCode(): String", "+ getDepartmentId(): Integer"]
             }
         ],
         edges=[
-            ("bnd_academic_1", "bnd_academic_2", "truy vấn/thêm mới", False),
-            ("bnd_academic_2", "ctrl_academic_1", "gọi tạo lớp", False),
-            ("bnd_academic_2", "ctrl_academic_2", "lấy danh sách Khoa", False),
-            ("ctrl_academic_1", "ent_academic_1", "kiểm tra Khoa tồn tại", True),
-            ("ctrl_academic_1", "ent_academic_2", "lưu Lớp sinh hoạt", True),
-            ("ctrl_academic_2", "ent_academic_1", "truy vấn Khoa", True)
+            ("bnd_academic_1", "bnd_academic_2", "HTTP POST /api/classes", False),
+            ("bnd_academic_2", "ctrl_academic_1", "ủy quyền createClass()", False),
+            ("ctrl_academic_1", "ctrl_academic_2", "kiểm tra trùng & lưu CSDL", False),
+            ("ctrl_academic_1", "ent_academic_1", "liên kết thực thể Department", True),
+            ("ctrl_academic_2", "ent_academic_2", "bền vững hóa thực thể ClassEntity", True)
         ]
     )
 
-# 6. Quản lý Giảng viên & Phân công
+# 06. Quản lý Giảng viên & Phân công giảng dạy
 def build_bce_6_lecturers():
     return build_single_function_tab(
         func_code="lecturers",
-        func_title="QUẢN LÝ HỒ SƠ GIẢNG VIÊN",
+        func_title="06. Quản lý Giảng viên & Phân công giảng dạy",
         comp_title="Quản lý Giảng viên",
-        comp_example="lecturers",
-        actor_name="Quản trị viên",
+        comp_example="LecturerController",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "LecturersPageView", 'stereo': "Giao diện",
-                'attrs': ["- danhSachGiangVien: List<Lecturer>", "- khoaBoMonId: int"],
-                'methods': ["+ taiDanhSachGiangVien(): void", "+ moModalThemGiangVien(): void", "+ capNhatHocHamHocVi(): void"]
+                'name': "LecturersPageView", 'stereo': "Boundary",
+                'attrs': ["- lecturers: List<Lecturer>", "- searchKeyword: String", "- deptFilter: Integer", "- isModalOpen: boolean"],
+                'methods': ["+ fetchLecturers(): void", "+ handleSaveLecturer(req: LecturerRequest): void", "+ handleToggleStatus(id: Long): void"]
             },
             {
-                'name': "LecturerController", 'stereo': "Giao diện",
-                'attrs': ["- path: /api/lecturers"],
-                'methods': ["+ layTatCaGiangVien(): ResponseEntity", "+ themGiangVien(req: LecturerReq): ResponseEntity"]
+                'name': "LecturerController", 'stereo': "Boundary",
+                'attrs': ["- lecturerService: LecturerService", "- path: GET/POST/PUT /api/lecturers"],
+                'methods': ["+ getAll(): ResponseEntity<ApiResponse<List<Lecturer>>>", "+ create(req: LecturerRequest): ResponseEntity<ApiResponse<Lecturer>>", "+ update(id: Long, req: LecturerRequest): ResponseEntity<ApiResponse<Lecturer>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "LecturerService", 'stereo': "Điều khiển",
-                'attrs': ["- lecturerRepo: LecturerRepository", "- userRepo: UserRepository", "- passwordEncoder: PasswordEncoder"],
-                'methods': ["+ layTatCa(): List<Lecturer>", "+ themGiangVien(req): Lecturer", "+ taoTaiKhoanGiangVien(gv, email): User"]
+                'name': "LecturerService", 'stereo': "Control",
+                'attrs': ["- lecturerRepository: LecturerRepository", "- userRepository: UserRepository", "- departmentRepository: DepartmentRepository"],
+                'methods': ["+ getAllLecturers(): List<Lecturer>", "+ createLecturer(req: LecturerRequest): Lecturer", "+ autoProvisionLecturerAccount(lecturer: Lecturer): User"]
+            },
+            {
+                'name': "LecturerRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findByLecturerCode(code: String): Optional<Lecturer>", "+ existsByEmail(email: String): boolean", "+ save(lecturer: Lecturer): Lecturer"]
             }
         ],
         ent_classes=[
             {
-                'name': "Lecturer (Bảng lecturers)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- lecturerCode: String", "- fullName: String", "- email: String", "- degree: String (ThS/TS/PGS)", "- department: Department", "- user: User"],
-                'methods': ["+ layHoTen(): String", "+ layHocVi(): String"]
+                'name': "Lecturer", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- lecturerCode: String", "- fullName: String", "- email: String", "- phone: String", "- academicDegree: String", "- department: Department", "- user: User"],
+                'methods': ["+ getLecturerCode(): String", "+ getAcademicDegree(): String", "+ getDepartment(): Department"]
+            },
+            {
+                'name': "User", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- username: String (lecturerCode)", "- password: String (BCrypt)", "- role: Role.LECTURER", "- isActive: boolean"],
+                'methods': ["+ getRole(): Role", "+ isEnabled(): boolean"]
+            },
+            {
+                'name': "LecturerRequest", 'stereo': "DTO",
+                'attrs': ["- lecturerCode: String", "- fullName: String", "- email: String", "- phone: String", "- academicDegree: String", "- departmentId: Integer"],
+                'methods': ["+ getLecturerCode(): String", "+ getDepartmentId(): Integer"]
             }
         ],
         edges=[
-            ("bnd_lecturers_1", "bnd_lecturers_2", "thêm/sửa GV", False),
-            ("bnd_lecturers_2", "ctrl_lecturers_1", "gọi nghiệp vụ", False),
-            ("ctrl_lecturers_1", "ent_lecturers_1", "lưu Giảng viên", True)
+            ("bnd_lecturers_1", "bnd_lecturers_2", "HTTP POST /api/lecturers", False),
+            ("bnd_lecturers_2", "ctrl_lecturers_1", "ủy quyền createLecturer()", False),
+            ("ctrl_lecturers_1", "ctrl_lecturers_2", "lưu giảng viên vào CSDL", False),
+            ("ctrl_lecturers_2", "ent_lecturers_1", "bền vững hóa thực thể Lecturer", True),
+            ("ctrl_lecturers_1", "ent_lecturers_2", "cấp tài khoản User tương ứng", True)
         ]
     )
 
-# 7. Quản lý Môn học & Chương trình đào tạo
+# 07. Quản lý Môn học, Tín chỉ & Môn tiên quyết
 def build_bce_7_subjects():
     return build_single_function_tab(
         func_code="subjects",
-        func_title="QUẢN LÝ MÔN HỌC & CHƯƠNG TRÌNH",
+        func_title="07. Quản lý Môn học, Tín chỉ & Tiên quyết",
         comp_title="Quản lý Môn học",
-        comp_example="subjects",
-        actor_name="Quản trị viên",
+        comp_example="SubjectController",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "SubjectsPageView", 'stereo': "Giao diện",
-                'attrs': ["- danhSachMon: List<Subject>", "- tuKhoaTimKiem: String", "- khoaFilter: int"],
-                'methods': ["+ taiDanhSachMon(): void", "+ onSearch(): void", "+ onSaveSubject(): void"]
+                'name': "SubjectsPageView", 'stereo': "Boundary",
+                'attrs': ["- subjects: List<SubjectResponse>", "- keyword: String", "- deptFilter: Integer", "- isCreateModalOpen: boolean"],
+                'methods': ["+ fetchSubjects(): void", "+ handleCreateSubject(req: SubjectRequest): void", "+ handleConfigurePrerequisites(id: Integer): void"]
             },
             {
-                'name': "SubjectController", 'stereo': "Giao diện",
-                'attrs': ["- path: /api/subjects"],
-                'methods': ["+ layTatCaMonHoc(): ResponseEntity", "+ themMonHoc(req: SubjectReq): ResponseEntity"]
+                'name': "SubjectController", 'stereo': "Boundary",
+                'attrs': ["- subjectService: SubjectService", "- path: GET/POST/PUT /api/subjects"],
+                'methods': ["+ getAll(): ResponseEntity<ApiResponse<List<SubjectResponse>>>", "+ create(req: SubjectRequest): ResponseEntity<ApiResponse<SubjectResponse>>", "+ update(id: Integer, req: SubjectRequest): ResponseEntity<ApiResponse<SubjectResponse>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "SubjectService", 'stereo': "Điều khiển",
-                'attrs': ["- subjectRepo: SubjectRepository", "- deptRepo: DepartmentRepository"],
-                'methods': ["+ layTatCa(): List<SubjectResponse>", "+ taoMonHoc(req): SubjectResponse", "+ kiemTraTrungMaMon(code): boolean", "+ giaiTichMonTienQuyet(ids): List<Subject>"]
+                'name': "SubjectService", 'stereo': "Control",
+                'attrs': ["- subjectRepository: SubjectRepository", "- prerequisiteEngine: PrerequisiteGraphEngine", "- departmentRepository: DepartmentRepository"],
+                'methods': ["+ getAllSubjects(): List<SubjectResponse>", "+ createSubject(req: SubjectRequest): SubjectResponse", "+ validateNoCyclicPrerequisite(subjectId: int, prereqId: int): void"]
+            },
+            {
+                'name': "PrerequisiteGraphEngine", 'stereo': "Control",
+                'attrs': ["- graphNodes: Map<Integer, Set<Integer>>"],
+                'methods': ["+ buildDependencyGraph(): void", "+ hasCycle(sourceId: Integer, targetId: Integer): boolean", "+ getPrerequisiteTree(subjectId: Integer): List<Integer>"]
             }
         ],
         ent_classes=[
             {
-                'name': "Subject (Bảng subjects)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- subjectCode: String", "- subjectName: String", "- credits: int (1..10)", "- department: Department", "- prerequisites: List<Subject>"],
-                'methods': ["+ laySoTinChi(): int", "+ layTenMon(): String"]
+                'name': "Subject", 'stereo': "Entity",
+                'attrs': ["- id: Integer", "- subjectCode: String", "- subjectName: String", "- credits: Integer", "- theoryHours: Integer", "- practicalHours: Integer", "- department: Department"],
+                'methods': ["+ getSubjectCode(): String", "+ getCredits(): Integer"]
+            },
+            {
+                'name': "SubjectResponse", 'stereo': "DTO",
+                'attrs': ["- id: Integer", "- subjectCode: String", "- subjectName: String", "- credits: Integer", "- departmentName: String", "- prerequisiteCodes: List<String>"],
+                'methods': ["+ getPrerequisiteCodes(): List<String>"]
+            },
+            {
+                'name': "SubjectRequest", 'stereo': "DTO",
+                'attrs': ["- subjectCode: String", "- subjectName: String", "- credits: Integer", "- departmentId: Integer", "- prerequisiteIds: List<Integer>"],
+                'methods': ["+ getSubjectCode(): String", "+ getCredits(): Integer"]
             }
         ],
         edges=[
-            ("bnd_subjects_1", "bnd_subjects_2", "lưu môn học", False),
-            ("bnd_subjects_2", "ctrl_subjects_1", "xử lý nghiệp vụ", False),
-            ("ctrl_subjects_1", "ent_subjects_1", "lưu thực thể", True)
+            ("bnd_subjects_1", "bnd_subjects_2", "HTTP POST /api/subjects", False),
+            ("bnd_subjects_2", "ctrl_subjects_1", "ủy quyền createSubject()", False),
+            ("ctrl_subjects_1", "ctrl_subjects_2", "kiểm tra chu trình DAG", False),
+            ("ctrl_subjects_1", "ent_subjects_1", "bền vững hóa thực thể Subject", True),
+            ("ctrl_subjects_1", "ent_subjects_2", "chuyển đổi SubjectResponse DTO", True)
         ]
     )
 
-# 8. Cấu hình Học kỳ & Thời hạn ĐKHP
+# 08. Cấu hình Học kỳ & Kích hoạt đợt đào tạo
 def build_bce_8_semesters():
     return build_single_function_tab(
         func_code="semesters",
-        func_title="CẤU HÌNH HỌC KỲ & THỜI HẠN ĐKHP",
+        func_title="08. Cấu hình Học kỳ & Kích hoạt đợt đào tạo",
         comp_title="Cấu hình Học kỳ",
-        comp_example="semesters",
-        actor_name="Quản trị viên",
+        comp_example="SemesterController",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "SemestersPageView", 'stereo': "Giao diện",
-                'attrs': ["- danhSachHocKy: List<Semester>", "- hocKyHienTai: Semester"],
-                'methods': ["+ taiDanhSachHocKy(): void", "+ themMoiHocKy(): void", "+ kichHoatHocKy(id): void"]
+                'name': "SemestersPageView", 'stereo': "Boundary",
+                'attrs': ["- semesters: List<Semester>", "- currentSemesterId: Integer", "- isCreateModalOpen: boolean"],
+                'methods': ["+ fetchSemesters(): void", "+ handleSetCurrent(id: Integer): void", "+ handleCreateSemester(req: SemesterRequest): void"]
             },
             {
-                'name': "SemesterController", 'stereo': "Giao diện",
-                'attrs': ["- path: /api/semesters"],
-                'methods': ["+ layTatCaHocKy(): ResponseEntity", "+ datLamHocKyHienTai(id): ResponseEntity"]
+                'name': "SemesterController", 'stereo': "Boundary",
+                'attrs': ["- semesterService: SemesterService", "- path: GET/POST/PUT /api/semesters"],
+                'methods': ["+ getAll(): ResponseEntity<ApiResponse<List<Semester>>>", "+ create(req: SemesterRequest): ResponseEntity<ApiResponse<Semester>>", "+ setCurrent(id: Integer): ResponseEntity<ApiResponse<Void>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "SemesterService", 'stereo': "Điều khiển",
-                'attrs': ["- semesterRepo: SemesterRepository"],
-                'methods': ["+ layTatCa(): List<Semester>", "+ themHocKy(req): Semester", "+ datLamHocKyHienTai(id): Semester", "+ layHocKyHienTai(): Semester"]
+                'name': "SemesterService", 'stereo': "Control",
+                'attrs': ["- semesterRepository: SemesterRepository", "- auditLogService: AuditLogService"],
+                'methods': ["+ getAllSemesters(): List<Semester>", "+ createSemester(req: SemesterRequest): Semester", "+ setCurrentSemester(id: Integer): void", "+ validateTimeline(start: LocalDate, end: LocalDate): void"]
+            },
+            {
+                'name': "SemesterRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findByIsCurrentTrue(): Optional<Semester>", "+ existsBySemesterCode(code: String): boolean", "+ resetAllCurrentFlags(): void"]
             }
         ],
         ent_classes=[
             {
-                'name': "Semester (Bảng semesters)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- semesterCode: String", "- semesterName: String", "- semesterNumber: int", "- academicYear: String", "- startDate: Date", "- endDate: Date", "- registrationStart: Date", "- registrationEnd: Date", "- status: String", "- isCurrent: boolean"],
-                'methods': ["+ trongHanDangKy(): boolean", "+ laHocKyHienTai(): boolean"]
+                'name': "Semester", 'stereo': "Entity",
+                'attrs': ["- id: Integer", "- semesterCode: String", "- semesterName: String", "- academicYear: String", "- startDate: LocalDate", "- endDate: LocalDate", "- isCurrent: boolean"],
+                'methods': ["+ getSemesterCode(): String", "+ isCurrent(): boolean", "+ isWithinTimeline(date: LocalDate): boolean"]
+            },
+            {
+                'name': "SemesterRequest", 'stereo': "DTO",
+                'attrs': ["- semesterCode: String", "- semesterName: String", "- academicYear: String", "- startDate: LocalDate", "- endDate: LocalDate", "- isCurrent: boolean"],
+                'methods': ["+ getSemesterCode(): String", "+ getStartDate(): LocalDate"]
             }
         ],
         edges=[
-            ("bnd_semesters_1", "bnd_semesters_2", "thao tác cấu hình", False),
-            ("bnd_semesters_2", "ctrl_semesters_1", "gọi nghiệp vụ", False),
-            ("ctrl_semesters_1", "ent_semesters_1", "lưu Học kỳ", True)
+            ("bnd_semesters_1", "bnd_semesters_2", "HTTP POST /api/semesters", False),
+            ("bnd_semesters_2", "ctrl_semesters_1", "ủy quyền createSemester()", False),
+            ("ctrl_semesters_1", "ctrl_semesters_2", "đặt cờ isCurrent & lưu CSDL", False),
+            ("ctrl_semesters_2", "ent_semesters_1", "bền vững hóa thực thể Semester", True)
         ]
     )
 
-# 9. Mở mới Lớp học phần
+# 09. Mở mới & Điều phối Lớp học phần
 def build_bce_9_course_sections():
     return build_single_function_tab(
         func_code="sections",
-        func_title="MỞ MỚI LỚP HỌC PHẦN",
+        func_title="09. Mở mới & Điều phối Lớp học phần",
         comp_title="Mở lớp Học phần",
-        comp_example="course_sections",
-        actor_name="Quản trị viên",
+        comp_example="CourseSectionController",
+        actor_name="Cán bộ Đào tạo / Admin",
         bnd_classes=[
             {
-                'name': "CourseSectionsPageView", 'stereo': "Giao diện",
-                'attrs': ["- hocKyId: int", "- monHocId: int", "- danhSachLopHP: List<CourseSection>"],
-                'methods': ["+ taiDanhSachLopHP(): void", "+ moModalThemLopHP(): void", "+ onSaveLopHP(): void"]
+                'name': "CourseSectionsPageView", 'stereo': "Boundary",
+                'attrs': ["- sections: List<CourseSection>", "- semesterFilter: Integer", "- subjectFilter: Integer", "- isModalOpen: boolean"],
+                'methods': ["+ fetchSections(): void", "+ handleCreateSection(req: CourseSectionRequest): void", "+ handleStatusToggle(id: Long): void"]
             },
             {
-                'name': "CourseSectionController", 'stereo': "Giao diện",
-                'attrs': ["- path: /api/course-sections"],
-                'methods': ["+ layDanhSachLop(): ResponseEntity", "+ createSection(req: SectionReq): ResponseEntity"]
+                'name': "CourseSectionController", 'stereo': "Boundary",
+                'attrs': ["- courseSectionService: CourseSectionService", "- path: GET/POST/PUT /api/course-sections"],
+                'methods': ["+ getBySemester(semId: Integer): ResponseEntity<ApiResponse<List<CourseSection>>>", "+ create(req: CourseSectionRequest): ResponseEntity<ApiResponse<CourseSection>>", "+ updateStatus(id: Long, status: String): ResponseEntity<ApiResponse<Void>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "CourseSectionService", 'stereo': "Điều khiển",
-                'attrs': ["- sectionRepo: CourseSectionRepository", "- subjectRepo: SubjectRepository"],
-                'methods': ["+ moLopHocPhan(req): CourseSection", "+ kiemTraTrungMaLop(code): boolean", "+ capNhat(id, req): CourseSection"]
+                'name': "CourseSectionService", 'stereo': "Control",
+                'attrs': ["- courseSectionRepository: CourseSectionRepository", "- subjectRepository: SubjectRepository", "- semesterRepository: SemesterRepository", "- lecturerRepository: LecturerRepository"],
+                'methods': ["+ createCourseSection(req: CourseSectionRequest): CourseSection", "+ validateSectionCapacity(capacity: int): void", "+ initializeSectionEnrollmentCount(section: CourseSection): void"]
+            },
+            {
+                'name': "CourseSectionRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findBySemesterId(semId: Integer): List<CourseSection>", "+ existsBySectionCode(code: String): boolean", "+ save(section: CourseSection): CourseSection"]
             }
         ],
         ent_classes=[
             {
-                'name': "CourseSection (Bảng course_sections)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- sectionCode: String", "- subject: Subject", "- semester: Semester", "- lecturer: Lecturer", "- maxStudents: int", "- currentStudents: int (0)", "- status: String (OPEN)"],
-                'methods': ["+ conChoTrong(): boolean", "+ laySiSoHienTai(): int"]
+                'name': "CourseSection", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- sectionCode: String", "- subject: Subject", "- semester: Semester", "- lecturer: Lecturer", "- maxCapacity: Integer", "- currentEnrolled: Integer", "- status: SectionStatus"],
+                'methods': ["+ getSectionCode(): String", "+ getAvailableSeats(): int", "+ isFull(): boolean"]
+            },
+            {
+                'name': "CourseSectionRequest", 'stereo': "DTO",
+                'attrs': ["- sectionCode: String", "- subjectId: Integer", "- semesterId: Integer", "- lecturerId: Long", "- maxCapacity: Integer"],
+                'methods': ["+ getSectionCode(): String", "+ getMaxCapacity(): Integer"]
             }
         ],
         edges=[
-            ("bnd_sections_1", "bnd_sections_2", "mở lớp", False),
-            ("bnd_sections_2", "ctrl_sections_1", "xử lý nghiệp vụ", False),
-            ("ctrl_sections_1", "ent_sections_1", "lưu Lớp học phần", True)
+            ("bnd_sections_1", "bnd_sections_2", "HTTP POST /api/course-sections", False),
+            ("bnd_sections_2", "ctrl_sections_1", "ủy quyền createCourseSection()", False),
+            ("ctrl_sections_1", "ctrl_sections_2", "kiểm tra sức chứa & lưu CSDL", False),
+            ("ctrl_sections_2", "ent_sections_1", "bền vững hóa thực thể CourseSection", True)
         ]
     )
 
-# 10. Xếp Thời khóa biểu & Trùng lịch
+# 10. Xếp Thời khóa biểu & Chống va chạm phòng/giờ
 def build_bce_10_scheduling():
     return build_single_function_tab(
         func_code="scheduling",
-        func_title="XẾP THỜI KHÓA BIỂU & TRÙNG LỊCH",
+        func_title="10. Xếp Thời khóa biểu & Chống va chạm phòng/giờ",
         comp_title="Xếp Thời khóa biểu",
-        comp_example="scheduling",
-        actor_name="Quản trị viên",
+        comp_example="ScheduleController",
+        actor_name="Cán bộ Đào tạo / Admin",
         bnd_classes=[
             {
-                'name': "SectionScheduleModal", 'stereo': "Giao diện",
-                'attrs': ["- maLopHP: int", "- thuTrongTuan: int", "- tietBatDau: int", "- tietKetThuc: int", "- phongHoc: String"],
-                'methods': ["+ guiLuuLichHoc(): void", "+ hienThiCanhBaoLoi(msg): void"]
+                'name': "SectionScheduleModal", 'stereo': "Boundary",
+                'attrs': ["- sectionId: Long", "- dayOfWeek: DayOfWeek", "- startPeriod: int", "- endPeriod: int", "- roomName: String"],
+                'methods': ["+ submitSchedule(): void", "+ checkConflictPreview(): void", "+ handleClose(): void"]
             },
             {
-                'name': "ScheduleController", 'stereo': "Giao diện",
-                'attrs': ["- path: /api/schedules"],
-                'methods': ["+ createSchedule(req: ScheduleReq): ResponseEntity", "+ capNhatLich(id, req): ResponseEntity"]
+                'name': "ScheduleController", 'stereo': "Boundary",
+                'attrs': ["- scheduleService: ScheduleService", "- path: POST/PUT/DELETE /api/schedules"],
+                'methods': ["+ createSchedule(req: ScheduleRequest): ResponseEntity<ApiResponse<Schedule>>", "+ getBySection(sectionId: Long): ResponseEntity<ApiResponse<List<Schedule>>>", "+ deleteSchedule(id: Long): ResponseEntity<ApiResponse<Void>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "ScheduleService", 'stereo': "Điều khiển",
-                'attrs': ["- scheduleRepo: ScheduleRepository"],
-                'methods': ["+ taoLichHoc(req): Schedule", "+ kiemTraTrungPhong(room, tietBD, tietKT, ngayBD, ngayKT, excludeId): boolean", "+ kiemTraTrungGiangVien(gvId, tietBD, tietKT, ngayBD, ngayKT, excludeId): boolean", "+ kiemTraTrungLichSinhVien(sectionId, tietBD, tietKT): boolean"]
+                'name': "ScheduleService", 'stereo': "Control",
+                'attrs': ["- scheduleRepository: ScheduleRepository", "- courseSectionRepository: CourseSectionRepository", "- auditLogService: AuditLogService"],
+                'methods': ["+ createSchedule(req: ScheduleRequest): Schedule", "+ detectRoomAndPeriodConflict(room: String, day: int, start: int, end: int, semId: int): void", "+ detectLecturerConflict(lecId: Long, day: int, start: int, end: int, semId: int): void"]
+            },
+            {
+                'name': "ScheduleRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findConflictingSchedules(room: String, day: int, start: int, end: int, semId: int): List<Schedule>", "+ findByCourseSectionId(sectionId: Long): List<Schedule>"]
             }
         ],
         ent_classes=[
             {
-                'name': "Schedule (Bảng schedules)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- courseSection: CourseSection", "- dayOfWeek: int (2..8)", "- startPeriod: int (1..12)", "- endPeriod: int (1..12)", "- room: String"],
-                'methods': ["+ layThu(): int", "+ layTietHoc(): int", "+ layPhong(): String"]
+                'name': "Schedule", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- courseSection: CourseSection", "- dayOfWeek: Integer (2..8)", "- startPeriod: Integer (1..12)", "- endPeriod: Integer (1..12)", "- room: String"],
+                'methods': ["+ overlapsWith(other: Schedule): boolean", "+ getRoom(): String", "+ getCourseSection(): CourseSection"]
             },
             {
-                'name': "CourseSection (Bảng course_sections)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- sectionCode: String"],
-                'methods': ["+ layMaLop(): String"]
+                'name': "ScheduleRequest", 'stereo': "DTO",
+                'attrs': ["- courseSectionId: Long", "- dayOfWeek: Integer", "- startPeriod: Integer", "- endPeriod: Integer", "- room: String"],
+                'methods': ["+ getCourseSectionId(): Long", "+ getRoom(): String"]
             }
         ],
         edges=[
-            ("bnd_scheduling_1", "bnd_scheduling_2", "lưu thời khóa biểu", False),
-            ("bnd_scheduling_2", "ctrl_scheduling_1", "kiểm tra & xếp lịch", False),
-            ("ctrl_scheduling_1", "ent_scheduling_1", "lưu Lịch học", True),
-            ("ent_scheduling_1", "ent_scheduling_2", "gắn với Lớp HP", False)
+            ("bnd_scheduling_1", "bnd_scheduling_2", "HTTP POST /api/schedules", False),
+            ("bnd_scheduling_2", "ctrl_scheduling_1", "ủy quyền createSchedule()", False),
+            ("ctrl_scheduling_1", "ctrl_scheduling_2", "quét va chạm phòng và giảng viên", False),
+            ("ctrl_scheduling_2", "ent_scheduling_1", "bền vững hóa thực thể Schedule", True)
         ]
     )
 
-# 11. Đăng ký lớp Học phần
+# 11. Sinh viên Đăng ký Tín chỉ (Khóa phân tán Redis)
 def build_bce_11_enrollment():
     return build_single_function_tab(
         func_code="enroll",
-        func_title="ĐĂNG KÝ LỚP HỌC PHẦN",
+        func_title="11. Sinh viên Đăng ký Tín chỉ (Khóa Redis)",
         comp_title="Đăng ký lớp Học phần",
-        comp_example="course_enrollment",
+        comp_example="EnrollmentController",
         actor_name="Sinh viên",
         bnd_classes=[
             {
-                'name': "EnrollPageView", 'stereo': "Giao diện",
-                'attrs': ["- danhSachLopMo: List<CourseSection>", "- tongTinChiDaChon: int", "- tkbTamThoi: List<Schedule>"],
-                'methods': ["+ taiLopMoTrongKy(): void", "+ guiDangKy(sectionId): void", "+ hienThiKetQuaToast(): void"]
+                'name': "EnrollPageView", 'stereo': "Boundary",
+                'attrs': ["- openSections: List<CourseSectionDTO>", "- selectedSectionIds: Set<Long>", "- totalCredits: int", "- isEnrolling: boolean"],
+                'methods': ["+ fetchAvailableSections(): void", "+ handleEnroll(sectionId: Long): void", "+ validateCreditLimit(credits: int): boolean"]
             },
             {
-                'name': "EnrollmentController", 'stereo': "Giao diện",
-                'attrs': ["- path: POST /api/enrollments"],
-                'methods': ["+ enroll(userId: principal, sectionId): ResponseEntity"]
+                'name': "EnrollmentController", 'stereo': "Boundary",
+                'attrs': ["- enrollmentService: EnrollmentService", "- path: POST /api/enrollments"],
+                'methods': ["+ enroll(user: UserPrincipal, req: EnrollmentRequest): ResponseEntity<ApiResponse<Enrollment>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "EnrollmentService", 'stereo': "Điều khiển",
-                'attrs': ["- enrollmentRepo: EnrollmentRepository", "- sectionRepo: CourseSectionRepository", "- studentRepo: StudentRepository"],
-                'methods': ["+ dangKyHocPhan(svId, sectionId): Enrollment", "+ khoaBiQuanLopHP(id): CourseSection", "+ kiemTraThuocKhungCTDT(sv, mon): boolean", "+ kiemTraMonTienQuyet(sv, mon): boolean", "+ kiemTra1LopMoiMon(sv, mon): boolean", "+ kiemTraTrungLich(svId, sec): boolean", "+ kiemTraSiSo(sec): boolean", "+ kiemTraGioiHanTinChi(svId, sec): boolean"]
+                'name': "EnrollmentService", 'stereo': "Control",
+                'attrs': ["- enrollmentRepository: EnrollmentRepository", "- redisLockService: RedisLockService", "- prerequisiteEngine: PrerequisiteGraphEngine", "- sectionRepository: CourseSectionRepository"],
+                'methods': ["+ enrollCourse(studentId: Long, sectionId: Long): Enrollment", "+ validatePrerequisitesPassed(studentId: Long, subjectId: int): void", "+ validateScheduleNotOverlap(studentId: Long, sectionId: Long): void"]
+            },
+            {
+                'name': "RedisLockService", 'stereo': "Control",
+                'attrs': ["- redissonClient: RedissonClient", "- lockTimeoutMs: 5000"],
+                'methods': ["+ acquireLock(lockKey: String): boolean", "+ releaseLock(lockKey: String): void"]
             }
         ],
         ent_classes=[
             {
-                'name': "Enrollment (Bảng enrollments)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- student: Student", "- courseSection: CourseSection", "- enrollDate: Date", "- status: String (ENROLLED)"],
-                'methods': ["+ dangHieuLuc(): boolean"]
+                'name': "Enrollment", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- student: Student", "- courseSection: CourseSection", "- enrollmentDate: LocalDateTime", "- status: EnrollmentStatus.ENROLLED"],
+                'methods': ["+ getStudent(): Student", "+ getCourseSection(): CourseSection"]
             },
             {
-                'name': "CourseSection (Bảng course_sections)", 'stereo': "Thực thể",
-                'attrs': ["- currentStudents: int (+1)", "- maxStudents: int"],
-                'methods': ["+ tangSiSo(): void"]
+                'name': "CourseSection", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- currentEnrolled: Integer", "- maxCapacity: Integer", "- version: Long (@Version)"],
+                'methods': ["+ incrementEnrolled(): void", "+ isCapacityFull(): boolean"]
+            },
+            {
+                'name': "EnrollmentRequest", 'stereo': "DTO",
+                'attrs': ["- courseSectionId: Long", "- semesterId: Integer"],
+                'methods': ["+ getCourseSectionId(): Long"]
             }
         ],
         edges=[
-            ("bnd_enroll_1", "bnd_enroll_2", "bấm Đăng ký", False),
-            ("bnd_enroll_2", "ctrl_enroll_1", "xử lý đăng ký & khóa bi quan", False),
-            ("ctrl_enroll_1", "ent_enroll_1", "tạo bản ghi đăng ký", True),
-            ("ctrl_enroll_1", "ent_enroll_2", "tăng sĩ số (+1)", True)
+            ("bnd_enroll_1", "bnd_enroll_2", "HTTP POST /api/enrollments", False),
+            ("bnd_enroll_2", "ctrl_enroll_1", "ủy quyền enrollCourse()", False),
+            ("ctrl_enroll_1", "ctrl_enroll_2", "chiếm giữ Redis Distributed Lock", False),
+            ("ctrl_enroll_1", "ent_enroll_1", "lưu bản ghi Enrollment", True),
+            ("ctrl_enroll_1", "ent_enroll_2", "tăng sĩ số currentEnrolled +1", True)
         ]
     )
 
-# 12. Hủy đăng ký Học phần
+# 12. Hủy Đăng ký Học phần & Hoàn trả sĩ số lớp
 def build_bce_12_course_drop():
     return build_single_function_tab(
         func_code="drop",
-        func_title="HỦY ĐĂNG KÝ HỌC PHẦN",
+        func_title="12. Hủy Đăng ký Học phần & Hoàn trả sĩ số",
         comp_title="Hủy đăng ký học phần",
-        comp_example="course_drop",
+        comp_example="EnrollmentController",
         actor_name="Sinh viên",
         bnd_classes=[
             {
-                'name': "MyEnrollmentsPageView", 'stereo': "Giao diện",
-                'attrs': ["- danhSachDaDK: List<Enrollment>", "- thoiGianConLai: String"],
-                'methods': ["+ taiLopDaDangKy(): void", "+ guiYeuCauHuy(enrId): void", "+ moModalXacNhanHuy(): void"]
+                'name': "MyEnrollmentsPage", 'stereo': "Boundary",
+                'attrs': ["- enrolledList: List<EnrollmentDTO>", "- currentSemesterId: Integer", "- confirmDropModal: Modal"],
+                'methods': ["+ fetchMyEnrollments(): void", "+ handleDropCourse(enrollmentId: Long): void", "+ confirmDropAction(): void"]
             },
             {
-                'name': "EnrollmentController", 'stereo': "Giao diện",
-                'attrs': ["- path: DELETE /api/enrollments/{id}"],
-                'methods': ["+ dropCourse(studentId, enrId): ResponseEntity"]
+                'name': "EnrollmentController", 'stereo': "Boundary",
+                'attrs': ["- enrollmentService: EnrollmentService", "- path: DELETE /api/enrollments/{id}"],
+                'methods': ["+ drop(user: UserPrincipal, id: Long): ResponseEntity<ApiResponse<Void>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "EnrollmentService", 'stereo': "Điều khiển",
-                'attrs': ["- enrollmentRepo: EnrollmentRepository", "- sectionRepo: CourseSectionRepository"],
-                'methods': ["+ huyDangKy(svId, enrId): boolean", "+ kiemTraTrongHanDangKy(semId): boolean", "+ kiemTraChuaCoDiem(enrId): boolean", "+ khoaBiQuanLopHP(secId): CourseSection"]
+                'name': "EnrollmentService", 'stereo': "Control",
+                'attrs': ["- enrollmentRepository: EnrollmentRepository", "- sectionRepository: CourseSectionRepository", "- registrationWaveService: RegistrationWaveService"],
+                'methods': ["+ dropCourse(studentId: Long, enrollmentId: Long): void", "+ validateDropWaveActive(semesterId: int): void", "+ decrementSectionEnrolledCount(sectionId: Long): void"]
+            },
+            {
+                'name': "CourseSectionRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ decrementEnrolledSeats(sectionId: Long): int", "+ findById(id: Long): Optional<CourseSection>"]
             }
         ],
         ent_classes=[
             {
-                'name': "Enrollment (Bảng enrollments)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- status: String (CANCELLED)"],
-                'methods': ["+ huy(): void"]
+                'name': "Enrollment", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- status: EnrollmentStatus.DROPPED", "- droppedAt: LocalDateTime"],
+                'methods': ["+ markAsDropped(): void", "+ getStatus(): EnrollmentStatus"]
             },
             {
-                'name': "CourseSection (Bảng course_sections)", 'stereo': "Thực thể",
-                'attrs': ["- enrolled_count: int (-1)"],
-                'methods': ["+ dongBoSiSoTrigger(): void"]
+                'name': "CourseSection", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- currentEnrolled: Integer", "- maxCapacity: Integer"],
+                'methods': ["+ decrementEnrolled(): void"]
             }
         ],
         edges=[
-            ("bnd_drop_1", "bnd_drop_2", "bấm Hủy học phần", False),
-            ("bnd_drop_2", "ctrl_drop_1", "thực hiện hủy", False),
-            ("ctrl_drop_1", "ent_drop_1", "cập nhật trạng thái CANCELLED", True),
-            ("ctrl_drop_1", "ent_drop_2", "đồng bộ trigger giảm sĩ số (-1)", True)
+            ("bnd_drop_1", "bnd_drop_2", "HTTP DELETE /api/enrollments/{id}", False),
+            ("bnd_drop_2", "ctrl_drop_1", "ủy quyền dropCourse()", False),
+            ("ctrl_drop_1", "ctrl_drop_2", "hoàn trả 1 chỗ trống sĩ số lớp", False),
+            ("ctrl_drop_1", "ent_drop_1", "cập nhật trạng thái DROPPED", True),
+            ("ctrl_drop_2", "ent_drop_2", "giảm currentEnrolled -1", True)
         ]
     )
 
-# 13. Nhập điểm thành phần
+# 13. Giảng viên Nhập điểm thành phần & Tính GPA
 def build_bce_13_grading_entry():
     return build_single_function_tab(
         func_code="grd_entry",
-        func_title="NHẬP ĐIỂM THÀNH PHẦN & TÍNH TỔNG KẾT",
+        func_title="13. Giảng viên Nhập điểm thành phần & Tính GPA",
         comp_title="Nhập điểm học phần",
-        comp_example="grading_entry",
+        comp_example="GradeController",
         actor_name="Giảng viên",
         bnd_classes=[
             {
-                'name': "GradeEntryPageView", 'stereo': "Giao diện",
-                'attrs': ["- lopHPDaChon: CourseSection", "- danhSachDiemSV: List<GradeDTO> (CC1, CC2, GK, CK)"],
-                'methods': ["+ taiDanhSachDiem(): void", "+ onScoreChange(svId, loai, diem): void", "+ onSaveDraft(): void"]
+                'name': "GradeEntryPageView", 'stereo': "Boundary",
+                'attrs': ["- studentGrades: List<GradeRowDTO>", "- sectionId: Long", "- isFinalized: boolean", "- isSaving: boolean"],
+                'methods': ["+ fetchSectionGrades(sectionId: Long): void", "+ handleCellChange(studentId: Long, col: String, val: Double): void", "+ handleSaveDraft(): void"]
             },
             {
-                'name': "GradeController", 'stereo': "Giao diện",
-                'attrs': ["- path: GET /api/grades/section/{sectionId}", "- path: PUT /api/grades/batch"],
-                'methods': ["+ layBangDiemLop(sectionId): ResponseEntity", "+ saveGrades(req: List<GradeRequest>): ResponseEntity"]
+                'name': "GradeController", 'stereo': "Boundary",
+                'attrs': ["- gradeService: GradeService", "- path: POST/PUT /api/grades"],
+                'methods': ["+ saveGrades(user: UserPrincipal, req: GradeEntryRequest): ResponseEntity<ApiResponse<Void>>", "+ getBySection(sectionId: Long): ResponseEntity<ApiResponse<List<GradeDTO>>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "GradeService", 'stereo': "Điều khiển",
-                'attrs': ["- gradeRepo: GradeRepository", "- enrollmentRepo: EnrollmentRepository"],
-                'methods': ["+ saveGrades(req: List<GradeRequest>): List<Grade>", "+ kiemTraDiemHopLe(0..10): boolean", "+ kiemTraThuocLopHP(enrId, secId): boolean"]
+                'name': "GradeService", 'stereo': "Control",
+                'attrs': ["- gradeRepository: GradeRepository", "- courseSectionRepository: CourseSectionRepository", "- gradeCalculationEngine: GradeCalculationEngine"],
+                'methods': ["+ saveDraftGrades(sectionId: Long, grades: List<GradeItemDTO>): void", "+ calculateCompositeGrade(att: Double, mid: Double, fin: Double): Double", "+ convertToGradeLetterAndFourScale(total10: Double): GradeScalePair"]
+            },
+            {
+                'name': "GradeRepository", 'stereo': "Control",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findByCourseSectionId(sectionId: Long): List<Grade>", "+ findByEnrollmentId(enrollmentId: Long): Optional<Grade>", "+ saveAll(grades: List<Grade>): List<Grade>"]
             }
         ],
         ent_classes=[
             {
-                'name': "Grade (Bảng grades)", 'stereo': "Thực thể",
-                'attrs': ["- id: int", "- enrollment: Enrollment", "- cc1Score: double (5%)", "- cc2Score: double (5%)", "- midtermScore: double (30%)", "- finalScore: double (60%)", "- totalScore: double", "- gpaPoint: double", "- letterGrade: String", "- isFinalized: boolean (false)"],
-                'methods': ["+ calculateTotalScore(): void", "+ quyDoiHe4VaChu(): void"]
+                'name': "Grade", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- enrollment: Enrollment", "- attendanceScore: Double", "- midtermScore: Double", "- finalExamScore: Double", "- totalScore10: Double", "- totalScore4: Double", "- letterGrade: String", "- isFinalized: boolean"],
+                'methods': ["+ computeFinalScores(): void", "+ getLetterGrade(): String"]
+            },
+            {
+                'name': "GradeEntryRequest", 'stereo': "DTO",
+                'attrs': ["- courseSectionId: Long", "- grades: List<StudentGradeInputDTO>"],
+                'methods': ["+ getCourseSectionId(): Long", "+ getGrades(): List<StudentGradeInputDTO>"]
             }
         ],
         edges=[
-            ("bnd_grd_entry_1", "bnd_grd_entry_2", "lưu tạm điểm", False),
-            ("bnd_grd_entry_2", "ctrl_grd_entry_1", "tính toán & lưu", False),
-            ("ctrl_grd_entry_1", "ent_grd_entry_1", "ghi nhận 4 cột điểm", True)
+            ("bnd_grd_entry_1", "bnd_grd_entry_2", "HTTP POST /api/grades", False),
+            ("bnd_grd_entry_2", "ctrl_grd_entry_1", "ủy quyền saveDraftGrades()", False),
+            ("ctrl_grd_entry_1", "ctrl_grd_entry_2", "tính điểm hệ 4 và lưu CSDL", False),
+            ("ctrl_grd_entry_2", "ent_grd_entry_1", "bền vững hóa thực thể Grade", True)
         ]
     )
 
-# 14. Chốt bảng điểm học phần
+# 14. Chốt Sổ điểm & Cửa sổ ân hạn sửa điểm 7 ngày
 def build_bce_14_grading_finalize():
     return build_single_function_tab(
         func_code="grd_finalize",
-        func_title="CHỐT BẢNG ĐIỂM HỌC PHẦN & CỬA SỔ 7 NGÀY",
+        func_title="14. Chốt Sổ điểm & Cửa sổ ân hạn 7 ngày",
         comp_title="Chốt bảng điểm học phần",
-        comp_example="grading_finalize",
+        comp_example="GradeController",
         actor_name="Giảng viên & Admin",
         bnd_classes=[
             {
-                'name': "FinalizeConfirmModal", 'stereo': "Giao diện",
-                'attrs': ["- thongDiepCanhBao: String", "- soSVChuaDuDiem: int", "- conTrongHan7Ngay: boolean"],
-                'methods': ["+ kiemTraDuDiem(): boolean", "+ xacNhanChot(secId): void", "+ xacNhanMoKhoa(secId): void"]
+                'name': "FinalizeConfirmModal", 'stereo': "Boundary",
+                'attrs': ["- sectionId: Long", "- verificationCode: String", "- confirmationChecked: boolean"],
+                'methods': ["+ openFinalizeModal(): void", "+ handleConfirmFinalize(): void", "+ showSuccessNotification(): void"]
             },
             {
-                'name': "GradeController", 'stereo': "Giao diện",
-                'attrs': ["- path: PUT /api/grades", "- param: finalize (true=chốt / false=mở khóa)"],
-                'methods': ["+ luuBangDiem(req: GradeReq, finalize): ResponseEntity"]
+                'name': "GradeController", 'stereo': "Boundary",
+                'attrs': ["- gradeService: GradeService", "- path: PUT /api/grades/sections/{id}/finalize"],
+                'methods': ["+ finalizeSectionGrades(id: Long, user: UserPrincipal): ResponseEntity<ApiResponse<Void>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "GradeService", 'stereo': "Điều khiển",
-                'attrs': ["- gradeRepo: GradeRepository", "- enrollmentRepo: EnrollmentRepository"],
-                'methods': ["+ luuVaChotDiem(secId, finalize): List<Grade>", "+ kiemTraQuyenSua(grade): boolean"]
+                'name': "GradeService", 'stereo': "Control",
+                'attrs': ["- gradeRepository: GradeRepository", "- courseSectionRepository: CourseSectionRepository", "- auditLogService: AuditLogService"],
+                'methods': ["+ finalizeGrades(sectionId: Long, lecturerId: Long): void", "+ validateAllScoresPresent(sectionId: Long): void", "+ recordGradeFinalizeAudit(sectionId: Long, userId: Long): void"]
+            },
+            {
+                'name': "AuditLogService", 'stereo': "Control",
+                'attrs': ["- auditLogRepository: AuditLogRepository"],
+                'methods': ["+ logEvent(action: String, entityId: String, performedBy: String, details: String): void"]
             }
         ],
         ent_classes=[
             {
-                'name': "Grade (Bảng grades)", 'stereo': "Thực thể",
-                'attrs': ["- isFinalized: boolean", "- finalizedAt: LocalDateTime", "- EDIT_WINDOW_DAYS: int = 7"],
-                'methods': ["+ khoaSo(): void", "+ moKhoa(): void", "+ isEditWindowExpired(): boolean"]
+                'name': "Grade", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- isFinalized: true", "- finalizedAt: LocalDateTime", "- amendmentGracePeriodEnd: LocalDateTime (7 days)"],
+                'methods': ["+ setFinalized(flag: boolean): void", "+ isWithinGracePeriod(): boolean"]
+            },
+            {
+                'name': "GradeAuditLog", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- courseSectionId: Long", "- action: String (FINALIZE_SECTION_GRADES)", "- operatorId: Long", "- timestamp: LocalDateTime"],
+                'methods': ["+ getAction(): String", "+ getTimestamp(): LocalDateTime"]
             }
         ],
         edges=[
-            ("bnd_grd_finalize_1", "bnd_grd_finalize_2", "yêu cầu chốt/mở khóa", False),
-            ("bnd_grd_finalize_2", "ctrl_grd_finalize_1", "thực hiện", False),
-            ("ctrl_grd_finalize_1", "ent_grd_finalize_1", "cập nhật is_finalized & finalized_at", True)
+            ("bnd_grd_finalize_1", "bnd_grd_finalize_2", "HTTP PUT /api/grades/sections/{id}/finalize", False),
+            ("bnd_grd_finalize_2", "ctrl_grd_finalize_1", "ủy quyền finalizeGrades()", False),
+            ("ctrl_grd_finalize_1", "ctrl_grd_finalize_2", "ghi log kiểm toán đóng sổ", False),
+            ("ctrl_grd_finalize_1", "ent_grd_finalize_1", "khóa isFinalized=true và mốc 7 ngày", True),
+            ("ctrl_grd_finalize_2", "ent_grd_finalize_2", "lưu nhật ký kiểm toán GradeAuditLog", True)
         ]
     )
 
-# 15. Tra cứu Bảng điểm học tập & Điểm CPA
+# 15. Tra cứu Bảng điểm, Tiến độ CTĐT & Điểm CPA
 def build_bce_15_transcript_cpa():
     return build_single_function_tab(
         func_code="transcript",
-        func_title="TRA CỨU BẢNG ĐIỂM & ĐIỂM CPA",
+        func_title="15. Tra cứu Bảng điểm & Điểm CPA",
         comp_title="Bảng điểm & CPA",
-        comp_example="transcript_cpa",
+        comp_example="TranscriptController",
         actor_name="Sinh viên",
         bnd_classes=[
             {
-                'name': "TranscriptPageView", 'stereo': "Giao diện",
-                'attrs': ["- studentInfo: Student", "- semesters: List<SemesterResultDTO>", "- gpaPerSem: double", "- cumulativeGpa: double"],
-                'methods': ["+ taiBangDiem(): void", "+ xuatFilePDF(): void"]
+                'name': "TranscriptPageView", 'stereo': "Boundary",
+                'attrs': ["- transcriptData: TranscriptResponse", "- gpaBySemester: List<SemesterGpaDTO>", "- cumulativeCpa: Double", "- totalCreditsEarned: int"],
+                'methods': ["+ fetchMyTranscript(): void", "+ calculateGpaOverview(): void", "+ handleExportPdf(): void"]
             },
             {
-                'name': "TranscriptController", 'stereo': "Giao diện",
-                'attrs': ["- path: GET /api/transcript/me"],
-                'methods': ["+ getMyTranscript(): ResponseEntity"]
+                'name': "TranscriptController", 'stereo': "Boundary",
+                'attrs': ["- transcriptService: TranscriptService", "- path: GET /api/transcripts/me"],
+                'methods': ["+ getMyTranscript(user: UserPrincipal): ResponseEntity<ApiResponse<TranscriptResponse>>", "+ getStudentTranscript(studentId: Long): ResponseEntity<ApiResponse<TranscriptResponse>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "TranscriptService", 'stereo': "Điều khiển",
-                'attrs': ["- gradeRepo: GradeRepository", "- studentRepo: StudentRepository"],
-                'methods': ["+ getTranscript(studentId): TranscriptResponse", "+ buildTranscript(student, grades): TranscriptResponse (CPA theo lần học tốt nhất)", "+ classifyAcademicStanding(cpa): String"]
+                'name': "TranscriptService", 'stereo': "Control",
+                'attrs': ["- gradeRepository: GradeRepository", "- studentRepository: StudentRepository", "- degreeAuditEngine: DegreeAuditEngine"],
+                'methods': ["+ getStudentTranscript(studentId: Long): TranscriptResponse", "+ computeSemesterGpa(grades: List<Grade>): Double", "+ computeCumulativeCpa(allGrades: List<Grade>): Double"]
+            },
+            {
+                'name': "DegreeAuditEngine", 'stereo': "Control",
+                'attrs': ["- curriculumRepository: CurriculumRepository"],
+                'methods': ["+ calculateEarnedCredits(grades: List<Grade>): int", "+ evaluateCurriculumProgress(studentId: Long): CurriculumProgressDTO"]
             }
         ],
         ent_classes=[
             {
-                'name': "TranscriptResponse", 'stereo': "Truyền dữ liệu",
-                'attrs': ["- studentCode: String", "- studentName: String", "- semesters: List<SemesterResultDTO>", "- cumulativeGpa: double", "- totalCredits: int", "- academicStanding: String"],
-                'methods': ["+ layCPA(): double", "+ layXepLoai(): String"]
+                'name': "TranscriptResponse", 'stereo': "DTO",
+                'attrs': ["- studentCode: String", "- fullName: String", "- cpa: Double", "- totalCredits: Integer", "- semesters: List<SemesterTranscriptDTO>"],
+                'methods': ["+ getCpa(): Double", "+ getTotalCredits(): Integer"]
+            },
+            {
+                'name': "Grade", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- totalScore4: Double", "- letterGrade: String", "- isFinalized: boolean"],
+                'methods': ["+ isPassed(): boolean", "+ getTotalScore4(): Double"]
             }
         ],
         edges=[
-            ("bnd_transcript_1", "bnd_transcript_2", "truy vấn bảng điểm", False),
-            ("bnd_transcript_2", "ctrl_transcript_1", "tổng hợp kết quả & CPA", False),
-            ("ctrl_transcript_1", "ent_transcript_1", "đóng gói DTO", True)
+            ("bnd_transcript_1", "bnd_transcript_2", "HTTP GET /api/transcripts/me", False),
+            ("bnd_transcript_2", "ctrl_transcript_1", "ủy quyền getStudentTranscript()", False),
+            ("ctrl_transcript_1", "ctrl_transcript_2", "tính toán tín chỉ tích lũy & CPA", False),
+            ("ctrl_transcript_1", "ent_transcript_2", "truy vấn điểm đã chốt sổ (Grade)", True),
+            ("ctrl_transcript_1", "ent_transcript_1", "đóng gói DTO TranscriptResponse", True)
         ]
     )
 
-# 16. Báo cáo Thống kê & Dashboard đào tạo
+# 16. Báo cáo Thống kê Toàn trường, Cảnh báo học vụ
 def build_bce_16_analytics_dashboard():
     return build_single_function_tab(
         func_code="dashboard",
-        func_title="BÁO CÁO THỐNG KÊ & DASHBOARD",
+        func_title="16. Báo cáo Thống kê & Dashboard",
         comp_title="Bảng điều khiển Thống kê",
-        comp_example="analytics_dashboard",
-        actor_name="Quản trị viên",
+        comp_example="DashboardController",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "DashboardPageView", 'stereo': "Giao diện",
-                'attrs': ["- theThongKeKPI: List<KPIItem>", "- bieuDoKhoa: PieChart", "- bieuDoTrangThai: BarChart"],
-                'methods': ["+ taiSoLieuThongKe(): void", "+ xuatBaoCaoExcel(): void"]
+                'name': "DashboardPageView", 'stereo': "Boundary",
+                'attrs': ["- kpiStats: DashboardResponse", "- studentDistribution: ChartData", "- enrollmentTrends: ChartData", "- isLoading: boolean"],
+                'methods': ["+ loadDashboardData(): void", "+ renderDepartmentCharts(): void", "+ exportStatisticsReport(): void"]
             },
             {
-                'name': "DashboardController", 'stereo': "Giao diện",
-                'attrs': ["- path: GET /api/dashboard"],
-                'methods': ["+ getDashboard(): ResponseEntity"]
+                'name': "DashboardController", 'stereo': "Boundary",
+                'attrs': ["- dashboardService: DashboardService", "- path: GET /api/dashboard"],
+                'methods': ["+ getDashboard(): ResponseEntity<ApiResponse<DashboardResponse>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "DashboardService", 'stereo': "Điều khiển",
-                'attrs': ["- studentRepo: StudentRepository", "- deptRepo: DepartmentRepository", "- sectionRepo: CourseSectionRepository"],
-                'methods': ["+ getDashboard(): DashboardResponse", "+ thongKeSinhVienTheoKhoa(): Map<String, Object>", "+ thongKeTrangThaiSinhVien(): Map<String, Object>"]
+                'name': "DashboardService", 'stereo': "Control",
+                'attrs': ["- studentRepository: StudentRepository", "- lecturerRepository: LecturerRepository", "- enrollmentRepository: EnrollmentRepository", "- warningService: AcademicWarningService"],
+                'methods': ["+ getAggregatedDashboardData(): DashboardResponse", "+ computeTotalActiveStudents(): long", "+ getAcademicWarningStats(): WarningStatsDTO"]
+            },
+            {
+                'name': "AcademicWarningService", 'stereo': "Control",
+                'attrs': ["- warningRepository: AcademicWarningRepository"],
+                'methods': ["+ scanStudentsAtAcademicRisk(semesterId: int): List<AcademicWarning>", "+ generateWarningReport(): WarningSummaryDTO"]
             }
         ],
         ent_classes=[
             {
-                'name': "DashboardResponse", 'stereo': "Truyền dữ liệu",
-                'attrs': ["- totalStudents: int", "- totalLecturers: int", "- totalCourseSections: int", "- studentsByDepartment: Map<String, Object>", "- studentsByStatus: Map<String, Object>"],
-                'methods': ["+ layTongSinhVien(): int"]
+                'name': "DashboardResponse", 'stereo': "DTO",
+                'attrs': ["- totalStudents: Long", "- totalLecturers: Long", "- totalCourseSections: Long", "- totalRevenue: BigDecimal", "- warningsCount: Integer"],
+                'methods': ["+ getTotalStudents(): Long", "+ getTotalRevenue(): BigDecimal"]
+            },
+            {
+                'name': "AcademicWarning", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- student: Student", "- semester: Semester", "- warningLevel: Integer (1..3)", "- currentCpa: Double", "- noticeDate: LocalDate"],
+                'methods': ["+ getWarningLevel(): Integer", "+ getStudent(): Student"]
             }
         ],
         edges=[
-            ("bnd_dashboard_1", "bnd_dashboard_2", "truy vấn số liệu", False),
-            ("bnd_dashboard_2", "ctrl_dashboard_1", "phân tích & tổng hợp", False),
-            ("ctrl_dashboard_1", "ent_dashboard_1", "đóng gói DTO", True)
+            ("bnd_dashboard_1", "bnd_dashboard_2", "HTTP GET /api/dashboard", False),
+            ("bnd_dashboard_2", "ctrl_dashboard_1", "ủy quyền getDashboardData()", False),
+            ("ctrl_dashboard_1", "ctrl_dashboard_2", "quét sinh viên diện cảnh báo học vụ", False),
+            ("ctrl_dashboard_2", "ent_dashboard_2", "truy vấn thực thể AcademicWarning", True),
+            ("ctrl_dashboard_1", "ent_dashboard_1", "đóng gói DTO DashboardResponse", True)
         ]
     )
 
-
-# 17. QUẢN LÝ & THU HỌC PHÍ (TUITION)
+# 17. Quản lý Tài chính & Thu học phí theo tín chỉ
 def build_bce_17_tuition_management():
     return build_single_function_tab(
         func_code="tuition",
-        func_title="17. Quản lý & Thu học phí",
+        func_title="17. Quản lý Tài chính & Thu học phí",
         comp_title="Quản lý Tài chính & Thu học phí",
         comp_example="TuitionController",
         actor_name="Thu ngân / Admin",
         bnd_classes=[
             {
-                'name': "TuitionCashierPage", 'stereo': "Giao diện",
-                'attrs': ["- studentCodeInput: String", "- selectedSemester: int", "- paymentAmount: double", "- paymentMethod: String", "- invoiceTable: DataTable"],
-                'methods': ["+ timKiemCongNo(): void", "+ nhapSoTienThu(): void", "+ xacNhanThuTien(): void", "+ inBienLai(): void", "+ xinGiaHan(): void"]
+                'name': "TuitionCashierPage", 'stereo': "Boundary",
+                'attrs': ["- studentSearch: String", "- activeInvoice: StudentInvoice", "- paymentAmount: BigDecimal", "- paymentMethod: PaymentMethod"],
+                'methods': ["+ searchStudentInvoice(code: String): void", "+ handleCollectCash(): void", "+ handlePrintReceipt(receiptId: Long): void"]
             },
             {
-                'name': "TuitionController", 'stereo': "Giao diện",
-                'attrs': ["- tuitionService: TuitionService", "- studentRepo: StudentRepository"],
-                'methods': ["+ getOverview(semesterId): ApiResponse", "+ getStudentTuition(studentId, semId): ApiResponse", "+ collectCash(request): ApiResponse", "+ extendDeadline(request): ApiResponse", "+ getMyTuition(): ApiResponse"]
+                'name': "TuitionController", 'stereo': "Boundary",
+                'attrs': ["- tuitionService: TuitionService", "- path: GET/POST /api/tuition"],
+                'methods': ["+ getStudentTuition(studentId: Long): ResponseEntity<ApiResponse<TuitionSummaryResponse>>", "+ collectCash(req: CashPaymentRequest): ResponseEntity<ApiResponse<ReceiptResponse>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "TuitionService", 'stereo': "Điều khiển",
-                'attrs': ["- invoiceRepo: StudentInvoiceRepository", "- enrollmentRepo: EnrollmentRepository", "- semesterRepo: SemesterRepository"],
-                'methods': ["+ getTuitionOverview(semesterId): TuitionOverviewResponse", "+ getStudentTuitionSummary(studentId, semId): TuitionSummaryResponse", "+ collectCash(request): ReceiptResponse", "+ extendDeadline(request): void", "+ getOverdueStudents(): List<OverdueStudentDto>"]
+                'name': "TuitionService", 'stereo': "Control",
+                'attrs': ["- studentInvoiceRepository: StudentInvoiceRepository", "- enrollmentRepository: EnrollmentRepository", "- feeScaleRuleRepository: FeeScaleRuleRepository"],
+                'methods': ["+ calculateTuitionForSemester(studentId: Long, semesterId: int): StudentInvoice", "+ collectTuitionPayment(invoiceId: Long, amount: BigDecimal, cashierId: Long): ReceiptResponse"]
             },
             {
-                'name': "StudentInvoiceRepository", 'stereo': "Điều khiển",
+                'name': "StudentInvoiceRepository", 'stereo': "Control",
                 'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findByStudentIdAndSemesterId(studentId, semesterId): Optional<StudentInvoice>", "+ findBySemesterId(semesterId): List<StudentInvoice>", "+ save(invoice): StudentInvoice", "+ findOverdueInvoices(now): List<StudentInvoice>"]
+                'methods': ["+ findByStudentIdAndSemesterId(studentId: Long, semId: int): Optional<StudentInvoice>", "+ save(invoice: StudentInvoice): StudentInvoice"]
             }
         ],
         ent_classes=[
             {
-                'name': "StudentInvoice", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- studentId: Long", "- semesterId: Integer", "- totalAmount: BigDecimal", "- discountAmount: BigDecimal", "- paidAmount: BigDecimal", "- status: InvoiceStatus", "- dueDate: LocalDate", "- paidAt: LocalDateTime"],
-                'methods': ["+ getBalance(): BigDecimal", "+ isOverdue(): boolean", "+ markPaid(amount): void"]
+                'name': "StudentInvoice", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- student: Student", "- semester: Semester", "- totalCredits: Integer", "- totalAmount: BigDecimal", "- paidAmount: BigDecimal", "- balanceAmount: BigDecimal", "- status: InvoiceStatus"],
+                'methods': ["+ recordPayment(amount: BigDecimal): void", "+ isFullyPaid(): boolean"]
             },
             {
-                'name': "ReceiptResponse", 'stereo': "Truyền dữ liệu",
-                'attrs': ["- receiptNo: String", "- studentCode: String", "- studentName: String", "- amountPaid: BigDecimal", "- paymentMethod: String", "- cashierName: String", "- paidAt: LocalDateTime"],
-                'methods': ["+ layMaBienLai(): String", "+ laySoTienNop(): BigDecimal"]
+                'name': "ReceiptResponse", 'stereo': "DTO",
+                'attrs': ["- receiptNumber: String", "- studentCode: String", "- amountPaid: BigDecimal", "- remainingBalance: BigDecimal", "- transactionTime: LocalDateTime"],
+                'methods': ["+ getReceiptNumber(): String", "+ getAmountPaid(): BigDecimal"]
             }
         ],
         edges=[
-            ("bnd_tuition_1", "bnd_tuition_2", "gửi yêu cầu thu tiền", False),
-            ("bnd_tuition_2", "ctrl_tuition_1", "xử lý thanh toán & công nợ", False),
-            ("ctrl_tuition_1", "ctrl_tuition_2", "truy vấn hóa đơn", False),
-            ("ctrl_tuition_2", "ent_tuition_1", "cập nhật StudentInvoice", True),
-            ("ctrl_tuition_1", "ent_tuition_2", "tạo biên lai ReceiptResponse", True)
+            ("bnd_tuition_1", "bnd_tuition_2", "HTTP POST /api/tuition/collect-cash", False),
+            ("bnd_tuition_2", "ctrl_tuition_1", "ủy quyền collectTuitionPayment()", False),
+            ("ctrl_tuition_1", "ctrl_tuition_2", "lưu giao dịch thu học phí", False),
+            ("ctrl_tuition_2", "ent_tuition_1", "cập nhật công nợ StudentInvoice", True),
+            ("ctrl_tuition_1", "ent_tuition_2", "xuất biên lai ReceiptResponse DTO", True)
         ]
     )
 
-# 18. ĐIỂM DANH LỚP HỌC & CHECK-IN TRỰC TIẾP (ATTENDANCE)
+# 18. Điểm danh lớp học trực tiếp qua mã PIN 6 số
 def build_bce_18_live_attendance():
     return build_single_function_tab(
         func_code="attendance",
-        func_title="18. Điểm danh lớp học & Check-in trực tiếp",
+        func_title="18. Điểm danh Lớp học Trực tiếp PIN 6 số",
         comp_title="Quản lý Chuyên cần & Điểm danh trực tiếp",
         comp_example="AttendanceController",
         actor_name="Giảng viên & Sinh viên",
         bnd_classes=[
             {
-                'name': "LecturerAttendancePage", 'stereo': "Giao diện",
-                'attrs': ["- livePinDisplay: String", "- countdownTimer: int", "- attendeeCount: int", "- attendanceGrid: DataTable"],
-                'methods': ["+ batDauPhienTrucTiep(): void", "+ trinhChieuMaPIN(): void", "+ suaTrangThaiThuCong(): void", "+ chotVaKetThucPhien(): void"]
+                'name': "LecturerAttendancePage", 'stereo': "Boundary",
+                'attrs': ["- activeSession: AttendanceLiveSessionResponse", "- pinCode: String", "- checkedInStudents: List<AttendanceRecord>", "- isLive: boolean"],
+                'methods': ["+ handleStartLiveSession(sectionId: Long): void", "+ handleCloseSession(): void", "+ handleManualCheckIn(studentId: Long): void"]
             },
             {
-                'name': "AttendanceController", 'stereo': "Giao diện",
-                'attrs': ["- attendanceService: AttendanceService"],
-                'methods': ["+ startLiveSession(request): ApiResponse", "+ getLiveStatus(sectionId): ApiResponse", "+ checkInLive(request): ApiResponse", "+ submitRecords(request): ApiResponse", "+ getSectionHistory(sectionId): ApiResponse"]
+                'name': "AttendanceController", 'stereo': "Boundary",
+                'attrs': ["- attendanceService: AttendanceService", "- path: POST /api/attendance/session/start, POST /api/attendance/check-in"],
+                'methods': ["+ startSession(req: AttendanceStartRequest): ResponseEntity<ApiResponse<AttendanceLiveSessionResponse>>", "+ checkIn(req: CheckInRequest): ResponseEntity<ApiResponse<Map<String, Object>>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "AttendanceService", 'stereo': "Điều khiển",
-                'attrs': ["- sessionRepo: AttendanceSessionRepository", "- recordRepo: AttendanceRecordRepository", "- enrollmentRepo: EnrollmentRepository"],
-                'methods': ["+ startLiveSession(sectionId, duration): AttendanceLiveSessionResponse", "+ checkInLive(studentId, pinCode): void", "+ submitAttendanceRecords(sessionId, records): void", "+ finalizeSession(sessionId): void", "+ getAttendanceRate(sectionId): double"]
+                'name': "AttendanceService", 'stereo': "Control",
+                'attrs': ["- sessionRepository: AttendanceSessionRepository", "- recordRepository: AttendanceRecordRepository", "- enrollmentRepository: EnrollmentRepository"],
+                'methods': ["+ createLiveSession(sectionId: Long, durationMins: int): AttendanceSession", "+ verifyPinAndCheckIn(studentId: Long, sessionId: Long, pin: String): AttendanceRecord", "+ generateRandom6DigitPin(): String"]
             },
             {
-                'name': "AttendanceSessionRepository", 'stereo': "Điều khiển",
+                'name': "AttendanceSessionRepository", 'stereo': "Control",
                 'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findActiveSessionBySectionId(sectionId): Optional<AttendanceSession>", "+ save(session): AttendanceSession", "+ findById(sessionId): Optional<AttendanceSession>"]
+                'methods': ["+ findActiveSessionBySection(sectionId: Long): Optional<AttendanceSession>", "+ save(session: AttendanceSession): AttendanceSession"]
             }
         ],
         ent_classes=[
             {
-                'name': "AttendanceSession", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- sectionId: Long", "- sessionDate: LocalDate", "- pinCode: String", "- expiresAt: LocalDateTime", "- status: SessionStatus", "- isFinalized: boolean"],
-                'methods': ["+ isExpired(): boolean", "+ isValidPin(pin): boolean", "+ closeSession(): void"]
+                'name': "AttendanceSession", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- courseSection: CourseSection", "- sessionDate: LocalDate", "- pinCode: String (6 digits)", "- expiresAt: LocalDateTime", "- isActive: boolean"],
+                'methods': ["+ isExpired(): boolean", "+ validatePin(inputPin: String): boolean"]
             },
             {
-                'name': "AttendanceRecord", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- sessionId: Long", "- studentId: Long", "- status: AttendanceStatus", "- checkInTime: LocalDateTime", "- note: String"],
-                'methods': ["+ markPresent(): void", "+ markAbsent(): void"]
+                'name': "AttendanceRecord", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- session: AttendanceSession", "- student: Student", "- checkInTime: LocalDateTime", "- status: AttendanceStatus (PRESENT/LATE/ABSENT)"],
+                'methods': ["+ getStatus(): AttendanceStatus", "+ getCheckInTime(): LocalDateTime"]
             }
         ],
         edges=[
-            ("bnd_attendance_1", "bnd_attendance_2", "gọi REST API phiên điểm danh", False),
-            ("bnd_attendance_2", "ctrl_attendance_1", "điều phối phiên & check-in", False),
-            ("ctrl_attendance_1", "ctrl_attendance_2", "lưu trữ phiên", False),
-            ("ctrl_attendance_2", "ent_attendance_1", "quản lý AttendanceSession", True),
-            ("ctrl_attendance_1", "ent_attendance_2", "lưu AttendanceRecord", True)
+            ("bnd_attendance_1", "bnd_attendance_2", "HTTP POST /api/attendance/check-in", False),
+            ("bnd_attendance_2", "ctrl_attendance_1", "ủy quyền verifyPinAndCheckIn()", False),
+            ("ctrl_attendance_1", "ctrl_attendance_2", "kiểm tra phiên & PIN hợp lệ", False),
+            ("ctrl_attendance_2", "ent_attendance_1", "xác thực thực thể AttendanceSession", True),
+            ("ctrl_attendance_1", "ent_attendance_2", "lưu bản ghi AttendanceRecord", True)
         ]
     )
 
-
-# 17. QUẢN LÝ & THU HỌC PHÍ (TUITION)
-def build_bce_17_tuition_management():
-    return build_single_function_tab(
-        func_code="tuition",
-        func_title="17. Quản lý & Thu học phí",
-        comp_title="Quản lý Tài chính & Thu học phí",
-        comp_example="TuitionController",
-        actor_name="Thu ngân / Admin",
-        bnd_classes=[
-            {
-                'name': "TuitionCashierPage", 'stereo': "Giao diện",
-                'attrs': ["- studentCodeInput: String", "- selectedSemester: int", "- paymentAmount: double", "- paymentMethod: String", "- invoiceTable: DataTable"],
-                'methods': ["+ timKiemCongNo(): void", "+ nhapSoTienThu(): void", "+ xacNhanThuTien(): void", "+ inBienLai(): void", "+ xinGiaHan(): void"]
-            },
-            {
-                'name': "TuitionController", 'stereo': "Giao diện",
-                'attrs': ["- tuitionService: TuitionService", "- studentRepo: StudentRepository"],
-                'methods': ["+ getOverview(semesterId): ApiResponse", "+ getStudentTuition(studentId, semId): ApiResponse", "+ collectCash(request): ApiResponse", "+ extendDeadline(request): ApiResponse", "+ getMyTuition(): ApiResponse"]
-            }
-        ],
-        ctrl_classes=[
-            {
-                'name': "TuitionService", 'stereo': "Điều khiển",
-                'attrs': ["- invoiceRepo: StudentInvoiceRepository", "- enrollmentRepo: EnrollmentRepository", "- semesterRepo: SemesterRepository"],
-                'methods': ["+ getTuitionOverview(semesterId): TuitionOverviewResponse", "+ getStudentTuitionSummary(studentId, semId): TuitionSummaryResponse", "+ collectCash(request): ReceiptResponse", "+ extendDeadline(request): void", "+ getOverdueStudents(): List<OverdueStudentDto>"]
-            },
-            {
-                'name': "StudentInvoiceRepository", 'stereo': "Điều khiển",
-                'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findByStudentIdAndSemesterId(studentId, semesterId): Optional<StudentInvoice>", "+ findBySemesterId(semesterId): List<StudentInvoice>", "+ save(invoice): StudentInvoice", "+ findOverdueInvoices(now): List<StudentInvoice>"]
-            }
-        ],
-        ent_classes=[
-            {
-                'name': "StudentInvoice", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- studentId: Long", "- semesterId: Integer", "- totalAmount: BigDecimal", "- discountAmount: BigDecimal", "- paidAmount: BigDecimal", "- status: InvoiceStatus", "- dueDate: LocalDate", "- paidAt: LocalDateTime"],
-                'methods': ["+ getBalance(): BigDecimal", "+ isOverdue(): boolean", "+ markPaid(amount): void"]
-            },
-            {
-                'name': "ReceiptResponse", 'stereo': "Truyền dữ liệu",
-                'attrs': ["- receiptNo: String", "- studentCode: String", "- studentName: String", "- amountPaid: BigDecimal", "- paymentMethod: String", "- cashierName: String", "- paidAt: LocalDateTime"],
-                'methods': ["+ layMaBienLai(): String", "+ laySoTienNop(): BigDecimal"]
-            }
-        ],
-        edges=[
-            ("bnd_tuition_1", "bnd_tuition_2", "gửi yêu cầu thu tiền", False),
-            ("bnd_tuition_2", "ctrl_tuition_1", "xử lý thanh toán & công nợ", False),
-            ("ctrl_tuition_1", "ctrl_tuition_2", "truy vấn hóa đơn", False),
-            ("ctrl_tuition_2", "ent_tuition_1", "cập nhật StudentInvoice", True),
-            ("ctrl_tuition_1", "ent_tuition_2", "tạo biên lai ReceiptResponse", True)
-        ]
-    )
-
-# 18. ĐIỂM DANH LỚP HỌC & CHECK-IN TRỰC TIẾP (ATTENDANCE)
-def build_bce_18_live_attendance():
-    return build_single_function_tab(
-        func_code="attendance",
-        func_title="18. Điểm danh lớp học & Check-in trực tiếp",
-        comp_title="Quản lý Chuyên cần & Điểm danh trực tiếp",
-        comp_example="AttendanceController",
-        actor_name="Giảng viên & Sinh viên",
-        bnd_classes=[
-            {
-                'name': "LecturerAttendancePage", 'stereo': "Giao diện",
-                'attrs': ["- livePinDisplay: String", "- countdownTimer: int", "- attendeeCount: int", "- attendanceGrid: DataTable"],
-                'methods': ["+ batDauPhienTrucTiep(): void", "+ trinhChieuMaPIN(): void", "+ suaTrangThaiThuCong(): void", "+ chotVaKetThucPhien(): void"]
-            },
-            {
-                'name': "AttendanceController", 'stereo': "Giao diện",
-                'attrs': ["- attendanceService: AttendanceService"],
-                'methods': ["+ startLiveSession(request): ApiResponse", "+ getLiveStatus(sectionId): ApiResponse", "+ checkInLive(request): ApiResponse", "+ submitRecords(request): ApiResponse", "+ getSectionHistory(sectionId): ApiResponse"]
-            }
-        ],
-        ctrl_classes=[
-            {
-                'name': "AttendanceService", 'stereo': "Điều khiển",
-                'attrs': ["- sessionRepo: AttendanceSessionRepository", "- recordRepo: AttendanceRecordRepository", "- enrollmentRepo: EnrollmentRepository"],
-                'methods': ["+ startLiveSession(sectionId, duration): AttendanceLiveSessionResponse", "+ checkInLive(studentId, pinCode): void", "+ submitAttendanceRecords(sessionId, records): void", "+ finalizeSession(sessionId): void", "+ getAttendanceRate(sectionId): double"]
-            },
-            {
-                'name': "AttendanceSessionRepository", 'stereo': "Điều khiển",
-                'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findActiveSessionBySectionId(sectionId): Optional<AttendanceSession>", "+ save(session): AttendanceSession", "+ findById(sessionId): Optional<AttendanceSession>"]
-            }
-        ],
-        ent_classes=[
-            {
-                'name': "AttendanceSession", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- sectionId: Long", "- sessionDate: LocalDate", "- pinCode: String", "- expiresAt: LocalDateTime", "- status: SessionStatus", "- isFinalized: boolean"],
-                'methods': ["+ isExpired(): boolean", "+ isValidPin(pin): boolean", "+ closeSession(): void"]
-            },
-            {
-                'name': "AttendanceRecord", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- sessionId: Long", "- studentId: Long", "- status: AttendanceStatus", "- checkInTime: LocalDateTime", "- note: String"],
-                'methods': ["+ markPresent(): void", "+ markAbsent(): void"]
-            }
-        ],
-        edges=[
-            ("bnd_attendance_1", "bnd_attendance_2", "gọi REST API phiên điểm danh", False),
-            ("bnd_attendance_2", "ctrl_attendance_1", "điều phối phiên & check-in", False),
-            ("ctrl_attendance_1", "ctrl_attendance_2", "lưu trữ phiên", False),
-            ("ctrl_attendance_2", "ent_attendance_1", "quản lý AttendanceSession", True),
-            ("ctrl_attendance_1", "ent_attendance_2", "lưu AttendanceRecord", True)
-        ]
-    )
-
-
-# 19. KHẢO THÍ & QUẢN LÝ PHÒNG THI (EXAM MANAGEMENT)
+# 19. Khảo thí & Tự động phân bổ phòng thi
 def build_bce_19_exam_management():
     return build_single_function_tab(
         func_code="exam",
-        func_title="19. Khảo thí & Quản lý phòng thi",
+        func_title="19. Khảo thí & Tự động phân bổ phòng thi",
         comp_title="Khảo thí & Phân bổ phòng thi",
         comp_example="ExamController",
         actor_name="Cán bộ Khảo thí / Admin",
         bnd_classes=[
             {
-                'name': "ExamRoomsPage", 'stereo': "Giao diện",
-                'attrs': ["- selectedSemester: Integer", "- selectedSection: Long", "- roomCapacity: int", "- examSessionsTable: DataTable", "- examRosterGrid: DataTable"],
-                'methods': ["+ taiDanhSachDotThi(): void", "+ taoCaThiMoi(): void", "+ phanBoPhongTuDong(): void", "+ xuatDanhSachThiSinhExcel(): void", "+ nhapDiemThiTheoTui(): void"]
+                'name': "ExamRoomsPage", 'stereo': "Boundary",
+                'attrs': ["- examSessions: List<ExamSessionResponse>", "- selectedSessionId: Long", "- roomList: List<ExamRoomResponse>", "- isGenerateModalOpen: boolean"],
+                'methods': ["+ fetchExamSessions(): void", "+ handleAutoAllocateRooms(sessionId: Long): void", "+ handlePrintExamRoster(roomId: Long): void"]
             },
             {
-                'name': "ExamController", 'stereo': "Giao diện",
-                'attrs': ["- examService: ExamService", "- excelExportService: ExcelExportService", "- excelImportService: ExcelImportService"],
-                'methods': ["+ getExamSessions(semesterId): ApiResponse", "+ createExamSession(req): ApiResponse", "+ autoAssignExamRooms(req): ApiResponse", "+ getExamRoster(roomId): ApiResponse", "+ exportExamRosterExcel(roomId): ResponseEntity"]
+                'name': "ExamController", 'stereo': "Boundary",
+                'attrs': ["- examService: ExamService", "- path: POST /api/exam/exam-sessions, POST /api/exam/exam-sessions/{id}/rooms"],
+                'methods': ["+ createSession(req: ExamSessionRequest): ResponseEntity<ApiResponse<ExamSessionResponse>>", "+ createRoom(sessionId: Long, req: ExamRoomRequest): ResponseEntity<ApiResponse<ExamRoomResponse>>", "+ getRoomsBySession(sessionId: Long): ResponseEntity<ApiResponse<List<ExamRoomResponse>>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "ExamService", 'stereo': "Điều khiển",
-                'attrs': ["- examSessionRepo: ExamSessionRepository", "- examRoomRepo: ExamRoomRepository", "- enrollmentRepo: EnrollmentRepository", "- gradeRepo: GradeRepository"],
-                'methods': ["+ createExamSession(request): ExamSessionResponse", "+ autoAssignRooms(request): List<ExamRoomResponse>", "+ validateExamEligibility(sectionId): List<Student>", "+ generateExamNumbers(roomId): void"]
+                'name': "ExamService", 'stereo': "Control",
+                'attrs': ["- examSessionRepository: ExamSessionRepository", "- examRoomRepository: ExamRoomRepository", "- examRosterRepository: ExamRosterRepository"],
+                'methods': ["+ createExamSession(req: ExamSessionRequest): ExamSession", "+ autoAssignStudentsToRooms(sessionId: Long, capacity: int): List<ExamRoom>", "+ generateExamRoster(roomId: Long): ExamRosterResponse"]
             },
             {
-                'name': "ExamRoomRepository", 'stereo': "Điều khiển",
+                'name': "ExamRoomRepository", 'stereo': "Control",
                 'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findByExamSessionId(sessionId): List<ExamRoom>", "+ save(room): ExamRoom", "+ countByRoomAndPeriod(room, date, period): long"]
+                'methods': ["+ findByExamSessionId(sessionId: Long): List<ExamRoom>", "+ save(room: ExamRoom): ExamRoom"]
             }
         ],
         ent_classes=[
             {
-                'name': "ExamRoom", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- sessionId: Long", "- roomNumber: String", "- capacity: int", "- currentAssigned: int", "- supervisorName: String", "- status: RoomStatus"],
-                'methods': ["+ isAvailable(): boolean", "+ assignStudent(studentId): void"]
+                'name': "ExamSession", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- subject: Subject", "- semester: Semester", "- examDate: LocalDate", "- startTime: LocalTime", "- examType: ExamType"],
+                'methods': ["+ getExamDate(): LocalDate", "+ getSubject(): Subject"]
             },
             {
-                'name': "ExamRosterResponse", 'stereo': "Truyền dữ liệu",
-                'attrs': ["- roomNumber: String", "- examDate: LocalDate", "- startTime: String", "- totalStudents: int", "- candidates: List<CandidateDto>"],
-                'methods': ["+ layTongThiSinh(): int", "+ layDanhSachSBD(): List<String>"]
+                'name': "ExamRoom", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- examSession: ExamSession", "- roomName: String", "- maxSeats: Integer", "- assignedStudentsCount: Integer", "- status: ExamRoomStatus"],
+                'methods': ["+ getRoomName(): String", "+ isFull(): boolean"]
+            },
+            {
+                'name': "ExamRoomResponse", 'stereo': "DTO",
+                'attrs': ["- id: Long", "- roomName: String", "- maxSeats: Integer", "- enrolledCount: Integer", "- examDate: LocalDate", "- startTime: String"],
+                'methods': ["+ getRoomName(): String"]
             }
         ],
         edges=[
-            ("bnd_exam_1", "bnd_exam_2", "yêu cầu xếp phòng thi", False),
-            ("bnd_exam_2", "ctrl_exam_1", "điều phối nghiệp vụ khảo thí", False),
-            ("ctrl_exam_1", "ctrl_exam_2", "truy vấn phòng & lưu phân bổ", False),
-            ("ctrl_exam_2", "ent_exam_1", "cập nhật thực thể ExamRoom", True),
-            ("ctrl_exam_1", "ent_exam_2", "đóng gói danh sách ExamRosterResponse", True)
+            ("bnd_exam_1", "bnd_exam_2", "HTTP POST /api/exam/exam-sessions/{id}/rooms", False),
+            ("bnd_exam_2", "ctrl_exam_1", "ủy quyền autoAssignStudentsToRooms()", False),
+            ("ctrl_exam_1", "ctrl_exam_2", "phân bổ danh sách thí sinh vào phòng thi", False),
+            ("ctrl_exam_1", "ent_exam_1", "liên kết đợt thi ExamSession", True),
+            ("ctrl_exam_2", "ent_exam_2", "bền vững hóa thực thể ExamRoom", True)
         ]
     )
 
-# 20. QUY TRÌNH ĐÍNH CHÍNH ĐIỂM 3 CẤP (3-TIER GRADE AMENDMENT)
+# 20. Thẩm định Quy trình Đính chính điểm 3 cấp
 def build_bce_20_grade_amendment():
     return build_single_function_tab(
         func_code="amendment",
@@ -1268,253 +1307,285 @@ def build_bce_20_grade_amendment():
         actor_name="Giảng viên & Trưởng BM & P.ĐT",
         bnd_classes=[
             {
-                'name': "GradeAmendmentsPage", 'stereo': "Giao diện",
-                'attrs': ["- pendingTicketsTable: DataTable", "- amendmentDetailModal: Modal", "- reviewCommentInput: String", "- proofDocViewer: ImageViewer"],
-                'methods': ["+ taiDanhSachDonYeuCau(): void", "+ taoDonDinhChinhMoi(): void", "+ truongBoMonThamDinh(id, approve): void", "+ phongDaoTaoPheDuyet(id, approve): void"]
+                'name': "GradeAmendmentsPage", 'stereo': "Boundary",
+                'attrs': ["- amendmentTickets: List<GradeAmendmentResponse>", "- statusFilter: TicketStatus", "- reviewModalTicket: GradeAmendmentResponse", "- isReviewing: boolean"],
+                'methods': ["+ fetchAmendmentTickets(): void", "+ handleDeptReview(id: Long, approved: boolean): void", "+ handleAcademicApproval(id: Long, approved: boolean): void"]
             },
             {
-                'name': "GradeAmendmentController", 'stereo': "Giao diện",
-                'attrs': ["- gradeAmendmentService: GradeAmendmentService", "- gradeAuditLogService: GradeAuditLogService"],
-                'methods': ["+ create(req): ApiResponse", "+ deptReview(id, req): ApiResponse", "+ academicApprove(id, req): ApiResponse", "+ getMyTickets(): ApiResponse", "+ getAuditLogs(gradeId): ApiResponse"]
+                'name': "GradeAmendmentController", 'stereo': "Boundary",
+                'attrs': ["- amendmentService: GradeAmendmentService", "- path: POST/PUT /api/grade-amendments"],
+                'methods': ["+ create(req: CreateAmendmentRequest): ResponseEntity<ApiResponse<GradeAmendmentResponse>>", "+ deptReview(id: Long, req: DeptReviewRequest): ResponseEntity<ApiResponse<GradeAmendmentResponse>>", "+ academicApproval(id: Long, req: AcademicApprovalRequest): ResponseEntity<ApiResponse<GradeAmendmentResponse>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "GradeAmendmentService", 'stereo': "Điều khiển",
-                'attrs': ["- ticketRepo: GradeChangeTicketRepository", "- gradeRepo: GradeRepository", "- auditLogRepo: GradeAuditLogRepository", "- transcriptService: TranscriptService"],
-                'methods': ["+ createTicket(request): GradeChangeTicket", "+ deptReview(ticketId, approved, note): void", "+ academicApproval(ticketId, approved, note): void", "+ applyGradeChangeWithAudit(ticket): void"]
+                'name': "GradeAmendmentService", 'stereo': "Control",
+                'attrs': ["- auditLogRepository: GradeAuditLogRepository", "- gradeRepository: GradeRepository", "- auditLogService: AuditLogService"],
+                'methods': ["+ createAmendmentTicket(req: CreateAmendmentRequest, lecId: Long): GradeChangeTicket", "+ reviewByDeptHead(id: Long, headId: Long, approve: boolean, note: String): void", "+ approveByAcademicAffairs(id: Long, officerId: Long, approve: boolean): void", "+ applyNewScoreToGradeEntity(gradeId: Long, score: Double): void"]
             },
             {
-                'name': "GradeAuditLogRepository", 'stereo': "Điều khiển",
+                'name': "GradeAuditLogRepository", 'stereo': "Control",
                 'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findByGradeIdOrderByTimestampDesc(gradeId): List<GradeAuditLog>", "+ save(log): GradeAuditLog"]
+                'methods': ["+ findByTicketId(ticketId: Long): List<GradeAuditLog>", "+ save(log: GradeAuditLog): GradeAuditLog"]
             }
         ],
         ent_classes=[
             {
-                'name': "GradeChangeTicket", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- studentId: Long", "- sectionId: Long", "- componentType: String", "- oldScore: Double", "- newScore: Double", "- reason: String", "- proofUrl: String", "- status: TicketStatus"],
-                'methods': ["+ approveDept(): void", "+ approveAcademic(): void", "+ reject(reason): void"]
+                'name': "GradeChangeTicket", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- grade: Grade", "- oldScore: Double", "- newScore: Double", "- reason: String", "- status: AmendmentStatus (PENDING_DEPT/PENDING_ACADEMIC/APPROVED/REJECTED)"],
+                'methods': ["+ approveByDept(): void", "+ approveByAcademic(): void", "+ getStatus(): AmendmentStatus"]
             },
             {
-                'name': "GradeAuditLog", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- gradeId: Long", "- modifierId: Long", "- action: String", "- oldTotal: Double", "- newTotal: Double", "- timestamp: LocalDateTime", "- reason: String"],
-                'methods': ["+ getAuditSnapshot(): String", "+ isValidChecksum(): boolean"]
+                'name': "GradeAuditLog", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- ticketId: Long", "- action: String (DEPT_APPROVE/ACADEMIC_APPROVE)", "- actorId: Long", "- timestamp: LocalDateTime"],
+                'methods': ["+ getAction(): String", "+ getTimestamp(): LocalDateTime"]
+            },
+            {
+                'name': "GradeAmendmentResponse", 'stereo': "DTO",
+                'attrs': ["- id: Long", "- studentCode: String", "- studentName: String", "- subjectName: String", "- oldScore: Double", "- newScore: Double", "- status: String"],
+                'methods': ["+ getStatus(): String", "+ getNewScore(): Double"]
             }
         ],
         edges=[
-            ("bnd_amendment_1", "bnd_amendment_2", "gửi yêu cầu đính chính", False),
-            ("bnd_amendment_2", "ctrl_amendment_1", "điều phối quy trình 3 cấp", False),
-            ("ctrl_amendment_1", "ctrl_amendment_2", "ghi vết kiểm toán", False),
-            ("ctrl_amendment_1", "ent_amendment_1", "quản lý GradeChangeTicket", True),
-            ("ctrl_amendment_2", "ent_amendment_2", "lưu lịch sử GradeAuditLog", True)
+            ("bnd_amendment_1", "bnd_amendment_2", "HTTP PUT /api/grade-amendments/{id}/academic-approval", False),
+            ("bnd_amendment_2", "ctrl_amendment_1", "ủy quyền approveByAcademicAffairs()", False),
+            ("ctrl_amendment_1", "ctrl_amendment_2", "ghi log kiểm toán phê duyệt 3 cấp", False),
+            ("ctrl_amendment_1", "ent_amendment_1", "cập nhật trạng thái phiếu GradeChangeTicket", True),
+            ("ctrl_amendment_2", "ent_amendment_2", "lưu nhật ký vết duyệt GradeAuditLog", True)
         ]
     )
 
-# 21. THẨM ĐỊNH CHUẨN TỐT NGHIỆP (DEGREE AUDIT TT08)
+# 21. Thẩm định chuẩn tốt nghiệp đa tiêu chí TT08
 def build_bce_21_graduation_audit():
     return build_single_function_tab(
         func_code="graduation",
-        func_title="21. Thẩm định chuẩn tốt nghiệp (Degree Audit)",
+        func_title="21. Thẩm định Chuẩn tốt nghiệp đa tiêu chí TT08",
         comp_title="Thẩm định tốt nghiệp & Cấp bằng",
         comp_example="GraduationController",
         actor_name="Cán bộ Đào tạo / Sinh viên",
         bnd_classes=[
             {
-                'name': "GraduationPageView", 'stereo': "Giao diện",
-                'attrs': ["- selectedCohort: Integer", "- candidateGrid: DataTable", "- auditCriteriaModal: Modal", "- exportDecisionBtn: Button"],
-                'methods': ["+ taiDanhSachSinhVienKhoa(): void", "+ thamDinhTotNghiepKhoa(): void", "+ xemChiTietTieuChiSV(id): void", "+ xuatQuyetDinhTotNghiep(): void"]
+                'name': "GraduationPageView", 'stereo': "Boundary",
+                'attrs': ["- cohortFilter: Integer", "- evaluationResults: List<GraduationRecord>", "- isEvaluating: boolean", "- selectedRecord: GraduationRecord"],
+                'methods': ["+ handleEvaluateCohort(cohortId: Integer): void", "+ handleBatchApprove(cohortId: Integer): void", "+ handleExportGraduationDecision(): void"]
             },
             {
-                'name': "GraduationController", 'stereo': "Giao diện",
-                'attrs': ["- graduationService: GraduationService", "- userRepository: UserRepository"],
-                'methods': ["+ evaluateCohort(cohortId): ApiResponse", "+ assessStudent(studentId): ApiResponse", "+ getGraduationCandidates(cohortId, pageable): ApiResponse", "+ exportGraduationList(cohortId): ResponseEntity"]
+                'name': "GraduationController", 'stereo': "Boundary",
+                'attrs': ["- graduationService: GraduationService", "- path: POST /api/graduation/evaluate-cohort/{cohortId}"],
+                'methods': ["+ evaluateCohort(cohortId: Integer): ResponseEntity<ApiResponse<List<GraduationRecord>>>", "+ batchApprove(cohortId: Integer): ResponseEntity<ApiResponse<List<GraduationRecord>>>", "+ approveRecord(recordId: Long): ResponseEntity<ApiResponse<GraduationRecord>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "GraduationService", 'stereo': "Điều khiển",
-                'attrs': ["- studentRepo: StudentRepository", "- gradeRepo: GradeRepository", "- curriculumRepo: CurriculumRepository", "- graduationRecordRepo: GraduationRecordRepository", "- tuitionService: TuitionService"],
-                'methods': ["+ assessCohortCandidates(cohortId): List<GraduationRecord>", "+ assessCandidate(student, curriculum): GraduationRecord", "+ checkCreditAndCpa(student, curr): boolean", "+ checkCertificatesAndConduct(student): boolean", "+ determineHonorsCategory(cpa, retakePct): String"]
+                'name': "GraduationService", 'stereo': "Control",
+                'attrs': ["- graduationRecordRepository: GraduationRecordRepository", "- degreeAuditEngine: DegreeAuditEngine", "- academicSummaryRepository: AcademicSummaryRepository"],
+                'methods': ["+ evaluateCohortGraduation(cohortId: Integer): List<GraduationRecord>", "+ evaluateSingleStudentEligibility(studentId: Long): DegreeAuditResultDTO", "+ batchApproveGraduation(cohortId: Integer): List<GraduationRecord>"]
             },
             {
-                'name': "GraduationRecordRepository", 'stereo': "Điều khiển",
-                'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findByCohortId(cohortId): List<GraduationRecord>", "+ findByStudentId(studentId): Optional<GraduationRecord>", "+ saveAll(records): List<GraduationRecord>"]
+                'name': "DegreeAuditEngine", 'stereo': "Control",
+                'attrs': ["- curriculumProgramRepository: CurriculumProgramRepository", "- gradeRepository: GradeRepository"],
+                'methods': ["+ checkTotalEarnedCredits(studentId: Long, minCredits: int): boolean", "+ checkCpaThreshold(cpa: Double, minCpa: Double): boolean", "+ checkDisciplineAndConduct(studentId: Long): boolean"]
             }
         ],
         ent_classes=[
             {
-                'name': "GraduationRecord", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- studentId: Long", "- cohortId: Integer", "- isEligible: boolean", "- totalCreditsEarned: int", "- finalCpa: double", "- honorsLevel: HonorsLevel", "- missingRequirements: String", "- decisionNumber: String"],
-                'methods': ["+ isGraduated(): boolean", "+ layHangTotNghiep(): String", "+ layLyDoChuaDat(): String"]
+                'name': "GraduationRecord", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- student: Student", "- cohort: Cohort", "- totalCreditsEarned: Integer", "- finalCpa: Double", "- graduationRank: GraduationRank", "- status: GraduationStatus"],
+                'methods': ["+ isEligible(): boolean", "+ getGraduationRank(): GraduationRank"]
             },
             {
-                'name': "DegreeAuditResultDTO", 'stereo': "Truyền dữ liệu",
-                'attrs': ["- studentCode: String", "- passedRequiredCredits: boolean", "- passedCpaThreshold: boolean", "- passedLanguageCert: boolean", "- clearedFinancialDebt: boolean", "- finalStatus: String"],
-                'methods': ["+ kiemTraDuDieuKien(): boolean", "+ layTomTatKetQua(): String"]
+                'name': "AcademicSummary", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- student: Student", "- cumulativeCredits: Integer", "- cumulativeCpa: Double", "- academicStanding: String"],
+                'methods': ["+ getCumulativeCpa(): Double", "+ getCumulativeCredits(): Integer"]
+            },
+            {
+                'name': "DegreeAuditResultDTO", 'stereo': "DTO",
+                'attrs': ["- studentId: Long", "- isEligible: boolean", "- earnedCredits: int", "- requiredCredits: int", "- cpa: Double", "- missingSubjectCodes: List<String>"],
+                'methods': ["+ isEligible(): boolean", "+ getMissingSubjectCodes(): List<String>"]
             }
         ],
         edges=[
-            ("bnd_graduation_1", "bnd_graduation_2", "gửi yêu cầu xét tốt nghiệp", False),
-            ("bnd_graduation_2", "ctrl_graduation_1", "kích hoạt Degree Audit Engine", False),
-            ("ctrl_graduation_1", "ctrl_graduation_2", "lưu trữ GraduationRecord", False),
-            ("ctrl_graduation_2", "ent_graduation_1", "bền vững hóa thực thể GraduationRecord", True),
-            ("ctrl_graduation_1", "ent_graduation_2", "đóng gói kết quả DegreeAuditResultDTO", True)
+            ("bnd_graduation_1", "bnd_graduation_2", "HTTP POST /api/graduation/evaluate-cohort/{id}", False),
+            ("bnd_graduation_2", "ctrl_graduation_1", "ủy quyền evaluateCohortGraduation()", False),
+            ("ctrl_graduation_1", "ctrl_graduation_2", "thẩm định điều kiện tốt nghiệp TT08", False),
+            ("ctrl_graduation_1", "ent_graduation_1", "lưu hồ sơ xét tốt nghiệp GraduationRecord", True),
+            ("ctrl_graduation_1", "ent_graduation_2", "truy vấn dữ liệu tổng hợp AcademicSummary", True)
         ]
     )
 
+# 22. Quản lý Nhân sự Đào tạo & Phân quyền cán bộ
 def build_bce_22_staff_management():
     return build_single_function_tab(
         func_code="staff",
-        func_title="22. Quản lý Nhân sự Đào tạo",
+        func_title="22. Quản lý Nhân sự Đào tạo & Phân quyền cán bộ",
         comp_title="Quản trị nhân sự & Chuyên viên đào tạo",
         comp_example="AdminSystemController",
-        actor_name="Quản trị viên hệ thống (Admin)",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "StaffsPageView", 'stereo': "Giao diện",
+                'name': "StaffsPageView", 'stereo': "Boundary",
                 'attrs': ["- staffList: List<StaffResponse>", "- searchKeyword: String", "- roleFilter: String", "- isCreateModalOpen: boolean"],
-                'methods': ["+ taiDanhSachNhanSu(): void", "+ moModalTaoCanBo(): void", "+ capNhatTrangThaiKhoa(id): void", "+ datLaiMatKhauCanBo(id): void"]
+                'methods': ["+ fetchStaffList(): void", "+ handleCreateStaff(req: CreateStaffRequest): void", "+ handleUpdateStaff(id: Long, req: UpdateStaffRequest): void", "+ handleToggleStatus(id: Long): void"]
             },
             {
-                'name': "AdminSystemController", 'stereo': "Giao diện",
-                'attrs': ["- userService: UserService", "- passwordResetService: PasswordResetService"],
-                'methods': ["+ getAllStaffs(keyword, role, pageable): ApiResponse", "+ createStaff(request): ApiResponse", "+ updateStaff(id, request): ApiResponse", "+ toggleStaffStatus(id): ApiResponse"]
+                'name': "AdminSystemController", 'stereo': "Boundary",
+                'attrs': ["- userService: UserService", "- passwordResetService: PasswordResetService", "- path: GET/POST/PUT /api/admin/staffs"],
+                'methods': ["+ getAllStaffs(): ResponseEntity<ApiResponse<List<StaffResponse>>>", "+ createStaff(req: CreateStaffRequest): ResponseEntity<ApiResponse<StaffResponse>>", "+ updateStaff(id: Long, req: UpdateStaffRequest): ResponseEntity<ApiResponse<StaffResponse>>", "+ resetStaffPassword(id: Long): ResponseEntity<ApiResponse<Map<String, String>>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "UserService", 'stereo': "Điều khiển",
+                'name': "UserService", 'stereo': "Control",
                 'attrs': ["- userRepository: UserRepository", "- passwordEncoder: PasswordEncoder", "- auditLogService: AuditLogService"],
-                'methods': ["+ createStaffAccount(dto): User", "+ updateStaffProfile(id, dto): User", "+ toggleUserActive(id): boolean", "+ validateEmailNotDuplicate(email): void"]
+                'methods': ["+ createStaffAccount(req: CreateStaffRequest): StaffResponse", "+ updateStaffProfile(id: Long, req: UpdateStaffRequest): StaffResponse", "+ toggleStaffActiveStatus(id: Long): boolean", "+ validateEmailNotDuplicate(email: String): void"]
             },
             {
-                'name': "UserRepository", 'stereo': "Điều khiển",
+                'name': "UserRepository", 'stereo': "Control",
                 'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findByRoleIn(roles): List<User>", "+ findByEmail(email): Optional<User>", "+ save(user): User"]
+                'methods': ["+ findByRoleIn(roles: List<Role>): List<User>", "+ findByEmail(email: String): Optional<User>", "+ save(user: User): User"]
             }
         ],
         ent_classes=[
             {
-                'name': "User", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- username: String", "- email: String", "- fullName: String", "- phone: String", "- role: Role", "- staffRole: String", "- isActive: boolean"],
-                'methods': ["+ isAccountNonLocked(): boolean", "+ layVaiTroHeThong(): String", "+ layChucDanhChuyenMon(): String"]
+                'name': "User", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- username: String", "- email: String", "- fullName: String", "- phone: String", "- role: Role (ADMIN/ACADEMIC/EXAM)", "- staffRole: String", "- isActive: boolean"],
+                'methods': ["+ getRole(): Role", "+ isAccountNonLocked(): boolean", "+ getStaffRole(): String"]
             },
             {
-                'name': "StaffResponseDTO", 'stereo': "Truyền dữ liệu",
-                'attrs': ["- id: Long", "- username: String", "- fullName: String", "- email: String", "- phone: String", "- roleName: String", "- isActive: boolean"],
-                'methods': ["+ tuThucThe(user): StaffResponseDTO", "+ layTrangThaiChuoi(): String"]
+                'name': "StaffResponse", 'stereo': "DTO",
+                'attrs': ["- id: Long", "- username: String", "- fullName: String", "- email: String", "- phone: String", "- role: String", "- staffRole: String", "- isActive: boolean"],
+                'methods': ["+ fromEntity(user: User): StaffResponse", "+ getStaffRole(): String"]
+            },
+            {
+                'name': "CreateStaffRequest", 'stereo': "DTO",
+                'attrs': ["- fullName: String", "- email: String", "- phone: String", "- role: Role", "- staffRole: String"],
+                'methods': ["+ getEmail(): String", "+ getRole(): Role"]
             }
         ],
         edges=[
-            ("bnd_staff_1", "bnd_staff_2", "gửi yêu cầu quản lý nhân sự", False),
-            ("bnd_staff_2", "ctrl_staff_1", "ủy quyền xử lý nghiệp vụ tài khoản", False),
-            ("ctrl_staff_1", "ctrl_staff_2", "truy vấn và lưu bền vững User", False),
+            ("bnd_staff_1", "bnd_staff_2", "HTTP POST /api/admin/staffs", False),
+            ("bnd_staff_2", "ctrl_staff_1", "ủy quyền createStaffAccount()", False),
+            ("ctrl_staff_1", "ctrl_staff_2", "lưu và phân quyền cán bộ", False),
             ("ctrl_staff_2", "ent_staff_1", "bền vững hóa thực thể User nhân sự", True),
-            ("ctrl_staff_1", "ent_staff_2", "chuyển đổi thông tin sang StaffResponseDTO", True)
+            ("ctrl_staff_1", "ent_staff_2", "chuyển đổi thông tin sang StaffResponse DTO", True)
         ]
     )
 
+# 23. Đặt lại Mật khẩu Hàng loạt (ddmmyyyya@)
 def build_bce_23_bulk_password_reset():
     return build_single_function_tab(
         func_code="bulkpwd",
-        func_title="23. Đặt lại Mật khẩu Hàng loạt",
+        func_title="23. Đặt lại Mật khẩu Hàng loạt (ddmmyyyya@)",
         comp_title="Reset mật khẩu toàn trường theo ngày sinh",
-        comp_example="PasswordResetService",
-        actor_name="Quản trị viên hệ thống (Admin)",
+        comp_example="AdminSystemController",
+        actor_name="Quản trị viên (Admin)",
         bnd_classes=[
             {
-                'name': "PasswordResetsPageView", 'stereo': "Giao diện",
-                'attrs': ["- selectedScope: ResetScope", "- cohortSelector: Select", "- departmentSelector: Select", "- confirm2FAModal: Modal"],
-                'methods': ["+ moModalResetHangLoat(): void", "+ chonPhamViToanTruong(): void", "+ xacNhanThucThiReset(): void", "+ hienThiBaoCaoKetQua(dto): void"]
+                'name': "PasswordResetsPage", 'stereo': "Boundary",
+                'attrs': ["- selectedScope: ResetScope (ALL/COHORT/DEPARTMENT)", "- cohortId: Integer", "- departmentId: Integer", "- confirmModalOpen: boolean"],
+                'methods': ["+ handleExecuteBulkReset(): void", "+ handleScopeChange(scope: ResetScope): void", "+ displaySummaryReport(res: BulkResetPasswordResponse): void"]
             },
             {
-                'name': "AdminSystemController", 'stereo': "Giao diện",
-                'attrs': ["- passwordResetService: PasswordResetService", "- auditLogService: AuditLogService"],
-                'methods': ["+ bulkResetPasswords(request): ApiResponse<BulkResetPasswordResponse>", "+ getPasswordResetStats(): ApiResponse"]
+                'name': "AdminSystemController", 'stereo': "Boundary",
+                'attrs': ["- passwordResetService: PasswordResetService", "- path: POST /api/admin/users/bulk-reset-password"],
+                'methods': ["+ bulkResetPasswords(req: BulkResetPasswordRequest): ResponseEntity<ApiResponse<BulkResetPasswordResponse>>"]
             }
         ],
         ctrl_classes=[
             {
-                'name': "PasswordResetService", 'stereo': "Điều khiển",
-                'attrs': ["- userRepo: UserRepository", "- studentRepo: StudentRepository", "- passwordEncoder: PasswordEncoder", "- auditLogService: AuditLogService"],
-                'methods': ["+ executeBulkReset(request): BulkResetPasswordResponse", "+ formatDobPassword(dateOfBirth): String", "+ batchUpdateHashedPasswords(users): int"]
+                'name': "PasswordResetService", 'stereo': "Control",
+                'attrs': ["- userRepository: UserRepository", "- studentRepository: StudentRepository", "- passwordEncoder: PasswordEncoder", "- auditLogService: AuditLogService"],
+                'methods': ["+ executeBulkPasswordReset(req: BulkResetPasswordRequest): BulkResetPasswordResponse", "+ formatDobPassword(dob: LocalDate): String (ddmmyyyya@)", "+ batchUpdateHashedPasswords(users: List<User>): int"]
             },
             {
-                'name': "UserRepository", 'stereo': "Điều khiển",
+                'name': "UserRepository", 'stereo': "Control",
                 'attrs': ["- entityManager: EntityManager"],
-                'methods': ["+ findTargetUsersForReset(scope, cohortId, deptId): List<User>", "+ saveAll(users): List<User>"]
+                'methods': ["+ findActiveStudentsByCohort(cohortId: Integer): List<User>", "+ findActiveStudentsByDepartment(deptId: Integer): List<User>", "+ saveAll(users: List<User>): List<User>"]
             }
         ],
         ent_classes=[
             {
-                'name': "User", 'stereo': "Thực thể",
-                'attrs': ["- id: Long", "- username: String", "- password: String", "- requirePasswordChange: boolean", "- lastPasswordResetAt: LocalDateTime"],
-                'methods': ["+ setMatKhauMoi(hash): void", "+ batCoBatBuocDoiMatKhau(): void"]
+                'name': "User", 'stereo': "Entity",
+                'attrs': ["- id: Long", "- password: String (BCrypt)", "- mustChangePassword: true", "- lastPasswordResetAt: LocalDateTime"],
+                'methods': ["+ setPassword(pwd: String): void", "+ setMustChangePassword(flag: boolean): void"]
             },
             {
-                'name': "BulkResetPasswordResponseDTO", 'stereo': "Truyền dữ liệu",
-                'attrs': ["- totalAccounts: int", "- successCount: int", "- failureCount: int", "- passwordRuleApplied: String", "- executionTimestamp: LocalDateTime"],
-                'methods': ["+ layTyLeThanhCong(): double", "+ kiemTraHoanTatToanBo(): boolean"]
+                'name': "BulkResetPasswordResponse", 'stereo': "DTO",
+                'attrs': ["- totalTargetUsers: Integer", "- successfullyResetCount: Integer", "- failedCount: Integer", "- passwordPatternApplied: String (ddmmyyyya@)", "- executionTimeMs: Long"],
+                'methods': ["+ getSuccessfullyResetCount(): Integer", "+ getFailedCount(): Integer"]
+            },
+            {
+                'name': "BulkResetPasswordRequest", 'stereo': "DTO",
+                'attrs': ["- scope: ResetScope (ALL/COHORT/DEPARTMENT)", "- targetId: Integer", "- reason: String"],
+                'methods': ["+ getScope(): ResetScope", "+ getTargetId(): Integer"]
             }
         ],
         edges=[
-            ("bnd_bulkpwd_1", "bnd_bulkpwd_2", "gửi lệnh đặt lại mật khẩu hàng loạt", False),
-            ("bnd_bulkpwd_2", "ctrl_bulkpwd_1", "kích hoạt xử lý quy mô lô (batch)", False),
-            ("ctrl_bulkpwd_1", "ctrl_bulkpwd_2", "nạp và cập nhật danh sách tài khoản", False),
-            ("ctrl_bulkpwd_2", "ent_bulkpwd_1", "cập nhật mật khẩu băm & cờ đổi mật khẩu", True),
-            ("ctrl_bulkpwd_1", "ent_bulkpwd_2", "đóng gói kết quả BulkResetPasswordResponseDTO", True)
+            ("bnd_bulkpwd_1", "bnd_bulkpwd_2", "HTTP POST /api/admin/users/bulk-reset-password", False),
+            ("bnd_bulkpwd_2", "ctrl_bulkpwd_1", "ủy quyền executeBulkPasswordReset()", False),
+            ("ctrl_bulkpwd_1", "ctrl_bulkpwd_2", "batch update mật khẩu đã băm", False),
+            ("ctrl_bulkpwd_2", "ent_bulkpwd_1", "cập nhật thuộc tính mật khẩu User", True),
+            ("ctrl_bulkpwd_1", "ent_bulkpwd_2", "trả về báo cáo tổng kết tỷ lệ thành công", True)
         ]
     )
 
+
+# ==========================================================
+# MAIN EXECUTION: BUILD ALL 23 TABS TO XML
+# ==========================================================
 def main():
     mxfile = ET.Element('mxfile', {
         'host': 'app.diagrams.net',
-        'modified': '2026-09-12T07:45:00.000Z',
-        'agent': 'Antigravity AI Agent',
-        'version': '21.0.0',
+        'modified': '2026-11-06T09:30:00.000Z',
+        'agent': 'Antigravity AI Agent (Phenikaa SMS BCE Suite)',
+        'version': '24.0.0',
         'type': 'device'
     })
 
     tabs_data = [
-        ('bce_login', '1. Đăng nhập hệ thống', build_bce_1_login()),
-        ('bce_changepwd', '2. Đổi mật khẩu', build_bce_2_change_password()),
-        ('bce_stu_create', '3. Thêm mới Sinh viên', build_bce_3_student_create()),
-        ('bce_stu_manage', '4. Quản lý hồ sơ Sinh viên', build_bce_4_student_manage()),
-        ('bce_academic', '5. Khoa & Lớp sinh hoạt', build_bce_5_academic_structure()),
-        ('bce_lecturers', '6. Quản lý Giảng viên', build_bce_6_lecturers()),
-        ('bce_subjects', '7. Quản lý Môn học', build_bce_7_subjects()),
-        ('bce_semesters', '8. Cấu hình Học kỳ', build_bce_8_semesters()),
-        ('bce_sections', '9. Mở lớp Học phần', build_bce_9_course_sections()),
-        ('bce_scheduling', '10. Xếp Thời khóa biểu', build_bce_10_scheduling()),
-        ('bce_enroll', '11. Đăng ký lớp Học phần', build_bce_11_enrollment()),
-        ('bce_drop', '12. Hủy đăng ký Học phần', build_bce_12_course_drop()),
-        ('bce_grd_entry', '13. Nhập điểm thành phần', build_bce_13_grading_entry()),
-        ('bce_grd_finalize', '14. Chốt bảng điểm', build_bce_14_grading_finalize()),
-        ('bce_transcript', '15. Bảng điểm & Điểm CPA', build_bce_15_transcript_cpa()),
-        ('bce_dashboard', '16. Báo cáo Thống kê & Dashboard', build_bce_16_analytics_dashboard()),
-        ('bce_tuition', '17. Quản lý & Thu học phí', build_bce_17_tuition_management()),
-        ('bce_attendance', '18. Điểm danh lớp học & Check-in trực tiếp', build_bce_18_live_attendance()),
-        ('bce_exam', '19. Khảo thí & Quản lý phòng thi', build_bce_19_exam_management()),
-        ('bce_amendment', '20. Quy trình Đính chính điểm 3 cấp', build_bce_20_grade_amendment()),
-        ('bce_graduation', '21. Thẩm định chuẩn tốt nghiệp (Degree Audit)', build_bce_21_graduation_audit()),
-        ('bce_staff', '22. Quản lý Nhân sự Đào tạo', build_bce_22_staff_management()),
-        ('bce_bulkpwd', '23. Đặt lại Mật khẩu Hàng loạt', build_bce_23_bulk_password_reset()),
+        ('bce_01_login', '01. Đăng nhập hệ thống', build_bce_1_login()),
+        ('bce_02_changepwd', '02. Đổi mật khẩu', build_bce_2_change_password()),
+        ('bce_03_stu_create', '03. Thêm mới Sinh viên', build_bce_3_student_create()),
+        ('bce_04_stu_manage', '04. Quản lý hồ sơ Sinh viên', build_bce_4_student_manage()),
+        ('bce_05_academic', '05. Khoa & Lớp sinh hoạt', build_bce_5_academic_structure()),
+        ('bce_06_lecturers', '06. Quản lý Giảng viên', build_bce_6_lecturers()),
+        ('bce_07_subjects', '07. Quản lý Môn học', build_bce_7_subjects()),
+        ('bce_08_semesters', '08. Cấu hình Học kỳ', build_bce_8_semesters()),
+        ('bce_09_sections', '09. Mở lớp Học phần', build_bce_9_course_sections()),
+        ('bce_10_scheduling', '10. Xếp Thời khóa biểu', build_bce_10_scheduling()),
+        ('bce_11_enroll', '11. Đăng ký lớp Học phần', build_bce_11_enrollment()),
+        ('bce_12_drop', '12. Hủy đăng ký Học phần', build_bce_12_course_drop()),
+        ('bce_13_grd_entry', '13. Nhập điểm thành phần', build_bce_13_grading_entry()),
+        ('bce_14_grd_finalize', '14. Chốt bảng điểm', build_bce_14_grading_finalize()),
+        ('bce_15_transcript', '15. Bảng điểm & Điểm CPA', build_bce_15_transcript_cpa()),
+        ('bce_16_dashboard', '16. Báo cáo Thống kê & Dashboard', build_bce_16_analytics_dashboard()),
+        ('bce_17_tuition', '17. Quản lý & Thu học phí', build_bce_17_tuition_management()),
+        ('bce_18_attendance', '18. Điểm danh lớp học PIN 6 số', build_bce_18_live_attendance()),
+        ('bce_19_exam', '19. Khảo thí & Quản lý phòng thi', build_bce_19_exam_management()),
+        ('bce_20_amendment', '20. Quy trình Đính chính điểm 3 cấp', build_bce_20_grade_amendment()),
+        ('bce_21_graduation', '21. Thẩm định chuẩn tốt nghiệp TT08', build_bce_21_graduation_audit()),
+        ('bce_22_staff', '22. Quản lý Nhân sự Đào tạo', build_bce_22_staff_management()),
+        ('bce_23_bulkpwd', '23. Đặt lại Mật khẩu Hàng loạt', build_bce_23_bulk_password_reset()),
     ]
 
-    for diag_id, diag_name, model in tabs_data:
-        d = ET.SubElement(mxfile, 'diagram', {'id': diag_id, 'name': diag_name})
-        d.append(model)
+    for diag_id, name, model in tabs_data:
+        diag = ET.SubElement(mxfile, 'diagram', {'id': diag_id, 'name': name})
+        diag.append(model)
 
-    xml_str = ET.tostring(mxfile, encoding='utf-8')
-    parsed = minidom.parseString(xml_str)
-    pretty_xml = parsed.toprettyxml(indent='  ', encoding='utf-8')
+    out_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'AnalysisClass_BCE_Diagrams.drawio')
+    raw_xml = ET.tostring(mxfile, encoding='utf-8')
+    dom = minidom.parseString(raw_xml)
+    pretty_xml = dom.toprettyxml(indent='  ', encoding='utf-8')
 
-    out_path = os.path.join('drawio', 'AnalysisClass_BCE_Diagrams.drawio')
-    with open(out_path, 'wb') as f:
-        f.write(pretty_xml)
-    print(f"Generated successfully: {out_path} ({len(pretty_xml)} bytes, {len(tabs_data)} tabs)")
+    # Remove extra blank lines generated by toprettyxml
+    clean_lines = [line for line in pretty_xml.decode('utf-8').split('\n') if line.strip()]
+    final_xml = '\n'.join(clean_lines) + '\n'
+
+    with open(out_path, 'w', encoding='utf-8') as f:
+        f.write(final_xml)
+
+    print(f"✓ Successfully generated {len(tabs_data)} BCE diagrams into:")
+    print(f"  ➜ {out_path}")
 
 if __name__ == '__main__':
     main()

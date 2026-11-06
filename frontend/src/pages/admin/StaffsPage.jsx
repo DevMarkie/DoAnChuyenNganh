@@ -138,8 +138,28 @@ export default function StaffsPage() {
     }
   };
 
+  const handleToggleActive = async (staff) => {
+    const action = staff.isActive ? 'khóa' : 'kích hoạt';
+    if (!window.confirm(`Bạn có chắc chắn muốn ${action} tài khoản cán bộ "${staff.fullName || staff.username}"?`)) {
+      return;
+    }
+    try {
+      await staffService.update(staff.id, {
+        fullName: staff.fullName,
+        email: staff.email,
+        dateOfBirth: staff.dateOfBirth ? staff.dateOfBirth.substring(0, 10) : null,
+        roleName: staff.role,
+        isActive: !staff.isActive,
+      });
+      toast.success(`Đã ${action} tài khoản thành công!`);
+      loadStaffs();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi khi cập nhật trạng thái');
+    }
+  };
+
   const formatDate = (dateStr) => {
-    if (!dateStr) return <span className="text-gray-400 italic">Chưa có</span>;
+    if (!dateStr) return <span style={{ color: 'var(--text-light)', fontStyle: 'italic' }}>Chưa có</span>;
     const parts = dateStr.substring(0, 10).split('-');
     if (parts.length === 3) {
       return `${parts[2]}/${parts[1]}/${parts[0]}`;
@@ -161,143 +181,183 @@ export default function StaffsPage() {
   const getRoleBadge = (role) => {
     switch (role) {
       case 'ADMIN':
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 border border-red-200">Quản trị viên</span>;
+        return <span className="badge badge-danger">Quản trị viên</span>;
       case 'ACADEMIC_AFFAIRS':
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">Cán bộ Đào tạo</span>;
+        return <span className="badge badge-info">Cán bộ Đào tạo</span>;
       case 'EXAMINATION_OFFICER':
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800 border border-purple-200">Cán bộ Khảo thí</span>;
+        return <span className="badge badge-purple">Cán bộ Khảo thí</span>;
       default:
-        return <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{role}</span>;
+        return <span className="badge badge-secondary">{role}</span>;
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <ShieldCheck className="w-7 h-7 text-indigo-600" />
+          <h1>
+            <ShieldCheck size={26} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px', color: 'var(--primary)' }} />
             Quản lý Cán bộ & Nhân viên
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Danh sách nhân viên, cán bộ trường với chức danh và ngày tháng năm sinh (tự động cấp mật khẩu <code className="bg-indigo-50 text-indigo-700 px-1 rounded font-mono">ddmmyyyya@</code>)
+          <p>
+            Danh sách nhân viên, cán bộ trường với chức danh và ngày sinh (mật khẩu tự động: <code>ddmmyyyya@</code>)
           </p>
         </div>
-        <button
-          onClick={() => handleOpenModal()}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Thêm Cán bộ mới
-        </button>
-      </div>
-
-      {/* Filter / Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative flex-1 w-full">
-          <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Tìm theo họ tên, username, email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          />
-        </div>
-        <div className="flex gap-3 w-full md:w-auto">
-          <select
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option value="">Tất cả chức danh</option>
-            <option value="ADMIN">Quản trị viên (Admin)</option>
-            <option value="ACADEMIC_AFFAIRS">Cán bộ Đào tạo</option>
-            <option value="EXAMINATION_OFFICER">Cán bộ Khảo thí</option>
-          </select>
-
-          <button
-            onClick={() => { setSearch(''); setSelectedRole(''); loadStaffs(); }}
-            title="Làm mới"
-            className="p-2 border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-lg transition-colors"
-          >
-            <RotateCcw className="w-5 h-5" />
+        <div className="page-header-actions">
+          <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+            <Plus size={16} />
+            <span>Thêm Cán bộ mới</span>
           </button>
         </div>
       </div>
 
+      {/* Filter / Search Bar */}
+      <div className="card" style={{ marginBottom: '20px' }}>
+        <div className="card-body" style={{ padding: '16px 20px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '12px', flex: 1, minWidth: '300px', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+              <input
+                type="text"
+                placeholder="Tìm theo họ tên, username, email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="form-control"
+                style={{ paddingLeft: '36px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '200px' }}>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="form-select"
+                style={{ width: 'auto', minWidth: '180px' }}
+              >
+                <option value="">Tất cả chức danh</option>
+                <option value="ADMIN">Quản trị viên (Admin)</option>
+                <option value="ACADEMIC_AFFAIRS">Cán bộ Đào tạo</option>
+                <option value="EXAMINATION_OFFICER">Cán bộ Khảo thí</option>
+              </select>
+            </div>
+
+            {(search || selectedRole) && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => { setSearch(''); setSelectedRole(''); }}
+                title="Xóa bộ lọc"
+                style={{ padding: '8px 12px' }}
+              >
+                <RotateCcw size={14} />
+                <span>Đặt lại</span>
+              </button>
+            )}
+          </div>
+
+          <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            Hiển thị <strong>{filteredStaffs.length}</strong> / <strong>{staffs.length}</strong> cán bộ
+          </div>
+        </div>
+      </div>
+
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="card">
+        <div className="table-container">
+          <table className="table">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <th className="py-3 px-4">#</th>
-                <th className="py-3 px-4">Họ và Tên</th>
-                <th className="py-3 px-4">Tài khoản</th>
-                <th className="py-3 px-4">Chức danh / Vai trò</th>
-                <th className="py-3 px-4">Ngày sinh (DOB)</th>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4 text-center">Trạng thái</th>
-                <th className="py-3 px-4 text-right">Thao tác</th>
+              <tr>
+                <th style={{ width: '40px' }}>#</th>
+                <th>Họ và Tên</th>
+                <th>Tài khoản</th>
+                <th>Chức danh / Vai trò</th>
+                <th>Ngày sinh (DOB)</th>
+                <th>Email</th>
+                <th style={{ textAlign: 'center' }}>Trạng thái</th>
+                <th style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 text-sm">
+            <tbody className="text-sm">
               {loading ? (
-                Array.from({ length: 4 }).map((_, idx) => (
-                  <TableRowSkeleton key={idx} cols={8} />
-                ))
+                <TableRowSkeleton rows={5} columns={8} />
               ) : filteredStaffs.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-gray-400">
-                    Không tìm thấy cán bộ / nhân viên nào
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                    Không tìm thấy cán bộ / nhân viên nào phù hợp.
                   </td>
                 </tr>
               ) : (
                 filteredStaffs.map((staff, idx) => (
-                  <tr key={staff.id} className="hover:bg-gray-50/80 transition-colors">
-                    <td className="py-3 px-4 text-gray-400 font-mono text-xs">{idx + 1}</td>
-                    <td className="py-3 px-4 font-semibold text-gray-900 flex items-center gap-2">
-                      <UserCheck className="w-4 h-4 text-indigo-500" />
-                      {staff.fullName || staff.username}
+                  <tr key={staff.id}>
+                    <td style={{ color: 'var(--text-light)', fontFamily: 'var(--font-mono)', fontSize: '0.85rem' }}>{idx + 1}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <UserCheck size={16} style={{ color: 'var(--primary)' }} />
+                        <span>{staff.fullName || staff.username}</span>
+                      </div>
                     </td>
-                    <td className="py-3 px-4 font-mono text-xs text-gray-600">{staff.username}</td>
-                    <td className="py-3 px-4">{getRoleBadge(staff.role)}</td>
-                    <td className="py-3 px-4">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-mono text-xs bg-amber-50 text-amber-800 border border-amber-200 font-medium">
-                        <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                    <td>
+                      <span style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.82rem',
+                        backgroundColor: 'var(--bg-subtle)',
+                        padding: '2px 6px',
+                        borderRadius: 'var(--radius-sm)',
+                        color: 'var(--text-secondary)'
+                      }}>
+                        {staff.username}
+                      </span>
+                    </td>
+                    <td>{getRoleBadge(staff.role)}</td>
+                    <td>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.82rem',
+                        backgroundColor: 'var(--warning-bg)',
+                        color: 'var(--warning-text)',
+                        border: '1px solid var(--warning-border)',
+                        padding: '2px 6px',
+                        borderRadius: 'var(--radius-sm)'
+                      }}>
+                        <Calendar size={13} />
                         {formatDate(staff.dateOfBirth)}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-600 text-xs">{staff.email}</td>
-                    <td className="py-3 px-4 text-center">
-                      {staff.isActive ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-medium">
-                          <CheckCircle className="w-4 h-4" /> Hoạt động
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-red-500 text-xs font-medium">
-                          <XCircle className="w-4 h-4" /> Bị khóa
-                        </span>
-                      )}
+                    <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{staff.email}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className={`badge ${staff.isActive ? 'badge-success' : 'badge-danger'}`}>
+                        {staff.isActive ? 'Hoạt động' : 'Bị khóa'}
+                      </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', gap: '4px' }}>
                         <button
-                          onClick={() => handleResetPassword(staff)}
+                          className="btn-icon"
                           title="Cấp lại mật khẩu theo ngày sinh (ddmmyyyya@)"
-                          className="px-2.5 py-1 text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 rounded border border-amber-200 flex items-center gap-1 transition-colors"
+                          style={{ color: '#b45309' }}
+                          onClick={() => handleResetPassword(staff)}
                         >
-                          <KeyRound className="w-3.5 h-3.5" />
-                          Cấp lại MK
+                          <KeyRound size={15} />
                         </button>
                         <button
-                          onClick={() => handleOpenModal(staff)}
+                          className="btn-icon"
                           title="Chỉnh sửa cán bộ"
-                          className="p-1.5 hover:bg-indigo-50 text-indigo-600 rounded transition-colors"
+                          style={{ color: 'var(--primary)' }}
+                          onClick={() => handleOpenModal(staff)}
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 size={15} />
+                        </button>
+                        <button
+                          className="btn-icon"
+                          title={staff.isActive ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'}
+                          style={{ color: staff.isActive ? 'var(--danger)' : 'var(--success)' }}
+                          onClick={() => handleToggleActive(staff)}
+                        >
+                          {staff.isActive ? <XCircle size={15} /> : <CheckCircle size={15} />}
                         </button>
                       </div>
                     </td>
@@ -311,130 +371,118 @@ export default function StaffsPage() {
 
       {/* Modal Thêm / Sửa Cán bộ */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden border border-gray-100 animate-fadeIn">
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-indigo-600" />
-                {editingStaff ? 'Cập nhật thông tin Cán bộ' : 'Thêm mới Cán bộ & Nhân viên'}
-              </h2>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
+        <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) handleCloseModal(); }}>
+          <div className="modal-content" style={{ maxWidth: '580px' }}>
+            <div className="modal-header">
+              <h3>{editingStaff ? 'Cập Nhật Thông Tin Cán Bộ' : 'Thêm Cán Bộ & Nhân Viên Mới'}</h3>
+              <button className="btn-icon" onClick={handleCloseModal}>
+                <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {!editingStaff && (
-                <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs text-indigo-800 leading-relaxed">
-                  💡 <strong>Quy tắc bảo mật:</strong> Mật khẩu khởi tạo sẽ được hệ thống tự động sinh từ ngày sinh: <code className="bg-white px-1 py-0.5 rounded font-mono font-bold text-indigo-900">ddmmyyyya@</code> (Ví dụ: sinh ngày 15/05/1990 ➔ mật khẩu là <code className="font-bold">15051990a@</code>).
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                  Họ và Tên cán bộ <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ví dụ: Nguyễn Văn Đào"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="w-full px-3.5 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                  Tên đăng nhập (Username) {!editingStaff && <span className="text-red-500">*</span>}
-                </label>
-                <input
-                  type="text"
-                  required={!editingStaff}
-                  disabled={!!editingStaff}
-                  placeholder="Ví dụ: daotao02"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className={`w-full px-3.5 py-2 border border-gray-200 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 ${editingStaff ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                    Ngày tháng năm sinh <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.dateOfBirth}
-                    onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                    className="w-full px-3.5 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                    Chức danh / Vai trò <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={formData.roleName}
-                    onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
-                    className="w-full px-3.5 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {!editingStaff && (
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      backgroundColor: 'var(--primary-light)',
+                      border: '1px solid var(--primary-border)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.85rem',
+                      color: 'var(--text-main)',
+                      lineHeight: '1.5',
+                    }}
                   >
-                    <option value="ACADEMIC_AFFAIRS">Cán bộ Đào tạo</option>
-                    <option value="EXAMINATION_OFFICER">Cán bộ Khảo thí</option>
-                    <option value="ADMIN">Quản trị viên (Admin)</option>
-                  </select>
-                </div>
-              </div>
+                    💡 <strong>Quy tắc bảo mật:</strong> Mật khẩu khởi tạo sẽ được tự động sinh từ ngày sinh: <code>ddmmyyyya@</code> (Ví dụ: sinh ngày 15/05/1990 ➔ mật khẩu là <code>15051990a@</code>).
+                  </div>
+                )}
 
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                  Email liên hệ <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="cán bộ@sms.edu.vn"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3.5 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {editingStaff && (
-                <div className="flex items-center gap-2 pt-2">
+                <div>
+                  <label className="form-label">Họ và Tên cán bộ *</label>
                   <input
-                    type="checkbox"
-                    id="isActiveStaff"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                    type="text"
+                    required
+                    placeholder="Ví dụ: Nguyễn Văn Đào"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    className="form-control"
                   />
-                  <label htmlFor="isActiveStaff" className="text-sm text-gray-700 font-medium">
-                    Tài khoản đang hoạt động
-                  </label>
                 </div>
-              )}
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  disabled={submitting}
-                  className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
-                >
+                <div>
+                  <label className="form-label">Tên đăng nhập (Username) {!editingStaff && '*'}</label>
+                  <input
+                    type="text"
+                    required={!editingStaff}
+                    disabled={!!editingStaff}
+                    placeholder="Ví dụ: daotao02"
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    className="form-control"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label className="form-label">Ngày tháng năm sinh *</label>
+                    <input
+                      type="date"
+                      required
+                      value={formData.dateOfBirth}
+                      onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label">Chức danh / Vai trò *</label>
+                    <select
+                      value={formData.roleName}
+                      onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
+                      className="form-select"
+                    >
+                      <option value="ACADEMIC_AFFAIRS">Cán bộ Đào tạo</option>
+                      <option value="EXAMINATION_OFFICER">Cán bộ Khảo thí</option>
+                      <option value="ADMIN">Quản trị viên (Admin)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="form-label">Email liên hệ *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="canbo@sms.edu.vn"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="form-control"
+                  />
+                </div>
+
+                {editingStaff && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '4px' }}>
+                    <input
+                      type="checkbox"
+                      id="isActiveStaff"
+                      checked={formData.isActive}
+                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="isActiveStaff" className="form-label" style={{ margin: 0, cursor: 'pointer' }}>
+                      Tài khoản đang hoạt động
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn btn-outline" onClick={handleCloseModal} disabled={submitting}>
                   Hủy
                 </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-5 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50"
-                >
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
                   {submitting ? 'Đang lưu...' : editingStaff ? 'Cập nhật' : 'Tạo Cán bộ'}
                 </button>
               </div>

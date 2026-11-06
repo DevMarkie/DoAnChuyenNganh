@@ -556,49 +556,58 @@ def build_act_10_scheduling():
         add_cell(root, fid, fval, fsty, edge=True, source=fsrc, target=ftgt, geometry={'relative': 1})
     return model
 
-# 11. ĐĂNG KÝ LỚP HỌC PHẦN
+# 11. ĐĂNG KÝ LỚP HỌC PHẦN (REDIS LOCK & CONCURRENCY)
 def build_act_11_enrollment():
-    model, root = create_base_model(1180, 980)
+    model, root = create_base_model(1180, 1080)
     setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: SINH VIÊN ĐĂNG KÝ LỚP HỌC PHẦN",
-                          "Quy trình đăng ký học phần với khóa bi quan PESSIMISTIC_WRITE, kiểm tra giới hạn 30 tín chỉ và trigger tăng sĩ số",
-                          "Sinh viên", "Hệ thống (EnrollmentService & CSDL MySQL)", lane_h=850)
+                          "Quy trình đăng ký tín chỉ với Khóa phân tán Redis (Idempotency), trừ slot nguyên tử trên RAM và bồi hoàn khi lỗi Transaction CSDL",
+                          "Sinh viên", "Hệ thống (EnrollmentService, Redis & MySQL)", lane_h=960)
 
     # Actor Lane
-    add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 120, 'width': 25, 'height': 25})
-    add_cell(root, "act_view_open", "Mở Cổng đăng ký học phần (/enroll)\n& Xem danh sách học phần mở", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 175, 'width': 200, 'height': 45})
-    add_cell(root, "act_select", "Chọn lớp học phần phù hợp\n& Bấm nút Đăng ký", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 250, 'width': 200, 'height': 45})
-    add_cell(root, "act_view_ok", "Nhận Toast thành công & Thêm môn\nvào Thời khóa biểu cá nhân", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 760, 'width': 200, 'height': 45})
-    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 840, 'width': 25, 'height': 25})
+    add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 115, 'width': 25, 'height': 25})
+    add_cell(root, "act_view_open", "Mở Cổng đăng ký học phần (/enroll)\nvà duyệt danh sách môn học mở", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 165, 'width': 200, 'height': 45})
+    add_cell(root, "act_select", "Chọn lớp học phần phù hợp\nvà bấm nút Đăng ký môn", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 240, 'width': 200, 'height': 45})
+    add_cell(root, "act_view_ok", "Nhận Toast thành công, cập nhật\nTKB cá nhân & Học phí phát sinh", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 840, 'width': 200, 'height': 45})
+    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 920, 'width': 25, 'height': 25})
 
     # System Lane
-    add_cell(root, "act_lock", "Khóa bi quan hàng bản ghi học phần\n(PESSIMISTIC_WRITE - FOR UPDATE)", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 250, 'width': 220, 'height': 45})
-    add_cell(root, "dec_open", "HP đang mở & trong đợt?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 335, 'width': 130, 'height': 50})
-    add_cell(root, "act_err_open", "Báo lỗi: Học phần đã đóng\nhoặc hết hạn đăng ký (400)", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 337.5, 'width': 200, 'height': 45})
-    add_cell(root, "end_err_o", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 415, 'width': 25, 'height': 25})
+    add_cell(root, "act_user_lock", "Khóa phân tán Redis theo User ID\n(chống spam click / double-submit)", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 240, 'width': 220, 'height': 45})
+    add_cell(root, "dec_open", "Đợt mở & chưa đăng ký?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 315, 'width': 130, 'height': 50})
+    add_cell(root, "act_err_open", "Báo lỗi: Hết hạn / Đã đăng ký môn này /\nLớp học phần đã đóng (400)", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 317.5, 'width': 200, 'height': 45})
+    add_cell(root, "end_err_o", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 390, 'width': 25, 'height': 25})
 
-    add_cell(root, "act_check_rules", "Kiểm tra: thuộc khung CTĐT, đạt môn tiên quyết,\nchưa đăng ký môn này, còn chỗ, không trùng lịch, <=30 TC", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 440, 'width': 220, 'height': 45})
-    add_cell(root, "dec_rules", "Thỏa mọi điều kiện?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 525, 'width': 130, 'height': 50})
-    add_cell(root, "act_err_rules", "Báo lỗi: Chưa đạt tiên quyết / Lớp đầy /\nTrùng lịch / Vượt 30 tín chỉ (400)", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 527.5, 'width': 200, 'height': 45})
-    add_cell(root, "end_err_r", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 605, 'width': 25, 'height': 25})
+    add_cell(root, "act_check_rules", "Kiểm tra ràng buộc nghiệp vụ:\nTiên quyết (DAG), không trùng lịch, <= 30 TC", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 405, 'width': 220, 'height': 45})
+    add_cell(root, "dec_rules", "Thỏa mọi điều kiện?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 480, 'width': 130, 'height': 50})
+    add_cell(root, "act_err_rules", "Báo lỗi: Nợ môn tiên quyết /\nTrùng lịch học / Vượt quá 30 tín chỉ (400)", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 482.5, 'width': 200, 'height': 45})
+    add_cell(root, "end_err_r", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 555, 'width': 25, 'height': 25})
 
-    add_cell(root, "act_insert", "INSERT INTO enrollments (status=ENROLLED)\nTrigger MySQL: enrolled_count + 1", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 640, 'width': 220, 'height': 45})
-    add_cell(root, "act_resp", "Phản hồi 200 OK\nĐăng ký học phần thành công!", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 760, 'width': 220, 'height': 45})
+    add_cell(root, "act_redis_slot", "Trừ Slot sĩ số nguyên tử trên RAM Redis\n(redisCourseSectionService.tryAcquireSlot)", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 570, 'width': 220, 'height': 45})
+    add_cell(root, "dec_slot", "Còn chỗ trống trên RAM?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 645, 'width': 130, 'height': 50})
+    add_cell(root, "act_err_slot", "Báo lỗi: Lớp học phần đã hết chỗ\n(Fail-Fast tại RAM không chạm DB) (400)", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 647.5, 'width': 200, 'height': 45})
+    add_cell(root, "end_err_s", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 720, 'width': 25, 'height': 25})
+
+    add_cell(root, "act_db_tx", "Thực thi Transaction CSDL MySQL:\nINSERT enrollments & syncEnrollmentInvoice", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 740, 'width': 220, 'height': 45})
+    add_cell(root, "act_release_lock", "Giải phóng Khóa phân tán Redis\nvà phản hồi 200 OK thành công", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 840, 'width': 220, 'height': 45})
 
     flows = [
         ("f1", "", STYLE_FLOW, "start", "act_view_open"),
         ("f2", "", STYLE_FLOW, "act_view_open", "act_select"),
-        ("f3", "", STYLE_FLOW, "act_select", "act_lock"),
-        ("f4", "", STYLE_FLOW, "act_lock", "dec_open"),
-        ("f4_err", "[Hết hạn/Đóng]", STYLE_FLOW, "dec_open", "act_err_open"),
+        ("f3", "", STYLE_FLOW, "act_select", "act_user_lock"),
+        ("f4", "", STYLE_FLOW, "act_user_lock", "dec_open"),
+        ("f4_err", "[Không hợp lệ]", STYLE_FLOW, "dec_open", "act_err_open"),
         ("f4_end", "", STYLE_FLOW, "act_err_open", "end_err_o"),
         ("f4_ok", "[Đang mở]", STYLE_FLOW, "dec_open", "act_check_rules"),
         ("f5", "", STYLE_FLOW, "act_check_rules", "dec_rules"),
-        ("f5_err", "[Hết chỗ/Quá TC]", STYLE_FLOW, "dec_rules", "act_err_rules"),
+        ("f5_err", "[Vi phạm]", STYLE_FLOW, "dec_rules", "act_err_rules"),
         ("f5_end", "", STYLE_FLOW, "act_err_rules", "end_err_r"),
-        ("f5_ok", "[Đủ điều kiện]", STYLE_FLOW, "dec_rules", "act_insert"),
-        ("f6", "", STYLE_FLOW, "act_insert", "act_resp"),
-        ("f7", "", STYLE_FLOW, "act_resp", "act_view_ok"),
-        ("f8", "", STYLE_FLOW, "act_view_ok", "end_ok"),
+        ("f5_ok", "[Đủ điều kiện]", STYLE_FLOW, "dec_rules", "act_redis_slot"),
+        ("f6", "", STYLE_FLOW, "act_redis_slot", "dec_slot"),
+        ("f6_err", "[Hết chỗ]", STYLE_FLOW, "dec_slot", "act_err_slot"),
+        ("f6_end", "", STYLE_FLOW, "act_err_slot", "end_err_s"),
+        ("f6_ok", "[Còn slot]", STYLE_FLOW, "dec_slot", "act_db_tx"),
+        ("f7", "", STYLE_FLOW, "act_db_tx", "act_release_lock"),
+        ("f8", "", STYLE_FLOW, "act_release_lock", "act_view_ok"),
+        ("f9", "", STYLE_FLOW, "act_view_ok", "end_ok"),
     ]
     for fid, fval, fsty, fsrc, ftgt in flows:
         add_cell(root, fid, fval, fsty, edge=True, source=fsrc, target=ftgt, geometry={'relative': 1})
@@ -608,8 +617,8 @@ def build_act_11_enrollment():
 def build_act_12_course_drop():
     model, root = create_base_model(1180, 880)
     setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: HỦY ĐĂNG KÝ HỌC PHẦN & HOÀN TRẢ SĨ SỐ",
-                          "Quy trình hủy đăng ký học phần, giải phóng chỗ trống và kích hoạt trigger tự động giảm sĩ số lớp học phần",
-                          "Sinh viên", "Hệ thống (EnrollmentService & CSDL MySQL)", lane_h=750)
+                          "Quy trình hủy đăng ký học phần, giải phóng chỗ trống trên RAM Redis và kích hoạt trigger tự động giảm sĩ số lớp học phần",
+                          "Sinh viên", "Hệ thống (EnrollmentService, Redis & MySQL)", lane_h=750)
 
     # Actor Lane
     add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 120, 'width': 25, 'height': 25})
@@ -624,7 +633,7 @@ def build_act_12_course_drop():
     add_cell(root, "act_err_owner", "Báo lỗi: Hết hạn đăng ký, đã có điểm\nhoặc không có quyền hủy (400)", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 337.5, 'width': 200, 'height': 45})
     add_cell(root, "end_err", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 415, 'width': 25, 'height': 25})
 
-    add_cell(root, "act_cancel", "UPDATE enrollments SET status='CANCELLED'\nTrigger MySQL: enrolled_count - 1", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 440, 'width': 220, 'height': 45})
+    add_cell(root, "act_cancel", "UPDATE enrollments SET status='CANCELLED'\n& Hoàn trả Slot trên Redis (incrementSlot)", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 440, 'width': 220, 'height': 45})
     add_cell(root, "act_resp", "Phản hồi 200 OK\nHủy đăng ký thành công", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 635, 'width': 220, 'height': 45})
 
     flows = [
@@ -642,7 +651,6 @@ def build_act_12_course_drop():
     for fid, fval, fsty, fsrc, ftgt in flows:
         add_cell(root, fid, fval, fsty, edge=True, source=fsrc, target=ftgt, geometry={'relative': 1})
     return model
-
 # 13. NHẬP ĐIỂM THÀNH PHẦN
 def build_act_13_grading_entry():
     model, root = create_base_model(1180, 930)
@@ -873,31 +881,32 @@ def build_act_17_tuition_management():
 # 18. ĐIỂM DANH LỚP HỌC & CHECK-IN TRỰC TIẾP (ATTENDANCE)
 # ==========================================
 def build_act_18_live_attendance():
-    model, root = create_base_model(1180, 1100)
+    model, root = create_base_model(1180, 1150)
     setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: ĐIỂM DANH LỚP HỌC & CHECK-IN TRỰC TIẾP",
-                          "Quy trình mở phiên điểm danh phát mã PIN thời gian thực, sinh viên check-in và chốt danh sách chuyên cần",
-                          "Giảng viên & Sinh viên", "Hệ thống (AttendanceService & MySQL Database)", lane_h=980)
+                          "Quy trình mở phiên phát mã PIN 6 số realtime, sinh viên check-in, kích hoạt AttendanceSavedEvent và tự động cấm thi nếu vắng > 20%",
+                          "Giảng viên & Sinh viên", "Hệ thống (AttendanceService, EventPublisher & MySQL)", lane_h=1020)
 
     # Actor Lane (Center x=240)
     add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 115, 'width': 25, 'height': 25})
     add_cell(root, "act_open", "Giảng viên chọn lớp học phần\nvà bấm 'Mở phiên điểm danh'", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 165, 'width': 200, 'height': 45})
-    add_cell(root, "act_stu_pin", "Sinh viên mở Portal, nhập mã PIN\nvà bấm 'Xác nhận check-in'", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 430, 'width': 200, 'height': 45})
-    add_cell(root, "act_lec_review", "Giảng viên theo dõi sĩ số realtime,\nđiều chỉnh vắng có phép nếu có", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 690, 'width': 200, 'height': 45})
-    add_cell(root, "act_lec_close", "Giảng viên bấm 'Chốt sổ &\nKết thúc phiên điểm danh'", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 765, 'width': 200, 'height': 45})
-    add_cell(root, "act_conf_done", "Xem tỷ lệ chuyên cần buổi học\nvà danh sách sinh viên vắng", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 895, 'width': 200, 'height': 45})
-    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 965, 'width': 25, 'height': 25})
+    add_cell(root, "act_stu_pin", "Sinh viên mở Portal, nhập mã PIN 6 số\nvà bấm 'Xác nhận check-in'", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 430, 'width': 200, 'height': 45})
+    add_cell(root, "act_lec_review", "Giảng viên theo dõi sĩ số realtime,\nđiều chỉnh vắng có phép nếu cần", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 760, 'width': 200, 'height': 45})
+    add_cell(root, "act_lec_close", "Giảng viên bấm 'Chốt sổ &\nKết thúc phiên điểm danh'", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 835, 'width': 200, 'height': 45})
+    add_cell(root, "act_conf_done", "Xem tỷ lệ chuyên cần tổng hợp\nvà danh sách SV bị cấm thi (DISQUALIFIED)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 950, 'width': 200, 'height': 45})
+    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 1020, 'width': 25, 'height': 25})
 
     # System Lane (Center x=620, Error x=910)
-    add_cell(root, "act_create_ses", "Khởi tạo AttendanceSession,\nsinh mã PIN 6 số & hạn 10 phút", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 165, 'width': 220, 'height': 45})
-    add_cell(root, "act_show_pin", "Trình chiếu mã PIN & đồng hồ\nđếm ngược lên màn hình lớp", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 240, 'width': 220, 'height': 45})
-    add_cell(root, "act_val_checkin", "Kiểm tra: Đúng mã PIN,\ntrong hạn & có trong danh sách lớp", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 430, 'width': 220, 'height': 45})
+    add_cell(root, "act_create_ses", "Khởi tạo AttendanceSession (status=OPEN),\nsinh mã PIN 6 số ngẫu nhiên & hạn 15 phút", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 165, 'width': 220, 'height': 45})
+    add_cell(root, "act_show_pin", "Trình chiếu mã PIN 6 số & đồng hồ\nđếm ngược lên màn hình phòng học", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 240, 'width': 220, 'height': 45})
+    add_cell(root, "act_val_checkin", "Kiểm tra: Đúng mã PIN, trong thời hạn\nvà sinh viên thuộc danh sách lớp", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 430, 'width': 220, 'height': 45})
     add_cell(root, "dec_checkin", "Check-in hợp lệ?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 505, 'width': 130, 'height': 50})
-    add_cell(root, "act_err_pin", "Báo lỗi: Mã PIN không đúng\nhoặc ca học đã hết hạn", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 507.5, 'width': 200, 'height': 45})
+    add_cell(root, "act_err_pin", "Báo lỗi: Mã PIN không đúng / Hết hạn /\nKhông thuộc danh sách lớp (400)", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 507.5, 'width': 200, 'height': 45})
     add_cell(root, "end_err_pin", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 580, 'width': 25, 'height': 25})
 
     add_cell(root, "act_save_present", "Ghi nhận 'PRESENT' vào CSDL\nvà cập nhật số đếm thời gian thực", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 600, 'width': 220, 'height': 45})
-    add_cell(root, "act_finalize_db", "Tự động gán trạng thái 'ABSENT'\ncho các SV không check-in", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 765, 'width': 220, 'height': 45})
-    add_cell(root, "act_save_all", "Khóa phiên (is_finalized=true)\nvà lưu toàn bộ AttendanceRecord", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 840, 'width': 220, 'height': 45})
+    add_cell(root, "act_event", "Kích hoạt AttendanceSavedEvent:\nTính tỷ lệ vắng, nếu > 20% -> Gán DISQUALIFIED", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 680, 'width': 220, 'height': 45})
+    add_cell(root, "act_finalize_db", "Tự động gán trạng thái 'ABSENT'\ncho các SV không check-in", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 835, 'width': 220, 'height': 45})
+    add_cell(root, "act_save_all", "Khóa phiên (status=CLOSED)\nvà đồng bộ dữ liệu chuyên cần môn học", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 910, 'width': 220, 'height': 45})
 
     # Flows
     add_cell(root, "f1", "", STYLE_FLOW, edge=True, source="start", target="act_open")
@@ -909,7 +918,8 @@ def build_act_18_live_attendance():
     add_cell(root, "f7", "[Không]", STYLE_FLOW, edge=True, source="dec_checkin", target="act_err_pin")
     add_cell(root, "f8", "", STYLE_FLOW, edge=True, source="act_err_pin", target="end_err_pin")
     add_cell(root, "f9", "[Hợp lệ]", STYLE_FLOW, edge=True, source="dec_checkin", target="act_save_present")
-    add_cell(root, "f10", "", STYLE_FLOW, edge=True, source="act_save_present", target="act_lec_review")
+    add_cell(root, "f10_ev", "", STYLE_FLOW, edge=True, source="act_save_present", target="act_event")
+    add_cell(root, "f10", "", STYLE_FLOW, edge=True, source="act_event", target="act_lec_review")
     add_cell(root, "f11", "", STYLE_FLOW, edge=True, source="act_lec_review", target="act_lec_close")
     add_cell(root, "f12", "", STYLE_FLOW, edge=True, source="act_lec_close", target="act_finalize_db")
     add_cell(root, "f13", "", STYLE_FLOW, edge=True, source="act_finalize_db", target="act_save_all")
@@ -917,8 +927,6 @@ def build_act_18_live_attendance():
     add_cell(root, "f15", "", STYLE_FLOW, edge=True, source="act_conf_done", target="end_ok")
 
     return model
-
-# Aliases matching generate_all_4_diagrams.py
 build_act_2_change_password = build_act_2_changepwd
 build_act_3_student_create = build_act_3_stu_create
 build_act_4_student_manage = build_act_4_stu_manage

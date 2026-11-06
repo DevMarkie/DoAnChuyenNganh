@@ -21,12 +21,21 @@ public class UserPrincipal implements UserDetails {
     private String role;
     private boolean active;
     private boolean mustChangePassword;
+    private Integer departmentId;
+    private String departmentName;
     private Collection<? extends GrantedAuthority> authorities;
+
+    public UserPrincipal(Long id, String username, String password, String email, String role, boolean active, boolean mustChangePassword, Collection<? extends GrantedAuthority> authorities) {
+        this(id, username, password, email, role, active, mustChangePassword, null, null, authorities);
+    }
 
     public static UserPrincipal create(User user) {
         List<GrantedAuthority> authorities = List.of(
                 new SimpleGrantedAuthority("ROLE_" + user.getRole().getName())
         );
+
+        Integer deptId = user.getDepartment() != null ? user.getDepartment().getId() : null;
+        String deptName = user.getDepartment() != null ? user.getDepartment().getName() : null;
 
         return new UserPrincipal(
                 user.getId(),
@@ -36,6 +45,8 @@ public class UserPrincipal implements UserDetails {
                 user.getRole().getName(),
                 user.getIsActive(),
                 Boolean.TRUE.equals(user.getMustChangePassword()),
+                deptId,
+                deptName,
                 authorities
         );
     }

@@ -1029,19 +1029,19 @@
             <mxPoint x="785" y="230" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m4" value="4: validateSemesterIsOpen &amp; checkLecturerAvailable" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="m4" value="4: validateSemesterIsOpen &amp; checkLecturerAvailable &amp; RBAC Khoa (ACADEMIC_STAFF)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="795" y="275" as="sourcePoint"/>
             <mxPoint x="799" y="305" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m5" value="5: courseSectionRepository.save(newSection)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m5" value="5: courseSectionRepository.save(newSection) [Optimistic Locking @Version]" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="795" y="315" as="sourcePoint"/>
             <mxPoint x="1025" y="315" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m6" value="6: INSERT INTO course_sections (subject_id, semester_id, max_students...)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m6" value="6: INSERT INTO course_sections (subject_id, semester_id, max_capacity, version...)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1035" y="355" as="sourcePoint"/>
             <mxPoint x="1245" y="355" as="targetPoint"/>
@@ -2462,7 +2462,7 @@
             <mxPoint x="785" y="215" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m4" value="4: findByRoleIn([ACADEMIC_AFFAIRS, LECTURER, ADMIN], pageable)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m4" value="4: findByRoleIn([ADMIN, ACADEMIC_AFFAIRS, ACADEMIC_STAFF, EXAMINATION_OFFICER])" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="795" y="255" as="sourcePoint"/>
             <mxPoint x="1025" y="255" as="targetPoint"/>
@@ -2486,31 +2486,31 @@
             <mxPoint x="315" y="375" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m8" value="8: Admin điền form tạo cán bộ mới &amp; bấm 'Lưu cán bộ'" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m8" value="8: Admin điền form tạo cán bộ mới (chọn Role &amp; Khoa nếu có)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="80" y="415" as="sourcePoint"/>
             <mxPoint x="305" y="415" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m9" value="9: POST /api/admin/staffs (CreateStaffRequest: name, email, role, phone)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m9" value="9: POST /api/admin/staffs (CreateStaffRequest: fullName, email, roleName, departmentId, dateOfBirth)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="315" y="455" as="sourcePoint"/>
             <mxPoint x="545" y="455" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m10" value="10: createStaff(request) -&gt; validateEmailNotDuplicate(request.email)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m10" value="10: createStaff(request) -&gt; validateEmail &amp; gán Khoa trực thuộc (nếu là Giáo vụ Khoa)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="555" y="495" as="sourcePoint"/>
             <mxPoint x="785" y="495" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m11" value="11: Khởi tạo User mới, băm mật khẩu tạm bằng BCrypt, gán staffRole" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="m11" value="11: Khởi tạo User mới, băm mật khẩu theo DOB (ddmmyyyya@), gán Role &amp; Khoa" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="795" y="535" as="sourcePoint"/>
             <mxPoint x="799" y="565" as="targetPoint"/>
           </mxGeometry>
         </mxCell>
-        <mxCell id="m12" value="12: userRepository.save(newUser) -&gt; INSERT INTO users (...)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m12" value="12: userRepository.save(staff) -&gt; INSERT INTO users (..., role_id, department_id)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="795" y="575" as="sourcePoint"/>
             <mxPoint x="1245" y="575" as="targetPoint"/>

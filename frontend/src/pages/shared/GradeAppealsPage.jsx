@@ -62,7 +62,7 @@ export default function GradeAppealsPage() {
   const { user } = useAuthStore();
   const role = user?.role;
   const isLecturer = role === 'LECTURER';
-  const isAcademic = role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF' || role === 'ADMIN';
+  const isAcademic = role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF' || role === 'ADMIN' || role === 'EXAMINATION_OFFICER';
 
   // Tabs for Lecturer
   const [activeTab, setActiveTab] = useState(isLecturer ? 'assigned' : 'all');
@@ -101,8 +101,9 @@ export default function GradeAppealsPage() {
       setLoading(true);
       const res = await gradeAppealService.getAll(statusFilter ? { status: statusFilter } : {});
       setAppeals(res.data?.data || []);
-    } catch {
-      toast.error('Không thể tải danh sách đơn phúc khảo');
+    } catch (err) {
+      console.error('Error loading grade appeals:', err);
+      toast.error(err.response?.data?.message || 'Không thể tải danh sách đơn phúc khảo');
     } finally {
       setLoading(false);
     }
@@ -121,8 +122,9 @@ export default function GradeAppealsPage() {
       if (resHead.status === 'fulfilled') {
         setHeadTasks(resHead.value.data?.data || []);
       }
-    } catch {
-      toast.error('Lỗi khi tải nhiệm vụ phúc khảo');
+    } catch (err) {
+      console.error('Error loading lecturer tasks:', err);
+      toast.error(err.response?.data?.message || 'Lỗi khi tải nhiệm vụ phúc khảo');
     } finally {
       setLoading(false);
     }
@@ -224,7 +226,8 @@ export default function GradeAppealsPage() {
     try {
       setSigning(true);
       await gradeAppealService.headSign(headSignModalAppeal.id, {
-        reviewNotes: headSignNotes,
+        approved: true,
+        headReviewNotes: headSignNotes,
       });
       toast.success('Đã niêm phong phê duyệt điện tử cấp Bộ môn thành công!');
       setHeadSignModalAppeal(null);
@@ -424,7 +427,7 @@ export default function GradeAppealsPage() {
                 displayedList.map((appeal) => {
                   const canAssign = isAcademic && (appeal.status === 'PENDING' || appeal.status === 'PENDING_ASSIGNMENT');
                   const canGrade = isLecturer && appeal.status === 'ASSIGNED';
-                  const canHeadSign = (isLecturer || isAcademic) && appeal.status === 'PENDING_HEAD_APPROVAL';
+                  const canHeadSign = (isLecturer || role === 'ADMIN') && appeal.status === 'PENDING_HEAD_APPROVAL';
                   const canApplyFinal = isAcademic && (appeal.status === 'HEAD_APPROVED' || appeal.status === 'APPROVED');
 
                   const diff = appeal.scoreDiff != null ? Number(appeal.scoreDiff).toFixed(2) : null;

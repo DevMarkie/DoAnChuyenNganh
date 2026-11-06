@@ -107,6 +107,9 @@ public class CourseSectionService {
     @Transactional
     public CourseSection update(Long id, CourseSectionRequest request) {
         CourseSection section = findById(id);
+        if (request.getVersion() != null && section.getVersion() != null && !request.getVersion().equals(section.getVersion())) {
+            throw new org.springframework.orm.ObjectOptimisticLockingFailureException(CourseSection.class, id);
+        }
 
         if (request.getLecturerId() != null) {
             Lecturer lecturer = lecturerRepository.findById(request.getLecturerId())

@@ -16,6 +16,9 @@ public class StaffResponse {
     private String email;
     private String role;
     private String roleDisplayName;
+    private Integer departmentId;
+    private String departmentName;
+    private String departmentCode;
     private LocalDate dateOfBirth;
     private Boolean isActive;
     private LocalDateTime createdAt;

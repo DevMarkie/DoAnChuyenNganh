@@ -34,4 +34,5 @@ public class CourseSectionRequest {
     private Integer endPeriod;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Long version;
 }

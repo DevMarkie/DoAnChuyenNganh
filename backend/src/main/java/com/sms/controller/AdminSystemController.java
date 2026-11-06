@@ -13,6 +13,7 @@ import com.sms.entity.SystemConfig;
 import com.sms.entity.User;
 import com.sms.exception.BadRequestException;
 import com.sms.exception.ResourceNotFoundException;
+import com.sms.repository.DepartmentRepository;
 import com.sms.repository.CourseSectionRepository;
 import com.sms.repository.LecturerRepository;
 import com.sms.repository.RoleRepository;
@@ -56,6 +57,8 @@ public class AdminSystemController {
     private final PasswordResetService passwordResetService;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DepartmentRepository departmentRepository;
+
 
     // --- CẤU HÌNH THAM SỐ TOÀN HỆ THỐNG ---
 
@@ -167,10 +170,11 @@ public class AdminSystemController {
 
     // --- QUẢN LÝ CÁN BỘ & NHÂN VIÊN (STAFF MANAGEMENT) ---
 
-    private static final Set<String> STAFF_ROLES = Set.of("ADMIN", "ACADEMIC_AFFAIRS", "EXAMINATION_OFFICER");
+    private static final Set<String> STAFF_ROLES = Set.of("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF", "EXAMINATION_OFFICER");
     private static final DateTimeFormatter DOB_FMT = DateTimeFormatter.ofPattern("ddMMyyyy");
 
     @GetMapping("/staffs")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<ApiResponse<List<StaffResponse>>> getAllStaffs() {
         List<StaffResponse> list = userRepository.findAll().stream()
                 .filter(u -> u.getRole() != null && STAFF_ROLES.contains(u.getRole().getName()))
@@ -213,6 +217,9 @@ public class AdminSystemController {
         staff.setIsActive(true);
         staff.setMustChangePassword(false);
 
+        if (req.getDepartmentId() != null && req.getDepartmentId() > 0) {
+            departmentRepository.findById(req.getDepartmentId()).ifPresent(staff::setDepartment);
+        }
         User saved = userRepository.save(staff);
 
         auditLogService.record(
@@ -269,6 +276,13 @@ public class AdminSystemController {
             staff.setRole(role);
         }
 
+        if (req.getDepartmentId() != null) {
+            if (req.getDepartmentId() <= 0) {
+                staff.setDepartment(null);
+            } else {
+                departmentRepository.findById(req.getDepartmentId()).ifPresent(staff::setDepartment);
+            }
+        }
         User updated = userRepository.save(staff);
 
         auditLogService.record(
@@ -320,10 +334,22 @@ public class AdminSystemController {
         String roleName = user.getRole() != null ? user.getRole().getName() : "STAFF";
         String displayName;
         switch (roleName) {
-            case "ADMIN" -> displayName = "Quản trị viên hệ thống";
-            case "ACADEMIC_AFFAIRS" -> displayName = "Cán bộ Đào tạo";
+            case "ADMIN" -> displayName = "Quản trị viên";
+            case "ACADEMIC_AFFAIRS" -> displayName = "Cán bộ Đào tạo (Cấp trường)";
+            case "ACADEMIC_STAFF" -> displayName = "Giáo vụ Khoa";
             case "EXAMINATION_OFFICER" -> displayName = "Cán bộ Khảo thí";
             default -> displayName = roleName;
+        }
+
+        String deptName = null;
+        if (user.getDepartment() != null) {
+            deptName = user.getDepartment().getName();
+        } else if ("ACADEMIC_AFFAIRS".equals(roleName)) {
+            deptName = "Phòng Đào tạo (Toàn trường)";
+        } else if ("EXAMINATION_OFFICER".equals(roleName)) {
+            deptName = "Phòng Khảo thí & ĐBCL";
+        } else if ("ADMIN".equals(roleName)) {
+            deptName = "Trung tâm CNTT / Toàn trường";
         }
 
         return StaffResponse.builder()
@@ -333,6 +359,9 @@ public class AdminSystemController {
                 .email(user.getEmail())
                 .role(roleName)
                 .roleDisplayName(displayName)
+                .departmentId(user.getDepartment() != null ? user.getDepartment().getId() : null)
+                .departmentName(deptName)
+                .departmentCode(user.getDepartment() != null ? user.getDepartment().getCode() : null)
                 .dateOfBirth(user.getDateOfBirth())
                 .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt())

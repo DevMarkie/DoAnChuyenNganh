@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import {
   Plus, Search, Edit2, CheckCircle, XCircle, X, RotateCcw,
-  KeyRound, ShieldCheck, Calendar, UserCheck
+  KeyRound, ShieldCheck, Calendar, UserCheck, Building2
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { staffService } from '../../services/dataService';
+import { staffService, departmentService } from '../../services/dataService';
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
 
 export default function StaffsPage() {
   const [staffs, setStaffs] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
+  const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'ADMIN' | 'ACADEMIC_AFFAIRS' | 'ACADEMIC_STAFF' | 'EXAMINATION_OFFICER'
+  const [selectedDeptId, setSelectedDeptId] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -21,24 +23,29 @@ export default function StaffsPage() {
     fullName: '',
     email: '',
     dateOfBirth: '',
-    roleName: 'ACADEMIC_AFFAIRS',
+    roleName: 'ACADEMIC_STAFF',
+    departmentId: '',
     isActive: true,
   });
 
-  const loadStaffs = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const res = await staffService.getAll();
-      setStaffs(res.data.data || []);
+      const [staffRes, deptRes] = await Promise.all([
+        staffService.getAll(),
+        departmentService.getAll().catch(() => ({ data: { data: [] } }))
+      ]);
+      setStaffs(staffRes.data.data || []);
+      setDepartments(deptRes.data.data || []);
     } catch {
-      toast.error('Lỗi khi tải danh sách cán bộ');
+      toast.error('Lỗi khi tải dữ liệu cán bộ');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadStaffs();
+    loadData();
   }, []);
 
   const handleOpenModal = (staff = null) => {
@@ -49,7 +56,8 @@ export default function StaffsPage() {
         fullName: staff.fullName || '',
         email: staff.email || '',
         dateOfBirth: staff.dateOfBirth ? staff.dateOfBirth.substring(0, 10) : '',
-        roleName: staff.role || 'ACADEMIC_AFFAIRS',
+        roleName: staff.role || 'ACADEMIC_STAFF',
+        departmentId: staff.departmentId ? String(staff.departmentId) : '',
         isActive: staff.isActive !== false,
       });
     } else {
@@ -59,7 +67,8 @@ export default function StaffsPage() {
         fullName: '',
         email: '',
         dateOfBirth: '',
-        roleName: 'ACADEMIC_AFFAIRS',
+        roleName: 'ACADEMIC_STAFF',
+        departmentId: '',
         isActive: true,
       });
     }
@@ -85,17 +94,24 @@ export default function StaffsPage() {
       toast.warning('Vui lòng chọn ngày tháng năm sinh');
       return;
     }
+    if (formData.roleName === 'ACADEMIC_STAFF' && !formData.departmentId) {
+      toast.warning('Giáo vụ Khoa bắt buộc phải chọn Khoa trực thuộc');
+      return;
+    }
 
     try {
       setSubmitting(true);
+      const payload = {
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
+        dateOfBirth: formData.dateOfBirth,
+        roleName: formData.roleName,
+        departmentId: formData.departmentId ? Number(formData.departmentId) : null,
+        isActive: formData.isActive,
+      };
+
       if (editingStaff) {
-        await staffService.update(editingStaff.id, {
-          fullName: formData.fullName.trim(),
-          email: formData.email.trim(),
-          dateOfBirth: formData.dateOfBirth,
-          roleName: formData.roleName,
-          isActive: formData.isActive,
-        });
+        await staffService.update(editingStaff.id, payload);
         toast.success('Cập nhật thông tin cán bộ thành công');
       } else {
         if (!formData.username.trim()) {
@@ -103,17 +119,12 @@ export default function StaffsPage() {
           setSubmitting(false);
           return;
         }
-        const res = await staffService.create({
-          username: formData.username.trim(),
-          fullName: formData.fullName.trim(),
-          email: formData.email.trim(),
-          dateOfBirth: formData.dateOfBirth,
-          roleName: formData.roleName,
-        });
+        payload.username = formData.username.trim();
+        const res = await staffService.create(payload);
         toast.success(res.data.message || 'Tạo cán bộ thành công!', { autoClose: 7000 });
       }
       handleCloseModal();
-      loadStaffs();
+      loadData();
     } catch (err) {
       const msg = err.response?.data?.message || 'Có lỗi xảy ra khi lưu thông tin cán bộ';
       toast.error(msg);
@@ -149,10 +160,11 @@ export default function StaffsPage() {
         email: staff.email,
         dateOfBirth: staff.dateOfBirth ? staff.dateOfBirth.substring(0, 10) : null,
         roleName: staff.role,
+        departmentId: staff.departmentId,
         isActive: !staff.isActive,
       });
       toast.success(`Đã ${action} tài khoản thành công!`);
-      loadStaffs();
+      loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Lỗi khi cập nhật trạng thái');
     }
@@ -167,15 +179,26 @@ export default function StaffsPage() {
     return dateStr;
   };
 
+  const counts = {
+    ALL: staffs.length,
+    ADMIN: staffs.filter((s) => s.role === 'ADMIN').length,
+    ACADEMIC_AFFAIRS: staffs.filter((s) => s.role === 'ACADEMIC_AFFAIRS').length,
+    ACADEMIC_STAFF: staffs.filter((s) => s.role === 'ACADEMIC_STAFF').length,
+    EXAMINATION_OFFICER: staffs.filter((s) => s.role === 'EXAMINATION_OFFICER').length,
+  };
+
   const filteredStaffs = staffs.filter((s) => {
     const matchSearch =
       !search.trim() ||
       (s.fullName && s.fullName.toLowerCase().includes(search.toLowerCase())) ||
       (s.username && s.username.toLowerCase().includes(search.toLowerCase())) ||
-      (s.email && s.email.toLowerCase().includes(search.toLowerCase()));
+      (s.email && s.email.toLowerCase().includes(search.toLowerCase())) ||
+      (s.departmentName && s.departmentName.toLowerCase().includes(search.toLowerCase()));
 
-    const matchRole = !selectedRole || s.role === selectedRole;
-    return matchSearch && matchRole;
+    const matchTab = activeTab === 'ALL' || s.role === activeTab;
+    const matchDept = !selectedDeptId || String(s.departmentId) === String(selectedDeptId);
+
+    return matchSearch && matchTab && matchDept;
   });
 
   const getRoleBadge = (role) => {
@@ -183,7 +206,9 @@ export default function StaffsPage() {
       case 'ADMIN':
         return <span className="badge badge-danger">Quản trị viên</span>;
       case 'ACADEMIC_AFFAIRS':
-        return <span className="badge badge-info">Cán bộ Đào tạo</span>;
+        return <span className="badge badge-warning">Cán bộ Đào tạo (Trường)</span>;
+      case 'ACADEMIC_STAFF':
+        return <span className="badge badge-info">Giáo vụ Khoa</span>;
       case 'EXAMINATION_OFFICER':
         return <span className="badge badge-purple">Cán bộ Khảo thí</span>;
       default:
@@ -198,10 +223,10 @@ export default function StaffsPage() {
         <div>
           <h1>
             <ShieldCheck size={26} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '8px', color: 'var(--primary)' }} />
-            Quản lý Cán bộ & Nhân viên
+            Quản lý Cán bộ & Phân bổ Thẩm quyền
           </h1>
           <p>
-            Danh sách nhân viên, cán bộ trường với chức danh và ngày sinh (mật khẩu tự động: <code>ddmmyyyya@</code>)
+            Phân định chức danh, đơn vị trực thuộc và phạm vi chức năng tác nghiệp theo mô hình Scoped RBAC
           </p>
         </div>
         <div className="page-header-actions">
@@ -212,15 +237,85 @@ export default function StaffsPage() {
         </div>
       </div>
 
+      {/* Unit Tabs Bar */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        marginBottom: '16px',
+        overflowX: 'auto',
+        paddingBottom: '4px',
+        borderBottom: '1px solid var(--border-color)'
+      }}>
+        <button
+          type="button"
+          className={`btn ${activeTab === 'ALL' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => { setActiveTab('ALL'); setSelectedDeptId(''); }}
+          style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px', fontSize: '0.84rem' }}
+        >
+          <span>Tất cả cán bộ</span>
+          <span className="badge" style={{ marginLeft: '6px', backgroundColor: activeTab === 'ALL' ? 'rgba(255,255,255,0.25)' : 'var(--bg-subtle)' }}>
+            {counts.ALL}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`btn ${activeTab === 'ADMIN' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => { setActiveTab('ADMIN'); setSelectedDeptId(''); }}
+          style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px', fontSize: '0.84rem' }}
+        >
+          <span>Trung tâm CNTT (Admin)</span>
+          <span className="badge" style={{ marginLeft: '6px', backgroundColor: activeTab === 'ADMIN' ? 'rgba(255,255,255,0.25)' : 'var(--bg-subtle)' }}>
+            {counts.ADMIN}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`btn ${activeTab === 'ACADEMIC_AFFAIRS' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => { setActiveTab('ACADEMIC_AFFAIRS'); setSelectedDeptId(''); }}
+          style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px', fontSize: '0.84rem' }}
+        >
+          <span>Phòng Đào tạo (Toàn trường)</span>
+          <span className="badge" style={{ marginLeft: '6px', backgroundColor: activeTab === 'ACADEMIC_AFFAIRS' ? 'rgba(255,255,255,0.25)' : 'var(--bg-subtle)' }}>
+            {counts.ACADEMIC_AFFAIRS}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`btn ${activeTab === 'ACADEMIC_STAFF' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => { setActiveTab('ACADEMIC_STAFF'); }}
+          style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px', fontSize: '0.84rem' }}
+        >
+          <span>Giáo vụ các Khoa</span>
+          <span className="badge" style={{ marginLeft: '6px', backgroundColor: activeTab === 'ACADEMIC_STAFF' ? 'rgba(255,255,255,0.25)' : 'var(--bg-subtle)' }}>
+            {counts.ACADEMIC_STAFF}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className={`btn ${activeTab === 'EXAMINATION_OFFICER' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => { setActiveTab('EXAMINATION_OFFICER'); setSelectedDeptId(''); }}
+          style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px', fontSize: '0.84rem' }}
+        >
+          <span>Phòng Khảo thí & ĐBCL</span>
+          <span className="badge" style={{ marginLeft: '6px', backgroundColor: activeTab === 'EXAMINATION_OFFICER' ? 'rgba(255,255,255,0.25)' : 'var(--bg-subtle)' }}>
+            {counts.EXAMINATION_OFFICER}
+          </span>
+        </button>
+      </div>
+
       {/* Filter / Search Bar */}
       <div className="card" style={{ marginBottom: '20px' }}>
-        <div className="card-body" style={{ padding: '16px 20px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', gap: '12px', flex: 1, minWidth: '300px', flexWrap: 'wrap' }}>
+        <div className="card-body" style={{ padding: '14px 18px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: '12px', flex: 1, minWidth: '300px', flexWrap: 'wrap', alignItems: 'center' }}>
             <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
               <input
                 type="text"
-                placeholder="Tìm theo họ tên, username, email..."
+                placeholder="Tìm theo họ tên, username, email, Khoa..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="form-control"
@@ -228,25 +323,30 @@ export default function StaffsPage() {
               />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '200px' }}>
-              <select
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
-                className="form-select"
-                style={{ width: 'auto', minWidth: '180px' }}
-              >
-                <option value="">Tất cả chức danh</option>
-                <option value="ADMIN">Quản trị viên (Admin)</option>
-                <option value="ACADEMIC_AFFAIRS">Cán bộ Đào tạo</option>
-                <option value="EXAMINATION_OFFICER">Cán bộ Khảo thí</option>
-              </select>
-            </div>
+            {/* Department selector when filtering all or academic staff */}
+            {(activeTab === 'ALL' || activeTab === 'ACADEMIC_STAFF') && departments.length > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '200px' }}>
+                <select
+                  value={selectedDeptId}
+                  onChange={(e) => setSelectedDeptId(e.target.value)}
+                  className="form-select"
+                  style={{ width: 'auto', minWidth: '190px' }}
+                >
+                  <option value="">-- Tất cả Khoa / Viện --</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-            {(search || selectedRole) && (
+            {(search || selectedDeptId || activeTab !== 'ALL') && (
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={() => { setSearch(''); setSelectedRole(''); }}
+                onClick={() => { setSearch(''); setSelectedDeptId(''); setActiveTab('ALL'); }}
                 title="Xóa bộ lọc"
                 style={{ padding: '8px 12px' }}
               >
@@ -268,10 +368,12 @@ export default function StaffsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th style={{ width: '40px' }}>#</th>
+                <th style={{ width: '36px' }}>#</th>
                 <th>Họ và Tên</th>
                 <th>Tài khoản</th>
-                <th>Chức danh / Vai trò</th>
+                <th>Chức danh</th>
+                <th>Đơn vị / Khoa</th>
+                <th>Phạm vi & Thẩm quyền tác nghiệp</th>
                 <th>Ngày sinh (DOB)</th>
                 <th>Email</th>
                 <th style={{ textAlign: 'center' }}>Trạng thái</th>
@@ -280,11 +382,11 @@ export default function StaffsPage() {
             </thead>
             <tbody className="text-sm">
               {loading ? (
-                <TableRowSkeleton rows={5} columns={8} />
+                <TableRowSkeleton rows={5} columns={10} />
               ) : filteredStaffs.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
-                    Không tìm thấy cán bộ / nhân viên nào phù hợp.
+                  <td colSpan={10} style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                    Không tìm thấy cán bộ / nhân viên nào phù hợp với bộ lọc.
                   </td>
                 </tr>
               ) : (
@@ -310,6 +412,71 @@ export default function StaffsPage() {
                       </span>
                     </td>
                     <td>{getRoleBadge(staff.role)}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Building2 size={14} style={{ color: staff.departmentName ? 'var(--primary)' : 'var(--text-light)' }} />
+                        <span style={{ fontSize: '0.85rem', color: staff.departmentName ? 'var(--text-main)' : 'var(--text-secondary)' }}>
+                          {staff.departmentName || (
+                            staff.role === 'ACADEMIC_AFFAIRS' ? 'Phòng Đào tạo (Toàn trường)' :
+                            staff.role === 'EXAMINATION_OFFICER' ? 'Phòng Khảo thí & ĐBCL' :
+                            'Trung tâm CNTT / Toàn trường'
+                          )}
+                        </span>
+                      </div>
+                    </td>
+                    {/* Phạm vi & Thẩm quyền tác nghiệp */}
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '300px' }}>
+                        {staff.role === 'ADMIN' && (
+                          <>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--danger)' }}>
+                              🛡️ Quản trị Toàn quyền
+                            </span>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                              <span className="badge badge-purple" style={{ fontSize: '0.74rem' }}>Hạ tầng & CSDL</span>
+                              <span className="badge badge-secondary" style={{ fontSize: '0.74rem' }}>Quản lý Tài khoản</span>
+                            </div>
+                          </>
+                        )}
+                        {staff.role === 'ACADEMIC_AFFAIRS' && (
+                          <>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--warning-text)' }}>
+                              🏛️ Cấp Trường (Toàn diện)
+                            </span>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                              <span className="badge badge-warning" style={{ fontSize: '0.74rem' }}>Cấu hình ĐKTC & Học kỳ</span>
+                              <span className="badge badge-info" style={{ fontSize: '0.74rem' }}>Điều phối Lớp HP</span>
+                              <span className="badge badge-success" style={{ fontSize: '0.74rem' }}>Xét tốt nghiệp TT08</span>
+                              <span className="badge badge-purple" style={{ fontSize: '0.74rem' }}>Duyệt sửa điểm (Cấp 2)</span>
+                            </div>
+                          </>
+                        )}
+                        {staff.role === 'ACADEMIC_STAFF' && (
+                          <>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--primary)' }}>
+                              🏢 Chuyên trách: {staff.departmentName || 'Khoa chuyên môn'}
+                            </span>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                              <span className="badge badge-primary" style={{ fontSize: '0.74rem' }}>Lớp HP & TKB Khoa</span>
+                              <span className="badge badge-info" style={{ fontSize: '0.74rem' }}>QL Sinh viên Khoa</span>
+                              <span className="badge badge-secondary" style={{ fontSize: '0.74rem' }}>Duyệt sửa điểm (Cấp 1)</span>
+                            </div>
+                          </>
+                        )}
+                        {staff.role === 'EXAMINATION_OFFICER' && (
+                          <>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#7c3aed' }}>
+                              🎯 Khảo thí & Đảm bảo chất lượng
+                            </span>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                              <span className="badge badge-purple" style={{ fontSize: '0.74rem' }}>Ca thi & Phòng thi</span>
+                              <span className="badge badge-warning" style={{ fontSize: '0.74rem' }}>Phúc khảo điểm thi</span>
+                              <span className="badge badge-secondary" style={{ fontSize: '0.74rem' }}>Kiểm toán sổ điểm</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </td>
                     <td>
                       <span style={{
                         display: 'inline-flex',
@@ -372,7 +539,7 @@ export default function StaffsPage() {
       {/* Modal Thêm / Sửa Cán bộ */}
       {isModalOpen && (
         <div className="modal-backdrop" onClick={(e) => { if (e.target === e.currentTarget) handleCloseModal(); }}>
-          <div className="modal-content" style={{ maxWidth: '580px' }}>
+          <div className="modal-content" style={{ maxWidth: '600px' }}>
             <div className="modal-header">
               <h3>{editingStaff ? 'Cập Nhật Thông Tin Cán Bộ' : 'Thêm Cán Bộ & Nhân Viên Mới'}</h3>
               <button className="btn-icon" onClick={handleCloseModal}>
@@ -403,7 +570,7 @@ export default function StaffsPage() {
                   <input
                     type="text"
                     required
-                    placeholder="Ví dụ: Nguyễn Văn Đào"
+                    placeholder="Ví dụ: Lê Thị Thanh"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     className="form-control"
@@ -416,7 +583,7 @@ export default function StaffsPage() {
                     type="text"
                     required={!editingStaff}
                     disabled={!!editingStaff}
-                    placeholder="Ví dụ: daotao02"
+                    placeholder="Ví dụ: giaovu_cntt"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     className="form-control"
@@ -443,11 +610,65 @@ export default function StaffsPage() {
                       onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
                       className="form-select"
                     >
-                      <option value="ACADEMIC_AFFAIRS">Cán bộ Đào tạo</option>
+                      <option value="ACADEMIC_STAFF">Giáo vụ Khoa</option>
+                      <option value="ACADEMIC_AFFAIRS">Cán bộ Đào tạo (Cấp trường)</option>
                       <option value="EXAMINATION_OFFICER">Cán bộ Khảo thí</option>
                       <option value="ADMIN">Quản trị viên (Admin)</option>
                     </select>
                   </div>
+                </div>
+
+                {formData.roleName === 'ACADEMIC_STAFF' && (
+                  <div>
+                    <label className="form-label">Khoa / Viện trực thuộc *</label>
+                    <select
+                      required
+                      value={formData.departmentId}
+                      onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
+                      className="form-select"
+                    >
+                      <option value="">-- Chọn Khoa / Viện trực thuộc --</option>
+                      {departments.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name} ({d.code})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Xem trước Thẩm quyền & Chức năng */}
+                <div style={{
+                  padding: '12px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-color)',
+                  marginTop: '4px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                    <ShieldCheck size={16} style={{ color: 'var(--primary)' }} />
+                    <span>Xem trước Thẩm quyền & Chức năng hệ thống:</span>
+                  </div>
+                  {formData.roleName === 'ADMIN' && (
+                    <div style={{ fontSize: '0.81rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      • <strong>Toàn quyền Kỹ thuật:</strong> Quản trị tài khoản (SV, GV, Cán bộ), cấp lại mật khẩu tập trung, sao lưu CSDL và nhật ký kiểm toán hệ thống.
+                    </div>
+                  )}
+                  {formData.roleName === 'ACADEMIC_AFFAIRS' && (
+                    <div style={{ fontSize: '0.81rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      • <strong>Thẩm quyền Cấp Trường:</strong> Thiết lập Đợt ĐKTC, Học kỳ & Niên giám, quản lý Khoa/Viện, điều phối Lớp HP toàn trường, Hội đồng Xét tốt nghiệp TT08 và Phê duyệt Quyết định sửa điểm Cấp 2.
+                    </div>
+                  )}
+                  {formData.roleName === 'ACADEMIC_STAFF' && (
+                    <div style={{ fontSize: '0.81rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      • <strong>Thẩm quyền Cấp Khoa:</strong> Chỉ tác nghiệp dữ liệu thuộc Khoa phụ trách ({departments.find(d => String(d.id) === String(formData.departmentId))?.name || 'Vui lòng chọn Khoa ở trên'}), gồm Mở Lớp học phần Khoa, Xếp TKB, Quản lý SV/Lớp SH Khoa và Duyệt đề xuất sửa điểm Cấp 1 (Khoa).
+                    </div>
+                  )}
+                  {formData.roleName === 'EXAMINATION_OFFICER' && (
+                    <div style={{ fontSize: '0.81rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                      • <strong>Thẩm quyền Khảo thí:</strong> Quản lý danh sách Ca thi & Phòng thi, tiếp nhận & xử lý đơn Phúc khảo điểm thi của sinh viên, tra cứu và kiểm toán nhật ký sửa điểm thi.
+                    </div>
+                  )}
                 </div>
 
                 <div>

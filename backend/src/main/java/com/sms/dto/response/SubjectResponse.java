@@ -22,6 +22,7 @@ public class SubjectResponse {
     private DepartmentSummary department;
     private Boolean isActive;
     private List<SubjectSummary> prerequisites;
+    private Long version;
 
     public static SubjectResponse from(Subject subject) {
         Department department = subject.getDepartment();
@@ -43,6 +44,7 @@ public class SubjectResponse {
                         department.getId(), department.getCode(), department.getName()))
                 .isActive(subject.getIsActive())
                 .prerequisites(prerequisites)
+                .version(subject.getVersion())
                 .build();
     }
 
@@ -62,9 +64,8 @@ public class SubjectResponse {
         private String subjectName;
         private Integer credits;
 
-        public static SubjectSummary from(Subject subject) {
-            return new SubjectSummary(subject.getId(), subject.getSubjectCode(),
-                    subject.getSubjectName(), subject.getCredits());
+        public static SubjectSummary from(Subject s) {
+            return new SubjectSummary(s.getId(), s.getSubjectCode(), s.getSubjectName(), s.getCredits());
         }
     }
 }

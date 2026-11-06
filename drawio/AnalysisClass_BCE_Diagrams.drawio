@@ -921,40 +921,40 @@
           <mxGeometry as="geometry" x="0" y="78" width="350" height="102"/>
         </mxCell>
         <mxCell id="ent_subjects_1" value="&lt;i&gt;«Entity»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Subject&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="410" width="350" height="234"/>
+          <mxGeometry as="geometry" x="1040" y="410" width="350" height="270"/>
         </mxCell>
-        <mxCell id="ent_subjects_1_attrs" value="- id: Integer&#10;- subjectCode: String&#10;- subjectName: String&#10;- credits: Integer&#10;- theoryHours: Integer&#10;- practicalHours: Integer&#10;- department: Department" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="44" width="350" height="138"/>
+        <mxCell id="ent_subjects_1_attrs" value="- id: Integer&#10;- subjectCode: String&#10;- subjectName: String&#10;- credits: Integer&#10;- theoryHours: Integer&#10;- practicalHours: Integer&#10;- department: Department&#10;- version: Integer (@Version)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="350" height="156"/>
         </mxCell>
         <mxCell id="ent_subjects_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_subjects_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="182" width="350" height="4"/>
+          <mxGeometry as="geometry" x="0" y="200" width="350" height="4"/>
         </mxCell>
-        <mxCell id="ent_subjects_1_methods" value="+ getSubjectCode(): String&#10;+ getCredits(): Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="186" width="350" height="48"/>
+        <mxCell id="ent_subjects_1_methods" value="+ getSubjectCode(): String&#10;+ getCredits(): Integer&#10;+ getVersion(): Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="204" width="350" height="66"/>
         </mxCell>
         <mxCell id="ent_subjects_2" value="&lt;i&gt;«DTO»&lt;/i&gt;&lt;br&gt;&lt;b&gt;SubjectResponse&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="660" width="350" height="198"/>
+          <mxGeometry as="geometry" x="1040" y="660" width="350" height="216"/>
         </mxCell>
-        <mxCell id="ent_subjects_2_attrs" value="- id: Integer&#10;- subjectCode: String&#10;- subjectName: String&#10;- credits: Integer&#10;- departmentName: String&#10;- prerequisiteCodes: List&lt;String&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="44" width="350" height="120"/>
+        <mxCell id="ent_subjects_2_attrs" value="- id: Integer&#10;- subjectCode: String&#10;- subjectName: String&#10;- credits: Integer&#10;- departmentName: String&#10;- prerequisiteCodes: List&lt;String&gt;&#10;- version: Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="350" height="138"/>
         </mxCell>
         <mxCell id="ent_subjects_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_subjects_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="164" width="350" height="4"/>
+          <mxGeometry as="geometry" x="0" y="182" width="350" height="4"/>
         </mxCell>
         <mxCell id="ent_subjects_2_methods" value="+ getPrerequisiteCodes(): List&lt;String&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="168" width="350" height="30"/>
+          <mxGeometry as="geometry" x="0" y="186" width="350" height="30"/>
         </mxCell>
         <mxCell id="ent_subjects_3" value="&lt;i&gt;«DTO»&lt;/i&gt;&lt;br&gt;&lt;b&gt;SubjectRequest&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="870" width="350" height="198"/>
+          <mxGeometry as="geometry" x="1040" y="870" width="350" height="216"/>
         </mxCell>
-        <mxCell id="ent_subjects_3_attrs" value="- subjectCode: String&#10;- subjectName: String&#10;- credits: Integer&#10;- departmentId: Integer&#10;- prerequisiteIds: List&lt;Integer&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_3" vertex="1">
-          <mxGeometry as="geometry" x="0" y="44" width="350" height="102"/>
+        <mxCell id="ent_subjects_3_attrs" value="- subjectCode: String&#10;- subjectName: String&#10;- credits: Integer&#10;- departmentId: Integer&#10;- prerequisiteIds: List&lt;Integer&gt;&#10;- version: Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_3" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="350" height="120"/>
         </mxCell>
         <mxCell id="ent_subjects_3_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_subjects_3" vertex="1">
-          <mxGeometry as="geometry" x="0" y="146" width="350" height="4"/>
+          <mxGeometry as="geometry" x="0" y="164" width="350" height="4"/>
         </mxCell>
         <mxCell id="ent_subjects_3_methods" value="+ getSubjectCode(): String&#10;+ getCredits(): Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_subjects_3" vertex="1">
-          <mxGeometry as="geometry" x="0" y="150" width="350" height="48"/>
+          <mxGeometry as="geometry" x="0" y="168" width="350" height="48"/>
         </mxCell>
         <mxCell id="edge_subjects_1" value="HTTP POST /api/subjects" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="bnd_subjects_1" target="bnd_subjects_2">
           <mxGeometry as="geometry" relative="1" y="-12"/>
@@ -1192,28 +1192,28 @@
           <mxGeometry as="geometry" x="0" y="78" width="350" height="84"/>
         </mxCell>
         <mxCell id="ent_sections_1" value="&lt;i&gt;«Entity»&lt;/i&gt;&lt;br&gt;&lt;b&gt;CourseSection&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="410" width="350" height="270"/>
+          <mxGeometry as="geometry" x="1040" y="410" width="350" height="306"/>
         </mxCell>
-        <mxCell id="ent_sections_1_attrs" value="- id: Long&#10;- sectionCode: String&#10;- subject: Subject&#10;- semester: Semester&#10;- lecturer: Lecturer&#10;- maxCapacity: Integer&#10;- currentEnrolled: Integer&#10;- status: SectionStatus" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_sections_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="44" width="350" height="156"/>
+        <mxCell id="ent_sections_1_attrs" value="- id: Long&#10;- sectionCode: String&#10;- subject: Subject&#10;- semester: Semester&#10;- lecturer: Lecturer&#10;- maxCapacity: Integer&#10;- currentEnrolled: Integer&#10;- status: SectionStatus&#10;- version: Integer (@Version)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_sections_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="350" height="174"/>
         </mxCell>
         <mxCell id="ent_sections_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_sections_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="200" width="350" height="4"/>
+          <mxGeometry as="geometry" x="0" y="218" width="350" height="4"/>
         </mxCell>
-        <mxCell id="ent_sections_1_methods" value="+ getSectionCode(): String&#10;+ getAvailableSeats(): int&#10;+ isFull(): boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_sections_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="204" width="350" height="66"/>
+        <mxCell id="ent_sections_1_methods" value="+ getSectionCode(): String&#10;+ getAvailableSeats(): int&#10;+ isFull(): boolean&#10;+ getVersion(): Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_sections_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="222" width="350" height="84"/>
         </mxCell>
         <mxCell id="ent_sections_2" value="&lt;i&gt;«DTO»&lt;/i&gt;&lt;br&gt;&lt;b&gt;CourseSectionRequest&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="660" width="350" height="198"/>
+          <mxGeometry as="geometry" x="1040" y="660" width="350" height="216"/>
         </mxCell>
-        <mxCell id="ent_sections_2_attrs" value="- sectionCode: String&#10;- subjectId: Integer&#10;- semesterId: Integer&#10;- lecturerId: Long&#10;- maxCapacity: Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_sections_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="44" width="350" height="102"/>
+        <mxCell id="ent_sections_2_attrs" value="- sectionCode: String&#10;- subjectId: Integer&#10;- semesterId: Integer&#10;- lecturerId: Long&#10;- maxCapacity: Integer&#10;- version: Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_sections_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="350" height="120"/>
         </mxCell>
         <mxCell id="ent_sections_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_sections_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="146" width="350" height="4"/>
+          <mxGeometry as="geometry" x="0" y="164" width="350" height="4"/>
         </mxCell>
         <mxCell id="ent_sections_2_methods" value="+ getSectionCode(): String&#10;+ getMaxCapacity(): Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_sections_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="150" width="350" height="48"/>
+          <mxGeometry as="geometry" x="0" y="168" width="350" height="48"/>
         </mxCell>
         <mxCell id="edge_sections_1" value="HTTP POST /api/course-sections" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="bnd_sections_1" target="bnd_sections_2">
           <mxGeometry as="geometry" relative="1" y="-12"/>
@@ -1320,16 +1320,16 @@
           <mxGeometry as="geometry" x="0" y="78" width="350" height="84"/>
         </mxCell>
         <mxCell id="ent_scheduling_1" value="&lt;i&gt;«Entity»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Schedule&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="410" width="350" height="234"/>
+          <mxGeometry as="geometry" x="1040" y="410" width="350" height="252"/>
         </mxCell>
-        <mxCell id="ent_scheduling_1_attrs" value="- id: Long&#10;- courseSection: CourseSection&#10;- dayOfWeek: Integer (2..8)&#10;- startPeriod: Integer (1..12)&#10;- endPeriod: Integer (1..12)&#10;- room: String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_scheduling_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="44" width="350" height="120"/>
+        <mxCell id="ent_scheduling_1_attrs" value="- id: Long&#10;- courseSection: CourseSection&#10;- dayOfWeek: Integer (2..8)&#10;- startPeriod: Integer (1..12)&#10;- endPeriod: Integer (1..12)&#10;- room: String&#10;- version: Integer (@Version)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_scheduling_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="350" height="138"/>
         </mxCell>
         <mxCell id="ent_scheduling_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_scheduling_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="164" width="350" height="4"/>
+          <mxGeometry as="geometry" x="0" y="182" width="350" height="4"/>
         </mxCell>
         <mxCell id="ent_scheduling_1_methods" value="+ overlapsWith(other: Schedule): boolean&#10;+ getRoom(): String&#10;+ getCourseSection(): CourseSection" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_scheduling_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="168" width="350" height="66"/>
+          <mxGeometry as="geometry" x="0" y="186" width="350" height="66"/>
         </mxCell>
         <mxCell id="ent_scheduling_2" value="&lt;i&gt;«DTO»&lt;/i&gt;&lt;br&gt;&lt;b&gt;ScheduleRequest&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="1040" y="660" width="350" height="198"/>
@@ -2934,40 +2934,40 @@
           <mxGeometry as="geometry" x="0" y="78" width="350" height="66"/>
         </mxCell>
         <mxCell id="ent_staff_1" value="&lt;i&gt;«Entity»&lt;/i&gt;&lt;br&gt;&lt;b&gt;User&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="410" width="350" height="270"/>
+          <mxGeometry as="geometry" x="1040" y="410" width="350" height="288"/>
         </mxCell>
-        <mxCell id="ent_staff_1_attrs" value="- id: Long&#10;- username: String&#10;- email: String&#10;- fullName: String&#10;- phone: String&#10;- role: Role (ADMIN/ACADEMIC/EXAM)&#10;- staffRole: String&#10;- isActive: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="44" width="350" height="156"/>
+        <mxCell id="ent_staff_1_attrs" value="- id: Long&#10;- username: String&#10;- email: String&#10;- fullName: String&#10;- dateOfBirth: LocalDate&#10;- role: Role (ADMIN / ACADEMIC_AFFAIRS / ACADEMIC_STAFF / EXAM)&#10;- department: Department (Khoa phụ trách)&#10;- isActive: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="350" height="174"/>
         </mxCell>
         <mxCell id="ent_staff_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_staff_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="200" width="350" height="4"/>
+          <mxGeometry as="geometry" x="0" y="218" width="350" height="4"/>
         </mxCell>
-        <mxCell id="ent_staff_1_methods" value="+ getRole(): Role&#10;+ isAccountNonLocked(): boolean&#10;+ getStaffRole(): String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_1" vertex="1">
-          <mxGeometry as="geometry" x="0" y="204" width="350" height="66"/>
+        <mxCell id="ent_staff_1_methods" value="+ getRole(): Role&#10;+ getDepartment(): Department&#10;+ isAccountNonLocked(): boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="222" width="350" height="66"/>
         </mxCell>
         <mxCell id="ent_staff_2" value="&lt;i&gt;«DTO»&lt;/i&gt;&lt;br&gt;&lt;b&gt;StaffResponse&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="660" width="350" height="252"/>
+          <mxGeometry as="geometry" x="1040" y="660" width="350" height="270"/>
         </mxCell>
-        <mxCell id="ent_staff_2_attrs" value="- id: Long&#10;- username: String&#10;- fullName: String&#10;- email: String&#10;- phone: String&#10;- role: String&#10;- staffRole: String&#10;- isActive: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="44" width="350" height="156"/>
+        <mxCell id="ent_staff_2_attrs" value="- id: Long&#10;- username: String&#10;- fullName: String&#10;- email: String&#10;- role: String&#10;- roleDisplayName: String&#10;- departmentId: Integer&#10;- departmentName: String&#10;- isActive: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="350" height="174"/>
         </mxCell>
         <mxCell id="ent_staff_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_staff_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="200" width="350" height="4"/>
+          <mxGeometry as="geometry" x="0" y="218" width="350" height="4"/>
         </mxCell>
-        <mxCell id="ent_staff_2_methods" value="+ fromEntity(user: User): StaffResponse&#10;+ getStaffRole(): String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_2" vertex="1">
-          <mxGeometry as="geometry" x="0" y="204" width="350" height="48"/>
+        <mxCell id="ent_staff_2_methods" value="+ fromEntity(user: User): StaffResponse&#10;+ getDepartmentName(): String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="222" width="350" height="48"/>
         </mxCell>
         <mxCell id="ent_staff_3" value="&lt;i&gt;«DTO»&lt;/i&gt;&lt;br&gt;&lt;b&gt;CreateStaffRequest&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
-          <mxGeometry as="geometry" x="1040" y="870" width="350" height="198"/>
+          <mxGeometry as="geometry" x="1040" y="870" width="350" height="216"/>
         </mxCell>
-        <mxCell id="ent_staff_3_attrs" value="- fullName: String&#10;- email: String&#10;- phone: String&#10;- role: Role&#10;- staffRole: String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_3" vertex="1">
+        <mxCell id="ent_staff_3_attrs" value="- fullName: String&#10;- email: String&#10;- roleName: String&#10;- departmentId: Integer&#10;- dateOfBirth: LocalDate" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_3" vertex="1">
           <mxGeometry as="geometry" x="0" y="44" width="350" height="102"/>
         </mxCell>
         <mxCell id="ent_staff_3_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_staff_3" vertex="1">
           <mxGeometry as="geometry" x="0" y="146" width="350" height="4"/>
         </mxCell>
-        <mxCell id="ent_staff_3_methods" value="+ getEmail(): String&#10;+ getRole(): Role" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_3" vertex="1">
-          <mxGeometry as="geometry" x="0" y="150" width="350" height="48"/>
+        <mxCell id="ent_staff_3_methods" value="+ getEmail(): String&#10;+ getRoleName(): String&#10;+ getDepartmentId(): Integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_3" vertex="1">
+          <mxGeometry as="geometry" x="0" y="150" width="350" height="66"/>
         </mxCell>
         <mxCell id="edge_staff_1" value="HTTP POST /api/admin/staffs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="bnd_staff_1" target="bnd_staff_2">
           <mxGeometry as="geometry" relative="1" y="-12"/>

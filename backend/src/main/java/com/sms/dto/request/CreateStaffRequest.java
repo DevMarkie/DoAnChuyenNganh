@@ -26,6 +26,8 @@ public class CreateStaffRequest {
     @NotBlank(message = "Chức danh / vai trò không được để trống")
     private String roleName;
 
+    private Integer departmentId;
+
     @NotNull(message = "Ngày tháng năm sinh là bắt buộc")
     private LocalDate dateOfBirth;
 }

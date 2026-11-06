@@ -17,6 +17,8 @@ public class UpdateStaffRequest {
 
     private String roleName;
 
+    private Integer departmentId;
+
     private LocalDate dateOfBirth;
 
     private Boolean isActive;

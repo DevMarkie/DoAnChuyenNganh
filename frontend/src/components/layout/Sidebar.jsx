@@ -47,7 +47,7 @@ const adminNavGroups = [
   }
 ];
 
-const academicNavGroups = [
+const academicAffairsNavGroups = [
   {
     group: 'Tổng quan',
     items: [
@@ -55,12 +55,12 @@ const academicNavGroups = [
     ]
   },
   {
-    group: 'Quản lý Đào tạo',
+    group: 'Quản lý Đào tạo Cấp Trường',
     items: [
-      { path: '/academic/students', icon: Users, label: 'Hồ sơ Sinh viên (CRUD)' },
-      { path: '/academic/classes', icon: School, label: 'Lớp sinh hoạt' },
       { path: '/academic/departments', icon: Building2, label: 'Khoa / Viện' },
       { path: '/academic/subjects', icon: BookOpen, label: 'Khung CTĐT & Môn học' },
+      { path: '/academic/classes', icon: School, label: 'Lớp sinh hoạt' },
+      { path: '/academic/students', icon: Users, label: 'Hồ sơ Sinh viên (CRUD)' },
     ]
   },
   {
@@ -69,7 +69,6 @@ const academicNavGroups = [
       { path: '/academic/semesters', icon: CalendarDays, label: 'Học kỳ & Đợt ĐK' },
       { path: '/academic/course-sections', icon: Layers, label: 'Mở lớp học phần (CRUD)' },
       { path: '/academic/schedules', icon: Calendar, label: 'Xếp thời khóa biểu' },
-      { path: '/academic/exam-rooms', icon: Calendar, label: 'Khảo thí & Phòng thi' },
     ]
   },
   {
@@ -77,11 +76,41 @@ const academicNavGroups = [
     items: [
       { path: '/academic/grades', icon: ClipboardList, label: 'Sổ điểm (Mở/Khóa)' },
       { path: '/academic/grade-audit-logs', icon: ShieldCheck, label: 'Nhật ký kiểm toán điểm' },
-      { path: '/academic/grade-appeals', icon: ClipboardList, label: 'Duyệt phúc khảo điểm' },
-      { path: '/academic/grade-amendments', icon: ShieldCheck, label: 'Sửa điểm sau khóa' },
+      { path: '/academic/grade-amendments', icon: ShieldCheck, label: 'Duyệt sửa điểm (Cấp 2)' },
       { path: '/academic/academic-warnings', icon: AlertTriangle, label: 'Cảnh báo học vụ' },
       { path: '/academic/graduation', icon: GraduationCap, label: 'Xét tốt nghiệp' },
       { path: '/academic/tuition', icon: DollarSign, label: 'Báo cáo học phí (R)' },
+    ]
+  }
+];
+
+const academicStaffNavGroups = [
+  {
+    group: 'Tổng quan Khoa',
+    items: [
+      { path: '/academic/dashboard', icon: LayoutDashboard, label: 'Tổng quan Đào tạo' },
+    ]
+  },
+  {
+    group: 'Nghiệp vụ Đào tạo Khoa',
+    items: [
+      { path: '/academic/students', icon: Users, label: 'Sinh viên thuộc Khoa' },
+      { path: '/academic/classes', icon: School, label: 'Lớp sinh hoạt Khoa' },
+      { path: '/academic/subjects', icon: BookOpen, label: 'Môn học & CTĐT Khoa' },
+    ]
+  },
+  {
+    group: 'Lớp học phần & Lịch học',
+    items: [
+      { path: '/academic/course-sections', icon: Layers, label: 'Lớp học phần Khoa mở' },
+      { path: '/academic/schedules', icon: Calendar, label: 'Thời khóa biểu Khoa' },
+    ]
+  },
+  {
+    group: 'Điểm & Đề xuất Khoa',
+    items: [
+      { path: '/academic/grades', icon: ClipboardList, label: 'Sổ điểm lớp của Khoa' },
+      { path: '/academic/grade-amendments', icon: ShieldCheck, label: 'Duyệt sửa điểm cấp Khoa' },
     ]
   }
 ];
@@ -97,6 +126,7 @@ const examOfficerNavGroups = [
     group: 'Quản lý Thi & Điểm',
     items: [
       { path: '/exam/rooms', icon: Calendar, label: 'Ca thi & Phòng thi' },
+      { path: '/exam/grade-appeals', icon: ClipboardList, label: 'Xử lý đơn phúc khảo' },
       { path: '/exam/audit-logs', icon: ShieldCheck, label: 'Nhật ký kiểm toán điểm' },
     ]
   }
@@ -172,8 +202,10 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
 
   const groups = (role === 'EXAMINATION_OFFICER')
     ? examOfficerNavGroups
-    : (role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF')
-    ? academicNavGroups
+    : role === 'ACADEMIC_AFFAIRS'
+    ? academicAffairsNavGroups
+    : role === 'ACADEMIC_STAFF'
+    ? academicStaffNavGroups
     : role === 'ADMIN'
     ? adminNavGroups
     : role === 'LECTURER'
@@ -190,7 +222,17 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
             <div className="sidebar-brand-text">
               <span className="brand-name">SMS Portal</span>
               <span className="brand-sub">
-                {(role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF') ? 'Phòng Đào tạo' : role === 'ADMIN' ? 'Quản trị hệ thống' : role === 'LECTURER' ? 'Giảng viên' : 'Sinh viên'}
+                {role === 'ACADEMIC_AFFAIRS'
+                  ? 'Phòng Đào tạo (Trường)'
+                  : role === 'ACADEMIC_STAFF'
+                  ? (user?.departmentName ? `Khoa ${user.departmentName}` : 'Giáo vụ Khoa')
+                  : role === 'EXAMINATION_OFFICER'
+                  ? 'Phòng Khảo thí & ĐBCL'
+                  : role === 'ADMIN'
+                  ? 'Quản trị hệ thống'
+                  : role === 'LECTURER'
+                  ? 'Giảng viên'
+                  : 'Sinh viên'}
               </span>
             </div>
           )}

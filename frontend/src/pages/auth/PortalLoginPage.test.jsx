@@ -160,7 +160,7 @@ describe('PortalLoginPage Component', () => {
     });
 
     renderComponent('academic');
-    const userInput = screen.getByPlaceholderText('VD: NV001, KT001 hoặc daotao');
+    const userInput = screen.getByPlaceholderText(/daotao/i);
     const passInput = screen.getByPlaceholderText('Nhập mật khẩu của bạn');
     const submitBtn = screen.getByRole('button', { name: /Đăng nhập — Cán bộ Đào tạo & Khảo thí/i });
 

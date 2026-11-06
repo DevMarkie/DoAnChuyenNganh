@@ -12,4 +12,6 @@ public class LoginResponse {
     private Long userId;
     /** Nếu true, frontend phải chuyển hướng ngay sang trang đổi mật khẩu */
     private Boolean mustChangePassword;
+    private Integer departmentId;
+    private String departmentName;
 }

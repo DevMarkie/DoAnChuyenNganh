@@ -6234,7 +6234,7 @@ UPDATE subjects SET subject_name = 'Tiếng Anh chuyên ngành Kỹ thuật', de
 -- =====================================================================================
 ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(100) NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE NULL;
-UPDATE users SET full_name = 'Quản trị viên hệ thống', date_of_birth = '1990-01-01' WHERE username = 'admin';
-UPDATE users SET full_name = 'Cán bộ Đào tạo', date_of_birth = '1985-05-15' WHERE username = 'daotao';
-UPDATE users SET full_name = 'Cán bộ Khảo thí', date_of_birth = '1988-10-20' WHERE username = 'khaothi';
+UPDATE users SET full_name = 'Nguyễn Hoàng Long', date_of_birth = '1990-01-01' WHERE username = 'admin';
+UPDATE users SET full_name = 'Nguyễn Văn Đào', date_of_birth = '1985-05-15' WHERE username = 'daotao';
+UPDATE users SET full_name = 'Trần Thị Khảo', date_of_birth = '1988-10-20' WHERE username = 'khaothi';
 

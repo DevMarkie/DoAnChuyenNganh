@@ -65,6 +65,9 @@ public class SubjectService {
     @CacheEvict(value = "subjects", allEntries = true)
     public Subject update(Integer id, SubjectRequest request) {
         Subject subject = findById(id);
+        if (request.getVersion() != null && subject.getVersion() != null && !request.getVersion().equals(subject.getVersion())) {
+            throw new org.springframework.orm.ObjectOptimisticLockingFailureException(Subject.class, id);
+        }
         Department dept = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khoa"));
 

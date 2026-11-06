@@ -1115,7 +1115,7 @@ def build_act_21_graduation_audit():
 def build_act_22_staff_management():
     model, root = create_base_model(1180, 1050)
     setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: QUẢN TRỊ NHÂN SỰ ĐÀO TẠO",
-                          "Quy trình quản lý tài khoản, gán vai trò chuyên trách và phân quyền cán bộ (ACADEMIC_AFFAIRS, LECTURER, ADMIN)",
+                          "Quy trình quản lý tài khoản, gán vai trò chuyên trách & phân quyền cán bộ (ADMIN, ACADEMIC_AFFAIRS, ACADEMIC_STAFF, EXAM)",
                           "Quản trị viên (Admin)", "Hệ thống (AdminSystemController & UserService)", lane_h=930)
 
     # Actor Lane (Center x=240)
@@ -1129,7 +1129,7 @@ def build_act_22_staff_management():
     add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 860, 'width': 25, 'height': 25})
 
     # System Lane (Center x=620, Error x=910)
-    add_cell(root, "act_load_staffs", "Truy vấn danh mục cán bộ chuyên trách\n(ROLE_ACADEMIC_AFFAIRS, LECTURER, ADMIN)", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 165, 'width': 220, 'height': 45})
+    add_cell(root, "act_load_staffs", "Truy vấn danh mục cán bộ chuyên trách\n(ADMIN, ACADEMIC_AFFAIRS, ACADEMIC_STAFF, EXAM)", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 165, 'width': 220, 'height': 45})
     add_cell(root, "act_validate_staff", "Kiểm tra định dạng email và\nđối chiếu trùng lặp trong CSDL", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 390, 'width': 220, 'height': 45})
     add_cell(root, "dec_email", "Email đã tồn tại?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 465, 'width': 130, 'height': 50})
 

@@ -64,10 +64,16 @@ export default function Header({ onToggleMobileMenu }) {
     }
   }, [user?.role, token, initSse, disconnectSse, fetchUnreadCount, navigate]);
 
-  const roleLabel = user?.role === 'ADMIN' ? 'Quản trị viên' : (user?.role === 'ACADEMIC_AFFAIRS' || user?.role === 'ACADEMIC_STAFF') ? 'Cán bộ Đào tạo' : user?.role === 'EXAMINATION_OFFICER' ? 'Cán bộ Khảo thí'
+  const roleLabel = user?.role === 'ADMIN' ? 'Quản trị viên' 
+    : user?.role === 'ACADEMIC_AFFAIRS' ? 'Cán bộ Đào tạo (Trường)' 
+    : user?.role === 'ACADEMIC_STAFF' ? (user?.departmentName ? `Giáo vụ - ${user.departmentName}` : 'Giáo vụ Khoa')
+    : user?.role === 'EXAMINATION_OFFICER' ? 'Cán bộ Khảo thí'
     : user?.role === 'LECTURER' ? 'Giảng viên' : 'Sinh viên';
 
-  const roleBadgeClass = user?.role === 'ADMIN' ? 'badge-danger' : (user?.role === 'ACADEMIC_AFFAIRS' || user?.role === 'ACADEMIC_STAFF') ? 'badge-warning' : user?.role === 'EXAMINATION_OFFICER' ? 'badge-primary'
+  const roleBadgeClass = user?.role === 'ADMIN' ? 'badge-danger' 
+    : user?.role === 'ACADEMIC_AFFAIRS' ? 'badge-warning' 
+    : user?.role === 'ACADEMIC_STAFF' ? 'badge-info' 
+    : user?.role === 'EXAMINATION_OFFICER' ? 'badge-primary'
     : user?.role === 'LECTURER' ? 'badge-info' : 'badge-success';
 
   const handleLogout = () => {

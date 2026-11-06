@@ -199961,4 +199961,7 @@ SET enrolled_count = (
     WHERE e.section_id = cs.id AND e.status != 'CANCELLED'
 );
 
+-- Dong bo trang thai OPEN cho cac lop hoc phan thuoc hoc ky hien tai dang mo cong dang ky
+UPDATE course_sections SET status = 'OPEN' WHERE semester_id = 7 AND status = 'ACTIVE';
+
 SET FOREIGN_KEY_CHECKS = 1;

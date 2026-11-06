@@ -48,6 +48,10 @@ public class Subject {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @jakarta.persistence.Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     @JsonIgnoreProperties({"hibernateLazyInitializer"})

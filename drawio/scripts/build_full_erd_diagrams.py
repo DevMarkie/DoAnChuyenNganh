@@ -142,8 +142,8 @@ def build_erd_01_overview():
     
     add_table(root, 'users', 'users', [
         ('id', 'BIGINT', 'PK'), ('username', 'VARCHAR(50)', 'UQ'), ('email', 'VARCHAR(100)', 'UQ'),
-        ('role_id', 'INT', 'FK'), ('full_name', 'VARCHAR(100)', ''), ('date_of_birth', 'DATE', ''),
-        ('is_active', 'BOOLEAN', ''), ('must_change_password', 'BOOLEAN', '')
+        ('role_id', 'INT', 'FK'), ('department_id', 'BIGINT', 'FK'), ('full_name', 'VARCHAR(100)', ''),
+        ('date_of_birth', 'DATE', ''), ('is_active', 'BOOLEAN', ''), ('must_change_password', 'BOOLEAN', '')
     ], 340, 90, 250)
     
     add_table(root, 'departments', 'departments', [
@@ -179,7 +179,7 @@ def build_erd_01_overview():
     
     add_table(root, 'subjects', 'subjects', [
         ('id', 'BIGINT', 'PK'), ('department_id', 'BIGINT', 'FK'), ('subject_code', 'VARCHAR(20)', 'UQ'),
-        ('subject_name', 'VARCHAR(150)', ''), ('credits', 'INT', '')
+        ('subject_name', 'VARCHAR(150)', ''), ('credits', 'INT', ''), ('version', 'INT', '')
     ], 1270, 340, 240)
     
     # Tier 3 (y = 580)
@@ -197,12 +197,14 @@ def build_erd_01_overview():
     add_table(root, 'course_sections', 'course_sections', [
         ('id', 'BIGINT', 'PK'), ('subject_id', 'BIGINT', 'FK'), ('lecturer_id', 'BIGINT', 'FK'),
         ('semester_id', 'BIGINT', 'FK'), ('section_code', 'VARCHAR(30)', 'UQ'),
-        ('max_capacity', 'INT', ''), ('enrolled_count', 'INT', ''), ('status', 'VARCHAR(20)', '')
+        ('max_capacity', 'INT', ''), ('enrolled_count', 'INT', ''), ('status', 'VARCHAR(20)', ''),
+        ('version', 'INT', '')
     ], 970, 580, 250)
     
     add_table(root, 'schedules', 'schedules', [
         ('id', 'BIGINT', 'PK'), ('section_id', 'BIGINT', 'FK'), ('day_of_week', 'INT', ''),
-        ('start_period', 'INT', ''), ('end_period', 'INT', ''), ('room', 'VARCHAR(50)', '')
+        ('start_period', 'INT', ''), ('end_period', 'INT', ''), ('room', 'VARCHAR(50)', ''),
+        ('version', 'INT', '')
     ], 1280, 580, 230)
     
     # Tier 4 (y = 880)
@@ -230,6 +232,9 @@ def build_erd_01_overview():
     # EDGES
     # 1. roles -> users
     add_edge(root, 'e_roles_users', 'roles', 'users', '1 - N', exit_p=(1, 0.5), entry_p=(0, 0.35))
+    
+    # 1b. departments -> users (1 - N: Cán bộ/Giáo vụ phụ trách Khoa)
+    add_edge(root, 'e_dept_users', 'departments', 'users', '1 - N (khoa)', exit_p=(0, 0.25), entry_p=(1, 0.25))
     
     # 2. users -> lecturers (1:1)
     add_edge(root, 'e_users_lecturers', 'users', 'lecturers', '1 - 1', exit_p=(0.5, 1), entry_p=(0.5, 0), is_1_1=True)
@@ -322,7 +327,8 @@ def build_erd_02_system_users():
     
     add_table(root, 'users', 'users', [
         ('id', 'BIGINT', 'PK'), ('username', 'VARCHAR(50)', 'UQ'), ('password_hash', 'VARCHAR(255)', ''),
-        ('email', 'VARCHAR(100)', 'UQ'), ('role_id', 'INT', 'FK'), ('full_name', 'VARCHAR(100)', ''),
+        ('email', 'VARCHAR(100)', 'UQ'), ('role_id', 'INT', 'FK'), ('department_id', 'BIGINT', 'FK'),
+        ('full_name', 'VARCHAR(100)', ''),
         ('date_of_birth', 'DATE', ''), ('is_active', 'BOOLEAN', ''),
         ('must_change_password', 'BOOLEAN', ''), ('created_at', 'DATETIME', ''), ('updated_at', 'DATETIME', '')
     ], 440, 120, 280)
@@ -396,7 +402,7 @@ def build_erd_03_academic_curriculum():
     add_table(root, 'subjects', 'subjects', [
         ('id', 'BIGINT', 'PK'), ('department_id', 'BIGINT', 'FK'), ('subject_code', 'VARCHAR(20)', 'UQ'),
         ('subject_name', 'VARCHAR(150)', ''), ('credits', 'INT', ''), ('lecture_hours', 'INT', ''),
-        ('lab_hours', 'INT', '')
+        ('lab_hours', 'INT', ''), ('version', 'INT', '')
     ], 60, 420, 250)
     
     add_table(root, 'classes', 'classes', [
@@ -523,13 +529,14 @@ def build_erd_05_sections_schedules():
     add_table(root, 'course_sections', 'course_sections', [
         ('id', 'BIGINT', 'PK'), ('subject_id', 'BIGINT', 'FK'), ('lecturer_id', 'BIGINT', 'FK'),
         ('semester_id', 'BIGINT', 'FK'), ('section_code', 'VARCHAR(30)', 'UQ'),
-        ('max_capacity', 'INT', ''), ('enrolled_count', 'INT', ''), ('status', 'VARCHAR(20)', '')
+        ('max_capacity', 'INT', ''), ('enrolled_count', 'INT', ''), ('status', 'VARCHAR(20)', ''),
+        ('version', 'INT', '')
     ], 780, 120, 280)
     
     add_table(root, 'schedules', 'schedules', [
         ('id', 'BIGINT', 'PK'), ('section_id', 'BIGINT', 'FK'), ('day_of_week', 'INT', ''),
         ('start_period', 'INT', ''), ('end_period', 'INT', ''), ('room', 'VARCHAR(50)', ''),
-        ('building', 'VARCHAR(50)', '')
+        ('building', 'VARCHAR(50)', ''), ('version', 'INT', '')
     ], 780, 480, 280)
     
     # Edges

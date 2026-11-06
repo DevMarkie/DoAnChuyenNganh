@@ -61,6 +61,8 @@ public class AuthService {
                     .role(userPrincipal.getRole())
                     .userId(userPrincipal.getId())
                     .mustChangePassword(userPrincipal.isMustChangePassword())
+                    .departmentId(userPrincipal.getDepartmentId())
+                    .departmentName(userPrincipal.getDepartmentName())
                     .build();
 
         } catch (DisabledException | LockedException ex) {

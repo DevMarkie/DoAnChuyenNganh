@@ -141,6 +141,7 @@ export default function App() {
           }>
             <Route path="/exam/dashboard" element={<ExamRoomsPage />} />
             <Route path="/exam/rooms" element={<ExamRoomsPage />} />
+            <Route path="/exam/grade-appeals" element={<GradeAppealsPage />} />
             <Route path="/exam/audit-logs" element={<GradeAuditLogsPage />} />
           </Route>
 

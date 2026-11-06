@@ -25,4 +25,10 @@ public class SubjectRequest {
     private Integer departmentId;
 
     private List<Integer> prerequisiteIds;
+
+    private Long version;
+
+    public SubjectRequest(String subjectCode, String subjectName, Integer credits, String description, Integer departmentId, List<Integer> prerequisiteIds) {
+        this(subjectCode, subjectName, credits, description, departmentId, prerequisiteIds, null);
+    }
 }

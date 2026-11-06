@@ -32,6 +32,11 @@ public class User {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "department_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "headLecturer"})
+    private Department department;
+
     @Column(name = "full_name", length = 100)
     private String fullName;
 

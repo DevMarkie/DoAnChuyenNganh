@@ -113,7 +113,7 @@ const PORTAL_CONFIG = {
     heading: 'Đăng nhập Cổng Đào tạo & Khảo thí',
     subheading: 'Quản lý hồ sơ sinh viên, khung chương trình, mở lớp, phòng thi và xét tốt nghiệp',
     userLabel: 'Mã cán bộ / Nhân viên',
-    userPlaceholder: 'VD: NV001, KT001 hoặc daotao',
+    userPlaceholder: 'VD: daotao, giaovu_cntt hoặc khaothi',
     rejectMsg: 'Từ chối truy cập: Tài khoản không thuộc phân hệ Cán bộ Đào tạo & Khảo thí! Vui lòng đăng nhập đúng cổng.',
     features: [
       'Quản lý hồ sơ sinh viên, khung chương trình đào tạo & khối kiến thức',

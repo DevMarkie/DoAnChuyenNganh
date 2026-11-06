@@ -632,17 +632,17 @@ def build_bce_7_subjects():
         ent_classes=[
             {
                 'name': "Subject", 'stereo': "Entity",
-                'attrs': ["- id: Integer", "- subjectCode: String", "- subjectName: String", "- credits: Integer", "- theoryHours: Integer", "- practicalHours: Integer", "- department: Department"],
-                'methods': ["+ getSubjectCode(): String", "+ getCredits(): Integer"]
+                'attrs': ["- id: Integer", "- subjectCode: String", "- subjectName: String", "- credits: Integer", "- theoryHours: Integer", "- practicalHours: Integer", "- department: Department", "- version: Integer (@Version)"],
+                'methods': ["+ getSubjectCode(): String", "+ getCredits(): Integer", "+ getVersion(): Integer"]
             },
             {
                 'name': "SubjectResponse", 'stereo': "DTO",
-                'attrs': ["- id: Integer", "- subjectCode: String", "- subjectName: String", "- credits: Integer", "- departmentName: String", "- prerequisiteCodes: List<String>"],
+                'attrs': ["- id: Integer", "- subjectCode: String", "- subjectName: String", "- credits: Integer", "- departmentName: String", "- prerequisiteCodes: List<String>", "- version: Integer"],
                 'methods': ["+ getPrerequisiteCodes(): List<String>"]
             },
             {
                 'name': "SubjectRequest", 'stereo': "DTO",
-                'attrs': ["- subjectCode: String", "- subjectName: String", "- credits: Integer", "- departmentId: Integer", "- prerequisiteIds: List<Integer>"],
+                'attrs': ["- subjectCode: String", "- subjectName: String", "- credits: Integer", "- departmentId: Integer", "- prerequisiteIds: List<Integer>", "- version: Integer"],
                 'methods': ["+ getSubjectCode(): String", "+ getCredits(): Integer"]
             }
         ],
@@ -742,12 +742,12 @@ def build_bce_9_course_sections():
         ent_classes=[
             {
                 'name': "CourseSection", 'stereo': "Entity",
-                'attrs': ["- id: Long", "- sectionCode: String", "- subject: Subject", "- semester: Semester", "- lecturer: Lecturer", "- maxCapacity: Integer", "- currentEnrolled: Integer", "- status: SectionStatus"],
-                'methods': ["+ getSectionCode(): String", "+ getAvailableSeats(): int", "+ isFull(): boolean"]
+                'attrs': ["- id: Long", "- sectionCode: String", "- subject: Subject", "- semester: Semester", "- lecturer: Lecturer", "- maxCapacity: Integer", "- currentEnrolled: Integer", "- status: SectionStatus", "- version: Integer (@Version)"],
+                'methods': ["+ getSectionCode(): String", "+ getAvailableSeats(): int", "+ isFull(): boolean", "+ getVersion(): Integer"]
             },
             {
                 'name': "CourseSectionRequest", 'stereo': "DTO",
-                'attrs': ["- sectionCode: String", "- subjectId: Integer", "- semesterId: Integer", "- lecturerId: Long", "- maxCapacity: Integer"],
+                'attrs': ["- sectionCode: String", "- subjectId: Integer", "- semesterId: Integer", "- lecturerId: Long", "- maxCapacity: Integer", "- version: Integer"],
                 'methods': ["+ getSectionCode(): String", "+ getMaxCapacity(): Integer"]
             }
         ],
@@ -794,7 +794,7 @@ def build_bce_10_scheduling():
         ent_classes=[
             {
                 'name': "Schedule", 'stereo': "Entity",
-                'attrs': ["- id: Long", "- courseSection: CourseSection", "- dayOfWeek: Integer (2..8)", "- startPeriod: Integer (1..12)", "- endPeriod: Integer (1..12)", "- room: String"],
+                'attrs': ["- id: Long", "- courseSection: CourseSection", "- dayOfWeek: Integer (2..8)", "- startPeriod: Integer (1..12)", "- endPeriod: Integer (1..12)", "- room: String", "- version: Integer (@Version)"],
                 'methods': ["+ overlapsWith(other: Schedule): boolean", "+ getRoom(): String", "+ getCourseSection(): CourseSection"]
             },
             {
@@ -1448,18 +1448,18 @@ def build_bce_22_staff_management():
         ent_classes=[
             {
                 'name': "User", 'stereo': "Entity",
-                'attrs': ["- id: Long", "- username: String", "- email: String", "- fullName: String", "- phone: String", "- role: Role (ADMIN/ACADEMIC/EXAM)", "- staffRole: String", "- isActive: boolean"],
-                'methods': ["+ getRole(): Role", "+ isAccountNonLocked(): boolean", "+ getStaffRole(): String"]
+                'attrs': ["- id: Long", "- username: String", "- email: String", "- fullName: String", "- dateOfBirth: LocalDate", "- role: Role (ADMIN / ACADEMIC_AFFAIRS / ACADEMIC_STAFF / EXAM)", "- department: Department (Khoa phụ trách)", "- isActive: boolean"],
+                'methods': ["+ getRole(): Role", "+ getDepartment(): Department", "+ isAccountNonLocked(): boolean"]
             },
             {
                 'name': "StaffResponse", 'stereo': "DTO",
-                'attrs': ["- id: Long", "- username: String", "- fullName: String", "- email: String", "- phone: String", "- role: String", "- staffRole: String", "- isActive: boolean"],
-                'methods': ["+ fromEntity(user: User): StaffResponse", "+ getStaffRole(): String"]
+                'attrs': ["- id: Long", "- username: String", "- fullName: String", "- email: String", "- role: String", "- roleDisplayName: String", "- departmentId: Integer", "- departmentName: String", "- isActive: boolean"],
+                'methods': ["+ fromEntity(user: User): StaffResponse", "+ getDepartmentName(): String"]
             },
             {
                 'name': "CreateStaffRequest", 'stereo': "DTO",
-                'attrs': ["- fullName: String", "- email: String", "- phone: String", "- role: Role", "- staffRole: String"],
-                'methods': ["+ getEmail(): String", "+ getRole(): Role"]
+                'attrs': ["- fullName: String", "- email: String", "- roleName: String", "- departmentId: Integer", "- dateOfBirth: LocalDate"],
+                'methods': ["+ getEmail(): String", "+ getRoleName(): String", "+ getDepartmentId(): Integer"]
             }
         ],
         edges=[

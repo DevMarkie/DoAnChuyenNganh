@@ -55,6 +55,11 @@ public class Schedule {
     @Column(nullable = false, length = 50)
     private String room;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    @Builder.Default
+    private Long version = 0L;
+
     /**
      * Ngày bắt đầu & kết thúc kỳ học phần
      */

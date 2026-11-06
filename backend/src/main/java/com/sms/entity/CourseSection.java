@@ -59,6 +59,10 @@ public class CourseSection {
     @Column(length = 50)
     private String room;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     @Column(name = "grade_submission_status", nullable = false, length = 20)
     private String gradeSubmissionStatus = "DRAFT";
 

@@ -40,7 +40,7 @@ public class GradeAppealController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'EXAMINATION_OFFICER', 'LECTURER')")
     public ResponseEntity<ApiResponse<List<GradeAppealResponse>>> findAll(
             @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(required = false) Long sectionId,
@@ -54,7 +54,7 @@ public class GradeAppealController {
      * Bước 1 (PĐT): Phân công Cán bộ chấm phúc khảo độc lập
      */
     @PutMapping("/{id}/assign")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'EXAMINATION_OFFICER')")
     public ResponseEntity<ApiResponse<GradeAppealResponse>> assignGrader(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long id,
@@ -115,7 +115,7 @@ public class GradeAppealController {
      * Bước 4: Phòng Đào tạo chốt cập nhật điểm chính thức vào hệ thống kèm lý do điều chỉnh
      */
     @PutMapping("/{id}/apply-final")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'EXAMINATION_OFFICER')")
     public ResponseEntity<ApiResponse<GradeAppealResponse>> applyFinalAdjustment(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long id,
@@ -141,7 +141,7 @@ public class GradeAppealController {
      * Tương thích ngược: finalizeAppeal
      */
     @PutMapping("/{id}/finalize")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'EXAMINATION_OFFICER')")
     public ResponseEntity<ApiResponse<GradeAppealResponse>> finalizeAppeal(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long id,
@@ -154,7 +154,7 @@ public class GradeAppealController {
      * Tương thích ngược: review
      */
     @PutMapping("/{id}/review")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'EXAMINATION_OFFICER')")
     public ResponseEntity<ApiResponse<GradeAppealResponse>> review(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long id,

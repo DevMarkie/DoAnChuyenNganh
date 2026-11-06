@@ -2208,4 +2208,218 @@
       </root>
     </mxGraphModel>
   </diagram>
+  <diagram id="act_tab_22" name="22. Quản lý Nhân sự Đào tạo">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1180" pageHeight="1050" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="BIỂU ĐỒ HOẠT ĐỘNG: QUẢN TRỊ NHÂN SỰ ĐÀO TẠO" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="20" width="850" height="25"/>
+        </mxCell>
+        <mxCell id="st" value="Quy trình quản lý tài khoản, gán vai trò chuyên trách và phân quyền cán bộ (ACADEMIC_AFFAIRS, LECTURER, ADMIN)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=2;fontSize=11;fontColor=#333333;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="48" width="950" height="20"/>
+        </mxCell>
+        <mxCell id="lane_act" value="Quản trị viên (Admin)" style="swimlane;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=12;fontColor=#000000;startSize=30;collapsible=0;recursiveResize=0;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="50" y="75" width="380" height="930"/>
+        </mxCell>
+        <mxCell id="lane_sys" value="Hệ thống (AdminSystemController &amp; UserService)" style="swimlane;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=12;fontColor=#000000;startSize=30;collapsible=0;recursiveResize=0;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="430" y="75" width="660" height="930"/>
+        </mxCell>
+        <mxCell id="start" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="227.5" y="115" width="25" height="25"/>
+        </mxCell>
+        <mxCell id="act_open" value="Admin truy cập Phân hệ Quản trị&#10;Nhân sự đào tạo (/admin/staffs)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="165" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_view_list" value="Xem danh sách nhân sự hiện có,&#10;lọc theo phòng ban và vai trò" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="240" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_click_create" value="Bấm 'Thêm cán bộ mới' và nhập&#10;họ tên, email, phone, vai trò" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="315" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_submit" value="Xác nhận gửi thông tin tạo mới&#10;(POST /api/admin/staffs)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="390" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_view_result" value="Xem kết quả phản hồi và thông tin&#10;tài khoản cán bộ kèm mật khẩu tạm" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="690" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_edit_status" value="Admin có thể kích hoạt / vô hiệu hóa&#10;hoặc đặt lại mật khẩu cán bộ" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="765" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="end_ok" style="ellipse;html=1;shape=endState;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="227.5" y="860" width="25" height="25"/>
+        </mxCell>
+        <mxCell id="act_load_staffs" value="Truy vấn danh mục cán bộ chuyên trách&#10;(ROLE_ACADEMIC_AFFAIRS, LECTURER, ADMIN)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="165" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="act_validate_staff" value="Kiểm tra định dạng email và&#10;đối chiếu trùng lặp trong CSDL" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="390" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="dec_email" value="Email đã tồn tại?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=10;fontColor=#000000;spacing=2;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="555" y="465" width="130" height="50"/>
+        </mxCell>
+        <mxCell id="act_err_dup" value="Thông báo lỗi: Email đã được sử dụng&#10;(400 Bad Request)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="810" y="467.5" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="end_err" style="ellipse;html=1;shape=endState;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="897.5" y="550" width="25" height="25"/>
+        </mxCell>
+        <mxCell id="act_create_user" value="Khởi tạo User mới: Băm mật khẩu tạm,&#10;gán role, thiết lập requirePasswordChange" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="550" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="act_save_audit" value="Lưu cán bộ vào CSDL MySQL&#10;và ghi nhận AuditLog hệ thống" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="625" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="act_handle_status" value="Cập nhật trạng thái isActive hoặc&#10;sinh mật khẩu mới theo yêu cầu" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="765" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="start" target="act_open">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_open" target="act_load_staffs">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_load_staffs" target="act_view_list">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_view_list" target="act_click_create">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_click_create" target="act_submit">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_submit" target="act_validate_staff">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_validate_staff" target="dec_email">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f8" value="[Trùng lặp]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="dec_email" target="act_err_dup">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_err_dup" target="end_err">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f10" value="[Hợp lệ]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="dec_email" target="act_create_user">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_create_user" target="act_save_audit">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_save_audit" target="act_view_result">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_view_result" target="act_edit_status">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_edit_status" target="act_handle_status">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_handle_status" target="end_ok">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="act_tab_23" name="23. Đặt lại Mật khẩu Hàng loạt">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1180" pageHeight="1050" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t" value="BIỂU ĐỒ HOẠT ĐỘNG: ĐẶT LẠI MẬT KHẨU HÀNG LOẠT" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=14;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="20" width="850" height="25"/>
+        </mxCell>
+        <mxCell id="st" value="Quy trình reset mật khẩu tự động toàn trường theo ngày sinh (ddmmyyyya@) và bật cờ bắt buộc đổi mật khẩu" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=2;fontSize=11;fontColor=#333333;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="48" width="950" height="20"/>
+        </mxCell>
+        <mxCell id="lane_act" value="Quản trị viên (Admin)" style="swimlane;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=12;fontColor=#000000;startSize=30;collapsible=0;recursiveResize=0;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="50" y="75" width="380" height="930"/>
+        </mxCell>
+        <mxCell id="lane_sys" value="Hệ thống (PasswordResetService &amp; BCrypt)" style="swimlane;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=12;fontColor=#000000;startSize=30;collapsible=0;recursiveResize=0;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="430" y="75" width="660" height="930"/>
+        </mxCell>
+        <mxCell id="start" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="227.5" y="115" width="25" height="25"/>
+        </mxCell>
+        <mxCell id="act_open" value="Admin truy cập Phân hệ Quản trị&#10;Cấp lại mật khẩu (/admin/password-resets)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="165" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_choose_scope" value="Chọn phạm vi đặt lại mật khẩu:&#10;Toàn trường / Theo Khóa / Theo Khoa" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="240" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_click_reset" value="Bấm 'Thực thi Reset Hàng loạt'&#10;(POST /api/admin/bulk-reset-passwords)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="315" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_confirm_modal" value="Xác nhận cảnh báo rủi ro bảo mật&#10;trên hộp thoại kiểm tra 2 lớp" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="390" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="act_view_report" value="Xem báo cáo tổng hợp: Số lượng tài khoản&#10;thành công, thất bại và định dạng mật khẩu" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="140" y="765" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="end_ok" style="ellipse;html=1;shape=endState;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="227.5" y="860" width="25" height="25"/>
+        </mxCell>
+        <mxCell id="act_check_auth" value="Kiểm tra quyền ROLE_ADMIN&#10;và kiểm soát tần suất RateLimit" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="390" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="dec_auth" value="Admin hợp lệ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=10;fontColor=#000000;spacing=2;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="555" y="465" width="130" height="50"/>
+        </mxCell>
+        <mxCell id="act_deny" value="Từ chối truy cập (403 Forbidden)&#10;và ghi cảnh báo an ninh" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="810" y="467.5" width="200" height="45"/>
+        </mxCell>
+        <mxCell id="end_deny" style="ellipse;html=1;shape=endState;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="897.5" y="550" width="25" height="25"/>
+        </mxCell>
+        <mxCell id="act_query_users" value="Truy vấn danh sách User theo phạm vi&#10;(chỉ reset tài khoản đang ACTIVE)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="550" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="act_batch_hash" value="Duyệt danh sách: Định dạng ngày sinh&#10;'ddmmyyyya@', băm BCrypt &amp; bật cờ bắt buộc đổi MK" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="625" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="act_batch_update" value="Thực thi BATCH UPDATE vào MySQL,&#10;sinh Thông báo hệ thống &amp; ghi AuditLog" style="rounded=1;whiteSpace=wrap;html=1;arcSize=20;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;spacing=4;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="510" y="700" width="220" height="45"/>
+        </mxCell>
+        <mxCell id="f1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="start" target="act_open">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_open" target="act_choose_scope">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_choose_scope" target="act_click_reset">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_click_reset" target="act_confirm_modal">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_confirm_modal" target="act_check_auth">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_check_auth" target="dec_auth">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f7" value="[Không hợp lệ]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="dec_auth" target="act_deny">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_deny" target="end_deny">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f9" value="[Hợp lệ]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="dec_auth" target="act_query_users">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_query_users" target="act_batch_hash">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_batch_hash" target="act_batch_update">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_batch_update" target="act_view_report">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="f13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;" parent="1" edge="1" source="act_view_report" target="end_ok">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
 </mxfile>

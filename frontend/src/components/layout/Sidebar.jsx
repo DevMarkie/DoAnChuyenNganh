@@ -24,7 +24,6 @@ const adminNavGroups = [
       { path: '/admin/lecturers', icon: UserCog, label: 'Giảng viên' },
       { path: '/admin/staffs', icon: ShieldCheck, label: 'Cán bộ & Nhân viên' },
       { path: '/admin/password-resets', icon: KeyRound, label: 'Cấp lại mật khẩu', showBadge: true },
-      { path: '/admin/student-conduct', icon: Award, label: 'Điểm rèn luyện SV' },
     ]
   },
   {

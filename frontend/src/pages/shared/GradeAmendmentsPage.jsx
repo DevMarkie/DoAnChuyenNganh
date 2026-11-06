@@ -592,11 +592,11 @@ export default function GradeAmendmentsPage() {
             <div
               style={{
                 padding: '20px 24px',
-                borderBottom: '1px solid #e2e8f0',
+                borderBottom: '1px solid var(--border-color)',
                 background:
                   actionType.includes('APPROVE')
-                    ? 'linear-gradient(to right, #ecfdf5, #f0fdf4)'
-                    : 'linear-gradient(to right, #fef2f2, #fff1f2)',
+                    ? 'var(--success-bg)'
+                    : 'var(--danger-bg)',
               }}
             >
               <h3

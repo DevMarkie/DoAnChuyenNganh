@@ -1,7 +1,33 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+const getPortalScope = () => {
+  let targetPath = '';
+  if (typeof window !== 'undefined') {
+    if (window.location?.hash && window.location.hash.startsWith('#/')) {
+      targetPath = window.location.hash.slice(1);
+    } else {
+      targetPath = window.location?.pathname || '';
+    }
+  }
+  if (!targetPath) return '';
+  if (targetPath.startsWith('/student')) return 'student';
+  if (targetPath.startsWith('/lecturer')) return 'lecturer';
+  if (targetPath.startsWith('/academic') || targetPath.startsWith('/exam')) return 'academic';
+  if (targetPath.startsWith('/admin')) return 'admin';
+  return '';
+};
+
+const getEffectiveToken = () => {
+  const scope = getPortalScope();
+  if (scope) {
+    const scoped = localStorage.getItem(`token_${scope}`);
+    if (scoped) return scoped;
+  }
+  return localStorage.getItem('token');
+};
+
 const fetchApi = async (method, url, config = {}) => {
-  const token = localStorage.getItem("token");
+  const token = getEffectiveToken();
   const headers = { "Content-Type": "application/json", ...config.headers };
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -36,10 +62,15 @@ const fetchApi = async (method, url, config = {}) => {
       clearTimeout(id);
       
       if (!response.ok) {
-        if (response.status === 401 && localStorage.getItem("token")) {
+        if (response.status === 401 && (token || localStorage.getItem("token"))) {
+          const scope = getPortalScope();
+          if (scope) {
+            localStorage.removeItem(`token_${scope}`);
+            localStorage.removeItem(`user_${scope}`);
+          }
           localStorage.removeItem("token");
           localStorage.removeItem("user");
-          window.dispatchEvent(new CustomEvent("auth:session-expired"));
+          window.dispatchEvent(new CustomEvent("auth:session-expired", { detail: { scope } }));
         }
         // Đọc body lỗi (JSON) để UI lấy đc err.response.data.message; raw Response không có .data.
         let errData = null;

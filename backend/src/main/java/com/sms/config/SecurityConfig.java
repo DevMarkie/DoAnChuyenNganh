@@ -56,6 +56,10 @@ public class SecurityConfig {
                 // Grade Audit Logs (Admin, Cán bộ Đào tạo, Khảo thí tra cứu kiểm toán điểm)
                 .requestMatchers("/api/admin/grade-audit-logs/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF", "EXAMINATION_OFFICER")
 
+                // Tuition Management (Admin, Cán bộ Đào tạo, Sinh viên)
+                .requestMatchers("/api/admin/tuition/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
+                .requestMatchers("/api/tuition/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF", "STUDENT")
+
                 // Admin only (Kỹ thuật hệ thống, cấu hình, audit log, sao lưu CSDL)
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 

@@ -153,6 +153,25 @@ public class ScheduleServiceTest {
     }
 
     @Test
+    void getLecturerSchedule_FiltersOutCancelledSections() {
+        when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
+        CourseSection cancelledSec = new CourseSection();
+        cancelledSec.setId(2L);
+        cancelledSec.setStatus(CourseSection.SectionStatus.CANCELLED);
+
+        Schedule cancelledSchedule = new Schedule();
+        cancelledSchedule.setId(2L);
+        cancelledSchedule.setSection(cancelledSec);
+
+        when(scheduleRepository.findByLecturerIdAndSemesterId(1L, 1L))
+                .thenReturn(List.of(schedule, cancelledSchedule));
+
+        List<Schedule> result = scheduleService.getLecturerSchedule(1L, 1L);
+        assertEquals(1, result.size());
+        assertEquals(1L, result.get(0).getId());
+    }
+
+    @Test
     void create_Success() {
         when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
         when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));

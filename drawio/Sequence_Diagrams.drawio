@@ -3226,4 +3226,280 @@
       </root>
     </mxGraphModel>
   </diagram>
+  <diagram id="seq_tab_22" name="22. Quản lý Nhân sự Đào tạo">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1380" pageHeight="940" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="frame_staff" value="sd UC-22: Quản lý Nhân sự Đào tạo (Admin Staff Management)" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;width=420;height=30;fontStyle=1;fontSize=12;fontColor=#000000;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="20" y="20" width="1340" height="890"/>
+        </mxCell>
+        <mxCell id="ll_act" value=":Quản trị viên (Admin)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=12;fontColor=#000000;size=65;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="65" width="80" height="800"/>
+        </mxCell>
+        <mxCell id="ll_ui" value=":StaffsPageView&#10;«boundary»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="220" y="65" width="180" height="800"/>
+        </mxCell>
+        <mxCell id="ll_ctrl" value=":AdminSystemController&#10;«control»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="460" y="65" width="180" height="800"/>
+        </mxCell>
+        <mxCell id="ll_srv" value=":UserService&#10;«control»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="700" y="65" width="180" height="800"/>
+        </mxCell>
+        <mxCell id="ll_repo" value=":UserRepository&#10;«control»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="940" y="65" width="180" height="800"/>
+        </mxCell>
+        <mxCell id="ll_db" value=":Database (MySQL)&#10;«entity»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1170" y="65" width="160" height="800"/>
+        </mxCell>
+        <mxCell id="act_ui" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="305" y="135" width="10" height="650"/>
+        </mxCell>
+        <mxCell id="act_ctrl" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="545" y="185" width="10" height="560"/>
+        </mxCell>
+        <mxCell id="act_srv" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="785" y="230" width="10" height="490"/>
+        </mxCell>
+        <mxCell id="act_repo" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1025" y="275" width="10" height="400"/>
+        </mxCell>
+        <mxCell id="act_db" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1245" y="315" width="10" height="320"/>
+        </mxCell>
+        <mxCell id="m1" value="1: Admin truy cập trang Quản trị Nhân sự /admin/staffs" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="80" y="135" as="sourcePoint"/>
+            <mxPoint x="305" y="135" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m2" value="2: GET /api/admin/staffs?keyword=&amp;role=&amp;page=0" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="315" y="175" as="sourcePoint"/>
+            <mxPoint x="545" y="175" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m3" value="3: getAllStaffs(keyword, role, pageable) -&gt; lọc cán bộ chuyên trách" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="555" y="215" as="sourcePoint"/>
+            <mxPoint x="785" y="215" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4" value="4: findByRoleIn([ACADEMIC_AFFAIRS, LECTURER, ADMIN], pageable)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="255" as="sourcePoint"/>
+            <mxPoint x="1025" y="255" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m5" value="5: SELECT u FROM User u WHERE u.role IN (...) ORDER BY u.id DESC" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1035" y="295" as="sourcePoint"/>
+            <mxPoint x="1245" y="295" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m6" value="6: Trả về trang Page&lt;User&gt; các tài khoản nhân sự" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="335" as="sourcePoint"/>
+            <mxPoint x="785" y="335" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m7" value="7: 200 OK + ApiResponse.success(Page&lt;StaffResponse&gt;)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="785" y="375" as="sourcePoint"/>
+            <mxPoint x="315" y="375" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m8" value="8: Admin điền form tạo cán bộ mới &amp; bấm 'Lưu cán bộ'" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="80" y="415" as="sourcePoint"/>
+            <mxPoint x="305" y="415" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m9" value="9: POST /api/admin/staffs (CreateStaffRequest: name, email, role, phone)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="315" y="455" as="sourcePoint"/>
+            <mxPoint x="545" y="455" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m10" value="10: createStaff(request) -&gt; validateEmailNotDuplicate(request.email)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="555" y="495" as="sourcePoint"/>
+            <mxPoint x="785" y="495" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m11" value="11: Khởi tạo User mới, băm mật khẩu tạm bằng BCrypt, gán staffRole" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="535" as="sourcePoint"/>
+            <mxPoint x="799" y="565" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="840" y="535"/>
+              <mxPoint x="840" y="565"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m12" value="12: userRepository.save(newUser) -&gt; INSERT INTO users (...)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="575" as="sourcePoint"/>
+            <mxPoint x="1245" y="575" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m13" value="13: Trả về bản ghi User đã bền vững hóa trong CSDL" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="615" as="sourcePoint"/>
+            <mxPoint x="785" y="615" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m14" value="14: Ghi nhận AuditLog('CREATE_STAFF', targetUserId, adminId)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="655" as="sourcePoint"/>
+            <mxPoint x="799" y="685" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="840" y="655"/>
+              <mxPoint x="840" y="685"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m15" value="15: 201 Created + ApiResponse.success(StaffResponse)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="785" y="695" as="sourcePoint"/>
+            <mxPoint x="80" y="695" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq_tab_23" name="23. Đặt lại Mật khẩu Hàng loạt">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1380" pageHeight="940" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="frame_bulkpwd" value="sd UC-23: Đặt lại Mật khẩu Hàng loạt (Bulk Password Reset)" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=1.5;width=420;height=30;fontStyle=1;fontSize=12;fontColor=#000000;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="20" y="20" width="1340" height="890"/>
+        </mxCell>
+        <mxCell id="ll_act" value=":Quản trị viên (Admin)" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=12;fontColor=#000000;size=65;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="65" width="80" height="800"/>
+        </mxCell>
+        <mxCell id="ll_ui" value=":PasswordResetsView&#10;«boundary»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="220" y="65" width="180" height="800"/>
+        </mxCell>
+        <mxCell id="ll_ctrl" value=":AdminSystemController&#10;«control»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="460" y="65" width="180" height="800"/>
+        </mxCell>
+        <mxCell id="ll_srv" value=":PasswordResetService&#10;«control»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="700" y="65" width="180" height="800"/>
+        </mxCell>
+        <mxCell id="ll_repo" value=":UserRepository&#10;«control»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="940" y="65" width="180" height="800"/>
+        </mxCell>
+        <mxCell id="ll_db" value=":Database (MySQL)&#10;«entity»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontStyle=1;fontSize=11;fontColor=#000000;size=45;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1170" y="65" width="160" height="800"/>
+        </mxCell>
+        <mxCell id="act_ui" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="305" y="135" width="10" height="650"/>
+        </mxCell>
+        <mxCell id="act_ctrl" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="545" y="185" width="10" height="560"/>
+        </mxCell>
+        <mxCell id="act_srv" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="785" y="230" width="10" height="490"/>
+        </mxCell>
+        <mxCell id="act_repo" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1025" y="275" width="10" height="400"/>
+        </mxCell>
+        <mxCell id="act_db" style="html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.2;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1245" y="315" width="10" height="320"/>
+        </mxCell>
+        <mxCell id="m1" value="1: Admin chọn 'Đặt lại mật khẩu hàng loạt' (chọn phạm vi toàn trường / khóa)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="80" y="135" as="sourcePoint"/>
+            <mxPoint x="305" y="135" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m2" value="2: POST /api/admin/bulk-reset-passwords (BulkResetPasswordRequest)" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="315" y="175" as="sourcePoint"/>
+            <mxPoint x="545" y="175" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m3" value="3: bulkResetPasswords(request) -&gt; Kiểm tra quyền Quản trị viên ROLE_ADMIN" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="555" y="215" as="sourcePoint"/>
+            <mxPoint x="785" y="215" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4" value="4: findTargetUsersForReset(scope, cohortId, deptId) -&gt; nạp danh sách User" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="255" as="sourcePoint"/>
+            <mxPoint x="1025" y="255" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m5" value="5: SELECT u.id, u.username, s.date_of_birth FROM users u LEFT JOIN students s ..." style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1035" y="295" as="sourcePoint"/>
+            <mxPoint x="1245" y="295" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m6" value="6: Danh sách tài khoản người dùng hợp lệ" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="335" as="sourcePoint"/>
+            <mxPoint x="785" y="335" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m7" value="7: Lặp danh sách: Format mật khẩu 'ddmmyyyya@' theo DOB &amp; băm BCrypt" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="375" as="sourcePoint"/>
+            <mxPoint x="799" y="405" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="840" y="375"/>
+              <mxPoint x="840" y="405"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m8" value="8: Thiết lập cờ requirePasswordChange = true bắt buộc đổi MK ở lần đăng nhập tới" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="415" as="sourcePoint"/>
+            <mxPoint x="799" y="445" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="840" y="415"/>
+              <mxPoint x="840" y="445"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m9" value="9: executeBatchUpdate(users) -&gt; BATCH UPDATE users SET password = ?, require_pwd = 1" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="455" as="sourcePoint"/>
+            <mxPoint x="1245" y="455" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m10" value="10: Cập nhật thành công N bản ghi tài khoản vào CSDL" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1245" y="495" as="sourcePoint"/>
+            <mxPoint x="785" y="495" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m11" value="11: Gửi thông báo hệ thống Notification &amp; ghi AuditLog('BULK_RESET_PWD')" style="html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="795" y="535" as="sourcePoint"/>
+            <mxPoint x="799" y="565" as="targetPoint"/>
+            <Array as="points">
+              <mxPoint x="840" y="535"/>
+              <mxPoint x="840" y="565"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m12" value="12: 200 OK + ApiResponse.success(BulkResetPasswordResponse)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="785" y="575" as="sourcePoint"/>
+            <mxPoint x="315" y="575" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m13" value="13: Hiển thị hộp thoại tổng kết: Tổng số tài khoản, thành công, thất bại" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="305" y="615" as="sourcePoint"/>
+            <mxPoint x="80" y="615" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
 </mxfile>

@@ -355,11 +355,15 @@ export default function GraduationPage() {
                     <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s' }}>
                       <td style={{ padding: '12px 16px', color: '#64748b' }}>{index + 1}</td>
                       <td style={{ padding: '12px 16px' }}>
-                        <div style={{ fontWeight: '600', color: '#1e293b' }}>{r.student?.fullName}</div>
-                        <div style={{ fontSize: '12px', color: '#64748b' }}>{r.student?.studentCode}</div>
+                        <div style={{ fontWeight: '600', color: '#1e293b' }}>
+                          {r.student?.fullName || r.studentName || 'Sinh viên #' + (r.student?.id || r.id)}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>
+                          {r.student?.studentCode || r.studentCode || ''}
+                        </div>
                       </td>
                       <td style={{ padding: '12px 16px', color: '#475569' }}>
-                        {r.student?.classEntity?.name || '---'}
+                        {r.student?.classEntity?.name || r.className || 'Lớp K16'}
                       </td>
                       <td style={{ padding: '12px 16px', textAlign: 'center', fontWeight: '600' }}>
                         <span style={{ color: isQualified ? '#059669' : '#dc2626' }}>

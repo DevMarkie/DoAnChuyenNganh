@@ -249,7 +249,7 @@ async function runExperience() {
   });
   if (dashRes.ok) {
     const stats = dashRes.data.data;
-    console.log(`✅ Dashboard tải tức thì: Tổng SV=${stats?.totalStudents}, Tổng Lớp HP=${stats?.totalSections}, Tổng Môn=${stats?.totalSubjects}`);
+    console.log(`✅ Dashboard tải tức thì: Tổng SV=${stats?.totalStudents}, Tổng Lớp HP=${stats?.totalCourseSections ?? stats?.totalSections}, Tổng Môn=${stats?.totalSubjects}`);
     report.positives.push('Dashboard Admin hiển thị số liệu thống kê trực quan, tốc độ phản hồi API cực nhanh (< 50ms).');
   }
 

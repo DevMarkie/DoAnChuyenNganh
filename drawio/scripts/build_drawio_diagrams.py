@@ -59,6 +59,7 @@ def add_cell(root, id_val, value="", style="", vertex=False, edge=False, source=
     return cell
 
 # --- ROBUST ACADEMIC UML STYLES ---
+STYLE_PKG = "rounded=1;whiteSpace=wrap;html=1;fillColor=#fafbfc;strokeColor=#888888;strokeWidth=1.2;dashed=1;verticalAlign=top;align=left;spacingLeft=18;spacingTop=12;fontStyle=1;fontSize=12;fontColor=#222222;"
 STYLE_BOUNDARY = "rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;dashed=1;verticalAlign=top;align=left;spacingLeft=25;spacingTop=15;fontStyle=1;fontSize=15;fontColor=#000000;"
 STYLE_ACTOR = "shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=13;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;"
 STYLE_UC_MAIN = "ellipse;whiteSpace=wrap;html=1;fontSize=12;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;"
@@ -69,80 +70,92 @@ STYLE_INC = "html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderCo
 STYLE_EXT = "html=1;verticalAlign=bottom;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;endArrow=open;endFill=0;dashed=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;"
 
 # ==============================================================================
-# 1. TỔNG QUAN TOÀN HỆ THỐNG (4 TÁC NHÂN CHÍNH + NGƯỜI DÙNG KẾ THỪA)
+# 1. TỔNG QUAN TOÀN HỆ THỐNG (4 TÁC NHÂN CHÍNH + 4 KHUNG PHÂN HỆ NGHIỆP VỤ)
 # ==============================================================================
 def build_diagram_1_overall():
     model = ET.Element('mxGraphModel', {
         'dx': '1422', 'dy': '900', 'grid': '1', 'gridSize': '10', 'guides': '1',
         'tooltips': '1', 'connect': '1', 'arrows': '1', 'fold': '1', 'page': '1',
-        'pageScale': '1', 'pageWidth': '1600', 'pageHeight': '1120', 'background': '#ffffff'
+        'pageScale': '1', 'pageWidth': '1580', 'pageHeight': '1240', 'background': '#ffffff'
     })
     root = ET.SubElement(model, 'root')
     add_cell(root, "0")
     add_cell(root, "1")
 
-    # Boundary
-    add_cell(root, "b1", "HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS)", STYLE_BOUNDARY, vertex=True, geometry={'x': 180, 'y': 30, 'width': 1240, 'height': 1050})
+    # Master System Boundary
+    add_cell(root, "b1", "HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS)", STYLE_BOUNDARY, vertex=True, geometry={'x': 170, 'y': 30, 'width': 1240, 'height': 1170})
 
-    # 4 Actors đối xứng: 2 Bên trái (Admin, Đào tạo), 2 Bên phải (Giảng viên, Sinh viên)
-    add_cell(root, "act_admin", "Quản trị viên\nhệ thống (Admin)", STYLE_ACTOR, vertex=True, geometry={'x': 45, 'y': 230, 'width': 45, 'height': 80})
-    add_cell(root, "act_dt", "Cán bộ\nPhòng Đào tạo", STYLE_ACTOR, vertex=True, geometry={'x': 45, 'y': 730, 'width': 45, 'height': 80})
-    add_cell(root, "act_lec", "Giảng viên\n(Lecturer)", STYLE_ACTOR, vertex=True, geometry={'x': 1505, 'y': 230, 'width': 45, 'height': 80})
-    add_cell(root, "act_stu", "Sinh viên\n(Student)", STYLE_ACTOR, vertex=True, geometry={'x': 1505, 'y': 730, 'width': 45, 'height': 80})
-
-    # 1. Quản trị viên hệ thống UCs (Admin) - Cột Trái Trên (x=240, w=300, h=45)
+    # ================= LEFT SIDE (ADMIN & ĐÀO TẠO) =================
+    # 1. Package Admin (Top-Left)
+    add_cell(root, "pkg_admin", "PHÂN HỆ QUẢN TRỊ VIÊN HỆ THỐNG (ADMIN)", STYLE_PKG, vertex=True, geometry={'x': 230, 'y': 80, 'width': 370, 'height': 450})
+    
     ucs_admin = [
-        ("uc_a_usr", "Quản lý Tài khoản & Phân quyền RBAC", 240, 90, 300, 45),
-        ("uc_a_pwdreset", "Phê duyệt Cấp lại Mật khẩu An toàn", 240, 155, 300, 45),
-        ("uc_a_audit", "Giám sát Nhật ký Kiểm toán Điểm số", 240, 220, 300, 45),
-        ("uc_a_kpi", "Báo cáo Thống kê Toàn trường & KPI", 240, 285, 300, 45),
-        ("uc_a_unlock", "Mở khóa Sổ điểm Khẩn cấp", 240, 350, 300, 45),
-        ("uc_a_backup", "Sao lưu & Khôi phục Cơ sở dữ liệu", 240, 415, 300, 45),
+        ("uc_a_usr", "Quản lý Tài khoản & Phân quyền RBAC", 255, 125, 320, 46),
+        ("uc_a_pwdreset", "Phê duyệt Cấp lại Mật khẩu An toàn", 255, 185, 320, 46),
+        ("uc_a_audit", "Giám sát Nhật ký Kiểm toán Điểm số", 255, 245, 320, 46),
+        ("uc_a_kpi", "Báo cáo Thống kê Toàn trường & KPI", 255, 305, 320, 46),
+        ("uc_a_unlock", "Mở khóa Sổ điểm Khẩn cấp", 255, 365, 320, 46),
+        ("uc_a_backup", "Sao lưu & Khôi phục Cơ sở dữ liệu", 255, 425, 320, 46),
     ]
+    add_cell(root, "act_admin", "Quản trị viên\nhệ thống (Admin)", STYLE_ACTOR, vertex=True, geometry={'x': 50, 'y': 265, 'width': 45, 'height': 80})
+
     for uid, uval, ux, uy, uw, uh in ucs_admin:
         add_cell(root, uid, uval, STYLE_UC_MAIN, vertex=True, geometry={'x': ux, 'y': uy, 'width': uw, 'height': uh})
         add_cell(root, f"e_a_{uid}", "", STYLE_ASSOC, edge=True, source="act_admin", target=uid)
 
-    # 2. Cán bộ Phòng Đào tạo UCs (Academic Affairs) - Cột Trái Dưới (x=240, w=300, h=45)
+    # 2. Package Phòng Đào tạo (Bottom-Left)
+    add_cell(root, "pkg_dt", "PHÂN HỆ CÁN BỘ PHÒNG ĐÀO TẠO", STYLE_PKG, vertex=True, geometry={'x': 230, 'y': 570, 'width': 370, 'height': 580})
+
     ucs_dt = [
-        ("uc_dt_dept", "Thiết lập Khoa, Ngành & Lớp sinh hoạt", 240, 520, 300, 45),
-        ("uc_dt_subj", "Quản lý Môn học & Môn tiên quyết (DAG)", 240, 585, 300, 45),
-        ("uc_dt_sem", "Cấu hình Học kỳ & Đợt ĐKHP (Waves)", 240, 650, 300, 45),
-        ("uc_dt_sec", "Mở mới & Điều phối Lớp học phần", 240, 715, 300, 45),
-        ("uc_dt_sch", "Xếp Thời khóa biểu & Chống xung đột", 240, 780, 300, 45),
-        ("uc_dt_tuition", "Quản lý Cổng Thu ngân & Học phí SV", 240, 845, 300, 45),
-        ("uc_dt_exam", "Tổ chức Thi & Phân bổ Phòng tự động", 240, 910, 300, 45),
-        ("uc_dt_grad", "Thẩm định Tốt nghiệp theo Thông tư 08", 240, 975, 300, 45),
+        ("uc_dt_dept", "Thiết lập Khoa, Ngành & Lớp sinh hoạt", 255, 615, 320, 46),
+        ("uc_dt_subj", "Quản lý Môn học & Môn tiên quyết (DAG)", 255, 675, 320, 46),
+        ("uc_dt_sem", "Cấu hình Học kỳ & Đợt ĐKHP (Waves)", 255, 735, 320, 46),
+        ("uc_dt_sec", "Mở mới & Điều phối Lớp học phần", 255, 795, 320, 46),
+        ("uc_dt_sch", "Xếp Thời khóa biểu & Chống xung đột", 255, 855, 320, 46),
+        ("uc_dt_tuition", "Quản lý Cổng Thu ngân & Học phí SV", 255, 915, 320, 46),
+        ("uc_dt_exam", "Tổ chức Thi & Phân bổ Phòng tự động", 255, 975, 320, 46),
+        ("uc_dt_grad", "Thẩm định Tốt nghiệp theo Thông tư 08", 255, 1035, 320, 46),
     ]
+    add_cell(root, "act_dt", "Cán bộ\nPhòng Đào tạo", STYLE_ACTOR, vertex=True, geometry={'x': 50, 'y': 825, 'width': 45, 'height': 80})
+
     for uid, uval, ux, uy, uw, uh in ucs_dt:
         add_cell(root, uid, uval, STYLE_UC_MAIN, vertex=True, geometry={'x': ux, 'y': uy, 'width': uw, 'height': uh})
         add_cell(root, f"e_dt_{uid}", "", STYLE_ASSOC, edge=True, source="act_dt", target=uid)
 
-    # 3. Giảng viên UCs (Lecturer) - Cột Phải Trên (x=1060, w=300, h=45)
+    # ================= RIGHT SIDE (GIẢNG VIÊN & SINH VIÊN) =================
+    # 3. Package Giảng viên (Top-Right)
+    add_cell(root, "pkg_lec", "PHÂN HỆ GIẢNG VIÊN (LECTURER)", STYLE_PKG, vertex=True, geometry={'x': 980, 'y': 80, 'width': 370, 'height': 505})
+
     ucs_lec = [
-        ("uc_l_sch", "Tra cứu Lịch giảng dạy cá nhân tuần", 1060, 90, 300, 45),
-        ("uc_l_sec", "Xem Danh sách SV & Hồ sơ lớp phụ trách", 1060, 155, 300, 45),
-        ("uc_l_att", "Khởi tạo Điểm danh Mã PIN Trực tiếp", 1060, 220, 300, 45),
-        ("uc_l_grd", "Nhập Điểm thành phần & Import Excel", 1060, 285, 300, 45),
-        ("uc_l_fin", "Chốt & Công bố Bảng điểm (Hạn 7 ngày)", 1060, 350, 300, 45),
-        ("uc_l_amend", "Lập Phiếu Đề xuất Đính chính điểm 3 cấp", 1060, 415, 300, 45),
-        ("uc_l_appeal", "Tiếp nhận & Thẩm định Đơn Phúc khảo", 1060, 480, 300, 45),
+        ("uc_l_sch", "Tra cứu Lịch giảng dạy cá nhân tuần", 1005, 125, 320, 46),
+        ("uc_l_sec", "Xem Danh sách SV & Hồ sơ lớp phụ trách", 1005, 185, 320, 46),
+        ("uc_l_att", "Khởi tạo Điểm danh Mã PIN Trực tiếp", 1005, 245, 320, 46),
+        ("uc_l_grd", "Nhập Điểm thành phần & Import Excel", 1005, 305, 320, 46),
+        ("uc_l_fin", "Chốt & Công bố Bảng điểm (Hạn 7 ngày)", 1005, 365, 320, 46),
+        ("uc_l_amend", "Lập Phiếu Đề xuất Đính chính điểm 3 cấp", 1005, 425, 320, 46),
+        ("uc_l_appeal", "Tiếp nhận & Thẩm định Đơn Phúc khảo", 1005, 485, 320, 46),
     ]
+    add_cell(root, "act_lec", "Giảng viên\n(Lecturer)", STYLE_ACTOR, vertex=True, geometry={'x': 1485, 'y': 295, 'width': 45, 'height': 80})
+
     for uid, uval, ux, uy, uw, uh in ucs_lec:
         add_cell(root, uid, uval, STYLE_UC_MAIN, vertex=True, geometry={'x': ux, 'y': uy, 'width': uw, 'height': uh})
         add_cell(root, f"e_l_{uid}", "", STYLE_ASSOC, edge=True, source="act_lec", target=uid)
 
-    # 4. Sinh viên UCs (Student) - Cột Phải Dưới (x=1060, w=300, h=45)
+    # 4. Package Sinh viên (Bottom-Right)
+    add_cell(root, "pkg_stu", "PHÂN HỆ SINH VIÊN (STUDENT)", STYLE_PKG, vertex=True, geometry={'x': 980, 'y': 625, 'width': 370, 'height': 525})
+
     ucs_stu = [
-        ("uc_s_sch", "Tra cứu Thời khóa biểu tuần cá nhân", 1060, 520, 300, 45),
-        ("uc_s_enr", "Đăng ký Lớp học phần (Khóa bi quan)", 1060, 585, 300, 45),
-        ("uc_s_drop", "Hủy Đăng ký Lớp học phần trong đợt", 1060, 650, 300, 45),
-        ("uc_s_trans", "Tra cứu Bảng điểm, GPA kỳ & CPA tích lũy", 1060, 715, 300, 45),
-        ("uc_s_curric", "Xem Bản đồ Lộ trình Khung CTĐT", 1060, 780, 300, 45),
-        ("uc_s_tuition", "Tra cứu Hóa đơn & Nộp học phí trực tuyến", 1060, 845, 300, 45),
-        ("uc_s_att", "Check-in Điểm danh ca học bằng Mã PIN", 1060, 910, 300, 45),
-        ("uc_s_appeal", "Nộp Đơn Phúc khảo Điểm thi trực tuyến", 1060, 975, 300, 45),
+        ("uc_s_sch", "Tra cứu Thời khóa biểu tuần cá nhân", 1005, 670, 320, 46),
+        ("uc_s_enr", "Đăng ký Lớp học phần (Khóa bi quan)", 1005, 730, 320, 46),
+        ("uc_s_drop", "Hủy Đăng ký Lớp học phần trong đợt", 1005, 790, 320, 46),
+        ("uc_s_trans", "Tra cứu Bảng điểm, GPA kỳ & CPA tích lũy", 1005, 850, 320, 46),
+        ("uc_s_curric", "Xem Bản đồ Lộ trình Khung CTĐT", 1005, 910, 320, 46),
+        ("uc_s_tuition", "Tra cứu Hóa đơn & Nộp học phí trực tuyến", 1005, 970, 320, 46),
+        ("uc_s_att", "Check-in Điểm danh ca học bằng Mã PIN", 1005, 1030, 320, 46),
+        ("uc_s_appeal", "Nộp Đơn Phúc khảo Điểm thi trực tuyến", 1005, 1090, 320, 46),
     ]
+    add_cell(root, "act_stu", "Sinh viên\n(Student)", STYLE_ACTOR, vertex=True, geometry={'x': 1485, 'y': 875, 'width': 45, 'height': 80})
+
     for uid, uval, ux, uy, uw, uh in ucs_stu:
         add_cell(root, uid, uval, STYLE_UC_MAIN, vertex=True, geometry={'x': ux, 'y': uy, 'width': uw, 'height': uh})
         add_cell(root, f"e_s_{uid}", "", STYLE_ASSOC, edge=True, source="act_stu", target=uid)

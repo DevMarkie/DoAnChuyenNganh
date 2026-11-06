@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { enrollmentService } from '../../services/dataService';
 import { exportToCsv } from '../../utils/export';
 
-export default function SectionStudentsModal({ courseSection, onClose }) {
+export default function SectionStudentsModal({ courseSection, onClose, onOpenAttendance }) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -108,6 +108,11 @@ export default function SectionStudentsModal({ courseSection, onClose }) {
     }
   };
 
+  const maxStudents = courseSection?.maxStudents || 50;
+  const minStudents = courseSection?.minStudents || 15;
+  const isSpecial = courseSection?.sectionType === 'SPECIAL';
+  const isUnderEnrolled = !loading && students.length < minStudents && !isSpecial;
+
   return (
     <div
       style={{
@@ -129,7 +134,7 @@ export default function SectionStudentsModal({ courseSection, onClose }) {
         className="card"
         style={{
           width: '100%',
-          maxWidth: '920px',
+          maxWidth: '960px',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
@@ -153,7 +158,7 @@ export default function SectionStudentsModal({ courseSection, onClose }) {
           }}
         >
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <span
                 style={{
                   display: 'inline-block',
@@ -172,10 +177,71 @@ export default function SectionStudentsModal({ courseSection, onClose }) {
               <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main, #111827)' }}>
                 {courseSection?.subject?.subjectName}
               </h2>
+
+              {isSpecial && (
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    backgroundColor: '#eff6ff',
+                    color: '#1d4ed8',
+                    border: '1px solid #bfdbfe'
+                  }}
+                >
+                  ⭐ Lớp đặc thù / Ngoại lệ
+                </span>
+              )}
+
+              {isUnderEnrolled && (
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    backgroundColor: '#fef2f2',
+                    color: '#b91c1c',
+                    border: '1px solid #fecaca'
+                  }}
+                  title={`Lớp chưa đạt sĩ số tối thiểu quy định (${students.length}/${minStudents} SV)`}
+                >
+                  ⚠️ Chưa đạt sĩ số tối thiểu
+                </span>
+              )}
             </div>
             <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-secondary, #4b5563)' }}>
               {courseSection?.semester?.semesterName} • {courseSection?.subject?.credits || 0} Tín chỉ • Lịch: {courseSection?.schedule || '—'} ({courseSection?.room || '—'})
             </p>
+            {/* Semester / Course progress */}
+            {(() => {
+              const startStr = courseSection?.startDate || courseSection?.semester?.startDate;
+              const endStr = courseSection?.endDate || courseSection?.semester?.endDate;
+              if (!startStr || !endStr) return null;
+              const start = new Date(startStr);
+              const end = new Date(endStr);
+              const now = new Date();
+              const totalWeeks = Math.max(1, Math.round((end - start) / (7 * 24 * 3600 * 1000)));
+              const currentWeek = Math.min(totalWeeks, Math.max(1, Math.ceil((now - start) / (7 * 24 * 3600 * 1000))));
+              const isDone = now > end;
+              return (
+                <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.78rem' }}>
+                  <span style={{ fontWeight: 600, color: isDone ? '#059669' : 'var(--primary)' }}>
+                    📅 {isDone ? 'Khóa học đã kết thúc' : `Tiến độ: Tuần ${currentWeek}/${totalWeeks} tuần (Còn ${Math.max(0, totalWeeks - currentWeek)} tuần)`}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>
+                    ({start.toLocaleDateString('vi-VN')} - {end.toLocaleDateString('vi-VN')})
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           <button
@@ -201,7 +267,7 @@ export default function SectionStudentsModal({ courseSection, onClose }) {
           }}
         >
           {/* Search box */}
-          <div style={{ position: 'relative', flex: 1, minWidth: '240px', maxWidth: '400px' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '240px', maxWidth: '380px' }}>
             <Search
               size={16}
               style={{
@@ -223,11 +289,34 @@ export default function SectionStudentsModal({ courseSection, onClose }) {
             />
           </div>
 
-          {/* Action buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted, #6b7280)', marginRight: '6px' }}>
-              Sĩ số: <strong>{filtered.length}</strong> / {students.length} SV
-            </span>
+          {/* Sĩ số & Action buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--text-muted, #6b7280)' }}>
+              <span>
+                Sĩ số: <strong style={{ color: 'var(--text-main, #111827)' }}>{students.length}</strong> / {maxStudents} SV
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #6b7280)', marginLeft: '4px' }}>
+                  (Tối thiểu: {minStudents} SV)
+                </span>
+              </span>
+
+              {search.trim() && (
+                <span style={{ color: 'var(--primary, #2563eb)', fontWeight: 600 }}>
+                  • Tìm thấy {filtered.length} SV
+                </span>
+              )}
+            </div>
+
+            {onOpenAttendance && (
+              <button
+                onClick={() => onOpenAttendance(courseSection)}
+                className="btn btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', height: '38px', fontWeight: 600 }}
+                title="Mở phiên điểm danh & tạo mã cho lớp học này"
+              >
+                <CheckCircle2 size={16} />
+                <span>Điểm danh / Tạo mã</span>
+              </button>
+            )}
 
             <button
               onClick={handleExportExcel}
@@ -337,9 +426,21 @@ export default function SectionStudentsModal({ courseSection, onClose }) {
           }}
         >
           <span>Lớp: {courseSection?.sectionCode} • Giảng viên: {courseSection?.lecturer?.fullName || '—'}</span>
-          <button onClick={onClose} className="btn btn-secondary btn-sm">
-            Đóng
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {onOpenAttendance && (
+              <button
+                onClick={() => onOpenAttendance(courseSection)}
+                className="btn btn-primary btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+              >
+                <CheckCircle2 size={14} />
+                <span>Điểm danh / Tạo mã</span>
+              </button>
+            )}
+            <button onClick={onClose} className="btn btn-secondary btn-sm">
+              Đóng
+            </button>
+          </div>
         </div>
       </div>
     </div>

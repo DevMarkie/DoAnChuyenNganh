@@ -29,20 +29,32 @@ beforeEach(() => {
 
 describe('authStore initialization', () => {
   it('hydrates authenticated state from a valid stored token', async () => {
-    localStorage.setItem('token', makeToken({ exp: futureExp(), role: 'STUDENT', userId: 7 }));
-    localStorage.setItem('user', JSON.stringify({ id: 7, name: 'Nam' }));
+    localStorage.setItem('token', makeToken({ exp: futureExp(), role: 'STUDENT', userId: 7, sub: 'nam7' }));
+    localStorage.setItem('user', JSON.stringify({ userId: 7, username: 'nam7', name: 'Nam' }));
 
     const store = await loadStore();
     const state = store.getState();
 
     expect(state.isAuthenticated).toBe(true);
     expect(state.token).toBeTruthy();
-    expect(state.user).toEqual({ id: 7, name: 'Nam' });
+    expect(state.user).toEqual({ userId: 7, username: 'nam7', name: 'Nam' });
+  });
+
+  it('clears a stored user when it does not match the JWT identity', async () => {
+    localStorage.setItem('token', makeToken({ exp: futureExp(), role: 'STUDENT', userId: 1432, sub: '2500001' }));
+    localStorage.setItem('user', JSON.stringify({ userId: 82, username: '2300001' }));
+
+    const store = await loadStore();
+
+    expect(store.getState().isAuthenticated).toBe(false);
+    expect(store.getState().user).toBeNull();
+    expect(localStorage.getItem('token')).toBeNull();
+    expect(localStorage.getItem('user')).toBeNull();
   });
 
   it('discards an expired token and clears stale storage on load', async () => {
-    localStorage.setItem('token', makeToken({ exp: pastExp(), role: 'STUDENT', userId: 7 }));
-    localStorage.setItem('user', JSON.stringify({ id: 7, name: 'Nam' }));
+    localStorage.setItem('token', makeToken({ exp: pastExp(), role: 'STUDENT', userId: 7, sub: 'nam7' }));
+    localStorage.setItem('user', JSON.stringify({ userId: 7, username: 'nam7', name: 'Nam' }));
 
     const store = await loadStore();
     const state = store.getState();
@@ -88,4 +100,42 @@ describe('authStore actions', () => {
     expect(store.getState().isAuthenticated).toBe(false);
   });
 
+  it('supports isolated multi-portal sessions concurrently without overwriting each other', async () => {
+    const store = await loadStore();
+
+    // 1. Đăng nhập Giảng viên
+    const lecturerToken = makeToken({ exp: futureExp(), role: 'LECTURER', userId: 101, sub: 'gv01' });
+    store.getState().login(lecturerToken, { userId: 101, username: 'gv01', role: 'LECTURER' });
+
+    expect(localStorage.getItem('token_lecturer')).toBe(lecturerToken);
+    expect(store.getState().hasPortalSession('lecturer')).toBe(true);
+
+    // 2. Đăng nhập Sinh viên ở cổng khác
+    const studentToken = makeToken({ exp: futureExp(), role: 'STUDENT', userId: 202, sub: 'sv01' });
+    store.getState().login(studentToken, { userId: 202, username: 'sv01', role: 'STUDENT' });
+
+    expect(localStorage.getItem('token_student')).toBe(studentToken);
+    expect(store.getState().hasPortalSession('student')).toBe(true);
+
+    // Xác nhận token Giảng viên KHÔNG hề bị ghi đè!
+    expect(localStorage.getItem('token_lecturer')).toBe(lecturerToken);
+    expect(store.getState().hasPortalSession('lecturer')).toBe(true);
+
+    // 3. syncWithRoute chuyển đổi qua lại giữa các cổng
+    store.getState().syncWithRoute('/lecturer/dashboard');
+    expect(store.getState().user?.role).toBe('LECTURER');
+    expect(store.getState().token).toBe(lecturerToken);
+
+    store.getState().syncWithRoute('/student/dashboard');
+    expect(store.getState().user?.role).toBe('STUDENT');
+    expect(store.getState().token).toBe(studentToken);
+
+    // 4. Đăng xuất ở cổng Giảng viên chỉ xóa phiên Giảng viên, phiên Sinh viên vẫn còn
+    store.getState().syncWithRoute('/lecturer/dashboard');
+    store.getState().logout();
+
+    expect(localStorage.getItem('token_lecturer')).toBeNull();
+    expect(localStorage.getItem('token_student')).toBe(studentToken);
+    expect(store.getState().hasPortalSession('student')).toBe(true);
+  });
 });

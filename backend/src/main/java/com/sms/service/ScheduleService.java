@@ -65,6 +65,7 @@ public class ScheduleService {
 
     /**
      * Lấy lịch giảng dạy cho giảng viên đang đăng nhập
+     * Tự động ẩn các lịch học thuộc các lớp đã bị HỦY (CANCELLED) để tránh giảng viên đến nhầm phòng
      */
     public List<Schedule> getLecturerSchedule(Long userId, Long semesterId) {
         Lecturer lecturer = lecturerRepository.findByUserId(userId)
@@ -76,10 +77,15 @@ public class ScheduleService {
                     .map(semester -> semester.getId().longValue())
                     .orElse(null);
         }
+        List<Schedule> schedules;
         if (requestedSemesterId != null) {
-            return scheduleRepository.findByLecturerIdAndSemesterId(lecturer.getId(), requestedSemesterId);
+            schedules = scheduleRepository.findByLecturerIdAndSemesterId(lecturer.getId(), requestedSemesterId);
+        } else {
+            schedules = scheduleRepository.findByLecturerId(lecturer.getId());
         }
-        return scheduleRepository.findByLecturerId(lecturer.getId());
+        return schedules.stream()
+                .filter(s -> s.getSection() == null || s.getSection().getStatus() != CourseSection.SectionStatus.CANCELLED)
+                .toList();
     }
 
     /**

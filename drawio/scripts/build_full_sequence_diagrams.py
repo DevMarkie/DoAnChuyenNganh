@@ -961,6 +961,70 @@ def build_seq_21_graduation_audit():
 
     return model
 
+# 22. QUẢN LÝ NHÂN SỰ ĐÀO TẠO (ADMIN STAFF MANAGEMENT)
+def build_seq_22_staff_management():
+    model, root = create_base_model(1380, 940)
+    add_cell(root, "frame_staff", "sd UC-22: Quản lý Nhân sự Đào tạo (Admin Staff Management)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+
+    setup_6_lifelines(root, "Quản trị viên (Admin)", "StaffsPageView", "AdminSystemController", "UserService", "UserRepository", "Database (MySQL)", height=800)
+
+    # Activations
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 400})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 320})
+
+    # Messages
+    add_message(root, "m1", "1: Admin truy cập trang Quản trị Nhân sự /admin/staffs", 80, 305, 135)
+    add_message(root, "m2", "2: GET /api/admin/staffs?keyword=&role=&page=0", 315, 545, 175)
+    add_message(root, "m3", "3: getAllStaffs(keyword, role, pageable) -> lọc cán bộ chuyên trách", 555, 785, 215)
+    add_message(root, "m4", "4: findByRoleIn([ACADEMIC_AFFAIRS, LECTURER, ADMIN], pageable)", 795, 1025, 255)
+    add_message(root, "m5", "5: SELECT u FROM User u WHERE u.role IN (...) ORDER BY u.id DESC", 1035, 1245, 295)
+    add_message(root, "m6", "6: Trả về trang Page<User> các tài khoản nhân sự", 1245, 785, 335, is_reply=True)
+    add_message(root, "m7", "7: 200 OK + ApiResponse.success(Page<StaffResponse>)", 785, 315, 375, is_reply=True)
+    add_message(root, "m8", "8: Admin điền form tạo cán bộ mới & bấm 'Lưu cán bộ'", 80, 305, 415)
+    add_message(root, "m9", "9: POST /api/admin/staffs (CreateStaffRequest: name, email, role, phone)", 315, 545, 455)
+    add_message(root, "m10", "10: createStaff(request) -> validateEmailNotDuplicate(request.email)", 555, 785, 495)
+    add_message(root, "m11", "11: Khởi tạo User mới, băm mật khẩu tạm bằng BCrypt, gán staffRole", 795, 795, 535, is_self=True)
+    add_message(root, "m12", "12: userRepository.save(newUser) -> INSERT INTO users (...)", 795, 1245, 575)
+    add_message(root, "m13", "13: Trả về bản ghi User đã bền vững hóa trong CSDL", 1245, 785, 615, is_reply=True)
+    add_message(root, "m14", "14: Ghi nhận AuditLog('CREATE_STAFF', targetUserId, adminId)", 795, 795, 655, is_self=True)
+    add_message(root, "m15", "15: 201 Created + ApiResponse.success(StaffResponse)", 785, 80, 695, is_reply=True)
+
+    return model
+
+# 23. ĐẶT LẠI MẬT KHẨU HÀNG LOẠT (BULK PASSWORD RESET)
+def build_seq_23_bulk_password_reset():
+    model, root = create_base_model(1380, 940)
+    add_cell(root, "frame_bulkpwd", "sd UC-23: Đặt lại Mật khẩu Hàng loạt (Bulk Password Reset)", STYLE_SD_FRAME, vertex=True, geometry={'x': 20, 'y': 20, 'width': 1340, 'height': 890})
+
+    setup_6_lifelines(root, "Quản trị viên (Admin)", "PasswordResetsView", "AdminSystemController", "PasswordResetService", "UserRepository", "Database (MySQL)", height=800)
+
+    # Activations
+    add_cell(root, "act_ui", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 305, 'y': 135, 'width': 10, 'height': 650})
+    add_cell(root, "act_ctrl", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 545, 'y': 185, 'width': 10, 'height': 560})
+    add_cell(root, "act_srv", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 785, 'y': 230, 'width': 10, 'height': 490})
+    add_cell(root, "act_repo", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1025, 'y': 275, 'width': 10, 'height': 400})
+    add_cell(root, "act_db", "", STYLE_ACTIVATION, vertex=True, geometry={'x': 1245, 'y': 315, 'width': 10, 'height': 320})
+
+    # Messages
+    add_message(root, "m1", "1: Admin chọn 'Đặt lại mật khẩu hàng loạt' (chọn phạm vi toàn trường / khóa)", 80, 305, 135)
+    add_message(root, "m2", "2: POST /api/admin/bulk-reset-passwords (BulkResetPasswordRequest)", 315, 545, 175)
+    add_message(root, "m3", "3: bulkResetPasswords(request) -> Kiểm tra quyền Quản trị viên ROLE_ADMIN", 555, 785, 215)
+    add_message(root, "m4", "4: findTargetUsersForReset(scope, cohortId, deptId) -> nạp danh sách User", 795, 1025, 255)
+    add_message(root, "m5", "5: SELECT u.id, u.username, s.date_of_birth FROM users u LEFT JOIN students s ...", 1035, 1245, 295)
+    add_message(root, "m6", "6: Danh sách tài khoản người dùng hợp lệ", 1245, 785, 335, is_reply=True)
+    add_message(root, "m7", "7: Lặp danh sách: Format mật khẩu 'ddmmyyyya@' theo DOB & băm BCrypt", 795, 795, 375, is_self=True)
+    add_message(root, "m8", "8: Thiết lập cờ requirePasswordChange = true bắt buộc đổi MK ở lần đăng nhập tới", 795, 795, 415, is_self=True)
+    add_message(root, "m9", "9: executeBatchUpdate(users) -> BATCH UPDATE users SET password = ?, require_pwd = 1", 795, 1245, 455)
+    add_message(root, "m10", "10: Cập nhật thành công N bản ghi tài khoản vào CSDL", 1245, 785, 495, is_reply=True)
+    add_message(root, "m11", "11: Gửi thông báo hệ thống Notification & ghi AuditLog('BULK_RESET_PWD')", 795, 795, 535, is_self=True)
+    add_message(root, "m12", "12: 200 OK + ApiResponse.success(BulkResetPasswordResponse)", 785, 315, 575, is_reply=True)
+    add_message(root, "m13", "13: Hiển thị hộp thoại tổng kết: Tổng số tài khoản, thành công, thất bại", 305, 80, 615, is_reply=True)
+
+    return model
+
 def generate_all_sequence_diagrams():
     tabs = [
         ("1. Đăng nhập hệ thống", build_seq_1_login()),
@@ -984,6 +1048,8 @@ def generate_all_sequence_diagrams():
         ("19. Khảo thí & Quản lý phòng thi", build_seq_19_exam_management()),
         ("20. Quy trình Đính chính điểm 3 cấp", build_seq_20_grade_amendment()),
         ("21. Thẩm định chuẩn tốt nghiệp (Degree Audit)", build_seq_21_graduation_audit()),
+        ("22. Quản lý Nhân sự Đào tạo", build_seq_22_staff_management()),
+        ("23. Đặt lại Mật khẩu Hàng loạt", build_seq_23_bulk_password_reset()),
     ]
 
     mxfile = ET.Element('mxfile', {

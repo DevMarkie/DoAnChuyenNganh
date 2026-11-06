@@ -89,6 +89,13 @@ public class CourseSectionService {
         section.setMaxStudents(maxStudents);
         section.setMinStudents(minStudents);
         section.setCurrentStudents(0);
+        if (request.getSectionType() != null && !request.getSectionType().isBlank()) {
+            try {
+                section.setSectionType(CourseSection.SectionType.valueOf(request.getSectionType().toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                throw new BadRequestException("Loại lớp học phần không hợp lệ: " + request.getSectionType());
+            }
+        }
         section.setSchedule(request.getSchedule());
         section.setRoom(request.getRoom());
         section.setStatus(parseStatus(request.getStatus(), CourseSection.SectionStatus.OPEN));
@@ -120,11 +127,26 @@ public class CourseSectionService {
             }
             section.setMinStudents(request.getMinStudents());
         }
+        if (request.getSectionType() != null && !request.getSectionType().isBlank()) {
+            try {
+                section.setSectionType(CourseSection.SectionType.valueOf(request.getSectionType().toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                throw new BadRequestException("Loại lớp học phần không hợp lệ: " + request.getSectionType());
+            }
+        }
         section.setSchedule(request.getSchedule());
         section.setRoom(request.getRoom());
         if (request.getStatus() != null) {
             CourseSection.SectionStatus targetStatus = parseStatus(request.getStatus(), section.getStatus());
             validateStateTransition(section.getStatus(), targetStatus);
+            if (targetStatus == CourseSection.SectionStatus.ACTIVE) {
+                int currentStudents = section.getCurrentStudents() != null ? section.getCurrentStudents() : 0;
+                int minStudents = section.getMinStudents() != null ? section.getMinStudents() : 15;
+                if (section.getSectionType() == CourseSection.SectionType.REGULAR && currentStudents < minStudents) {
+                    throw new BadRequestException("Lớp học phần chưa đạt sĩ số tối thiểu (" + currentStudents + "/" + minStudents
+                            + " SV). Không thể chuyển sang trạng thái ACTIVE trừ khi được phê duyệt ngoại lệ (loại SPECIAL) hoặc hủy lớp.");
+                }
+            }
             section.setStatus(targetStatus);
         }
         CourseSection saved = courseSectionRepository.save(section);

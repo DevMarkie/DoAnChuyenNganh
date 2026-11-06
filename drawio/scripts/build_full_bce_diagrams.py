@@ -1364,6 +1364,110 @@ def build_bce_21_graduation_audit():
         ]
     )
 
+def build_bce_22_staff_management():
+    return build_single_function_tab(
+        func_code="staff",
+        func_title="22. Quản lý Nhân sự Đào tạo",
+        comp_title="Quản trị nhân sự & Chuyên viên đào tạo",
+        comp_example="AdminSystemController",
+        actor_name="Quản trị viên hệ thống (Admin)",
+        bnd_classes=[
+            {
+                'name': "StaffsPageView", 'stereo': "Giao diện",
+                'attrs': ["- staffList: List<StaffResponse>", "- searchKeyword: String", "- roleFilter: String", "- isCreateModalOpen: boolean"],
+                'methods': ["+ taiDanhSachNhanSu(): void", "+ moModalTaoCanBo(): void", "+ capNhatTrangThaiKhoa(id): void", "+ datLaiMatKhauCanBo(id): void"]
+            },
+            {
+                'name': "AdminSystemController", 'stereo': "Giao diện",
+                'attrs': ["- userService: UserService", "- passwordResetService: PasswordResetService"],
+                'methods': ["+ getAllStaffs(keyword, role, pageable): ApiResponse", "+ createStaff(request): ApiResponse", "+ updateStaff(id, request): ApiResponse", "+ toggleStaffStatus(id): ApiResponse"]
+            }
+        ],
+        ctrl_classes=[
+            {
+                'name': "UserService", 'stereo': "Điều khiển",
+                'attrs': ["- userRepository: UserRepository", "- passwordEncoder: PasswordEncoder", "- auditLogService: AuditLogService"],
+                'methods': ["+ createStaffAccount(dto): User", "+ updateStaffProfile(id, dto): User", "+ toggleUserActive(id): boolean", "+ validateEmailNotDuplicate(email): void"]
+            },
+            {
+                'name': "UserRepository", 'stereo': "Điều khiển",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findByRoleIn(roles): List<User>", "+ findByEmail(email): Optional<User>", "+ save(user): User"]
+            }
+        ],
+        ent_classes=[
+            {
+                'name': "User", 'stereo': "Thực thể",
+                'attrs': ["- id: Long", "- username: String", "- email: String", "- fullName: String", "- phone: String", "- role: Role", "- staffRole: String", "- isActive: boolean"],
+                'methods': ["+ isAccountNonLocked(): boolean", "+ layVaiTroHeThong(): String", "+ layChucDanhChuyenMon(): String"]
+            },
+            {
+                'name': "StaffResponseDTO", 'stereo': "Truyền dữ liệu",
+                'attrs': ["- id: Long", "- username: String", "- fullName: String", "- email: String", "- phone: String", "- roleName: String", "- isActive: boolean"],
+                'methods': ["+ tuThucThe(user): StaffResponseDTO", "+ layTrangThaiChuoi(): String"]
+            }
+        ],
+        edges=[
+            ("bnd_staff_1", "bnd_staff_2", "gửi yêu cầu quản lý nhân sự", False),
+            ("bnd_staff_2", "ctrl_staff_1", "ủy quyền xử lý nghiệp vụ tài khoản", False),
+            ("ctrl_staff_1", "ctrl_staff_2", "truy vấn và lưu bền vững User", False),
+            ("ctrl_staff_2", "ent_staff_1", "bền vững hóa thực thể User nhân sự", True),
+            ("ctrl_staff_1", "ent_staff_2", "chuyển đổi thông tin sang StaffResponseDTO", True)
+        ]
+    )
+
+def build_bce_23_bulk_password_reset():
+    return build_single_function_tab(
+        func_code="bulkpwd",
+        func_title="23. Đặt lại Mật khẩu Hàng loạt",
+        comp_title="Reset mật khẩu toàn trường theo ngày sinh",
+        comp_example="PasswordResetService",
+        actor_name="Quản trị viên hệ thống (Admin)",
+        bnd_classes=[
+            {
+                'name': "PasswordResetsPageView", 'stereo': "Giao diện",
+                'attrs': ["- selectedScope: ResetScope", "- cohortSelector: Select", "- departmentSelector: Select", "- confirm2FAModal: Modal"],
+                'methods': ["+ moModalResetHangLoat(): void", "+ chonPhamViToanTruong(): void", "+ xacNhanThucThiReset(): void", "+ hienThiBaoCaoKetQua(dto): void"]
+            },
+            {
+                'name': "AdminSystemController", 'stereo': "Giao diện",
+                'attrs': ["- passwordResetService: PasswordResetService", "- auditLogService: AuditLogService"],
+                'methods': ["+ bulkResetPasswords(request): ApiResponse<BulkResetPasswordResponse>", "+ getPasswordResetStats(): ApiResponse"]
+            }
+        ],
+        ctrl_classes=[
+            {
+                'name': "PasswordResetService", 'stereo': "Điều khiển",
+                'attrs': ["- userRepo: UserRepository", "- studentRepo: StudentRepository", "- passwordEncoder: PasswordEncoder", "- auditLogService: AuditLogService"],
+                'methods': ["+ executeBulkReset(request): BulkResetPasswordResponse", "+ formatDobPassword(dateOfBirth): String", "+ batchUpdateHashedPasswords(users): int"]
+            },
+            {
+                'name': "UserRepository", 'stereo': "Điều khiển",
+                'attrs': ["- entityManager: EntityManager"],
+                'methods': ["+ findTargetUsersForReset(scope, cohortId, deptId): List<User>", "+ saveAll(users): List<User>"]
+            }
+        ],
+        ent_classes=[
+            {
+                'name': "User", 'stereo': "Thực thể",
+                'attrs': ["- id: Long", "- username: String", "- password: String", "- requirePasswordChange: boolean", "- lastPasswordResetAt: LocalDateTime"],
+                'methods': ["+ setMatKhauMoi(hash): void", "+ batCoBatBuocDoiMatKhau(): void"]
+            },
+            {
+                'name': "BulkResetPasswordResponseDTO", 'stereo': "Truyền dữ liệu",
+                'attrs': ["- totalAccounts: int", "- successCount: int", "- failureCount: int", "- passwordRuleApplied: String", "- executionTimestamp: LocalDateTime"],
+                'methods': ["+ layTyLeThanhCong(): double", "+ kiemTraHoanTatToanBo(): boolean"]
+            }
+        ],
+        edges=[
+            ("bnd_bulkpwd_1", "bnd_bulkpwd_2", "gửi lệnh đặt lại mật khẩu hàng loạt", False),
+            ("bnd_bulkpwd_2", "ctrl_bulkpwd_1", "kích hoạt xử lý quy mô lô (batch)", False),
+            ("ctrl_bulkpwd_1", "ctrl_bulkpwd_2", "nạp và cập nhật danh sách tài khoản", False),
+            ("ctrl_bulkpwd_2", "ent_bulkpwd_1", "cập nhật mật khẩu băm & cờ đổi mật khẩu", True),
+            ("ctrl_bulkpwd_1", "ent_bulkpwd_2", "đóng gói kết quả BulkResetPasswordResponseDTO", True)
+        ]
+    )
+
 def main():
     mxfile = ET.Element('mxfile', {
         'host': 'app.diagrams.net',
@@ -1395,6 +1499,8 @@ def main():
         ('bce_exam', '19. Khảo thí & Quản lý phòng thi', build_bce_19_exam_management()),
         ('bce_amendment', '20. Quy trình Đính chính điểm 3 cấp', build_bce_20_grade_amendment()),
         ('bce_graduation', '21. Thẩm định chuẩn tốt nghiệp (Degree Audit)', build_bce_21_graduation_audit()),
+        ('bce_staff', '22. Quản lý Nhân sự Đào tạo', build_bce_22_staff_management()),
+        ('bce_bulkpwd', '23. Đặt lại Mật khẩu Hàng loạt', build_bce_23_bulk_password_reset()),
     ]
 
     for diag_id, diag_name, model in tabs_data:

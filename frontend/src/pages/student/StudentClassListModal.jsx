@@ -82,8 +82,38 @@ export default function StudentClassListModal({
   const sectionCode = courseSection.sectionCode || 'N/A';
   const room = courseSection.room || courseSection.schedules?.[0]?.room || 'N/A';
 
+  const schedule = courseSection.schedule || courseSection.schedules?.[0];
+  const startPeriod = courseSection.startPeriod || schedule?.startPeriod;
+  const endPeriod = courseSection.endPeriod || schedule?.endPeriod;
+  const periodTimeString = courseSection.periodTimeString || schedule?.periodTimeString || '';
+  const periodRange = startPeriod && endPeriod ? `(Tiết ${startPeriod}-${endPeriod})` : '';
+  const timePeriodText = [periodTimeString, periodRange].filter(Boolean).join(' ');
+
+  const periodsPerSession = startPeriod && endPeriod ? Math.max(1, endPeriod - startPeriod + 1) : 3;
+  const credits = courseSection.subject?.credits || 3;
+  const totalCoursePeriods = credits * 15;
+
   const isPresent = Boolean(attendanceInfo?.isPresent);
   const isOpen = attendanceInfo?.sessionStatus === 'OPEN';
+
+  const myEnrollment = students.find((enrollment) => {
+    const stu = enrollment.student;
+    return (
+      user?.username &&
+      (stu?.studentCode === user.username || String(stu?.id) === String(user?.studentId))
+    );
+  });
+  const myAbsenceCount = myEnrollment?.absenceCount ?? 0;
+  const myAbsentPeriods =
+    myEnrollment?.absentPeriods && myEnrollment.absentPeriods > 0
+      ? myEnrollment.absentPeriods
+      : myAbsenceCount * periodsPerSession;
+  const myAbsentRatePercent =
+    myEnrollment?.absentRate != null && myEnrollment.absentRate > 0
+      ? Math.round(myEnrollment.absentRate * 100)
+      : totalCoursePeriods > 0
+      ? Math.round((myAbsentPeriods / totalCoursePeriods) * 100)
+      : 0;
 
   const modalContent = (
     <div
@@ -110,19 +140,48 @@ export default function StudentClassListModal({
           <div>
             <h2
               style={{
-                fontSize: '1.1rem',
+                fontSize: '1.05rem',
                 margin: 0,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 color: '#ffffff',
+                fontWeight: 700,
+                flexWrap: 'wrap',
               }}
             >
-              <Users size={20} />
-              Học phần: {subjectName}
+              <Users size={19} />
+              <span>Học phần: {subjectName}</span>
+              {timePeriodText && (
+                <span style={{ color: '#facc15', fontWeight: 700 }}>
+                  - {timePeriodText}
+                </span>
+              )}
             </h2>
-            <div style={{ fontSize: '0.85rem', opacity: 0.9, marginTop: '4px', color: '#fef08a' }}>
-              Lớp: {sectionCode} {room !== 'N/A' && `(Phòng: ${room})`}
+            <div style={{ fontSize: '0.9rem', color: '#ffffff', marginTop: '5px' }}>
+              <span>Vắng mặt(Số buổi/Số tiết/Tỷ lệ): </span>
+              <strong style={{ fontWeight: 700 }}>
+                ({myAbsenceCount}/{myAbsentPeriods}/{myAbsentRatePercent}%)
+              </strong>
+              {myAbsentRatePercent >= 20 && (
+                <span
+                  className="badge badge-danger"
+                  style={{ marginLeft: '8px', fontSize: '0.675rem', padding: '1px 6px', backgroundColor: '#dc2626' }}
+                >
+                  Cấm thi
+                </span>
+              )}
+              {myAbsentRatePercent >= 15 && myAbsentRatePercent < 20 && (
+                <span
+                  className="badge badge-warning"
+                  style={{ marginLeft: '8px', fontSize: '0.675rem', padding: '1px 6px', backgroundColor: '#d97706', color: '#fff' }}
+                >
+                  Nguy cơ cấm thi
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.85, marginTop: '4px', color: '#e0e7ff' }}>
+              Lớp: {sectionCode} {room !== 'N/A' && `• Phòng: ${room}`}
             </div>
           </div>
 
@@ -192,6 +251,56 @@ export default function StudentClassListModal({
         </div>
 
         <div className="modal-body" style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
+          {/* Course Progress & Completion Bar */}
+          {(() => {
+            const startStr = courseSection?.startDate || courseSection?.schedule?.startDate;
+            const endStr = courseSection?.endDate || courseSection?.schedule?.endDate;
+            if (!startStr || !endStr) return null;
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            const now = new Date();
+            const totalWeeks = Math.max(1, Math.round((end - start) / (7 * 24 * 3600 * 1000)));
+            const currentWeek = Math.min(totalWeeks, Math.max(1, Math.ceil((now - start) / (7 * 24 * 3600 * 1000))));
+            const isDone = now > end;
+            const percent = isDone ? 100 : Math.round((currentWeek / totalWeeks) * 100);
+
+            return (
+              <div
+                style={{
+                  background: 'var(--bg-subtle, #f8fafc)',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  marginBottom: '16px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-main)' }}>
+                      Tiến độ học phần: {isDone ? 'Đã hoàn thành' : `Tuần ${currentWeek} / ${totalWeeks} tuần`}
+                    </span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                      ({start.toLocaleDateString('vi-VN')} - {end.toLocaleDateString('vi-VN')})
+                    </span>
+                  </div>
+                  <span className={`badge ${isDone ? 'badge-success' : 'badge-info'}`} style={{ fontWeight: 700, fontSize: '0.75rem' }}>
+                    {isDone ? '★ Đã học xong' : `Còn ${Math.max(0, totalWeeks - currentWeek)} tuần học`}
+                  </span>
+                </div>
+                <div style={{ background: '#e2e8f0', borderRadius: '999px', height: '8px', overflow: 'hidden' }}>
+                  <div
+                    style={{
+                      background: isDone ? '#10b981' : 'var(--primary, #2563eb)',
+                      height: '100%',
+                      width: `${percent}%`,
+                      transition: 'width 0.3s ease',
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })()}
+
           {loading ? (
             <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
               <RefreshCw className="spin" size={32} style={{ margin: '0 auto 12px' }} />
@@ -203,17 +312,15 @@ export default function StudentClassListModal({
                 <thead>
                   <tr style={{ background: 'var(--bg-muted)', color: 'var(--text-secondary)' }}>
                     <th style={{ width: '60px', textAlign: 'center' }}>STT</th>
-                    <th style={{ width: '120px' }}>Mã số</th>
+                    <th style={{ width: '130px' }}>Mã số</th>
                     <th>Họ đệm</th>
-                    <th style={{ width: '120px' }}>Tên</th>
-                    <th style={{ width: '120px', textAlign: 'center' }}>Số buổi vắng</th>
+                    <th style={{ width: '130px' }}>Tên</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((enrollment, index) => {
                     const stu = enrollment.student;
                     const { lastName, firstName } = getVietnameseNameParts(stu);
-                    const absences = enrollment.absenceCount || 0;
                     const isMe =
                       user?.username &&
                       (stu?.studentCode === user.username || String(stu?.id) === String(user?.studentId));
@@ -239,17 +346,12 @@ export default function StudentClassListModal({
                         </td>
                         <td>{lastName}</td>
                         <td style={{ fontWeight: 600 }}>{firstName}</td>
-                        <td style={{ textAlign: 'center' }}>
-                          <span className={`badge ${absences > 0 ? 'badge-danger' : 'badge-success'}`}>
-                            {absences}
-                          </span>
-                        </td>
                       </tr>
                     );
                   })}
                   {students.length === 0 && (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                      <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
                         Không có sinh viên nào trong danh sách.
                       </td>
                     </tr>

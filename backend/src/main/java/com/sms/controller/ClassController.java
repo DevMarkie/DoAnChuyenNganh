@@ -37,7 +37,7 @@ public class ClassController {
     }
 
     @GetMapping("/{id}/students")
-    @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
     public ResponseEntity<ApiResponse<List<Student>>> getStudentsInClass(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.success(studentService.findByClass(id)));
     }
@@ -60,7 +60,7 @@ public class ClassController {
     }
 
     @PostMapping("/batch-generate")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<ClassEntity>>> batchGenerate(@Valid @RequestBody com.sms.dto.request.BatchClassRequest request) {
         List<ClassEntity> result = classService.batchGenerate(request);
         return ResponseEntity.ok(ApiResponse.success("Khởi tạo tự động " + result.size() + " lớp sinh hoạt thành công", result));

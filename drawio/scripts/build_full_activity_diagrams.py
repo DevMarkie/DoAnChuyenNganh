@@ -1101,6 +1101,102 @@ def build_act_21_graduation_audit():
 
     return model
 
+# ==========================================
+# 22. QUẢN LÝ NHÂN SỰ ĐÀO TẠO (ADMIN STAFF MANAGEMENT)
+# ==========================================
+def build_act_22_staff_management():
+    model, root = create_base_model(1180, 1050)
+    setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: QUẢN TRỊ NHÂN SỰ ĐÀO TẠO",
+                          "Quy trình quản lý tài khoản, gán vai trò chuyên trách và phân quyền cán bộ (ACADEMIC_AFFAIRS, LECTURER, ADMIN)",
+                          "Quản trị viên (Admin)", "Hệ thống (AdminSystemController & UserService)", lane_h=930)
+
+    # Actor Lane (Center x=240)
+    add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 115, 'width': 25, 'height': 25})
+    add_cell(root, "act_open", "Admin truy cập Phân hệ Quản trị\nNhân sự đào tạo (/admin/staffs)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 165, 'width': 200, 'height': 45})
+    add_cell(root, "act_view_list", "Xem danh sách nhân sự hiện có,\nlọc theo phòng ban và vai trò", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 240, 'width': 200, 'height': 45})
+    add_cell(root, "act_click_create", "Bấm 'Thêm cán bộ mới' và nhập\nhọ tên, email, phone, vai trò", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 315, 'width': 200, 'height': 45})
+    add_cell(root, "act_submit", "Xác nhận gửi thông tin tạo mới\n(POST /api/admin/staffs)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 390, 'width': 200, 'height': 45})
+    add_cell(root, "act_view_result", "Xem kết quả phản hồi và thông tin\ntài khoản cán bộ kèm mật khẩu tạm", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 690, 'width': 200, 'height': 45})
+    add_cell(root, "act_edit_status", "Admin có thể kích hoạt / vô hiệu hóa\nhoặc đặt lại mật khẩu cán bộ", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 765, 'width': 200, 'height': 45})
+    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 860, 'width': 25, 'height': 25})
+
+    # System Lane (Center x=620, Error x=910)
+    add_cell(root, "act_load_staffs", "Truy vấn danh mục cán bộ chuyên trách\n(ROLE_ACADEMIC_AFFAIRS, LECTURER, ADMIN)", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 165, 'width': 220, 'height': 45})
+    add_cell(root, "act_validate_staff", "Kiểm tra định dạng email và\nđối chiếu trùng lặp trong CSDL", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 390, 'width': 220, 'height': 45})
+    add_cell(root, "dec_email", "Email đã tồn tại?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 465, 'width': 130, 'height': 50})
+
+    add_cell(root, "act_err_dup", "Thông báo lỗi: Email đã được sử dụng\n(400 Bad Request)", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 467.5, 'width': 200, 'height': 45})
+    add_cell(root, "end_err", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 550, 'width': 25, 'height': 25})
+
+    add_cell(root, "act_create_user", "Khởi tạo User mới: Băm mật khẩu tạm,\ngán role, thiết lập requirePasswordChange", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 550, 'width': 220, 'height': 45})
+    add_cell(root, "act_save_audit", "Lưu cán bộ vào CSDL MySQL\nvà ghi nhận AuditLog hệ thống", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 625, 'width': 220, 'height': 45})
+    add_cell(root, "act_handle_status", "Cập nhật trạng thái isActive hoặc\nsinh mật khẩu mới theo yêu cầu", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 765, 'width': 220, 'height': 45})
+
+    # Flows
+    add_cell(root, "f1", "", STYLE_FLOW, edge=True, source="start", target="act_open")
+    add_cell(root, "f2", "", STYLE_FLOW, edge=True, source="act_open", target="act_load_staffs")
+    add_cell(root, "f3", "", STYLE_FLOW, edge=True, source="act_load_staffs", target="act_view_list")
+    add_cell(root, "f4", "", STYLE_FLOW, edge=True, source="act_view_list", target="act_click_create")
+    add_cell(root, "f5", "", STYLE_FLOW, edge=True, source="act_click_create", target="act_submit")
+    add_cell(root, "f6", "", STYLE_FLOW, edge=True, source="act_submit", target="act_validate_staff")
+    add_cell(root, "f7", "", STYLE_FLOW, edge=True, source="act_validate_staff", target="dec_email")
+    add_cell(root, "f8", "[Trùng lặp]", STYLE_FLOW, edge=True, source="dec_email", target="act_err_dup")
+    add_cell(root, "f9", "", STYLE_FLOW, edge=True, source="act_err_dup", target="end_err")
+    add_cell(root, "f10", "[Hợp lệ]", STYLE_FLOW, edge=True, source="dec_email", target="act_create_user")
+    add_cell(root, "f11", "", STYLE_FLOW, edge=True, source="act_create_user", target="act_save_audit")
+    add_cell(root, "f12", "", STYLE_FLOW, edge=True, source="act_save_audit", target="act_view_result")
+    add_cell(root, "f13", "", STYLE_FLOW, edge=True, source="act_view_result", target="act_edit_status")
+    add_cell(root, "f14", "", STYLE_FLOW, edge=True, source="act_edit_status", target="act_handle_status")
+    add_cell(root, "f15", "", STYLE_FLOW, edge=True, source="act_handle_status", target="end_ok")
+
+    return model
+
+# ==========================================
+# 23. ĐẶT LẠI MẬT KHẨU HÀNG LOẠT (BULK PASSWORD RESET)
+# ==========================================
+def build_act_23_bulk_password_reset():
+    model, root = create_base_model(1180, 1050)
+    setup_activity_header(root, "BIỂU ĐỒ HOẠT ĐỘNG: ĐẶT LẠI MẬT KHẨU HÀNG LOẠT",
+                          "Quy trình reset mật khẩu tự động toàn trường theo ngày sinh (ddmmyyyya@) và bật cờ bắt buộc đổi mật khẩu",
+                          "Quản trị viên (Admin)", "Hệ thống (PasswordResetService & BCrypt)", lane_h=930)
+
+    # Actor Lane (Center x=240)
+    add_cell(root, "start", "", STYLE_START, vertex=True, geometry={'x': 227.5, 'y': 115, 'width': 25, 'height': 25})
+    add_cell(root, "act_open", "Admin truy cập Phân hệ Quản trị\nCấp lại mật khẩu (/admin/password-resets)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 165, 'width': 200, 'height': 45})
+    add_cell(root, "act_choose_scope", "Chọn phạm vi đặt lại mật khẩu:\nToàn trường / Theo Khóa / Theo Khoa", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 240, 'width': 200, 'height': 45})
+    add_cell(root, "act_click_reset", "Bấm 'Thực thi Reset Hàng loạt'\n(POST /api/admin/bulk-reset-passwords)", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 315, 'width': 200, 'height': 45})
+    add_cell(root, "act_confirm_modal", "Xác nhận cảnh báo rủi ro bảo mật\ntrên hộp thoại kiểm tra 2 lớp", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 390, 'width': 200, 'height': 45})
+    add_cell(root, "act_view_report", "Xem báo cáo tổng hợp: Số lượng tài khoản\nthành công, thất bại và định dạng mật khẩu", STYLE_ACTIVITY, vertex=True, geometry={'x': 140, 'y': 765, 'width': 200, 'height': 45})
+    add_cell(root, "end_ok", "", STYLE_END, vertex=True, geometry={'x': 227.5, 'y': 860, 'width': 25, 'height': 25})
+
+    # System Lane (Center x=620, Error x=910)
+    add_cell(root, "act_check_auth", "Kiểm tra quyền ROLE_ADMIN\nvà kiểm soát tần suất RateLimit", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 390, 'width': 220, 'height': 45})
+    add_cell(root, "dec_auth", "Admin hợp lệ?", STYLE_DECISION, vertex=True, geometry={'x': 555, 'y': 465, 'width': 130, 'height': 50})
+
+    add_cell(root, "act_deny", "Từ chối truy cập (403 Forbidden)\nvà ghi cảnh báo an ninh", STYLE_ACTIVITY, vertex=True, geometry={'x': 810, 'y': 467.5, 'width': 200, 'height': 45})
+    add_cell(root, "end_deny", "", STYLE_END, vertex=True, geometry={'x': 897.5, 'y': 550, 'width': 25, 'height': 25})
+
+    add_cell(root, "act_query_users", "Truy vấn danh sách User theo phạm vi\n(chỉ reset tài khoản đang ACTIVE)", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 550, 'width': 220, 'height': 45})
+    add_cell(root, "act_batch_hash", "Duyệt danh sách: Định dạng ngày sinh\n'ddmmyyyya@', băm BCrypt & bật cờ bắt buộc đổi MK", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 625, 'width': 220, 'height': 45})
+    add_cell(root, "act_batch_update", "Thực thi BATCH UPDATE vào MySQL,\nsinh Thông báo hệ thống & ghi AuditLog", STYLE_ACTIVITY, vertex=True, geometry={'x': 510, 'y': 700, 'width': 220, 'height': 45})
+
+    # Flows
+    add_cell(root, "f1", "", STYLE_FLOW, edge=True, source="start", target="act_open")
+    add_cell(root, "f2", "", STYLE_FLOW, edge=True, source="act_open", target="act_choose_scope")
+    add_cell(root, "f3", "", STYLE_FLOW, edge=True, source="act_choose_scope", target="act_click_reset")
+    add_cell(root, "f4", "", STYLE_FLOW, edge=True, source="act_click_reset", target="act_confirm_modal")
+    add_cell(root, "f5", "", STYLE_FLOW, edge=True, source="act_confirm_modal", target="act_check_auth")
+    add_cell(root, "f6", "", STYLE_FLOW, edge=True, source="act_check_auth", target="dec_auth")
+    add_cell(root, "f7", "[Không hợp lệ]", STYLE_FLOW, edge=True, source="dec_auth", target="act_deny")
+    add_cell(root, "f8", "", STYLE_FLOW, edge=True, source="act_deny", target="end_deny")
+    add_cell(root, "f9", "[Hợp lệ]", STYLE_FLOW, edge=True, source="dec_auth", target="act_query_users")
+    add_cell(root, "f10", "", STYLE_FLOW, edge=True, source="act_query_users", target="act_batch_hash")
+    add_cell(root, "f11", "", STYLE_FLOW, edge=True, source="act_batch_hash", target="act_batch_update")
+    add_cell(root, "f12", "", STYLE_FLOW, edge=True, source="act_batch_update", target="act_view_report")
+    add_cell(root, "f13", "", STYLE_FLOW, edge=True, source="act_view_report", target="end_ok")
+
+    return model
+
 def generate_all_activity_diagrams():
     tabs = [
         ("1. Đăng nhập hệ thống", build_act_1_login()),
@@ -1124,6 +1220,8 @@ def generate_all_activity_diagrams():
         ("19. Khảo thí & Quản lý phòng thi", build_act_19_exam_management()),
         ("20. Quy trình Đính chính điểm 3 cấp", build_act_20_grade_amendment()),
         ("21. Thẩm định chuẩn tốt nghiệp (Degree Audit)", build_act_21_graduation_audit()),
+        ("22. Quản lý Nhân sự Đào tạo", build_act_22_staff_management()),
+        ("23. Đặt lại Mật khẩu Hàng loạt", build_act_23_bulk_password_reset()),
     ]
 
     mxfile = ET.Element('mxfile', {

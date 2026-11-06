@@ -74,21 +74,79 @@ public class EnrollmentService {
 
     private static final int MAX_CREDITS_PER_SEMESTER = 24;
 
+    private void populateAbsenceStats(Enrollment e, int absentSessions, Long knownSectionId) {
+        Long secId = knownSectionId != null ? knownSectionId : (e.getSection() != null ? e.getSection().getId() : null);
+        CourseSection sec = (e.getSection() != null && e.getSection().getSubject() != null)
+                ? e.getSection()
+                : (secId != null && courseSectionRepository != null ? courseSectionRepository.findById(secId).orElse(null) : null);
+        Subject subj = sec != null ? sec.getSubject() : null;
+        int credits = (subj != null && subj.getCredits() != null && subj.getCredits() > 0) ? subj.getCredits() : 3;
+        int totalPeriods = credits * 15;
+
+        int periodsPerSession = 3;
+        try {
+            if (secId != null && scheduleRepository != null) {
+                List<Schedule> schedules = scheduleRepository.findBySectionId(secId);
+                if (schedules != null && !schedules.isEmpty()) {
+                    Schedule s = schedules.get(0);
+                    if (s != null && s.getStartPeriod() != null && s.getEndPeriod() != null) {
+                        periodsPerSession = Math.max(1, s.getEndPeriod() - s.getStartPeriod() + 1);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            periodsPerSession = 3;
+        }
+
+        int absentPeriods = absentSessions * periodsPerSession;
+        double absentRate = totalPeriods > 0 ? (double) absentPeriods / totalPeriods : 0.0;
+
+        e.setAbsenceCount(absentSessions);
+        e.setAbsentPeriods(absentPeriods);
+        e.setTotalPeriods(totalPeriods);
+        e.setAbsentRate(absentRate);
+    }
+
     public List<Enrollment> findByStudent(Long studentId) {
         List<Enrollment> enrollments = enrollmentRepository.findAllByStudentIdWithDetails(studentId);
         if (!enrollments.isEmpty() && attendanceRecordRepository != null) {
             Map<Long, Long> absences = attendanceRecordRepository.countAbsencesByStudentId(studentId).stream()
                     .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
-            enrollments.forEach(e -> e.setAbsenceCount(absences.getOrDefault(e.getId(), 0L).intValue()));
+            enrollments.forEach(e -> populateAbsenceStats(e, absences.getOrDefault(e.getId(), 0L).intValue(), null));
         }
         return enrollments;
     }
 
     public List<Enrollment> findBySection(Long sectionId) {
+        return findBySection(sectionId, null);
+    }
+
+    public List<Enrollment> findBySection(Long sectionId, Long currentUserId) {
         List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(sectionId);
-        Map<Long, Long> absences = attendanceRecordRepository.countAbsencesBySectionId(sectionId).stream()
-                .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
-        enrollments.forEach(e -> e.setAbsenceCount(absences.getOrDefault(e.getId(), 0L).intValue()));
+        Map<Long, Long> absences = (attendanceRecordRepository != null)
+                ? attendanceRecordRepository.countAbsencesBySectionId(sectionId).stream()
+                        .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]))
+                : Collections.emptyMap();
+
+        Student currentStudent = (currentUserId != null && studentRepository != null)
+                ? studentRepository.findByUserId(currentUserId).orElse(null)
+                : null;
+
+        for (Enrollment e : enrollments) {
+            boolean isSelf = currentStudent != null && e.getStudent() != null
+                    && e.getStudent().getId().equals(currentStudent.getId());
+
+            if (currentStudent != null && !isSelf) {
+                // Bảo mật quyền riêng tư: Ẩn thông tin vắng mặt của bạn học khác khi người xem là sinh viên
+                e.setAbsenceCount(null);
+                e.setAbsentPeriods(null);
+                e.setAbsentRate(null);
+                e.setTotalPeriods(null);
+            } else {
+                int absentSessions = absences.getOrDefault(e.getId(), 0L).intValue();
+                populateAbsenceStats(e, absentSessions, sectionId);
+            }
+        }
         return enrollments;
     }
 
@@ -103,7 +161,9 @@ public class EnrollmentService {
             CourseSection section = courseSectionRepository.findById(sectionId)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
             if (section.getLecturer() == null || !section.getLecturer().getId().equals(lecturer.getId())) {
-                throw new AccessDeniedException("Bạn không có quyền xem danh sách sinh viên của lớp học phần này");
+                String assignedLec = section.getLecturer() != null ? section.getLecturer().getFullName() : "Chưa phân công";
+                throw new AccessDeniedException("Bạn không phải giảng viên phụ trách lớp học phần " + section.getSectionCode()
+                        + " (Lớp do " + assignedLec + " phụ trách). Vui lòng đăng nhập đúng tài khoản.");
             }
             return;
         }

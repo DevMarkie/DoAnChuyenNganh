@@ -60,9 +60,9 @@ public class Student {
     @Column(name = "emergency_contact_relationship", length = 50)
     private String emergencyContactRelationship;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "class_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ClassEntity classEntity;
 
     @Enumerated(EnumType.STRING)

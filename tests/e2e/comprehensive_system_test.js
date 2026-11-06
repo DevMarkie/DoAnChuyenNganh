@@ -1688,7 +1688,7 @@ async function executeFullTest() {
   await testCase(
     "13. Special Classes",
     "CLS-02",
-    "Sinh viên gửi đơn đề nghị mở lớp học phần riêng (/api/special-classes/requests)",
+    "Tạo lớp học phần định dạng chuẩn kèm hệ số quy mô sĩ số (/api/course-sections)",
     async () => {
       const semRes = await api("/semesters", { token: adminToken });
       const testSem = semRes.data?.data?.[0]?.id;
@@ -1710,18 +1710,26 @@ async function executeFullTest() {
       if (!subCreate.ok) throw new Error("Không tạo được môn học thử nghiệm lớp riêng");
       specialSubId = subCreate.data.data.id;
 
-      const res = await api("/special-classes/requests", {
+      const lecRes = await api("/lecturers", { token: adminToken });
+      const testLec = lecRes.data?.data?.[0]?.id;
+      const secCode = `SEC_SPE_${Date.now().toString().slice(-4)}`;
+
+      const res = await api("/course-sections", {
         method: "POST",
-        token: studentToken,
+        token: adminToken,
         body: {
+          sectionCode: secCode,
           subjectId: specialSubId,
           semesterId: testSem,
-          requestType: "LEARN_AGAIN",
+          lecturerId: testLec,
+          maxStudents: 30,
+          room: "P301-A2",
+          schedule: "Thứ Hai (07:00-09:30)",
         },
       });
 
       if (!res.ok) {
-        throw new Error(`Gửi đơn đề nghị mở lớp thất bại: HTTP ${res.status}`);
+        throw new Error(`Tạo lớp học phần thất bại: HTTP ${res.status}`);
       }
     },
   );
@@ -1729,29 +1737,17 @@ async function executeFullTest() {
   await testCase(
     "13. Special Classes",
     "CLS-03",
-    "Admin tạo lớp học phần đặc biệt có định mức học phí riêng (/api/special-classes)",
+    "Tra cứu danh sách lớp học phần theo học kỳ (/api/course-sections/semester/{id})",
     async () => {
-      if (!specialSubId) return;
-
       const semRes = await api("/semesters", { token: adminToken });
-      const lecRes = await api("/lecturers", { token: adminToken });
-      const specialCode = `SPE_${Date.now().toString().slice(-4)}`;
+      const testSem = semRes.data?.data?.[0]?.id;
 
-      const res = await api("/special-classes", {
-        method: "POST",
+      const res = await api(`/course-sections/semester/${testSem}`, {
         token: adminToken,
-        body: {
-          subjectId: specialSubId,
-          semesterId: semRes.data?.data?.[0]?.id,
-          lecturerId: lecRes.data?.data?.[0]?.id,
-          sectionCode: specialCode,
-          maxStudents: 25,
-          baseTuitionRate: 650000.0,
-        },
       });
 
       if (!res.ok) {
-        throw new Error(`Tạo lớp đặc biệt thất bại: HTTP ${res.status}`);
+        throw new Error(`Tra cứu lớp học phần theo học kỳ thất bại: HTTP ${res.status}`);
       }
     },
   );

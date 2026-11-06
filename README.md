@@ -85,7 +85,7 @@ flowchart TD
 
     subgraph DataLayer ["5. TẦNG DỮ LIỆU & BỘ NHỚ ĐỆM (DATA & CACHE TIER)"]
         Redis[("⚡ Redis 7 Alpine\nDistributed Locks · Atomic Capacity · Session")]
-        MySQL[("🗄️ MySQL 8.0 InnoDB\n41 Bảng quan hệ · 2 Database Views · Composite Indexes")]
+        MySQL[("🗄️ MySQL 8.0 InnoDB\n39 Bảng quan hệ · 2 Database Views · Composite Indexes")]
     end
 
     ClientLayer -->|RESTful API / JSON| Nginx
@@ -105,7 +105,7 @@ flowchart TD
 | **Frontend SPA** | React, Vite, Tailwind CSS, Zustand | React 19.2, Vite 8.2, Tailwind 3.4, Zustand 5 | Giao diện hiện đại Apple Glassmorphism & Aurora UI, Dark/Light Mode, Native Fetch Client (Zero External Axios Dep). |
 | **Backend API** | Java LTS, Spring Boot, Spring Security | Java 23, Spring Boot 3.5.6, JWT 0.12.6 | 33 REST Controllers, 20+ Services, xác thực 2 lớp Access/Refresh Token, phân quyền RBAC 5 vai trò. |
 | **High Concurrency** | Redis, Lettuce Pool, Commons Pool 2 | Redis 7-alpine, Lettuce 6.x | Bộ nhớ đệm phân tán, cơ chế khóa phân tán Redis Lock cho ghi danh môn học, chống quá tải sĩ số. |
-| **Cơ sở dữ liệu** | MySQL Server, InnoDB Engine, HikariCP | MySQL 8.0, HikariCP 5.1 | 41 bảng quan hệ chuẩn 3NF, 2 Database Views tối ưu N+1, `utf8mb4_unicode_ci` hỗ trợ tiếng Việt chuẩn xác. |
+| **Cơ sở dữ liệu** | MySQL Server, InnoDB Engine, HikariCP | MySQL 8.0, HikariCP 5.1 | 39 bảng quan hệ chuẩn 3NF, 2 Database Views tối ưu N+1, `utf8mb4_unicode_ci` hỗ trợ tiếng Việt chuẩn xác. |
 | **Điều phối tải** | Nginx Reverse Proxy & HTTP Load Balancing | Nginx 1.25 Alpine | Điều hướng tải Round-Robin qua cụm 3 Backend Replicas, phục vụ tài nguyên tĩnh SPA. |
 | **Bộ kiểm thử QA** | JUnit 5, Mockito, Vitest, Node.js E2E | JUnit 5, Mockito 5, Vitest 5.0 | 288 Backend tests, 80 Frontend tests, 70+ E2E tests, bài test 600 SV đồng thời, kiểm tra lỗ hổng OWASP. |
 
@@ -231,10 +231,10 @@ DoAnChuyenNganh/
 │   ├── nginx.cluster.conf         #   Cấu hình Nginx Cân bằng tải Round-Robin cho cụm 3 Backends
 │   └── README.md                  #   👉 Cẩm nang phát triển Frontend, Aurora UI & Testing
 ├── database/                      # Cơ sở dữ liệu quan hệ MySQL 8.0 (InnoDB, utf8mb4_unicode_ci)
-│   ├── schema.sql                 #   Canonical DDL: Toàn bộ 41 bảng quan hệ, 2 Views, Composite Indexes
+│   ├── schema.sql                 #   Canonical DDL: Toàn bộ 39 bảng quan hệ, 2 Views, Composite Indexes
 │   ├── seed.sql                   #   Dữ liệu mẫu thực nghiệm: 3.000 SV, 80 GV, 28 ngành, 8 khoa, 5 kỳ
 │   ├── migrations/                #   Kho lưu trữ migration hợp nhất (consolidated_migrations.sql)
-│   └── README.md                  #   👉 Cẩm nang thiết kế CSDL, 41 bảng, Database Views & Indexing
+│   └── README.md                  #   👉 Cẩm nang thiết kế CSDL, 39 bảng, Database Views & Indexing
 ├── drawio/                        # Hệ thống sơ đồ phân tích thiết kế chuẩn OMG UML 2.5
 │   ├── *.drawio                   #   5 Bộ sơ đồ Master (76 tabs): UseCase, Sequence, Activity, BCE, ERD
 │   ├── scripts/                   #   Bộ công cụ Python tự động sinh và kiểm toán toàn vẹn XML sơ đồ
@@ -429,9 +429,9 @@ Hệ thống được tài liệu hóa chi tiết và đồng bộ thông qua 5 
 
 | Tài liệu / Phân hệ | Đường dẫn liên kết | Mô tả nội dung kỹ thuật |
 | :--- | :--- | :--- |
-| **Cẩm nang Máy chủ Backend** | [backend/README.md](backend/README.md) | Kiến trúc REST API 33 Controllers, 20+ Services, 41 JPA Entities, JWT và cơ chế khóa phân tán Redis Lock. |
+| **Cẩm nang Máy chủ Backend** | [backend/README.md](backend/README.md) | Kiến trúc REST API 33 Controllers, 20+ Services, 38 JPA Entities, JWT và cơ chế khóa phân tán Redis Lock. |
 | **Cẩm nang Giao diện Frontend** | [frontend/README.md](frontend/README.md) | React 19 SPA, Zustand stores, Native Fetch Client (Zero Dep), Apple Vision & Aurora Glassmorphism UI. |
-| **Cẩm nang Cơ sở dữ liệu** | [database/README.md](database/README.md) | 41 bảng quan hệ chuẩn 3NF, 2 Database Views, consolidated migrations và chiến lược Indexing tối ưu tải cao. |
+| **Cẩm nang Cơ sở dữ liệu** | [database/README.md](database/README.md) | 39 bảng quan hệ chuẩn 3NF, 2 Database Views, consolidated migrations và chiến lược Indexing tối ưu tải cao. |
 | **Cẩm nang Sơ đồ UML Draw.io** | [drawio/README.md](drawio/README.md) | 5 Tập sơ đồ Master (76 tabs) chuẩn OMG UML 2.5: Use Case, Sequence (21 tabs), Activity (21 tabs), BCE (21 tabs), ERD (8 tabs). |
 | **Cẩm nang Kiểm thử QA** | [tests/README.md](tests/README.md) | Khung 8 Trụ cột QA, 285+ Backend tests, 80 Frontend tests, 70+ E2E flows, kiểm thử đồng thời 600 SV và Visual Dashboard. |
 

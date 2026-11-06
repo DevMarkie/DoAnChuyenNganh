@@ -118,14 +118,15 @@ export default function AcademicDashboardPage() {
 
   return (
     <div className="page-container" style={{ padding: '24px', maxWidth: '1400px', margin: '0 auto' }}>
-      {/* Welcome Banner */}
+      {/* Welcome Banner — Minimalist Academic Header */}
       <div style={{
-        background: 'linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)',
-        borderRadius: '16px',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-lg)',
         padding: '28px 32px',
-        color: '#fff',
+        color: 'var(--text-main)',
         marginBottom: '28px',
-        boxShadow: '0 10px 25px -5px rgba(124, 58, 237, 0.25)',
+        boxShadow: 'var(--shadow-sm)',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -133,31 +134,41 @@ export default function AcademicDashboardPage() {
         gap: '20px'
       }}>
         <div style={{ maxWidth: '650px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', marginBottom: '12px' }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'var(--primary-light)',
+            color: 'var(--primary)',
+            padding: '4px 12px',
+            borderRadius: 'var(--radius-full)',
+            fontSize: '12px',
+            fontWeight: '600',
+            marginBottom: '12px',
+            border: '1px solid var(--primary-border)'
+          }}>
             <Sparkles size={14} /> Phân hệ Quản lý Đào tạo & Học vụ
           </div>
-          <h1 style={{ fontSize: '26px', fontWeight: '800', margin: '0 0 8px', letterSpacing: '-0.5px' }}>
+          <h1 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 8px', letterSpacing: '-0.02em', color: 'var(--text-main)' }}>
             Chào mừng Cán bộ Phòng Đào tạo
           </h1>
-          <p style={{ margin: 0, fontSize: '14px', opacity: 0.9, lineHeight: '1.6' }}>
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
             Hệ thống cung cấp đầy đủ các công cụ điều hành học vụ: thiết lập chương trình đào tạo, mở lớp học phần, thẩm định điều kiện tốt nghiệp và phê duyệt phúc khảo điểm theo đúng Ma trận phân quyền.
           </p>
         </div>
 
         <Link
           to="/academic/graduation"
+          className="btn btn-primary"
           style={{
-            background: '#fff',
-            color: '#7c3aed',
             padding: '12px 20px',
-            borderRadius: '10px',
-            fontWeight: '700',
+            borderRadius: 'var(--radius-md)',
+            fontWeight: '600',
             fontSize: '14px',
             textDecoration: 'none',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
           }}
         >
           <GraduationCap size={18} />
@@ -167,10 +178,10 @@ export default function AcademicDashboardPage() {
 
       {/* Section Title */}
       <div style={{ marginBottom: '18px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#0f172a', margin: '0 0 4px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 4px' }}>
           Nghiệp vụ Chuyên trách Phòng Đào tạo
         </h2>
-        <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+        <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
           Truy cập nhanh các chức năng theo đúng thẩm quyền được phân định
         </p>
       </div>
@@ -184,56 +195,58 @@ export default function AcademicDashboardPage() {
               key={card.path}
               to={card.path}
               style={{
-                background: '#fff',
-                borderRadius: '12px',
-                border: card.highlight ? '2px solid #7c3aed' : '1px solid #e2e8f0',
+                background: 'var(--bg-surface)',
+                borderRadius: 'var(--radius-md)',
+                border: card.highlight ? '1px solid var(--primary)' : '1px solid var(--border-color)',
                 padding: '20px',
                 textDecoration: 'none',
                 color: 'inherit',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                transition: 'all 0.2s ease',
+                transition: 'border-color var(--transition-fast), box-shadow var(--transition-fast)',
                 position: 'relative',
-                boxShadow: card.highlight ? '0 4px 12px rgba(124, 58, 237, 0.1)' : '0 1px 3px rgba(0,0,0,0.05)'
+                boxShadow: 'var(--shadow-xs)'
               }}
               className="dashboard-card"
             >
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
                   <div style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: '10px',
-                    background: `color-mix(in srgb, ${card.color} 12%, transparent)`,
-                    color: card.color,
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'var(--bg-subtle)',
+                    color: card.highlight ? 'var(--primary)' : 'var(--text-secondary)',
+                    border: '1px solid var(--border-color)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}>
-                    <Icon size={22} />
+                    <Icon size={20} />
                   </div>
                   <span style={{
                     fontSize: '11px',
                     fontWeight: '600',
                     padding: '3px 8px',
-                    borderRadius: '6px',
-                    background: `color-mix(in srgb, ${card.color} 10%, transparent)`,
-                    color: card.color,
+                    borderRadius: 'var(--radius-sm)',
+                    background: card.highlight ? 'var(--primary-light)' : 'var(--bg-subtle)',
+                    color: card.highlight ? 'var(--primary)' : 'var(--text-muted)',
+                    border: '1px solid var(--border-color)'
                   }}>
                     {card.badge}
                   </span>
                 </div>
 
-                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', margin: '0 0 6px' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-main)', margin: '0 0 6px' }}>
                   {card.title}
                 </h3>
-                <p style={{ fontSize: '13px', color: '#64748b', margin: 0, lineHeight: '1.5' }}>
+                <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.5' }}>
                   {card.desc}
                 </p>
               </div>
 
-              <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', color: card.color }}>
+              <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', color: 'var(--primary)' }}>
                 <span>Truy cập nghiệp vụ</span>
                 <ArrowRight size={14} />
               </div>

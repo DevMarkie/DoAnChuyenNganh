@@ -745,10 +745,11 @@ export default function CurriculumRoadmapPage() {
                 <div
                   style={{
                     padding: '16px 20px',
-                    borderRadius: '12px',
+                    borderRadius: 'var(--radius-md)',
                     marginBottom: '20px',
-                    background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(14, 165, 233, 0.08) 100%)',
-                    border: '1.5px solid var(--primary, #2563eb)',
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--primary-border)',
+                    boxShadow: 'var(--shadow-xs)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-start',
@@ -1073,35 +1074,34 @@ export default function CurriculumRoadmapPage() {
               <div
                 style={{
                   padding: '24px',
-                  borderRadius: '16px',
+                  borderRadius: 'var(--radius-lg)',
                   marginBottom: '24px',
-                  background: auditData.isGraduationEligible
-                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%)'
-                    : 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(239, 68, 68, 0.08) 100%)',
-                  border: `1.5px solid ${auditData.isGraduationEligible ? '#10b981' : '#f59e0b'}`,
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-color)',
+                  borderLeft: `4px solid ${auditData.isGraduationEligible ? 'var(--success)' : 'var(--warning)'}`,
+                  boxShadow: 'var(--shadow-sm)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                   <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                     <div
                       style={{
-                        width: '52px',
-                        height: '52px',
-                        borderRadius: '14px',
-                        background: auditData.isGraduationEligible ? '#10b981' : '#f59e0b',
-                        color: '#ffffff',
+                        width: '46px',
+                        height: '46px',
+                        borderRadius: 'var(--radius-md)',
+                        background: auditData.isGraduationEligible ? 'var(--success-bg)' : 'var(--warning-bg)',
+                        color: auditData.isGraduationEligible ? 'var(--success)' : 'var(--warning)',
+                        border: `1px solid ${auditData.isGraduationEligible ? 'var(--success-border)' : 'var(--warning-border)'}`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       }}
                     >
-                      {auditData.isGraduationEligible ? <Award size={28} /> : <AlertTriangle size={28} />}
+                      {auditData.isGraduationEligible ? <Award size={24} /> : <AlertTriangle size={24} />}
                     </div>
 
                     <div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: auditData.isGraduationEligible ? '#059669' : '#d97706' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: auditData.isGraduationEligible ? 'var(--success)' : 'var(--warning)' }}>
                         Tình trạng kiểm toán tốt nghiệp (BR-CUR-04)
                       </div>
                       <h2 style={{ margin: '4px 0', fontSize: '1.45rem', fontWeight: 800, color: 'var(--text-main)' }}>
@@ -1165,55 +1165,100 @@ export default function CurriculumRoadmapPage() {
               </div>
 
               {/* 4 KPI Metrics Grid */}
-              <div className="stats-grid" style={{ marginBottom: '24px' }}>
-                <div className="stat-card">
-                  <div className="stat-icon-wrapper curriculum-stat-icon--total">
-                    <CheckCircle2 size={22} />
-                  </div>
-                  <div>
-                    <div className="stat-value">
-                      {auditData.totalCompletedCredits} / {auditData.totalRequiredCredits}
-                    </div>
-                    <div className="stat-label">Tổng tín chỉ tích lũy chuẩn</div>
-                  </div>
-                </div>
+              {(() => {
+                const compBlocks = auditData.blocks?.filter((b) => b.blockType === 'COMPULSORY') || [];
+                const totalCompSubs = compBlocks.reduce(
+                  (acc, b) => acc + (b.acceptedSubjects?.length || 0) + (b.unfulfilledOrRemainingSubjects?.length || 0),
+                  0
+                );
+                const passedCompSubs = compBlocks.reduce((acc, b) => acc + (b.acceptedSubjects?.length || 0), 0);
+                const missingCompSubs = totalCompSubs - passedCompSubs;
 
-                <div className="stat-card">
-                  <div className="stat-icon-wrapper curriculum-stat-icon--completed">
-                    <Layers size={22} />
-                  </div>
-                  <div>
-                    <div className="stat-value">
-                      {auditData.completedCompulsoryCredits} / {auditData.totalCompulsoryCredits}
+                return (
+                  <div className="stats-grid" style={{ marginBottom: '24px' }}>
+                    <div className="stat-card">
+                      <div className="stat-icon-wrapper curriculum-stat-icon--total">
+                        <CheckCircle2 size={22} />
+                      </div>
+                      <div>
+                        <div className="stat-value">
+                          {auditData.totalCompletedCredits} / {auditData.totalRequiredCredits}
+                        </div>
+                        <div className="stat-label">Tổng tín chỉ tích lũy chuẩn</div>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          marginTop: '4px',
+                          color: auditData.totalCompletedCredits >= auditData.totalRequiredCredits ? 'var(--success, #10b981)' : '#ef4444',
+                        }}>
+                          {auditData.totalCompletedCredits >= auditData.totalRequiredCredits
+                            ? `Đạt ${auditData.totalCompletedCredits}/${auditData.totalRequiredCredits} TC quy định`
+                            : `Còn thiếu ${auditData.totalRequiredCredits - auditData.totalCompletedCredits} TC`}
+                        </div>
+                      </div>
                     </div>
-                    <div className="stat-label">Tín chỉ Bắt buộc (Compulsory)</div>
-                  </div>
-                </div>
 
-                <div className="stat-card">
-                  <div className="stat-icon-wrapper curriculum-stat-icon--in-progress">
-                    <Cpu size={22} />
-                  </div>
-                  <div>
-                    <div className="stat-value">
-                      {auditData.completedElectiveCreditsAccepted} / {auditData.totalElectiveCreditsRequired}
+                    <div className="stat-card">
+                      <div className="stat-icon-wrapper curriculum-stat-icon--completed">
+                        <Layers size={22} />
+                      </div>
+                      <div>
+                        <div className="stat-value">
+                          {auditData.completedCompulsoryCredits} / {auditData.totalCompulsoryCredits}
+                        </div>
+                        <div className="stat-label">Tín chỉ Bắt buộc (Compulsory)</div>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          marginTop: '4px',
+                          color: missingCompSubs === 0 ? 'var(--success, #10b981)' : '#ef4444',
+                        }}>
+                          {missingCompSubs === 0
+                            ? `Đã hoàn thành ${passedCompSubs}/${totalCompSubs} môn bắt buộc`
+                            : `Đạt ${passedCompSubs}/${totalCompSubs} môn (Còn nợ ${missingCompSubs} môn)`}
+                        </div>
+                      </div>
                     </div>
-                    <div className="stat-label">Tín chỉ Tự chọn đạt (Elective)</div>
-                  </div>
-                </div>
 
-                <div className="stat-card">
-                  <div className="stat-icon-wrapper curriculum-stat-icon--remaining">
-                    <Sparkles size={22} />
-                  </div>
-                  <div>
-                    <div className="stat-value">
-                      {auditData.excessElectiveCredits} TC
+                    <div className="stat-card">
+                      <div className="stat-icon-wrapper curriculum-stat-icon--in-progress">
+                        <Cpu size={22} />
+                      </div>
+                      <div>
+                        <div className="stat-value">
+                          {auditData.completedElectiveCreditsAccepted} / {auditData.totalElectiveCreditsRequired}
+                        </div>
+                        <div className="stat-label">Tín chỉ Tự chọn đạt (Elective)</div>
+                        <div style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          marginTop: '4px',
+                          color: auditData.completedElectiveCreditsAccepted >= auditData.totalElectiveCreditsRequired ? 'var(--success, #10b981)' : '#ef4444',
+                        }}>
+                          {auditData.completedElectiveCreditsAccepted >= auditData.totalElectiveCreditsRequired
+                            ? 'Đã đủ số tín chỉ tự chọn'
+                            : `Còn thiếu ${auditData.totalElectiveCreditsRequired - auditData.completedElectiveCreditsAccepted} TC tự chọn`}
+                        </div>
+                      </div>
                     </div>
-                    <div className="stat-label">Tự chọn ngoài khung / Thừa</div>
+
+                    <div className="stat-card">
+                      <div className="stat-icon-wrapper curriculum-stat-icon--remaining">
+                        <Sparkles size={22} />
+                      </div>
+                      <div>
+                        <div className="stat-value">
+                          {auditData.excessElectiveCredits} TC
+                        </div>
+                        <div className="stat-label">Tự chọn ngoài khung / Thừa</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                          Đã tối ưu Best-Grade
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* Excess / Replaced Electives Card (Best-Grade Optimization Highlight) */}
               {auditData.excessElectives?.length > 0 && (
@@ -1222,17 +1267,17 @@ export default function CurriculumRoadmapPage() {
                   style={{
                     padding: '20px',
                     marginBottom: '24px',
-                    border: '1px solid rgba(14, 165, 233, 0.3)',
-                    background: 'linear-gradient(135deg, rgba(14, 165, 233, 0.04) 0%, rgba(99, 102, 241, 0.04) 100%)',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-surface)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                     <div
                       style={{
                         padding: '6px',
-                        borderRadius: '8px',
-                        background: 'rgba(14, 165, 233, 0.15)',
-                        color: 'var(--primary, #2563eb)',
+                        borderRadius: 'var(--radius-sm)',
+                        background: 'var(--primary-light)',
+                        color: 'var(--primary)',
                       }}
                     >
                       <Sparkles size={18} />
@@ -1326,11 +1371,17 @@ export default function CurriculumRoadmapPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {block.isCompleted ? (
                           <span className="badge badge-success">
-                            <CheckCircle2 size={13} /> Hoàn thành ({block.completedCredits}/{block.requiredCredits} TC)
+                            <CheckCircle2 size={13} /> Hoàn thành ({block.completedCredits}/{block.requiredCredits} TC
+                            {block.blockType === 'COMPULSORY' &&
+                              ` • Đạt ${block.acceptedSubjects?.length || 0}/${(block.acceptedSubjects?.length || 0) + (block.unfulfilledOrRemainingSubjects?.length || 0)} môn`}
+                            )
                           </span>
                         ) : (
                           <span className="badge badge-danger">
-                            <AlertCircle size={13} /> Chưa hoàn thành ({block.completedCredits}/{block.requiredCredits} TC)
+                            <AlertCircle size={13} /> Chưa hoàn thành ({block.completedCredits}/{block.requiredCredits} TC
+                            {block.blockType === 'COMPULSORY' &&
+                              ` • Nợ ${block.unfulfilledOrRemainingSubjects?.length || 0} môn`}
+                            )
                           </span>
                         )}
                       </div>

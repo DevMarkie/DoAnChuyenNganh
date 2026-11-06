@@ -1,11 +1,50 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Lock, User, X, Eye, EyeOff, KeyRound, ArrowRight } from 'lucide-react';
 import { PortalStudentIcon, PortalLecturerIcon, PortalAdminIcon } from '../../components/icons';
 import { toast } from 'react-toastify';
 import { authService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
 import SmsLogo from '../../components/common/SmsLogo';
+
+export const ROLE_TO_PORTAL = {
+  STUDENT: {
+    portalType: 'student',
+    path: '/student/login',
+    label: 'Cổng Sinh viên',
+    color: '#2563eb',
+  },
+  LECTURER: {
+    portalType: 'lecturer',
+    path: '/lecturer/login',
+    label: 'Cổng Giảng viên',
+    color: '#0d9488',
+  },
+  ACADEMIC_AFFAIRS: {
+    portalType: 'academic',
+    path: '/academic/login',
+    label: 'Cổng Cán bộ Đào tạo & Khảo thí',
+    color: '#7c3aed',
+  },
+  ACADEMIC_STAFF: {
+    portalType: 'academic',
+    path: '/academic/login',
+    label: 'Cổng Cán bộ Đào tạo & Khảo thí',
+    color: '#7c3aed',
+  },
+  EXAMINATION_OFFICER: {
+    portalType: 'academic',
+    path: '/academic/login',
+    label: 'Cổng Cán bộ Đào tạo & Khảo thí',
+    color: '#7c3aed',
+  },
+  ADMIN: {
+    portalType: 'admin',
+    path: '/admin/login',
+    label: 'Cổng Quản trị viên',
+    color: '#d97706',
+  },
+};
 
 const PORTAL_CONFIG = {
   student: {
@@ -21,8 +60,6 @@ const PORTAL_CONFIG = {
     subheading: 'Tra cứu thời khóa biểu, điểm tích lũy và đăng ký tín chỉ trực tuyến',
     userLabel: 'Mã số sinh viên (MSSV)',
     userPlaceholder: 'VD: 2500001',
-    defaultUser: '2500001',
-    defaultPass: '123456',
     rejectMsg: 'Từ chối truy cập: Tài khoản không thuộc phân hệ Sinh viên! Vui lòng đăng nhập đúng cổng.',
     features: [
       'Đăng ký học phần tín chỉ trực tuyến nhanh chóng & chính xác',
@@ -33,7 +70,7 @@ const PORTAL_CONFIG = {
     profilePath: '/student/profile',
     otherLinks: [
       { label: 'Cổng Cán bộ & Giảng viên', path: '/lecturer/login', color: '#0d9488' },
-      { label: 'Cổng Cán bộ Đào tạo', path: '/academic/login', color: '#7c3aed' },
+      { label: 'Cổng Cán bộ Đào tạo & Khảo thí', path: '/academic/login', color: '#7c3aed' },
       { label: 'Cổng Quản trị hệ thống', path: '/admin/login', color: '#d97706' },
     ],
   },
@@ -50,8 +87,6 @@ const PORTAL_CONFIG = {
     subheading: 'Quản lý lịch giảng dạy, theo dõi sinh viên & vào sổ điểm học phần',
     userLabel: 'Mã cán bộ / Giảng viên',
     userPlaceholder: 'VD: 1000001',
-    defaultUser: '1000001',
-    defaultPass: '123456',
     rejectMsg: 'Từ chối truy cập: Tài khoản không thuộc phân hệ Giảng viên! Vui lòng đăng nhập đúng cổng.',
     features: [
       'Theo dõi lịch giảng dạy và danh sách lớp học phần phân công',
@@ -62,30 +97,28 @@ const PORTAL_CONFIG = {
     profilePath: '/lecturer/profile',
     otherLinks: [
       { label: 'Cổng Thông tin Sinh viên', path: '/student/login', color: '#2563eb' },
-      { label: 'Cổng Cán bộ Đào tạo', path: '/academic/login', color: '#7c3aed' },
+      { label: 'Cổng Cán bộ Đào tạo & Khảo thí', path: '/academic/login', color: '#7c3aed' },
       { label: 'Cổng Quản trị hệ thống', path: '/admin/login', color: '#d97706' },
     ],
   },
   academic: {
-    role: ['ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF'],
+    role: ['ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'EXAMINATION_OFFICER'],
     accent: '#7c3aed',
     accentHover: '#6d28d9',
     accentSoft: '#f5f3ff',
     accentBorder: '#ddd6fe',
     Icon: PortalAdminIcon,
-    roleLabel: 'Cán bộ Đào tạo',
-    title: 'Cổng cán bộ đào tạo',
-    heading: 'Đăng nhập Cổng Đào tạo',
-    subheading: 'Quản lý hồ sơ sinh viên, khung chương trình, mở lớp và xét tốt nghiệp',
-    userLabel: 'Tài khoản Cán bộ Đào tạo',
-    userPlaceholder: 'VD: daotao',
-    defaultUser: 'daotao',
-    defaultPass: '123456',
-    rejectMsg: 'Từ chối truy cập: Tài khoản không thuộc phân hệ Cán bộ Đào tạo! Vui lòng đăng nhập đúng cổng.',
+    roleLabel: 'Cán bộ Đào tạo & Khảo thí',
+    title: 'Cổng cán bộ đào tạo & khảo thí',
+    heading: 'Đăng nhập Cổng Đào tạo & Khảo thí',
+    subheading: 'Quản lý hồ sơ sinh viên, khung chương trình, mở lớp, phòng thi và xét tốt nghiệp',
+    userLabel: 'Mã cán bộ / Nhân viên',
+    userPlaceholder: 'VD: NV001, KT001 hoặc daotao',
+    rejectMsg: 'Từ chối truy cập: Tài khoản không thuộc phân hệ Cán bộ Đào tạo & Khảo thí! Vui lòng đăng nhập đúng cổng.',
     features: [
       'Quản lý hồ sơ sinh viên, khung chương trình đào tạo & khối kiến thức',
-      'Mở lớp học phần, phân công giảng viên & xử lý ngoại lệ đăng ký tín chỉ',
-      'Chạy thuật toán xét tốt nghiệp chuẩn hóa & phê duyệt đơn phúc khảo điểm',
+      'Mở lớp học phần, phòng thi, phân công giảng viên & xử lý phúc khảo điểm',
+      'Chạy thuật toán xét tốt nghiệp chuẩn hóa & giám sát kiểm toán điểm thi',
     ],
     redirectPath: '/academic/dashboard',
     otherLinks: [
@@ -105,11 +138,9 @@ const PORTAL_CONFIG = {
     title: 'Cổng quản trị viên hệ thống',
     heading: 'Đăng nhập Quản trị Trung tâm',
     subheading: 'Phân hệ cấu hình hệ thống, phân quyền, kiểm toán và bảo mật cấp cao',
-    userLabel: 'Tài khoản Quản trị viên',
-    userPlaceholder: 'VD: admin',
-    defaultUser: 'admin',
-    defaultPass: '123456',
-    rejectMsg: 'Cảnh báo: Tài khoản của bạn không có quyền Quản trị viên hệ thống!',
+    userLabel: 'Mã cán bộ / Quản trị viên',
+    userPlaceholder: 'VD: AD001 hoặc admin',
+    rejectMsg: 'Cảnh báo: Tài khoản của bạn không có quyền Quản trị viên hệ thống! Vui lòng đăng nhập đúng cổng.',
     features: [
       'Cấu hình hệ thống, quản trị tài khoản & cấp lại mật khẩu bảo mật',
       'Quản lý cổng thu ngân học phí, kiểm soát luồng giao dịch tài chính',
@@ -118,7 +149,7 @@ const PORTAL_CONFIG = {
     redirectPath: '/admin/dashboard',
     otherLinks: [
       { label: 'Cổng Thông tin Sinh viên', path: '/student/login', color: '#2563eb' },
-      { label: 'Cổng Cán bộ Đào tạo', path: '/academic/login', color: '#7c3aed' },
+      { label: 'Cổng Cán bộ Đào tạo & Khảo thí', path: '/academic/login', color: '#7c3aed' },
       { label: 'Cổng Giảng viên', path: '/lecturer/login', color: '#0d9488' },
     ],
   },
@@ -126,23 +157,27 @@ const PORTAL_CONFIG = {
 
 export default function PortalLoginPage({ portalType = 'student' }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuthStore();
   const config = PORTAL_CONFIG[portalType] || PORTAL_CONFIG.student;
 
   const accent = config.accent;
   const accentSoft = config.accentSoft;
 
-  const [username, setUsername] = useState(config.defaultUser);
-  const [password, setPassword] = useState(config.defaultPass);
+  const initialUsername = location.state?.username || '';
+  const [username, setUsername] = useState(initialUsername);
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [portalMismatchError, setPortalMismatchError] = useState(null);
 
   const [prevPortalType, setPrevPortalType] = useState(portalType);
   if (portalType !== prevPortalType) {
     setPrevPortalType(portalType);
-    setUsername(config.defaultUser);
-    setPassword(config.defaultPass);
+    setUsername(location.state?.username || '');
+    setPassword('');
     setShowPassword(false);
+    setPortalMismatchError(null);
   }
 
   // Forgot password OTP states
@@ -235,20 +270,29 @@ export default function PortalLoginPage({ portalType = 'student' }) {
 
     try {
       setLoading(true);
-      const res = await authService.login({ username, password });
-      const data = res.data.data;
+      const res = await authService.login({ username: username.trim(), password });
+      const data = res?.data?.data || res?.data || res;
 
-      // Smart Role Routing: Chuyển hướng thông minh đến đúng cổng nếu người dùng đăng nhập chéo cổng
-      let targetPath = config.redirectPath;
+      // Strict Role Validation per Portal: Chặn hoàn toàn đăng nhập trái cổng
       const allowedRoles = Array.isArray(config.role) ? config.role : [config.role];
       if (!allowedRoles.includes(data.role)) {
-        if (data.role === 'ADMIN') targetPath = '/admin/dashboard';
-        else if (data.role === 'ACADEMIC_AFFAIRS' || data.role === 'ACADEMIC_STAFF') targetPath = '/academic/dashboard';
-        else if (data.role === 'LECTURER') targetPath = '/lecturer/dashboard';
-        else if (data.role === 'STUDENT') targetPath = '/student/dashboard';
-        else if (data.role === 'EXAMINATION_OFFICER') targetPath = '/exam/rooms';
+        const targetPortal = ROLE_TO_PORTAL[data.role];
+        setPortalMismatchError({
+          attemptedUser: username.trim(),
+          actualRole: data.role,
+          targetPortal,
+          message: config.rejectMsg || `Từ chối truy cập: Tài khoản không thuộc phân hệ ${config.roleLabel}!`,
+        });
+        toast.error(config.rejectMsg || 'Từ chối truy cập: Tài khoản không thuộc phân hệ này! Vui lòng đăng nhập đúng cổng.');
+        setPassword('');
+        return;
+      }
 
-        toast.info(`Tài khoản thuộc phân hệ ${data.role}. Đang chuyển đến đúng cổng...`);
+      setPortalMismatchError(null);
+
+      let targetPath = config.redirectPath;
+      if (data.role === 'EXAMINATION_OFFICER') {
+        targetPath = '/exam/rooms';
       }
 
       login(data.token, {
@@ -270,14 +314,6 @@ export default function PortalLoginPage({ portalType = 'student' }) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickFill = (userOverride) => {
-    const val = typeof userOverride === 'string' ? userOverride : config.defaultUser;
-    setUsername(config.defaultUser);
-    setPassword(config.defaultPass);
-    setUsername(val);
-    toast.info(`Đã điền tài khoản mẫu: ${val}`);
   };
 
   return (
@@ -395,34 +431,70 @@ export default function PortalLoginPage({ portalType = 'student' }) {
             }}>
               {config.heading}
             </h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: '24px' }}>
               Vui lòng nhập tài khoản được cấp để truy cập phân hệ.
             </p>
           </div>
 
-          {/* Sample Account Helper */}
-          <div 
-            className="force-light-text"
-            style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 14px', backgroundColor: accentSoft,
-            borderRadius: 'var(--radius-md)', border: `1px solid ${config.accentBorder}`,
-            marginBottom: '20px', fontSize: '0.8rem',
-          }}>
-            <span style={{ color: 'var(--text-muted)' }}>
-              Tài khoản mẫu: <strong style={{ color: 'var(--text-secondary)' }}>{config.defaultUser}</strong>{portalType === 'academic' && <> / <strong style={{ color: 'var(--text-secondary)' }}>staff</strong></>}
-            </span>
-            <button
-              type="button"
-              onClick={() => handleQuickFill(config.defaultUser)}
+          {/* Mismatch Portal Alert Banner */}
+          {portalMismatchError && (
+            <div
+              className="portal-mismatch-banner"
+              role="alert"
               style={{
-                background: 'none', border: 'none', color: accent,
-                fontWeight: 600, cursor: 'pointer', padding: '2px 6px', borderRadius: '4px',
+                marginBottom: '20px',
+                padding: '14px 16px',
+                borderRadius: '10px',
+                background: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
               }}
             >
-              {portalType === 'admin' ? 'Admin' : 'Điền nhanh'}
-            </button>
-          </div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '1.25rem', lineHeight: 1 }} aria-hidden="true">🚫</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, color: '#dc2626', fontSize: '0.88rem' }}>
+                    Từ chối quyền truy cập cổng
+                  </div>
+                  <div style={{ color: 'var(--text-secondary, #475569)', fontSize: '0.82rem', marginTop: '3px', lineHeight: 1.45 }}>
+                    {portalMismatchError.message}
+                  </div>
+                </div>
+              </div>
+              {portalMismatchError.targetPortal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate(portalMismatchError.targetPortal.path, {
+                      state: { username: portalMismatchError.attemptedUser },
+                    });
+                    setPortalMismatchError(null);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '9px 14px',
+                    borderRadius: '6px',
+                    background: portalMismatchError.targetPortal.color,
+                    color: '#ffffff',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    width: '100%',
+                  }}
+                >
+                  <span>👉 Chuyển sang {portalMismatchError.targetPortal.label}</span>
+                  <ArrowRight size={14} />
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit}>
@@ -436,7 +508,10 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    if (portalMismatchError) setPortalMismatchError(null);
+                  }}
                   placeholder={config.userPlaceholder}
                   required
                   className="form-control"
@@ -463,7 +538,10 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (portalMismatchError) setPortalMismatchError(null);
+                  }}
                   placeholder="Nhập mật khẩu của bạn"
                   required
                   className="form-control"

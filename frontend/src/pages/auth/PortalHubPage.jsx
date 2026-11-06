@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import SmsLogo from '../../components/common/SmsLogo';
 import { PortalStudentIcon, PortalLecturerIcon, PortalAdminIcon } from '../../components/icons';
+import useAuthStore from '../../store/authStore';
 
 const Chevron = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  <svg width="18" height="18" viewBox="0 24 24" fill="none" stroke="currentColor"
     strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M5 12h14M13 6l6 6-6 6" />
   </svg>
@@ -15,6 +16,7 @@ const DOORS = [
     name: 'Sinh viên',
     accent: '#2563eb',
     path: '/student/login',
+    dashboardPath: '/student/dashboard',
     desc: 'Đăng ký học phần, tra cứu thời khóa biểu và bảng điểm GPA/CPA.',
     Icon: PortalStudentIcon
   },
@@ -23,15 +25,17 @@ const DOORS = [
     name: 'Giảng viên',
     accent: '#0d9488',
     path: '/lecturer/login',
+    dashboardPath: '/lecturer/dashboard',
     desc: 'Quản lý lớp học phần, vào điểm và theo dõi lịch giảng dạy theo kỳ.',
     Icon: PortalLecturerIcon
   },
   {
     id: 'academic',
-    name: 'Cán bộ Đào tạo',
+    name: 'Cán bộ Đào tạo & Khảo thí',
     accent: '#7c3aed',
     path: '/academic/login',
-    desc: 'Quản lý đào tạo, khung chương trình, mở lớp học phần và xét tốt nghiệp.',
+    dashboardPath: '/academic/dashboard',
+    desc: 'Quản lý đào tạo, khung chương trình, mở lớp, phòng thi và xét tốt nghiệp.',
     Icon: PortalAdminIcon
   },
   {
@@ -39,12 +43,15 @@ const DOORS = [
     name: 'Quản trị viên',
     accent: '#d97706',
     path: '/admin/login',
+    dashboardPath: '/admin/dashboard',
     desc: 'Quản trị hệ thống, phân quyền, cấu hình bảo mật và giám sát kiểm toán.',
     Icon: PortalAdminIcon
   },
 ];
 
 export default function PortalHubPage() {
+  const { hasPortalSession } = useAuthStore();
+
   return (
     <main className="hub">
       <aside className="hub-mast">
@@ -80,10 +87,12 @@ export default function PortalHubPage() {
         <div className="hub-doors">
           {DOORS.map((door, i) => {
             const DoorIcon = door.Icon;
+            const isSessionActive = hasPortalSession(door.id);
+            const targetPath = isSessionActive ? door.dashboardPath : door.path;
             return (
               <Link
                 key={door.id}
-                to={door.path}
+                to={targetPath}
                 data-portal={door.id}
                 className="hub-door hub-anim"
                 style={{ '--role': door.accent, animationDelay: `${0.26 + i * 0.07}s` }}
@@ -106,7 +115,21 @@ export default function PortalHubPage() {
                     <DoorIcon size={26} />
                   </div>
                   <div>
-                    <div className="name">{door.name}</div>
+                    <div className="name" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {door.name}
+                      {isSessionActive && (
+                        <span style={{
+                          fontSize: '0.68rem',
+                          padding: '2px 8px',
+                          borderRadius: '999px',
+                          background: 'rgba(16, 185, 129, 0.15)',
+                          color: '#10b981',
+                          fontWeight: 600,
+                        }}>
+                          ● Đang mở phiên
+                        </span>
+                      )}
+                    </div>
                     <div className="desc">{door.desc}</div>
                   </div>
                 </div>

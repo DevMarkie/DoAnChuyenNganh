@@ -396,6 +396,31 @@ class EnrollmentServiceTest {
     }
 
     @Test
+    @DisplayName("PRIVACY: Sinh viên xem danh sách lớp chỉ thấy vắng của bản thân, sinh viên khác bị ẩn (null)")
+    void findBySection_masksAbsenceCountForOtherStudentsWhenViewerIsStudent() {
+        Student viewerStudent = createStudent(10L, 1000L);
+        Student otherStudent = createStudent(20L, 2000L);
+
+        Enrollment eMy = new Enrollment(); eMy.setId(1L); eMy.setStudent(viewerStudent);
+        Enrollment eOther = new Enrollment(); eOther.setId(2L); eOther.setStudent(otherStudent);
+
+        when(enrollmentRepository.findActiveBySectionId(100L)).thenReturn(List.of(eMy, eOther));
+        when(attendanceRecordRepository.countAbsencesBySectionId(100L))
+                .thenReturn(List.<Object[]>of(new Object[]{1L, 2L}, new Object[]{2L, 4L}));
+        when(studentRepository.findByUserId(1000L)).thenReturn(Optional.of(viewerStudent));
+
+        List<Enrollment> result = enrollmentService.findBySection(100L, 1000L);
+
+        // eMy giữ nguyên thông tin vắng
+        assertThat(result.get(0).getAbsenceCount()).isEqualTo(2);
+        assertThat(result.get(0).getAbsentPeriods()).isEqualTo(6); // 2 buổi * 3 tiết
+        // eOther bị ẩn toàn bộ để bảo mật quyền riêng tư
+        assertThat(result.get(1).getAbsenceCount()).isNull();
+        assertThat(result.get(1).getAbsentPeriods()).isNull();
+        assertThat(result.get(1).getAbsentRate()).isNull();
+    }
+
+    @Test
     @DisplayName("BR-Tuition: Khóa quyền đăng ký học phần khi sinh viên nợ học phí quá hạn")
     void enroll_blocked_whenTuitionOverdue() {
         Long userId = 1L;

@@ -184,8 +184,7 @@ export default function GradeAuditLogsPage() {
                 onChange={(e) => setStartDate(e.target.value)}
                 className="form-control"
                 style={{ height: '40px' }}
-              >
-              </input>
+              />
             </div>
 
             {/* Đến ngày */}
@@ -199,8 +198,7 @@ export default function GradeAuditLogsPage() {
                 onChange={(e) => setEndDate(e.target.value)}
                 className="form-control"
                 style={{ height: '40px' }}
-              >
-              </input>
+              />
             </div>
           </div>
 

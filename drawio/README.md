@@ -1,7 +1,7 @@
 # 📊 BỘ SƠ ĐỒ THIẾT KẾ & PHÂN TÍCH HỆ THỐNG (UML DRAW.IO SUITE)
 ## HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS / UAMS)
 > **Chuẩn mô hình hóa:** OMG UML 2.5 (Unified Modeling Language) & Phân tích BCE (Boundary - Control - Entity)  
-> **Bộ sơ đồ bao gồm:** 5 Tập sơ đồ Master (76 Tabs tổng cộng: ERD 8 tabs, UseCase 5 tabs, Activity 21 tabs, Sequence 21 tabs, BCE 21 tabs) + 5 Sơ đồ Use Case đơn phân hệ  
+> **Bộ sơ đồ bao gồm:** 5 Tập sơ đồ Master (82 Tabs tổng cộng: ERD 8 tabs, UseCase 5 tabs, Activity 23 tabs, Sequence 23 tabs, BCE 23 tabs) + 5 Sơ đồ Use Case đơn phân hệ  
 > **Quy chuẩn thiết kế:** Academic Monochrome High-Contrast (Nền trắng, viền đen 1.5px, Zero Overlap, tối ưu in ấn đồ án)  
 > **Tác giả:** Nguyễn Duy Minh (MSV: 23010359) · Khoa Công Nghệ Thông Tin · Đại học Phenikaa
 
@@ -30,10 +30,10 @@ Toàn bộ các biểu đồ được sinh tự động và kiểm định cấu
 | STT | Tên tệp Master | Chuẩn mô hình hóa | Số Tabs | Nội dung mô tả chi tiết |
 |:---:|:---|:---|:---:|:---|
 | **1** | [UseCase_Diagrams.drawio](UseCase_Diagrams.drawio) | UML 2.5 Use Case Diagram | **5 tabs** | 5 phân hệ ca sử dụng: Tổng quan toàn trường, Quản trị viên, Cán bộ Đào tạo, Giảng viên, Sinh viên. Phân định ranh giới hệ thống chuẩn mực, đầy đủ quan hệ `«include»` và `«extend»`. |
-| **2** | [ERD_Diagrams.drawio](ERD_Diagrams.drawio) | OMG UML / Relational ERD | **8 tabs** | Lược đồ Thực thể Quan hệ CSDL 2 tầng: 1 Tab Sơ đồ Tổng quan Thực thể Cốt lõi (15 thực thể) + 7 Tabs Lược đồ Phân hệ chi tiết mô hình hóa toàn bộ 41 bảng quan hệ CSDL MySQL 8. |
-| **3** | [Activity_Diagrams.drawio](Activity_Diagrams.drawio) | UML 2.5 Activity Diagram | **21 tabs**| 21 biểu đồ hoạt động phân làn (Swimlanes): Làn Tác nhân (Actor Lane) và Làn Hệ thống (System Service & DB Lane), đầy đủ nút khởi đầu, điểm rẽ nhánh quyết định và xử lý ngoại lệ. |
-| **4** | [AnalysisClass_BCE_Diagrams.drawio](AnalysisClass_BCE_Diagrams.drawio) | Boundary – Control – Entity | **21 tabs**| 21 biểu đồ phân tích kiến trúc BCE: Lớp Biên (Boundary UI), Lớp Điều khiển (Controller & Service), Lớp Thực thể (JPA Entity & DTO), khớp 1-1 với cấu trúc mã nguồn. |
-| **5** | [Sequence_Diagrams.drawio](Sequence_Diagrams.drawio) | UML 2.5 Sequence Diagram | **21 tabs**| 21 biểu đồ tuần tự cho 21 nghiệp vụ cốt lõi theo 6 đường sinh mệnh (Lifelines): `Tác nhân` ➜ `Giao diện React SPA` ➜ `REST Controller` ➜ `Business Service` ➜ `JPA Repository` ➜ `CSDL MySQL`. |
+| **2** | [ERD_Diagrams.drawio](ERD_Diagrams.drawio) | OMG UML / Relational ERD | **8 tabs** | Lược đồ Thực thể Quan hệ CSDL 2 tầng: 1 Tab Sơ đồ Tổng quan Thực thể Cốt lõi (16 thực thể) + 7 Tabs Lược đồ Phân hệ chi tiết mô hình hóa toàn bộ 39 bảng quan hệ CSDL MySQL 8. |
+| **3** | [Activity_Diagrams.drawio](Activity_Diagrams.drawio) | UML 2.5 Activity Diagram | **23 tabs**| 23 biểu đồ hoạt động phân làn (Swimlanes): Làn Tác nhân (Actor Lane) và Làn Hệ thống (System Service & DB Lane), đầy đủ nút khởi đầu, điểm rẽ nhánh quyết định và xử lý ngoại lệ. |
+| **4** | [AnalysisClass_BCE_Diagrams.drawio](AnalysisClass_BCE_Diagrams.drawio) | Boundary – Control – Entity | **23 tabs**| 23 biểu đồ phân tích kiến trúc BCE: Lớp Biên (Boundary UI), Lớp Điều khiển (Controller & Service), Lớp Thực thể (JPA Entity & DTO), khớp 1-1 với cấu trúc mã nguồn. |
+| **5** | [Sequence_Diagrams.drawio](Sequence_Diagrams.drawio) | UML 2.5 Sequence Diagram | **23 tabs**| 23 biểu đồ tuần tự cho 23 nghiệp vụ cốt lõi theo 6 đường sinh mệnh (Lifelines): `Tác nhân` ➜ `Giao diện React SPA` ➜ `REST Controller` ➜ `Business Service` ➜ `JPA Repository` ➜ `CSDL MySQL`. |
 
 ---
 
@@ -51,9 +51,9 @@ Các tệp sơ đồ đơn phục vụ việc xem nhanh hoặc chèn trực ti�
 
 ---
 
-## 4. Ma trận 18 Chức năng Nghiệp vụ Cốt lõi đồng bộ trên toàn bộ sơ đồ
+## 4. Ma trận 23 Chức năng Nghiệp vụ Cốt lõi đồng bộ trên toàn bộ sơ đồ
 
-Tất cả 18 tab trong 3 bộ sơ đồ Tuần tự, Hoạt động và BCE đều đồng bộ số thứ tự và tên chức năng:
+Tất cả 23 tab trong 3 bộ sơ đồ Tuần tự, Hoạt động và BCE đều đồng bộ số thứ tự và tên chức năng:
 
 ```mermaid
 flowchart LR
@@ -103,6 +103,11 @@ flowchart LR
 | **CN-16** | Báo cáo Thống kê Toàn trường, Cảnh báo học vụ | `GET /api/dashboard` | `DashboardService`, `AcademicWarningService` |
 | **CN-17** | Quản lý Tài chính & Thu học phí theo tín chỉ | `GET/POST /api/tuition`, `/api/admin/tuition` | `TuitionService.java` |
 | **CN-18** | Điểm danh lớp học trực tiếp qua mã PIN 6 số | `POST /api/attendance` | `AttendanceService.java` |
+| **CN-19** | Khảo thí & Tự động phân bổ phòng thi | `POST /api/exam-rooms` | `ExamService.java` |
+| **CN-20** | Thẩm định Quy trình Đính chính điểm 3 cấp | `POST /api/grade-amendments` | `GradeAmendmentService.java` |
+| **CN-21** | Thẩm định chuẩn tốt nghiệp đa tiêu chí TT08 | `POST /api/graduation/evaluate-cohort/{id}` | `GraduationService`, `DegreeAuditEngine` |
+| **CN-22** | Quản lý Nhân sự Đào tạo & Phân quyền cán bộ | `GET/POST/PUT /api/admin/staffs` | `AdminSystemController`, `UserService` |
+| **CN-23** | Đặt lại Mật khẩu Hàng loạt (ddmmyyyya@) | `POST /api/admin/bulk-reset-passwords` | `PasswordResetService.java` |
 
 ---
 

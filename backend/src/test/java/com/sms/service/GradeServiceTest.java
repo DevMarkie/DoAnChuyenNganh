@@ -5,6 +5,7 @@ import com.sms.entity.CourseSection;
 import com.sms.entity.Enrollment;
 import com.sms.entity.Grade;
 import com.sms.entity.Lecturer;
+import com.sms.entity.Semester;
 import com.sms.entity.Student;
 import com.sms.exception.BadRequestException;
 import org.springframework.security.access.AccessDeniedException;
@@ -330,5 +331,35 @@ public class GradeServiceTest {
             List<com.sms.entity.GradeAuditLog> list = (List<com.sms.entity.GradeAuditLog>) logs;
             return !list.isEmpty() && list.stream().anyMatch(l -> "CC1".equals(l.getComponent()) && BigDecimal.valueOf(10).compareTo(l.getOldScore()) == 0);
         }));
+    }
+
+    @Test
+    void saveGrade_Lecturer_PastSemester_ThrowsBadRequest() {
+        Semester pastSemester = new Semester();
+        pastSemester.setId(2);
+        pastSemester.setIsCurrent(false);
+        pastSemester.setStatus(Semester.SemesterStatus.COMPLETED);
+        courseSection.setSemester(pastSemester);
+
+        when(enrollmentRepository.findById(1L)).thenReturn(Optional.of(enrollment));
+        when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> gradeService.saveGrade(1L, request));
+        assertTrue(ex.getMessage().contains("Học kỳ đã kết thúc"));
+    }
+
+    @Test
+    void submitSectionGrades_Lecturer_PastSemester_ThrowsBadRequest() {
+        Semester pastSemester = new Semester();
+        pastSemester.setId(2);
+        pastSemester.setIsCurrent(false);
+        pastSemester.setStatus(Semester.SemesterStatus.COMPLETED);
+        courseSection.setSemester(pastSemester);
+
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(courseSection));
+        when(lecturerRepository.findByUserId(1L)).thenReturn(Optional.of(lecturer));
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> gradeService.submitSectionGrades(1L, 1L));
+        assertTrue(ex.getMessage().contains("Học kỳ đã kết thúc"));
     }
 }

@@ -5,10 +5,12 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { attendanceService } from '../../services/dataService';
+import useAuthStore from '../../store/authStore';
 
 const TODAY_VI_VN = new Date().toLocaleDateString('vi-VN');
 
 export default function LecturerAttendanceModal({ courseSection, onClose }) {
+  const user = useAuthStore((state) => state.user);
   const [sessionData, setSessionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -17,9 +19,14 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
   const [duration, setDuration] = useState(10); // default 10 minutes
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [manualOverrides, setManualOverrides] = useState({});
+  const [showUnsavedConfirm, setShowUnsavedConfirm] = useState(false);
 
   const sectionId = courseSection?.id;
   const timerRef = useRef(null);
+  const manualOverridesRef = useRef({});
+  manualOverridesRef.current = manualOverrides;
+  const unsavedCount = Object.keys(manualOverrides).length;
   const todayDisplay = TODAY_VI_VN;
 
   const loadLiveSession = useCallback(async (isSilent = false) => {
@@ -27,7 +34,30 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
     try {
       if (!isSilent) setLoading(true);
       const res = await attendanceService.getLiveSession(sectionId);
-      setSessionData(res.data?.data || null);
+      const rawData = res.data?.data;
+      if (rawData && rawData.students) {
+        const overrides = manualOverridesRef.current;
+        const mergedStudents = rawData.students.map((st) => {
+          if (st.enrollmentId in overrides) {
+            return {
+              ...st,
+              present: overrides[st.enrollmentId],
+              isManual: true,
+            };
+          }
+          return st;
+        });
+        const presentCount = mergedStudents.filter((s) => s.present).length;
+        const absentCount = mergedStudents.length - presentCount;
+        setSessionData({
+          ...rawData,
+          students: mergedStudents,
+          presentCount,
+          absentCount,
+        });
+      } else {
+        setSessionData(rawData || null);
+      }
     } catch {
       if (!isSilent) toast.error('Không thể tải thông tin điểm danh');
     } finally {
@@ -38,22 +68,11 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
   useEffect(() => {
     let ignore = false;
     if (!sectionId) return;
-    attendanceService
-      .getLiveSession(sectionId)
-      .then((res) => {
-        if (!ignore) setSessionData(res.data?.data || null);
-      })
-      .catch(() => {
-        toast.error('Không thể tải thông tin điểm danh');
-      })
-      .finally(() => {
-        if (!ignore) setLoading(false);
-      });
-
+    loadLiveSession(false);
     return () => {
       ignore = true;
     };
-  }, [sectionId]);
+  }, [sectionId, loadLiveSession]);
 
   // Polling every 3s when session is OPEN
   useEffect(() => {
@@ -91,14 +110,28 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
     };
   }, [sessionData?.expiresAt, sessionData?.status]);
 
+  const handleRequestClose = useCallback(() => {
+    if (Object.keys(manualOverridesRef.current).length > 0) {
+      setShowUnsavedConfirm(true);
+    } else {
+      onClose();
+    }
+  }, [onClose]);
+
   // Handle ESC key to close
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        if (showUnsavedConfirm) {
+          setShowUnsavedConfirm(false);
+        } else {
+          handleRequestClose();
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [handleRequestClose, showUnsavedConfirm]);
 
   const handleStartSession = async () => {
     try {
@@ -119,9 +152,19 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
   const handleToggleStudent = (enrollmentId) => {
     if (!sessionData?.students) return;
     setSessionData((prev) => {
+      const currentStudent = prev.students.find((st) => st.enrollmentId === enrollmentId);
+      if (!currentStudent) return prev;
+      const nextPresent = !currentStudent.present;
+
+      setManualOverrides((old) => {
+        const nextMap = { ...old, [enrollmentId]: nextPresent };
+        manualOverridesRef.current = nextMap;
+        return nextMap;
+      });
+
       const updatedStudents = prev.students.map((st) => {
         if (st.enrollmentId === enrollmentId) {
-          return { ...st, present: !st.present };
+          return { ...st, present: nextPresent, isManual: true };
         }
         return st;
       });
@@ -153,6 +196,10 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
         status: 'SAVED',
         records,
       });
+
+      setManualOverrides({});
+      manualOverridesRef.current = {};
+      setShowUnsavedConfirm(false);
 
       toast.success('Đã lưu chốt sổ điểm danh thành công!');
       await loadLiveSession(false);
@@ -195,7 +242,7 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
         padding: '16px',
       }}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) handleRequestClose();
       }}
     >
       <div
@@ -210,19 +257,112 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
           borderRadius: '14px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           overflow: 'hidden',
-          animation: 'fadeIn 0.2s ease-out'
+          animation: 'fadeIn 0.2s ease-out',
+          position: 'relative',
         }}
       >
+        {/* Unsaved changes confirmation dialog */}
+        {showUnsavedConfirm && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(15, 23, 42, 0.65)',
+              backdropFilter: 'blur(3px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 100,
+              padding: '20px',
+              animation: 'fadeIn 0.15s ease-out',
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: 'var(--bg-surface, #ffffff)',
+                borderRadius: '12px',
+                padding: '24px',
+                maxWidth: '440px',
+                width: '100%',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+                textAlign: 'center',
+                border: '1px solid var(--border, #e5e7eb)',
+              }}
+            >
+              <div
+                style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  backgroundColor: '#fef3c7',
+                  color: '#d97706',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 14px',
+                }}
+              >
+                <Clock size={26} />
+              </div>
+              <h3 style={{ margin: '0 0 8px', fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary, #111827)' }}>
+                Bạn có {unsavedCount} thay đổi chưa lưu!
+              </h3>
+              <p style={{ margin: '0 0 20px', fontSize: '0.875rem', color: 'var(--text-secondary, #6b7280)', lineHeight: 1.5 }}>
+                Các thao tác điểm danh thủ công chưa được chốt sổ vào hệ thống. Nếu thoát bây giờ, các chỉnh sửa này sẽ bị mất.
+              </p>
+              <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowUnsavedConfirm(false)}
+                  className="btn btn-outline btn-sm"
+                  style={{ padding: '6px 14px' }}
+                >
+                  Tiếp tục chỉnh sửa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setManualOverrides({});
+                    manualOverridesRef.current = {};
+                    setShowUnsavedConfirm(false);
+                    onClose();
+                  }}
+                  className="btn btn-sm"
+                  style={{
+                    backgroundColor: '#fee2e2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    padding: '6px 14px',
+                  }}
+                >
+                  Bỏ qua & Đóng
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await handleSaveSession();
+                    onClose();
+                  }}
+                  className="btn btn-primary btn-sm"
+                  style={{ padding: '6px 14px', fontWeight: 600 }}
+                >
+                  Lưu & Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div
           style={{
             padding: '16px 24px',
-            borderBottom: '1px solid var(--border, #e5e7eb)',
+            borderBottom: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
-            color: '#ffffff',
+            background: 'var(--bg-surface)',
+            color: 'var(--text-main)',
           }}
         >
           <div>
@@ -232,26 +372,28 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                   fontFamily: 'monospace',
                   fontWeight: 700,
                   fontSize: '0.85rem',
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  backgroundColor: 'var(--bg-subtle)',
+                  color: 'var(--primary)',
+                  border: '1px solid var(--border-color)',
                   padding: '2px 8px',
-                  borderRadius: '4px',
+                  borderRadius: 'var(--radius-sm)',
                 }}
               >
                 {courseSection?.sectionCode}
               </span>
-              <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#ffffff' }}>
+              <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-main)' }}>
                 Điểm danh: {courseSection?.subject?.subjectName}
               </h2>
             </div>
-            <p style={{ margin: '4px 0 0', fontSize: '0.825rem', opacity: 0.9 }}>
+            <p style={{ margin: '4px 0 0', fontSize: '0.825rem', color: 'var(--text-muted)' }}>
               Phòng: {courseSection?.room || '—'} • Hôm nay: {todayDisplay}
             </p>
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleRequestClose}
             className="btn btn-outline"
-            style={{ padding: '6px', borderRadius: '50%', color: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+            style={{ padding: '6px', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)' }}
             title="Đóng (Esc)"
           >
             <X size={18} />
@@ -313,9 +455,30 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                 </select>
               </div>
 
+              {courseSection?.lecturer?.lecturerCode && user?.username && user?.role !== 'ADMIN' && courseSection.lecturer.lecturerCode !== user.username && (
+                <div
+                  style={{
+                    backgroundColor: '#fffbeb',
+                    border: '1px solid #fef3c7',
+                    color: '#92400e',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    marginBottom: '20px',
+                    maxWidth: '560px',
+                    marginInline: 'auto',
+                    textAlign: 'left',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  <strong>⚠️ Lưu ý về quyền điểm danh:</strong><br />
+                  Bạn đang đăng nhập tài khoản <strong>{user?.username}</strong>, trong khi lớp học phần này được phân công cho giảng viên <strong>{courseSection.lecturer.fullName} ({courseSection.lecturer.lecturerCode})</strong>. Chỉ giảng viên phụ trách hoặc Quản trị viên mới có thể mở phiên điểm danh cho lớp này.
+                </div>
+              )}
+
               <button
                 onClick={handleStartSession}
-                disabled={starting}
+                disabled={starting || (courseSection?.lecturer?.lecturerCode && user?.username && user?.role !== 'ADMIN' && courseSection.lecturer.lecturerCode !== user.username)}
                 className="btn btn-primary"
                 style={{
                   padding: '12px 28px',
@@ -324,7 +487,10 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
+                  opacity: (courseSection?.lecturer?.lecturerCode && user?.username && user?.role !== 'ADMIN' && courseSection.lecturer.lecturerCode !== user.username) ? 0.6 : 1,
+                  cursor: (courseSection?.lecturer?.lecturerCode && user?.username && user?.role !== 'ADMIN' && courseSection.lecturer.lecturerCode !== user.username) ? 'not-allowed' : 'pointer',
                 }}
+                title={courseSection?.lecturer?.lecturerCode && user?.username && user?.role !== 'ADMIN' && courseSection.lecturer.lecturerCode !== user.username ? `Chỉ ${courseSection.lecturer.fullName} mới có quyền tạo mã` : 'Tạo mã điểm danh'}
               >
                 <Play size={18} />
                 <span>{starting ? 'Đang khởi tạo...' : 'Tạo mã điểm danh'}</span>
@@ -339,9 +505,9 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                   padding: '20px',
                   borderRadius: '12px',
                   background: sessionData.status === 'OPEN'
-                    ? 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)'
-                    : 'var(--bg-subtle, #f3f4f6)',
-                  border: `1px solid ${sessionData.status === 'OPEN' ? '#bfdbfe' : '#e5e7eb'}`,
+                    ? 'var(--primary-light)'
+                    : 'var(--bg-subtle)',
+                  border: `1px solid ${sessionData.status === 'OPEN' ? 'var(--primary-border)' : 'var(--border-color)'}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -512,11 +678,35 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                     onClick={handleSaveSession}
                     disabled={saving}
                     className="btn btn-primary btn-sm"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontWeight: 600,
+                      backgroundColor: unsavedCount > 0 ? '#1d4ed8' : undefined,
+                      boxShadow: unsavedCount > 0 ? '0 0 0 3px rgba(37, 99, 235, 0.35)' : undefined,
+                      transition: 'all 0.2s',
+                    }}
                     title="Chốt danh sách và cập nhật số buổi vắng"
                   >
                     <Save size={14} />
                     <span>{saving ? 'Đang lưu...' : 'Lưu điểm danh & Chốt sổ'}</span>
+                    {unsavedCount > 0 && (
+                      <span
+                        style={{
+                          backgroundColor: '#fef08a',
+                          color: '#854d0e',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: '10px',
+                          marginLeft: '2px',
+                        }}
+                        title={`${unsavedCount} chỉnh sửa chưa lưu`}
+                      >
+                        {unsavedCount}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>
@@ -530,8 +720,8 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                       <th style={{ width: '120px' }}>Mã SV</th>
                       <th>Họ và tên</th>
                       <th>Lớp sinh hoạt</th>
-                      <th style={{ width: '150px', textAlign: 'center' }}>Trạng thái</th>
-                      <th style={{ width: '130px', textAlign: 'center' }}>Chỉnh sửa tay</th>
+                      <th style={{ width: '130px', textAlign: 'center' }}>Trạng thái</th>
+                      <th style={{ width: '170px', textAlign: 'center' }}>Chỉnh sửa tay</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -546,7 +736,8 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                         <tr
                           key={st.enrollmentId}
                           style={{
-                            backgroundColor: st.present ? 'rgba(16, 185, 129, 0.05)' : 'inherit',
+                            backgroundColor: st.present ? 'rgba(16, 185, 129, 0.06)' : 'inherit',
+                            transition: 'background-color 0.15s ease',
                           }}
                         >
                           <td style={{ textAlign: 'center', fontWeight: 500 }}>{idx + 1}</td>
@@ -576,14 +767,19 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                             {st.present ? (
                               <span
                                 className="badge badge-success"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 8px' }}
                               >
                                 <CheckCircle2 size={13} /> Có mặt
+                                {st.isManual && (
+                                  <span style={{ fontSize: '0.65rem', opacity: 0.85, marginLeft: '2px' }} title="Giảng viên đã điểm danh tay">
+                                    (Tay)
+                                  </span>
+                                )}
                               </span>
                             ) : (
                               <span
                                 className="badge badge-danger"
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 8px' }}
                               >
                                 <XCircle size={13} /> Vắng mặt
                               </span>
@@ -591,15 +787,37 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
                           </td>
                           <td style={{ textAlign: 'center' }}>
                             <button
+                              type="button"
                               onClick={() => handleToggleStudent(st.enrollmentId)}
-                              className={`btn btn-sm ${st.present ? 'btn-outline' : 'btn-primary'}`}
+                              className="btn btn-sm"
                               style={{
-                                padding: '3px 10px',
-                                fontSize: '0.75rem',
+                                padding: '4px 12px',
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                borderRadius: '20px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.15s ease',
+                                cursor: 'pointer',
+                                backgroundColor: st.present ? '#10b981' : '#fff1f2',
+                                color: st.present ? '#ffffff' : '#e11d48',
+                                border: st.present ? '1px solid #059669' : '1px solid #fecdd3',
+                                boxShadow: st.present ? '0 1px 3px rgba(16, 185, 129, 0.25)' : 'none',
                               }}
-                              title="Bấm để đổi Có mặt / Vắng"
+                              title={st.present ? 'Bấm để đánh dấu Vắng mặt' : 'Bấm để điểm danh Có mặt'}
                             >
-                              {st.present ? 'Đánh dấu Vắng' : 'Điểm danh Có mặt'}
+                              {st.present ? (
+                                <>
+                                  <CheckCircle2 size={14} />
+                                  <span>Có mặt</span>
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle size={14} />
+                                  <span>Điểm danh Có mặt</span>
+                                </>
+                              )}
                             </button>
                           </td>
                         </tr>
@@ -626,7 +844,7 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
             * Giảng viên bấm &ldquo;Lưu điểm danh & Chốt sổ&rdquo; để hệ thống cập nhật chính thức số buổi vắng cho sinh viên.
           </span>
-          <button onClick={onClose} className="btn btn-outline btn-sm">
+          <button onClick={handleRequestClose} className="btn btn-outline btn-sm">
             Đóng
           </button>
         </div>

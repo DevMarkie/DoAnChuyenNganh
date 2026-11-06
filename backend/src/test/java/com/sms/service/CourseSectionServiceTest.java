@@ -30,6 +30,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -67,20 +69,20 @@ public class CourseSectionServiceTest {
 
         semester = new Semester();
         semester.setId(1);
-        semester.setStartDate(LocalDate.parse("2023-09-01"));
-        semester.setEndDate(LocalDate.parse("2023-12-31"));
-        semester.setRegistrationStart(LocalDate.parse("2023-08-01"));
-        semester.setRegistrationEnd(LocalDate.parse("2023-08-31"));
+        semester.setStartDate(LocalDate.now());
+        semester.setEndDate(LocalDate.now().plusMonths(3));
 
         section = new CourseSection();
         section.setId(1L);
         section.setSectionCode("SE01");
         section.setSubject(subject);
         section.setLecturer(lecturer);
-        section.setSemester(semester);
         section.setMaxStudents(40);
+        section.setMinStudents(15);
         section.setCurrentStudents(10);
-        section.setStatus(CourseSection.SectionStatus.OPEN);
+        section.setStatus(CourseSection.SectionStatus.CLOSED);
+        section.setSectionType(CourseSection.SectionType.REGULAR);
+        section.setSemester(semester);
 
         request = new CourseSectionRequest();
         request.setSectionCode("SE01");
@@ -88,6 +90,7 @@ public class CourseSectionServiceTest {
         request.setLecturerId(1L);
         request.setSemesterId(1);
         request.setMaxStudents(45);
+        request.setSchedule("T2 (1-3)");
         request.setRoom("A101");
     }
 
@@ -99,11 +102,11 @@ public class CourseSectionServiceTest {
     }
 
     @Test
-    void findPaged_Success() {
+    void findPaged_ValidStatus_Success() {
         Page<CourseSection> page = new PageImpl<>(List.of(section));
         when(courseSectionRepository.findPaged(eq("SE01"), eq(1), eq(CourseSection.SectionStatus.OPEN), any()))
                 .thenReturn(page);
-        
+
         Page<CourseSection> result = courseSectionService.findPaged("SE01", 1, "OPEN", PageRequest.of(0, 10));
         assertEquals(1, result.getTotalElements());
     }
@@ -212,5 +215,52 @@ public class CourseSectionServiceTest {
         request.setLecturerId(null);
         request.setMaxStudents(5); // current is 10
         assertThrows(BadRequestException.class, () -> courseSectionService.update(1L, request));
+    }
+
+    @Test
+    void update_ToActive_UnderEnrolledRegular_ThrowsBadRequest() {
+        section.setStatus(CourseSection.SectionStatus.CLOSED);
+        section.setCurrentStudents(1);
+        section.setMinStudents(15);
+        section.setSectionType(CourseSection.SectionType.REGULAR);
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
+
+        CourseSectionRequest activeReq = new CourseSectionRequest();
+        activeReq.setStatus("ACTIVE");
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> courseSectionService.update(1L, activeReq));
+        assertTrue(ex.getMessage().contains("chưa đạt sĩ số tối thiểu"));
+    }
+
+    @Test
+    void update_ToActive_UnderEnrolledSpecial_Success() {
+        section.setStatus(CourseSection.SectionStatus.CLOSED);
+        section.setCurrentStudents(1);
+        section.setMinStudents(15);
+        section.setSectionType(CourseSection.SectionType.SPECIAL);
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(courseSectionRepository.save(any(CourseSection.class))).thenAnswer(i -> i.getArgument(0));
+
+        CourseSectionRequest activeReq = new CourseSectionRequest();
+        activeReq.setStatus("ACTIVE");
+
+        CourseSection updated = courseSectionService.update(1L, activeReq);
+        assertEquals(CourseSection.SectionStatus.ACTIVE, updated.getStatus());
+    }
+
+    @Test
+    void update_ToActive_SufficientStudentsRegular_Success() {
+        section.setStatus(CourseSection.SectionStatus.CLOSED);
+        section.setCurrentStudents(20);
+        section.setMinStudents(15);
+        section.setSectionType(CourseSection.SectionType.REGULAR);
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(courseSectionRepository.save(any(CourseSection.class))).thenAnswer(i -> i.getArgument(0));
+
+        CourseSectionRequest activeReq = new CourseSectionRequest();
+        activeReq.setStatus("ACTIVE");
+
+        CourseSection updated = courseSectionService.update(1L, activeReq);
+        assertEquals(CourseSection.SectionStatus.ACTIVE, updated.getStatus());
     }
 }

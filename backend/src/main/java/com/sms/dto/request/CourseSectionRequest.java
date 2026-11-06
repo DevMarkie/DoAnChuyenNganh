@@ -28,10 +28,10 @@ public class CourseSectionRequest {
     private String schedule;
     private String room;
     private String status;
+    private String sectionType;
     private Integer dayOfWeek;
     private Integer startPeriod;
     private Integer endPeriod;
     private LocalDate startDate;
     private LocalDate endDate;
 }
-

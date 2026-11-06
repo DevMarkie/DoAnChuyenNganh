@@ -2424,4 +2424,266 @@
       </root>
     </mxGraphModel>
   </diagram>
+  <diagram id="bce_staff" name="22. Quản lý Nhân sự Đào tạo">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1460" pageHeight="920" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t_main" value="BIỂU ĐỒ LỚP PHÂN TÍCH (BCE) - CHỨC NĂNG: 22. Quản lý Nhân sự Đào tạo" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=15;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="20" width="980" height="25"/>
+        </mxCell>
+        <mxCell id="st_main" value="Kiến trúc phân tầng: Tác nhân -&gt; Giao diện (Boundary) -&gt; Điều khiển (Control) -&gt; Thực thể (Entity)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=0;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#444444;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="48" width="1080" height="20"/>
+        </mxCell>
+        <mxCell id="hdr_bnd_staff" value="&lt;b&gt;«Boundary» GIAO DIỆN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Client UI &amp;amp; REST API Endpoints)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_bnd_staff" style="shape=umlBoundary;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="172" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ctrl_staff" value="&lt;b&gt;«Control» ĐIỀU KHIỂN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Business Logic &amp;amp; Security Services)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ctrl_staff" style="shape=umlControl;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="612" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ent_staff" value="&lt;b&gt;«Entity» THỰC THỂ&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Domain Entities, Tables &amp;amp; DTOs)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ent_staff" style="shape=umlEntity;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1052" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="flow_hdr1_staff" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_bnd_staff" target="hdr_ctrl_staff">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="flow_hdr2_staff" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_ctrl_staff" target="hdr_ent_staff">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="bnd_staff_1" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;StaffsPageView&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="145" width="340" height="216"/>
+        </mxCell>
+        <mxCell id="bnd_staff_1_attrs" value="- staffList: List&lt;StaffResponse&gt;&#10;- searchKeyword: String&#10;- roleFilter: String&#10;- isCreateModalOpen: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="bnd_staff_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="128" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_staff_1_methods" value="+ taiDanhSachNhanSu(): void&#10;+ moModalTaoCanBo(): void&#10;+ capNhatTrangThaiKhoa(id): void&#10;+ datLaiMatKhauCanBo(id): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="132" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="bnd_staff_2" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;AdminSystemController&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="400" width="340" height="198"/>
+        </mxCell>
+        <mxCell id="bnd_staff_2_attrs" value="- userService: UserService&#10;- passwordResetService: PasswordResetService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="bnd_staff_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="92" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_staff_2_methods" value="+ getAllStaffs(keyword, role, pageable): ApiResponse&#10;+ createStaff(request): ApiResponse&#10;+ updateStaff(id, request): ApiResponse&#10;+ toggleStaffStatus(id): ApiResponse" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="96" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="act_staff" value="Quản trị viên hệ thống (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
+        </mxCell>
+        <mxCell id="e_act_staff" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_staff" target="bnd_staff_1">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ctrl_staff_1" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;UserService&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="400" width="340" height="198"/>
+        </mxCell>
+        <mxCell id="ctrl_staff_1_attrs" value="- userRepository: UserRepository&#10;- passwordEncoder: PasswordEncoder&#10;- auditLogService: AuditLogService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="ctrl_staff_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="110" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_staff_1_methods" value="+ createStaffAccount(dto): User&#10;+ updateStaffProfile(id, dto): User&#10;+ toggleUserActive(id): boolean&#10;+ validateEmailNotDuplicate(email): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="114" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="ctrl_staff_2" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;UserRepository&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="640" width="340" height="144"/>
+        </mxCell>
+        <mxCell id="ctrl_staff_2_attrs" value="- entityManager: EntityManager" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="30"/>
+        </mxCell>
+        <mxCell id="ctrl_staff_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="74" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_staff_2_methods" value="+ findByRoleIn(roles): List&lt;User&gt;&#10;+ findByEmail(email): Optional&lt;User&gt;&#10;+ save(user): User" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="78" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="ent_staff_1" value="&lt;i&gt;«Thực thể»&lt;/i&gt;&lt;br&gt;&lt;b&gt;User&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="400" width="340" height="270"/>
+        </mxCell>
+        <mxCell id="ent_staff_1_attrs" value="- id: Long&#10;- username: String&#10;- email: String&#10;- fullName: String&#10;- phone: String&#10;- role: Role&#10;- staffRole: String&#10;- isActive: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="156"/>
+        </mxCell>
+        <mxCell id="ent_staff_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="200" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_staff_1_methods" value="+ isAccountNonLocked(): boolean&#10;+ layVaiTroHeThong(): String&#10;+ layChucDanhChuyenMon(): String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="204" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="ent_staff_2" value="&lt;i&gt;«Truyền dữ liệu»&lt;/i&gt;&lt;br&gt;&lt;b&gt;StaffResponseDTO&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="640" width="340" height="234"/>
+        </mxCell>
+        <mxCell id="ent_staff_2_attrs" value="- id: Long&#10;- username: String&#10;- fullName: String&#10;- email: String&#10;- phone: String&#10;- roleName: String&#10;- isActive: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="138"/>
+        </mxCell>
+        <mxCell id="ent_staff_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="182" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_staff_2_methods" value="+ tuThucThe(user): StaffResponseDTO&#10;+ layTrangThaiChuoi(): String" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_staff_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="186" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="edge_staff_1" value="gửi yêu cầu quản lý nhân sự" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="bnd_staff_1" target="bnd_staff_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_staff_2" value="ủy quyền xử lý nghiệp vụ tài khoản" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" edge="1" source="bnd_staff_2" target="ctrl_staff_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_staff_3" value="truy vấn và lưu bền vững User" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="ctrl_staff_1" target="ctrl_staff_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_staff_4" value="bền vững hóa thực thể User nhân sự" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.35;entryX=0;entryY=0.35;" parent="1" edge="1" source="ctrl_staff_2" target="ent_staff_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_staff_5" value="chuyển đổi thông tin sang StaffResponseDTO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.65;entryX=0;entryY=0.5;" parent="1" edge="1" source="ctrl_staff_1" target="ent_staff_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="bce_bulkpwd" name="23. Đặt lại Mật khẩu Hàng loạt">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1460" pageHeight="920" background="#ffffff">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="t_main" value="BIỂU ĐỒ LỚP PHÂN TÍCH (BCE) - CHỨC NĂNG: 23. Đặt lại Mật khẩu Hàng loạt" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=15;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="20" width="980" height="25"/>
+        </mxCell>
+        <mxCell id="st_main" value="Kiến trúc phân tầng: Tác nhân -&gt; Giao diện (Boundary) -&gt; Điều khiển (Control) -&gt; Thực thể (Entity)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=0;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#444444;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="48" width="1080" height="20"/>
+        </mxCell>
+        <mxCell id="hdr_bnd_bulkpwd" value="&lt;b&gt;«Boundary» GIAO DIỆN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Client UI &amp;amp; REST API Endpoints)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_bnd_bulkpwd" style="shape=umlBoundary;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="172" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ctrl_bulkpwd" value="&lt;b&gt;«Control» ĐIỀU KHIỂN&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Business Logic &amp;amp; Security Services)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ctrl_bulkpwd" style="shape=umlControl;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="612" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="hdr_ent_bulkpwd" value="&lt;b&gt;«Entity» THỰC THỂ&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size:10px;font-weight:normal;color:#444444;&quot;&gt;(Domain Entities, Tables &amp;amp; DTOs)&lt;/span&gt;" style="rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="78" width="340" height="42"/>
+        </mxCell>
+        <mxCell id="icon_ent_bulkpwd" style="shape=umlEntity;whiteSpace=wrap;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1052" y="84" width="30" height="30"/>
+        </mxCell>
+        <mxCell id="flow_hdr1_bulkpwd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_bnd_bulkpwd" target="hdr_ctrl_bulkpwd">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="flow_hdr2_bulkpwd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;fillColor=none;" parent="1" edge="1" source="hdr_ctrl_bulkpwd" target="hdr_ent_bulkpwd">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="bnd_bulkpwd_1" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;PasswordResetsPageView&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="145" width="340" height="216"/>
+        </mxCell>
+        <mxCell id="bnd_bulkpwd_1_attrs" value="- selectedScope: ResetScope&#10;- cohortSelector: Select&#10;- departmentSelector: Select&#10;- confirm2FAModal: Modal" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="bnd_bulkpwd_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="128" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_bulkpwd_1_methods" value="+ moModalResetHangLoat(): void&#10;+ chonPhamViToanTruong(): void&#10;+ xacNhanThucThiReset(): void&#10;+ hienThiBaoCaoKetQua(dto): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="132" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="bnd_bulkpwd_2" value="&lt;i&gt;«Giao diện»&lt;/i&gt;&lt;br&gt;&lt;b&gt;AdminSystemController&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="160" y="400" width="340" height="162"/>
+        </mxCell>
+        <mxCell id="bnd_bulkpwd_2_attrs" value="- passwordResetService: PasswordResetService&#10;- auditLogService: AuditLogService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="bnd_bulkpwd_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="bnd_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="92" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="bnd_bulkpwd_2_methods" value="+ bulkResetPasswords(request): ApiResponse&lt;BulkResetPasswordResponse&gt;&#10;+ getPasswordResetStats(): ApiResponse" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="96" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="act_bulkpwd" value="Quản trị viên hệ thống (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
+        </mxCell>
+        <mxCell id="e_act_bulkpwd" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_bulkpwd" target="bnd_bulkpwd_1">
+          <mxGeometry as="geometry" relative="1"/>
+        </mxCell>
+        <mxCell id="ctrl_bulkpwd_1" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;PasswordResetService&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="400" width="340" height="216"/>
+        </mxCell>
+        <mxCell id="ctrl_bulkpwd_1_attrs" value="- userRepo: UserRepository&#10;- studentRepo: StudentRepository&#10;- passwordEncoder: PasswordEncoder&#10;- auditLogService: AuditLogService" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="ctrl_bulkpwd_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="128" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_bulkpwd_1_methods" value="+ executeBulkReset(request): BulkResetPasswordResponse&#10;+ formatDobPassword(dateOfBirth): String&#10;+ batchUpdateHashedPasswords(users): int" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="132" width="340" height="84"/>
+        </mxCell>
+        <mxCell id="ctrl_bulkpwd_2" value="&lt;i&gt;«Điều khiển»&lt;/i&gt;&lt;br&gt;&lt;b&gt;UserRepository&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="640" width="340" height="144"/>
+        </mxCell>
+        <mxCell id="ctrl_bulkpwd_2_attrs" value="- entityManager: EntityManager" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="30"/>
+        </mxCell>
+        <mxCell id="ctrl_bulkpwd_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ctrl_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="74" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ctrl_bulkpwd_2_methods" value="+ findTargetUsersForReset(scope, cohortId, deptId): List&lt;User&gt;&#10;+ saveAll(users): List&lt;User&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ctrl_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="78" width="340" height="66"/>
+        </mxCell>
+        <mxCell id="ent_bulkpwd_1" value="&lt;i&gt;«Thực thể»&lt;/i&gt;&lt;br&gt;&lt;b&gt;User&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="400" width="340" height="198"/>
+        </mxCell>
+        <mxCell id="ent_bulkpwd_1_attrs" value="- id: Long&#10;- username: String&#10;- password: String&#10;- requirePasswordChange: boolean&#10;- lastPasswordResetAt: LocalDateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="ent_bulkpwd_1_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="146" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_bulkpwd_1_methods" value="+ setMatKhauMoi(hash): void&#10;+ batCoBatBuocDoiMatKhau(): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_bulkpwd_1" vertex="1">
+          <mxGeometry as="geometry" x="0" y="150" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="ent_bulkpwd_2" value="&lt;i&gt;«Truyền dữ liệu»&lt;/i&gt;&lt;br&gt;&lt;b&gt;BulkResetPasswordResponseDTO&lt;/b&gt;" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=44;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;fontSize=12;rounded=1;arcSize=6;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1040" y="640" width="340" height="198"/>
+        </mxCell>
+        <mxCell id="ent_bulkpwd_2_attrs" value="- totalAccounts: int&#10;- successCount: int&#10;- failureCount: int&#10;- passwordRuleApplied: String&#10;- executionTimestamp: LocalDateTime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="44" width="340" height="102"/>
+        </mxCell>
+        <mxCell id="ent_bulkpwd_2_div" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;portConstraint=eastwest;strokeColor=#000000;" parent="ent_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="146" width="340" height="4"/>
+        </mxCell>
+        <mxCell id="ent_bulkpwd_2_methods" value="+ layTyLeThanhCong(): double&#10;+ kiemTraHoanTatToanBo(): boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="ent_bulkpwd_2" vertex="1">
+          <mxGeometry as="geometry" x="0" y="150" width="340" height="48"/>
+        </mxCell>
+        <mxCell id="edge_bulkpwd_1" value="gửi lệnh đặt lại mật khẩu hàng loạt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="bnd_bulkpwd_1" target="bnd_bulkpwd_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_bulkpwd_2" value="kích hoạt xử lý quy mô lô (batch)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" edge="1" source="bnd_bulkpwd_2" target="ctrl_bulkpwd_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_bulkpwd_3" value="nạp và cập nhật danh sách tài khoản" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" edge="1" source="ctrl_bulkpwd_1" target="ctrl_bulkpwd_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_bulkpwd_4" value="cập nhật mật khẩu băm &amp; cờ đổi mật khẩu" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.35;entryX=0;entryY=0.35;" parent="1" edge="1" source="ctrl_bulkpwd_2" target="ent_bulkpwd_1">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+        <mxCell id="edge_bulkpwd_5" value="đóng gói kết quả BulkResetPasswordResponseDTO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;;exitX=1;exitY=0.65;entryX=0;entryY=0.5;" parent="1" edge="1" source="ctrl_bulkpwd_1" target="ent_bulkpwd_2">
+          <mxGeometry as="geometry" relative="1" y="-12"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
 </mxfile>

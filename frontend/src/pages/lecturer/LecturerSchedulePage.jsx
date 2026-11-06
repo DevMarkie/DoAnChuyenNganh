@@ -2,13 +2,21 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Clock, MapPin, Layers, Users,
-  Grid, List, Printer, School, RefreshCw, ArrowUpRight, Search, CheckCircle2
+  Grid, List, Printer, School, RefreshCw, ArrowUpRight, Search, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { scheduleService, semesterService, courseSectionService } from '../../services/dataService';
 import SectionStudentsModal from '../../components/lecturer/SectionStudentsModal';
 import LecturerAttendanceModal from '../../components/lecturer/LecturerAttendanceModal';
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
+import WeekCalendarPicker, {
+  getMonday,
+  getWeekDays,
+  getCourseEndInfo,
+  PERIOD_END_TIMES,
+  formatViDate,
+  formatIsoDate,
+} from '../../components/common/WeekCalendarPicker';
 
 const DAYS = [
   { value: 2, label: 'Thứ Hai', short: 'T2', jsDay: 1 },
@@ -43,6 +51,17 @@ export default function LecturerSchedulePage() {
     const day = new Date().getDay();
     return day === 0 ? 8 : day + 1;
   });
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+
+  const activeMonday = useMemo(() => getMonday(selectedDate), [selectedDate]);
+  const activeWeekDays = useMemo(() => getWeekDays(activeMonday), [activeMonday]);
+  const activeWeekMap = useMemo(() => {
+    const map = {};
+    activeWeekDays.forEach((w) => {
+      map[w.dayOfWeek] = w;
+    });
+    return map;
+  }, [activeWeekDays]);
 
   const loadData = async (semId) => {
     try {
@@ -385,144 +404,261 @@ export default function LecturerSchedulePage() {
         </div>
       ) : (
         /* ================= SECONDARY VIEW: WEEKLY GRID ================= */
-        <div className="card" style={{ padding: '20px', overflowX: 'auto' }}>
-          <div style={{ minWidth: '950px' }}>
-            {/* Days Header */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '150px repeat(7, 1fr)',
-                gap: '10px',
-                marginBottom: '10px',
-                textAlign: 'center',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-              }}
-            >
-              <div style={{ padding: '8px', color: 'var(--text-muted)' }}>Ca / Tiết</div>
-              {DAYS.map((d) => (
-                <div
-                  key={d.value}
-                  style={{
-                    padding: '8px',
-                    borderRadius: 'var(--radius-md)',
-                    background: d.value === todayVal ? 'var(--primary)' : 'var(--bg-subtle)',
-                    color: d.value === todayVal ? '#ffffff' : 'var(--text-main)',
-                    boxShadow: d.value === todayVal ? 'var(--shadow-xs)' : 'none',
-                  }}
-                >
-                  {d.label}
-                </div>
-              ))}
-            </div>
+        <div>
+          {/* Week & Date Navigation Picker */}
+          <WeekCalendarPicker
+            selectedDate={selectedDate}
+            onChangeDate={setSelectedDate}
+            semesterStartDate={activeSemesterObj?.startDate}
+          />
 
-            {/* Slots Rows */}
-            {PERIOD_SLOTS.map((slot) => (
+          <div className="card" style={{ padding: '20px', overflowX: 'auto' }}>
+            <div style={{ minWidth: '950px' }}>
+              {/* Days Header */}
               <div
-                key={slot.slot}
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '150px repeat(7, 1fr)',
                   gap: '10px',
-                  marginBottom: '12px',
-                  minHeight: '125px',
+                  marginBottom: '10px',
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
                 }}
               >
-                {/* Slot info */}
-                <div
-                  style={{
-                    background: 'var(--bg-subtle)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.875rem' }}>
-                    {slot.slot}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    Tiết {slot.start} - {slot.end}
-                  </span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-light)', marginTop: '2px' }}>
-                    {slot.label.split('(')[1]?.replace(')', '') || ''}
-                  </span>
-                </div>
-
-                {/* Days */}
+                <div style={{ padding: '8px', color: 'var(--text-muted)' }}>Ca / Tiết</div>
                 {DAYS.map((d) => {
-                  const isToday = d.value === todayVal;
-                  const cellSchedules = schedules.filter(
-                    (s) =>
-                      s.dayOfWeek === d.value &&
-                      s.startPeriod <= slot.end &&
-                      s.endPeriod >= slot.start
-                  );
+                  const dayObj = activeWeekMap[d.value];
+                  const isToday = dayObj?.iso === formatIsoDate(new Date());
+                  const isSelected = dayObj?.iso === formatIsoDate(selectedDate);
+                  const dayClasses = schedules.filter((s) => {
+                    if (s.dayOfWeek !== d.value) return false;
+                    if (dayObj && s.startDate && s.endDate) {
+                      if (s.startDate > dayObj.iso || s.endDate < dayObj.iso) return false;
+                    }
+                    return true;
+                  });
 
                   return (
                     <div
                       key={d.value}
+                      onClick={() => dayObj && setSelectedDate(dayObj.date)}
+                      title={`Xem lịch ${d.label} (${dayObj?.fullDate || ''})`}
                       style={{
-                        background: cellSchedules.length > 0
-                          ? (isToday ? 'rgba(37, 99, 235, 0.05)' : 'var(--bg-surface)')
-                          : 'var(--bg-subtle)',
-                        border: isToday
-                          ? '1.5px solid var(--primary-border)'
-                          : cellSchedules.length > 0 ? '1px solid var(--border-subtle)' : '1px dashed var(--border-color)',
+                        padding: '8px 4px',
                         borderRadius: 'var(--radius-md)',
-                        padding: '6px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '6px',
+                        background: isToday
+                          ? 'var(--primary)'
+                          : isSelected
+                          ? 'var(--primary-light)'
+                          : 'var(--bg-subtle)',
+                        color: isToday
+                          ? '#ffffff'
+                          : isSelected
+                          ? 'var(--primary)'
+                          : 'var(--text-main)',
+                        border: isToday
+                          ? '2px solid var(--primary-hover)'
+                          : isSelected
+                          ? '2px solid var(--primary)'
+                          : '1px solid var(--border-color)',
+                        boxShadow: isToday ? 'var(--shadow-xs)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
                       }}
                     >
-                      {cellSchedules.map((s) => {
-                        const subj = s.courseSection?.subject;
-                        const secCode = s.courseSection?.sectionCode;
-
-                        return (
-                          <div
-                            key={s.id}
-                            style={{
-                              background: 'var(--bg-surface)',
-                              border: '1px solid var(--primary-border)',
-                              borderLeft: '4px solid var(--primary)',
-                              borderRadius: 'var(--radius-sm)',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              boxShadow: 'var(--shadow-xs)',
-                              cursor: 'pointer'
-                            }}
-                            onClick={() => setSelectedSectionModal(s.courseSection)}
-                            title="Bấm để xem danh sách sinh viên lớp"
-                          >
-                            <div style={{ fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.3 }}>
-                              {subj?.subjectName || 'Lớp HP'}
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', color: 'var(--primary)', fontWeight: 600 }}>
-                              <MapPin size={12} />
-                              <span>{s.room}</span>
-                              <span className="badge badge-info" style={{ fontSize: '0.65rem', padding: '1px 5px', marginLeft: 'auto' }}>
-                                Tiết {s.startPeriod}-{s.endPeriod}
-                              </span>
-                            </div>
-
-                            {secCode && (
-                              <div style={{ color: 'var(--text-muted)', fontSize: '0.725rem', marginTop: '3px' }}>
-                                LHP: <strong>{secCode}</strong>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                      <div>{d.label}</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: isToday ? 0.95 : 0.85, margin: '2px 0' }}>
+                        {dayObj?.shortDate || ''}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: isToday ? 0.9 : 0.75, fontWeight: 500 }}>
+                        {isToday ? '★ Hôm nay' : `${dayClasses.length} ca dạy`}
+                      </div>
                     </div>
                   );
                 })}
               </div>
-            ))}
+
+              {/* Slots Rows */}
+              {PERIOD_SLOTS.map((slot) => (
+                <div
+                  key={slot.slot}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '150px repeat(7, 1fr)',
+                    gap: '10px',
+                    marginBottom: '12px',
+                    minHeight: '125px',
+                  }}
+                >
+                  {/* Slot info */}
+                  <div
+                    style={{
+                      background: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.875rem' }}>
+                      {slot.slot}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      Tiết {slot.start} - {slot.end}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-light)', marginTop: '2px' }}>
+                      {slot.label.split('(')[1]?.replace(')', '') || ''}
+                    </span>
+                  </div>
+
+                  {/* Days */}
+                  {DAYS.map((d) => {
+                    const dayObj = activeWeekMap[d.value];
+                    const isToday = dayObj?.iso === formatIsoDate(new Date());
+                    const cellSchedules = schedules.filter(
+                      (s) => {
+                        if (s.dayOfWeek !== d.value) return false;
+                        if (s.startPeriod > slot.end || s.endPeriod < slot.start) return false;
+                        if (dayObj && s.startDate && s.endDate) {
+                          if (s.startDate > dayObj.iso || s.endDate < dayObj.iso) return false;
+                        }
+                        return true;
+                      }
+                    );
+
+                    return (
+                      <div
+                        key={d.value}
+                        style={{
+                          background: cellSchedules.length > 0
+                            ? (isToday ? 'rgba(37, 99, 235, 0.05)' : 'var(--bg-surface)')
+                            : 'var(--bg-subtle)',
+                          border: cellSchedules.length > 1
+                            ? '1.5px solid #ef4444'
+                            : isToday
+                              ? '1.5px solid var(--primary-border)'
+                              : cellSchedules.length > 0 ? '1px solid var(--border-subtle)' : '1px dashed var(--border-color)',
+                          borderRadius: 'var(--radius-md)',
+                          padding: '6px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                        }}
+                      >
+                        {cellSchedules.length > 1 && (
+                          <div style={{
+                            background: '#fef2f2',
+                            color: '#dc2626',
+                            border: '1px solid #fca5a5',
+                            borderRadius: '4px',
+                            padding: '3px 6px',
+                            fontSize: '0.675rem',
+                            fontWeight: 700,
+                            textAlign: 'center',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px'
+                          }}>
+                            <AlertTriangle size={12} />
+                            <span>Trùng ca ({cellSchedules.length} môn)</span>
+                          </div>
+                        )}
+                        {cellSchedules.map((s) => {
+                          const subj = s.courseSection?.subject;
+                          const secCode = s.courseSection?.sectionCode;
+
+                          return (
+                            <div
+                              key={s.id}
+                              style={{
+                                background: 'var(--bg-surface)',
+                                border: cellSchedules.length > 1 ? '1px solid #fca5a5' : '1px solid var(--primary-border)',
+                                borderLeft: cellSchedules.length > 1 ? '4px solid #ef4444' : '4px solid var(--primary)',
+                                borderRadius: 'var(--radius-sm)',
+                                padding: '8px',
+                                fontSize: '0.8rem',
+                                boxShadow: 'var(--shadow-xs)',
+                                cursor: 'pointer'
+                              }}
+                              onClick={() => setSelectedSectionModal(s.courseSection)}
+                              title="Bấm để xem danh sách sinh viên lớp"
+                            >
+                              <div style={{ fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.3 }}>
+                                {subj?.subjectName || 'Lớp HP'}
+                              </div>
+
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', color: 'var(--primary)', fontWeight: 600 }}>
+                                <MapPin size={12} />
+                                <span>{s.room}</span>
+                                <span className="badge badge-info" style={{ fontSize: '0.65rem', padding: '1px 5px', marginLeft: 'auto' }}>
+                                  Tiết {s.startPeriod}-{s.endPeriod} {PERIOD_END_TIMES[s.endPeriod] ? `(Tan: ${PERIOD_END_TIMES[s.endPeriod]})` : ''}
+                                </span>
+                              </div>
+
+                              {/* Course End Info */}
+                              {(() => {
+                                const endInfo = getCourseEndInfo(s.endDate, selectedDate);
+                                if (!endInfo) return null;
+                                return (
+                                  <div
+                                    style={{
+                                      marginTop: '4px',
+                                      fontSize: '0.675rem',
+                                      fontWeight: 600,
+                                      color: endInfo.isCompleted ? '#059669' : '#b45309',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      gap: '4px',
+                                    }}
+                                  >
+                                    <span>{endInfo.text}</span>
+                                    <span className={`badge ${endInfo.isCompleted ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.625rem', padding: '1px 4px' }}>
+                                      {endInfo.badge}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px', gap: '4px' }}>
+                                <span style={{ color: 'var(--text-muted)', fontSize: '0.725rem' }}>
+                                  {secCode && <>LHP: <strong>{secCode}</strong></>}
+                                </span>
+                                <button
+                                  type="button"
+                                  className="btn btn-outline btn-xs"
+                                  style={{
+                                    fontSize: '0.7rem',
+                                    padding: '2px 6px',
+                                    lineHeight: 1.2,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                    marginLeft: 'auto'
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedAttendanceModal(s.courseSection);
+                                  }}
+                                  title="Mở phiên điểm danh & tạo mã cho lớp học này"
+                                >
+                                  <CheckCircle2 size={11} />
+                                  <span>Điểm danh</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -532,6 +668,10 @@ export default function LecturerSchedulePage() {
         <SectionStudentsModal
           courseSection={selectedSectionModal}
           onClose={() => setSelectedSectionModal(null)}
+          onOpenAttendance={(sec) => {
+            setSelectedSectionModal(null);
+            setSelectedAttendanceModal(sec);
+          }}
         />
       )}
 

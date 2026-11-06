@@ -38,7 +38,7 @@ Tầng **Backend** đảm nhiệm vai trò bộ não điều phối toàn bộ n
 | **Spring Boot** | 3.5.6 | Framework nền tảng với hệ sinh thái: Spring Web, Spring Data JPA, Spring Security, Spring Validation, Spring Mail. |
 | **Bảo mật & JWT** | `jjwt 0.12.6` | Mã hóa mật khẩu BCrypt, ký và giải mã JWT token an toàn với thuật toán HMAC-SHA512. |
 | **Redis & Cache** | `spring-boot-starter-data-redis` + `commons-pool2` | Quản lý bộ đếm nguyên tử (Atomic Counter), khóa phân tán Redis Distributed Lock, lưu trữ tạm sĩ số lớp học phần. |
-| **CSDL & ORM** | MySQL Connector 8.0, Hibernate ORM | Ánh xạ 41 JPA Entities, hỗ trợ Native Query tối ưu, View Mapping và HikariCP Connection Pool. |
+| **CSDL & ORM** | MySQL Connector 8.0, Hibernate ORM | Ánh xạ 38 JPA Entities, hỗ trợ Native Query tối ưu, View Mapping và HikariCP Connection Pool (đồng bộ 39 bảng CSDL MySQL). |
 | **Xử lý Excel** | Apache POI 5.x | Đọc và ghi tệp Excel đa định dạng (`.xlsx`) phục vụ Import bảng điểm, Import danh sách phòng thi, Export danh sách lớp. |
 | **Tài liệu API** | Springdoc OpenAPI 2.8.5 | Tự động sinh giao diện Swagger UI thử nghiệm API trực quan tại `/swagger-ui.html`. |
 | **Kiểm thử tự động** | JUnit 5 + Mockito 5 | 285+ ca kiểm thử đơn vị và tích hợp bao phủ toàn bộ Controller, Service, Engine và Rules. |
@@ -53,7 +53,7 @@ backend/
 │   ├── config/                     # Cấu hình CORS, OpenAPI/Swagger, Async, Rate Limiter, Redis Connection Pool
 │   ├── controller/                 # 33 REST Controllers tiếp nhận request HTTP và kiểm soát phân quyền RBAC
 │   ├── dto/                        # Data Transfer Objects (Request/Response payload) kèm Bean Validation (@Valid)
-│   ├── entity/                     # 41 JPA Entities tương ứng chặt chẽ với cấu trúc 41 bảng CSDL
+│   ├── entity/                     # 38 JPA Entities tương ứng chặt chẽ với cấu trúc 39 bảng CSDL MySQL
 │   ├── exception/                  # GlobalExceptionHandler, BusinessException, ResourceNotFoundException...
 │   ├── repository/                 # Spring Data JPA Repositories (Pessimistic Locking, Custom Native Queries)
 │   ├── security/                   # JwtAuthenticationFilter, UserDetailsServiceImpl, SecurityConfig, Role Constants

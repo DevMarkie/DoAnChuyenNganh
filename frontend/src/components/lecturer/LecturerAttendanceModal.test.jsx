@@ -132,4 +132,85 @@ describe('LecturerAttendanceModal Component', () => {
       expect(screen.getByText('ABC123')).toBeDefined();
     });
   });
+
+  it('allows toggling student attendance manually and shows unsaved badge', async () => {
+    attendanceService.getLiveSession.mockResolvedValue({
+      data: {
+        data: {
+          status: 'OPEN',
+          attendanceKeyword: 'ABC123',
+          totalStudents: 1,
+          presentCount: 0,
+          absentCount: 1,
+          students: [
+            {
+              enrollmentId: 10,
+              studentCode: '25000010',
+              fullName: 'Trần Văn Cường',
+              className: 'K18-CNTT1',
+              present: false,
+            },
+          ],
+        },
+      },
+    });
+
+    render(<LecturerAttendanceModal courseSection={mockCourseSection} onClose={vi.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Trần Văn Cường')).toBeDefined();
+    });
+
+    const toggleBtn = screen.getByTitle('Bấm để điểm danh Có mặt');
+    expect(toggleBtn).toBeDefined();
+
+    fireEvent.click(toggleBtn);
+
+    await waitFor(() => {
+      expect(screen.getByTitle('1 chỉnh sửa chưa lưu')).toBeDefined();
+      expect(screen.getByTitle('Bấm để đánh dấu Vắng mặt')).toBeDefined();
+    });
+  });
+
+  it('shows unsaved confirmation when closing with pending manual edits', async () => {
+    const mockOnClose = vi.fn();
+    attendanceService.getLiveSession.mockResolvedValue({
+      data: {
+        data: {
+          status: 'OPEN',
+          attendanceKeyword: 'ABC123',
+          totalStudents: 1,
+          presentCount: 0,
+          absentCount: 1,
+          students: [
+            {
+              enrollmentId: 10,
+              studentCode: '25000010',
+              fullName: 'Trần Văn Cường',
+              className: 'K18-CNTT1',
+              present: false,
+            },
+          ],
+        },
+      },
+    });
+
+    render(<LecturerAttendanceModal courseSection={mockCourseSection} onClose={mockOnClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Trần Văn Cường')).toBeDefined();
+    });
+
+    // Toggle to create unsaved changes
+    fireEvent.click(screen.getByTitle('Bấm để điểm danh Có mặt'));
+
+    // Attempt to close
+    const closeBtn = screen.getByTitle('Đóng (Esc)');
+    fireEvent.click(closeBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Bạn có 1 thay đổi chưa lưu!/)).toBeDefined();
+      expect(mockOnClose).not.toHaveBeenCalled();
+    });
+  });
 });

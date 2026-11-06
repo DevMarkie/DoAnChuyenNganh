@@ -61,15 +61,22 @@ public class Enrollment {
 
     @jakarta.persistence.Transient
     @JsonProperty("absenceCount")
-    private Integer absenceCount = 0;
+    private Integer absenceCount;
+
+    @jakarta.persistence.Transient
+    @JsonProperty("absentPeriods")
+    private Integer absentPeriods;
+
+    @jakarta.persistence.Transient
+    @JsonProperty("totalPeriods")
+    private Integer totalPeriods;
 
     @jakarta.persistence.Transient
     @JsonProperty("absentRate")
     private Double absentRate;
 
-    @JsonProperty("absenceCount")
     public Integer getAbsenceCount() {
-        return absenceCount != null ? absenceCount : 0;
+        return absenceCount;
     }
 
     public void setAbsenceCount(Integer absenceCount) {

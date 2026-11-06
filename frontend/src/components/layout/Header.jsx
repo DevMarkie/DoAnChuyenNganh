@@ -64,10 +64,10 @@ export default function Header({ onToggleMobileMenu }) {
     }
   }, [user?.role, token, initSse, disconnectSse, fetchUnreadCount, navigate]);
 
-  const roleLabel = user?.role === 'ADMIN' ? 'Quản trị viên' : user?.role === 'ACADEMIC_STAFF' ? 'Cán bộ Đào tạo'
+  const roleLabel = user?.role === 'ADMIN' ? 'Quản trị viên' : (user?.role === 'ACADEMIC_AFFAIRS' || user?.role === 'ACADEMIC_STAFF') ? 'Cán bộ Đào tạo' : user?.role === 'EXAMINATION_OFFICER' ? 'Cán bộ Khảo thí'
     : user?.role === 'LECTURER' ? 'Giảng viên' : 'Sinh viên';
 
-  const roleBadgeClass = user?.role === 'ADMIN' ? 'badge-danger' : user?.role === 'ACADEMIC_STAFF' ? 'badge-warning'
+  const roleBadgeClass = user?.role === 'ADMIN' ? 'badge-danger' : (user?.role === 'ACADEMIC_AFFAIRS' || user?.role === 'ACADEMIC_STAFF') ? 'badge-warning' : user?.role === 'EXAMINATION_OFFICER' ? 'badge-primary'
     : user?.role === 'LECTURER' ? 'badge-info' : 'badge-success';
 
   const handleLogout = () => {
@@ -75,6 +75,8 @@ export default function Header({ onToggleMobileMenu }) {
     disconnectSse();
     logout();
     if (role === 'ADMIN') navigate('/admin/login');
+    else if (role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF') navigate('/academic/login');
+    else if (role === 'EXAMINATION_OFFICER') navigate('/academic/login');
     else if (role === 'LECTURER') navigate('/lecturer/login');
     else navigate('/student/login');
   };
@@ -127,17 +129,15 @@ export default function Header({ onToggleMobileMenu }) {
           padding: '4px 12px 4px 6px',
           borderRadius: 'var(--radius-full)',
           background: 'var(--bg-surface)',
-          backdropFilter: 'var(--glass-blur)',
-          WebkitBackdropFilter: 'var(--glass-blur)',
           border: '1px solid var(--border-color)',
-          boxShadow: 'var(--shadow-xs), var(--glass-inset-shine)'
+          boxShadow: 'var(--shadow-xs)'
         }}>
           <div style={{
             width: '28px',
             height: '28px',
             borderRadius: 'var(--radius-full)',
-            background: 'var(--primary-gradient)',
-            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)',
+            background: 'var(--primary)',
+            boxShadow: 'var(--shadow-xs)',
             color: '#ffffff',
             display: 'flex',
             alignItems: 'center',

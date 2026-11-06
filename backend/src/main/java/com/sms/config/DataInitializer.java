@@ -59,6 +59,24 @@ public class DataInitializer implements CommandLineRunner {
                 log.info("Cập nhật thông tin cho tài khoản 'admin': DOB=1990-01-01, fullName=Quản trị viên hệ thống");
             }
         });
+
+        // Khởi tạo mã Quản trị viên mẫu theo mã nhân viên: AD001 (Password: 123456)
+        if (!userRepository.existsByUsername("AD001")) {
+            Role role = roleRepository.findByName("ADMIN").orElse(null);
+            if (role != null) {
+                User ad = new User();
+                ad.setUsername("AD001");
+                ad.setFullName("Quản trị viên hệ thống (AD001)");
+                ad.setDateOfBirth(LocalDate.of(1990, 1, 1));
+                ad.setPassword(passwordEncoder.encode("123456"));
+                ad.setEmail("ad001@sms.edu.vn");
+                ad.setRole(role);
+                ad.setIsActive(true);
+                ad.setMustChangePassword(false);
+                userRepository.save(ad);
+                log.info("Khởi tạo mã Quản trị viên mẫu 'AD001' thành công (Password: 123456)");
+            }
+        }
     }
 
     private void initAcademicAffairsUser() {
@@ -114,6 +132,37 @@ public class DataInitializer implements CommandLineRunner {
                 staff.setMustChangePassword(false);
                 userRepository.save(staff);
                 log.info("Khởi tạo nhân viên Đào tạo mẫu 'daotao01' thành công (DOB: 1994-08-15, Password: 15081994a@)");
+            }
+        }
+
+        // Tạo mã cán bộ / nhân viên Đào tạo mẫu: NV001 & CB001 (Password: 123456)
+        Role role = roleRepository.findByName("ACADEMIC_AFFAIRS").orElse(null);
+        if (role != null) {
+            if (!userRepository.existsByUsername("NV001")) {
+                User nv = new User();
+                nv.setUsername("NV001");
+                nv.setFullName("Nguyễn Văn Đào (Cán bộ Đào tạo - NV001)");
+                nv.setDateOfBirth(LocalDate.of(1985, 5, 15));
+                nv.setPassword(passwordEncoder.encode("123456"));
+                nv.setEmail("nv001@sms.edu.vn");
+                nv.setRole(role);
+                nv.setIsActive(true);
+                nv.setMustChangePassword(false);
+                userRepository.save(nv);
+                log.info("Khởi tạo mã Cán bộ Đào tạo 'NV001' thành công (Password: 123456)");
+            }
+            if (!userRepository.existsByUsername("CB001")) {
+                User cb = new User();
+                cb.setUsername("CB001");
+                cb.setFullName("Nguyễn Văn Đào (Cán bộ Đào tạo - CB001)");
+                cb.setDateOfBirth(LocalDate.of(1985, 5, 15));
+                cb.setPassword(passwordEncoder.encode("123456"));
+                cb.setEmail("cb001@sms.edu.vn");
+                cb.setRole(role);
+                cb.setIsActive(true);
+                cb.setMustChangePassword(false);
+                userRepository.save(cb);
+                log.info("Khởi tạo mã Cán bộ Đào tạo 'CB001' thành công (Password: 123456)");
             }
         }
     }

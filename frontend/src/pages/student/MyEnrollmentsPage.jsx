@@ -395,15 +395,8 @@ export default function MyEnrollmentsPage() {
         }}
       >
         {/* Card 1: Tổng tiền cần nộp */}
-        <div
-          className="stat-card"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, var(--bg-surface) 100%)",
-            borderColor: "rgba(37, 99, 235, 0.25)",
-          }}
-        >
-          <div className="stat-icon-wrapper" style={{ background: "rgba(37, 99, 235, 0.15)", color: "var(--primary)" }}>
+        <div className="stat-card">
+          <div className="stat-icon-wrapper stat-icon--primary">
             <CreditCard size={22} />
           </div>
           <div>
@@ -424,15 +417,8 @@ export default function MyEnrollmentsPage() {
         </div>
 
         {/* Card 2: Đã thanh toán */}
-        <div
-          className="stat-card"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-surface) 100%)",
-            borderColor: "rgba(16, 185, 129, 0.25)",
-          }}
-        >
-          <div className="stat-icon-wrapper" style={{ background: "rgba(16, 185, 129, 0.15)", color: "var(--success)" }}>
+        <div className="stat-card">
+          <div className="stat-icon-wrapper stat-icon--success">
             <CheckCircle2 size={22} />
           </div>
           <div>
@@ -451,20 +437,13 @@ export default function MyEnrollmentsPage() {
         </div>
 
         {/* Card 3: Công nợ còn lại */}
-        <div
-          className="stat-card"
-          style={{
-            background: debtFee > 0
-              ? "linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, var(--bg-surface) 100%)"
-              : "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-surface) 100%)",
-            borderColor: debtFee > 0 ? "rgba(239, 68, 68, 0.25)" : "rgba(16, 185, 129, 0.25)",
-          }}
-        >
+        <div className="stat-card">
           <div
             className="stat-icon-wrapper"
             style={{
-              background: debtFee > 0 ? "rgba(239, 68, 68, 0.15)" : "rgba(16, 185, 129, 0.15)",
+              background: debtFee > 0 ? "var(--danger-bg)" : "var(--success-bg)",
               color: debtFee > 0 ? "var(--danger)" : "var(--success)",
+              borderColor: debtFee > 0 ? "var(--danger-border)" : "var(--success-border)",
             }}
           >
             <AlertTriangle size={22} />
@@ -506,15 +485,8 @@ export default function MyEnrollmentsPage() {
         </div>
 
         {/* Card 4: Hạn chót đóng tiền mặt */}
-        <div
-          className="stat-card"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, var(--bg-surface) 100%)",
-            borderColor: "rgba(245, 158, 11, 0.25)",
-          }}
-        >
-          <div className="stat-icon-wrapper" style={{ background: "rgba(245, 158, 11, 0.15)", color: "var(--warning)" }}>
+        <div className="stat-card">
+          <div className="stat-icon-wrapper stat-icon--warning">
             <Clock size={22} />
           </div>
           <div>
@@ -550,22 +522,15 @@ export default function MyEnrollmentsPage() {
         </div>
 
         {/* Card 5: Số dư tài khoản tích lũy (Ví) */}
-        <div
-          className="stat-card"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, var(--bg-surface) 100%)",
-            borderColor: "rgba(168, 85, 247, 0.25)",
-          }}
-        >
-          <div className="stat-icon-wrapper" style={{ background: "rgba(168, 85, 247, 0.15)", color: "#a855f7" }}>
+        <div className="stat-card">
+          <div className="stat-icon-wrapper stat-icon--info">
             <Banknote size={22} />
           </div>
           <div>
             <div
               className="stat-value"
               style={{
-                color: "#a855f7",
+                color: "var(--text-main)",
                 fontSize: "1.45rem",
                 fontWeight: 800,
               }}

@@ -86,6 +86,16 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("AccessDeniedException với thông điệp cụ thể được bảo toàn")
+    void handleAccessDenied_WithCustomMessage_PreservesMessage() {
+        AccessDeniedException ex = new AccessDeniedException("Bạn không phải giảng viên phụ trách lớp học phần này");
+        ResponseEntity<ApiResponse<Void>> response = handler.handleAccessDenied(ex);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals("Bạn không phải giảng viên phụ trách lớp học phần này", response.getBody().getMessage());
+    }
+
+    @Test
     @DisplayName("HttpMessageNotReadableException ánh xạ thành HTTP 400")
     void handleMalformedJson_Returns400() {
         HttpMessageNotReadableException ex = new HttpMessageNotReadableException("Invalid JSON");

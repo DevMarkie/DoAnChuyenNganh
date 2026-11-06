@@ -63,8 +63,9 @@ export default function CourseSectionsPage() {
       setSemesters(semList);
       const cur = semList.find((s) => s.isCurrent);
       if (cur) setSelectedSemester(cur.id);
-    } catch {
-      toast.error("Lỗi khi tải dữ liệu học phần");
+    } catch (err) {
+      console.error("Lỗi khi tải dữ liệu học phần:", err);
+      toast.error(err.response?.data?.message || "Lỗi khi tải dữ liệu học phần");
     } finally {
       setLoading(false);
     }

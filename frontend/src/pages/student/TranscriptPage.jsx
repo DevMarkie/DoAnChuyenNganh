@@ -245,46 +245,30 @@ export default function TranscriptPage() {
         </div>
       )}
 
-      {/* Bento Box Glassmorphic Summary */}
+      {/* Minimalist Academic Summary Cards */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '18px',
+        gap: '16px',
         marginBottom: '24px'
       }}>
-        {/* Bento Card 1: CPA Hero */}
-        <div className="stat-card" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, var(--bg-surface) 100%)',
-          borderColor: 'rgba(99, 102, 241, 0.25)',
-        }}>
+        {/* Stat Card 1: CPA Hero */}
+        <div className="stat-card">
           <div className="stat-icon-wrapper stat-icon--cpa">
-            <GraduationCap size={24} />
+            <GraduationCap size={22} />
           </div>
           <div>
-            <div className="stat-value" style={{
-              background: 'linear-gradient(135deg, var(--text-main) 60%, var(--primary) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontSize: '1.9rem',
-              fontWeight: 800,
-            }}>
-              {gpa} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)', WebkitTextFillColor: 'var(--text-muted)' }}>/ 4.0</span>
+            <div className="stat-value" style={{ fontSize: '1.85rem' }}>
+              {gpa} <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-muted)' }}>/ 4.0</span>
             </div>
             <div className="stat-label">Điểm TB tích lũy (CPA)</div>
           </div>
         </div>
 
-        {/* Bento Card 2: Earned Credits */}
-        <div className="stat-card" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-surface) 100%)',
-          borderColor: 'rgba(16, 185, 129, 0.25)',
-        }}>
+        {/* Stat Card 2: Earned Credits */}
+        <div className="stat-card">
           <div className="stat-icon-wrapper stat-icon--credits">
-            <BookOpen size={24} />
+            <BookOpen size={22} />
           </div>
           <div style={{ flex: 1 }}>
             <div className="stat-value">{transcript?.totalCredits || 0} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>TC đạt</span></div>
@@ -292,15 +276,10 @@ export default function TranscriptPage() {
           </div>
         </div>
 
-        {/* Bento Card 3: Completed Courses */}
-        <div className="stat-card" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, var(--bg-surface) 100%)',
-          borderColor: 'rgba(6, 182, 212, 0.25)',
-        }}>
+        {/* Stat Card 3: Completed Courses */}
+        <div className="stat-card">
           <div className="stat-icon-wrapper stat-icon--courses">
-            <CheckCircle2 size={24} />
+            <CheckCircle2 size={22} />
           </div>
           <div>
             <div className="stat-value">{transcript?.completedCourses || 0}</div>
@@ -308,15 +287,10 @@ export default function TranscriptPage() {
           </div>
         </div>
 
-        {/* Bento Card 4: Academic Standing */}
-        <div className="stat-card" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, var(--bg-surface) 100%)',
-          borderColor: 'rgba(245, 158, 11, 0.25)',
-        }}>
+        {/* Stat Card 4: Academic Standing */}
+        <div className="stat-card">
           <div className="stat-icon-wrapper stat-icon--standing">
-            <Award size={24} />
+            <Award size={22} />
           </div>
           <div>
             <div className="stat-value" style={{ fontSize: '1.25rem', paddingTop: '2px' }}>
@@ -328,18 +302,17 @@ export default function TranscriptPage() {
           </div>
         </div>
 
-        {/* Bento Card 5: Debt Credits */}
-        <div className="stat-card" style={{
-          position: 'relative',
-          overflow: 'hidden',
-          background: (transcript?.debtCredits || 0) > 0 ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, var(--bg-surface) 100%)' : 'var(--bg-surface)',
-          borderColor: (transcript?.debtCredits || 0) > 0 ? 'rgba(239, 68, 68, 0.25)' : 'var(--border-color)',
-        }}>
-          <div className="stat-icon-wrapper" style={{ background: (transcript?.debtCredits || 0) > 0 ? 'rgba(239, 68, 68, 0.15)' : 'var(--bg-muted)', color: (transcript?.debtCredits || 0) > 0 ? '#ef4444' : 'var(--text-muted)' }}>
-            <AlertTriangle size={24} />
+        {/* Stat Card 5: Debt Credits */}
+        <div className="stat-card">
+          <div className="stat-icon-wrapper" style={{
+            background: (transcript?.debtCredits || 0) > 0 ? 'var(--danger-bg)' : 'var(--bg-subtle)',
+            color: (transcript?.debtCredits || 0) > 0 ? 'var(--danger)' : 'var(--text-muted)',
+            borderColor: (transcript?.debtCredits || 0) > 0 ? 'var(--danger-border)' : 'var(--border-color)',
+          }}>
+            <AlertTriangle size={22} />
           </div>
           <div>
-            <div className="stat-value" style={{ color: (transcript?.debtCredits || 0) > 24 ? '#ef4444' : 'inherit' }}>
+            <div className="stat-value" style={{ color: (transcript?.debtCredits || 0) > 24 ? 'var(--danger)' : 'inherit' }}>
               {transcript?.debtCredits || 0} <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>TC</span>
             </div>
             <div className="stat-label" style={{ marginTop: '6px' }}>Tín chỉ nợ (chưa đạt)</div>

@@ -26,7 +26,7 @@ DROP TABLE IF EXISTS attendance_records;
 DROP TABLE IF EXISTS attendance_sessions;
 DROP TABLE IF EXISTS student_invoices;
 DROP TABLE IF EXISTS fee_scale_rules;
-DROP TABLE IF EXISTS class_opening_requests;
+DROP TABLE IF EXISTS academic_summaries;
 DROP TABLE IF EXISTS grade_appeals;
 DROP TABLE IF EXISTS grades;
 DROP TABLE IF EXISTS schedules;
@@ -59,7 +59,7 @@ CREATE TABLE roles (
     name VARCHAR(20)  NOT NULL,
     CONSTRAINT pk_roles PRIMARY KEY (id),
     CONSTRAINT uq_roles_name UNIQUE (name),
-    CONSTRAINT ck_roles_name CHECK (name IN ('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER', 'STUDENT'))
+    CONSTRAINT ck_roles_name CHECK (name IN ('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'EXAMINATION_OFFICER', 'LECTURER', 'STUDENT'))
 );
 
 -- ============================================================
@@ -417,21 +417,6 @@ CREATE TABLE course_sections (
     CONSTRAINT fk_course_sections_subject FOREIGN KEY (subject_id) REFERENCES subjects (id),
     CONSTRAINT fk_course_sections_lecturer FOREIGN KEY (lecturer_id) REFERENCES lecturers (id),
     CONSTRAINT fk_course_sections_semester FOREIGN KEY (semester_id) REFERENCES semesters (id)
-);
-
-CREATE TABLE class_opening_requests (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    student_id BIGINT NOT NULL,
-    subject_id INT NOT NULL,
-    semester_id INT NOT NULL,
-    request_type ENUM('LEARN_AGAIN', 'IMPROVE', 'NEW') NOT NULL,
-    status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT pk_class_opening_requests PRIMARY KEY (id),
-    CONSTRAINT uq_opening_request_student_course_semester UNIQUE (student_id, subject_id, semester_id),
-    CONSTRAINT fk_opening_request_student FOREIGN KEY (student_id) REFERENCES students (id),
-    CONSTRAINT fk_opening_request_subject FOREIGN KEY (subject_id) REFERENCES subjects (id),
-    CONSTRAINT fk_opening_request_semester FOREIGN KEY (semester_id) REFERENCES semesters (id)
 );
 
 CREATE TABLE fee_scale_rules (
@@ -900,28 +885,25 @@ CREATE TABLE IF NOT EXISTS backup_histories (
     INDEX idx_backup_histories_created_at (created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS academic_exceptions (
+CREATE TABLE IF NOT EXISTS academic_summaries (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     student_id BIGINT NOT NULL,
-    exception_type VARCHAR(50) NOT NULL,
-    course_section_id BIGINT,
-    subject_id INT,
-    semester_id INT,
-    reason TEXT NOT NULL,
-    attachment_url VARCHAR(500),
-    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
-    reviewed_by BIGINT,
-    reviewer_note TEXT,
-    reviewed_at DATETIME,
+    semester_id INT NOT NULL,
+    semester_gpa DECIMAL(4, 2),
+    cumulative_cpa DECIMAL(4, 2),
+    semester_credits INT,
+    accumulated_credits INT,
+    debt_credits INT,
+    warning_level INT NOT NULL DEFAULT 0,
+    max_allowed_credits INT DEFAULT 24,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_academic_exceptions_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    CONSTRAINT fk_academic_exceptions_section FOREIGN KEY (course_section_id) REFERENCES course_sections(id) ON DELETE SET NULL,
-    CONSTRAINT fk_academic_exceptions_subject FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE SET NULL,
-    CONSTRAINT fk_academic_exceptions_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE SET NULL,
-    CONSTRAINT fk_academic_exceptions_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
-    INDEX idx_academic_exceptions_status (status),
-    INDEX idx_academic_exceptions_student (student_id)
+    CONSTRAINT uq_academic_summary_student_semester UNIQUE (student_id, semester_id),
+    CONSTRAINT fk_academic_summary_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_academic_summary_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    INDEX idx_academic_summaries_student (student_id),
+    INDEX idx_academic_summaries_semester (semester_id),
+    INDEX idx_academic_summaries_warning (warning_level)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS graduation_records (
@@ -963,27 +945,6 @@ CREATE TABLE IF NOT EXISTS conduct_scores (
     CONSTRAINT fk_conduct_scores_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
     CONSTRAINT fk_conduct_scores_rated_by FOREIGN KEY (rated_by) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT uq_student_semester_conduct UNIQUE (student_id, semester_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS student_service_requests (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    student_id BIGINT NOT NULL,
-    request_type VARCHAR(50) NOT NULL,
-    quantity INT NOT NULL DEFAULT 1,
-    purpose TEXT,
-    verification_code VARCHAR(64) NOT NULL,
-    pickup_method VARCHAR(30) NOT NULL DEFAULT 'ONLINE_PDF',
-    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
-    processed_by BIGINT,
-    admin_note TEXT,
-    completed_at DATETIME,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_service_requests_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    CONSTRAINT fk_service_requests_processed_by FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL,
-    CONSTRAINT uq_service_verification_code UNIQUE (verification_code),
-    INDEX idx_service_requests_status (status),
-    INDEX idx_service_requests_student (student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

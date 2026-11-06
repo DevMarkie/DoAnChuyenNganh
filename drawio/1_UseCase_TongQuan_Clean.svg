@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1580 1240" width="1580" height="1240">
+
+    <defs>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap');
+            text { font-family: 'Roboto', 'Segoe UI', Arial, sans-serif; }
+            .boundary-title { font-size: 15px; font-weight: 700; fill: #000000; letter-spacing: 0.5px; }
+            .pkg-title { font-size: 11.5px; font-weight: 700; fill: #222222; letter-spacing: 0.4px; }
+            .actor-label { font-size: 12.5px; font-weight: 700; fill: #000000; text-anchor: middle; line-height: 1.25; }
+            .uc-title { font-size: 12px; font-weight: 500; fill: #000000; text-anchor: middle; dominant-baseline: central; }
+            .assoc-line { stroke: #000000; stroke-width: 1.3; stroke-linecap: round; }
+            .boundary { fill: #ffffff; stroke: #000000; stroke-width: 2; stroke-dasharray: 6 4; }
+            .pkg-box { fill: #fcfdfe; stroke: #666666; stroke-width: 1.2; stroke-dasharray: 4 3; rx: 8; ry: 8; }
+            .uc-ellipse { fill: #ffffff; stroke: #000000; stroke-width: 1.4; }
+            .actor-body { stroke: #000000; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; fill: #ffffff; }
+        </style>
+    </defs>
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#ffffff" />
+    
+<rect x="170" y="30" width="1240" height="1170" class="boundary" />
+<text x="195" y="58" class="boundary-title">HỆ THỐNG QUẢN LÝ ĐÀO TẠO &amp; SINH VIÊN (SMS)</text>
+<rect x="230" y="80" width="370" height="450" class="pkg-box" />
+<text x="246" y="104" class="pkg-title">PHÂN HỆ QUẢN TRỊ VIÊN HỆ THỐNG (ADMIN)</text>
+<rect x="230" y="570" width="370" height="580" class="pkg-box" />
+<text x="246" y="594" class="pkg-title">PHÂN HỆ CÁN BỘ PHÒNG ĐÀO TẠO</text>
+<rect x="980" y="80" width="370" height="505" class="pkg-box" />
+<text x="996" y="104" class="pkg-title">PHÂN HỆ GIẢNG VIÊN (LECTURER)</text>
+<rect x="980" y="625" width="370" height="525" class="pkg-box" />
+<text x="996" y="649" class="pkg-title">PHÂN HỆ SINH VIÊN (STUDENT)</text>
+<line x1="97" y1="305" x2="255" y2="148.0" class="assoc-line" />
+<ellipse cx="415.0" cy="148.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="148.0" class="uc-title">Quản lý Tài khoản &amp; Phân quyền RBAC</text>
+<line x1="97" y1="305" x2="255" y2="208.0" class="assoc-line" />
+<ellipse cx="415.0" cy="208.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="208.0" class="uc-title">Phê duyệt Cấp lại Mật khẩu An toàn</text>
+<line x1="97" y1="305" x2="255" y2="268.0" class="assoc-line" />
+<ellipse cx="415.0" cy="268.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="268.0" class="uc-title">Giám sát Nhật ký Kiểm toán Điểm số</text>
+<line x1="97" y1="305" x2="255" y2="328.0" class="assoc-line" />
+<ellipse cx="415.0" cy="328.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="328.0" class="uc-title">Báo cáo Thống kê Toàn trường &amp; KPI</text>
+<line x1="97" y1="305" x2="255" y2="388.0" class="assoc-line" />
+<ellipse cx="415.0" cy="388.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="388.0" class="uc-title">Mở khóa Sổ điểm Khẩn cấp</text>
+<line x1="97" y1="305" x2="255" y2="448.0" class="assoc-line" />
+<ellipse cx="415.0" cy="448.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="448.0" class="uc-title">Sao lưu &amp; Khôi phục Cơ sở dữ liệu</text>
+<line x1="97" y1="865" x2="255" y2="638.0" class="assoc-line" />
+<ellipse cx="415.0" cy="638.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="638.0" class="uc-title">Thiết lập Khoa, Ngành &amp; Lớp sinh hoạt</text>
+<line x1="97" y1="865" x2="255" y2="698.0" class="assoc-line" />
+<ellipse cx="415.0" cy="698.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="698.0" class="uc-title">Quản lý Môn học &amp; Môn tiên quyết (DAG)</text>
+<line x1="97" y1="865" x2="255" y2="758.0" class="assoc-line" />
+<ellipse cx="415.0" cy="758.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="758.0" class="uc-title">Cấu hình Học kỳ &amp; Đợt ĐKHP (Waves)</text>
+<line x1="97" y1="865" x2="255" y2="818.0" class="assoc-line" />
+<ellipse cx="415.0" cy="818.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="818.0" class="uc-title">Mở mới &amp; Điều phối Lớp học phần</text>
+<line x1="97" y1="865" x2="255" y2="878.0" class="assoc-line" />
+<ellipse cx="415.0" cy="878.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="878.0" class="uc-title">Xếp Thời khóa biểu &amp; Chống xung đột</text>
+<line x1="97" y1="865" x2="255" y2="938.0" class="assoc-line" />
+<ellipse cx="415.0" cy="938.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="938.0" class="uc-title">Quản lý Cổng Thu ngân &amp; Học phí SV</text>
+<line x1="97" y1="865" x2="255" y2="998.0" class="assoc-line" />
+<ellipse cx="415.0" cy="998.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="998.0" class="uc-title">Tổ chức Thi &amp; Phân bổ Phòng tự động</text>
+<line x1="97" y1="865" x2="255" y2="1058.0" class="assoc-line" />
+<ellipse cx="415.0" cy="1058.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="415.0" y="1058.0" class="uc-title">Thẩm định Tốt nghiệp theo Thông tư 08</text>
+<line x1="1483" y1="335" x2="1325" y2="148.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="148.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="148.0" class="uc-title">Tra cứu Lịch giảng dạy cá nhân tuần</text>
+<line x1="1483" y1="335" x2="1325" y2="208.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="208.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="208.0" class="uc-title">Xem Danh sách SV &amp; Hồ sơ lớp phụ trách</text>
+<line x1="1483" y1="335" x2="1325" y2="268.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="268.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="268.0" class="uc-title">Khởi tạo Điểm danh Mã PIN Trực tiếp</text>
+<line x1="1483" y1="335" x2="1325" y2="328.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="328.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="328.0" class="uc-title">Nhập Điểm thành phần &amp; Import Excel</text>
+<line x1="1483" y1="335" x2="1325" y2="388.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="388.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="388.0" class="uc-title">Chốt &amp; Công bố Bảng điểm (Hạn 7 ngày)</text>
+<line x1="1483" y1="335" x2="1325" y2="448.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="448.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="448.0" class="uc-title">Lập Phiếu Đề xuất Đính chính điểm 3 cấp</text>
+<line x1="1483" y1="335" x2="1325" y2="508.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="508.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="508.0" class="uc-title">Tiếp nhận &amp; Thẩm định Đơn Phúc khảo</text>
+<line x1="1483" y1="915" x2="1325" y2="693.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="693.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="693.0" class="uc-title">Tra cứu Thời khóa biểu tuần cá nhân</text>
+<line x1="1483" y1="915" x2="1325" y2="753.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="753.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="753.0" class="uc-title">Đăng ký Lớp học phần (Khóa bi quan)</text>
+<line x1="1483" y1="915" x2="1325" y2="813.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="813.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="813.0" class="uc-title">Hủy Đăng ký Lớp học phần trong đợt</text>
+<line x1="1483" y1="915" x2="1325" y2="873.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="873.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="873.0" class="uc-title">Tra cứu Bảng điểm, GPA kỳ &amp; CPA tích lũy</text>
+<line x1="1483" y1="915" x2="1325" y2="933.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="933.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="933.0" class="uc-title">Xem Bản đồ Lộ trình Khung CTĐT</text>
+<line x1="1483" y1="915" x2="1325" y2="993.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="993.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="993.0" class="uc-title">Tra cứu Hóa đơn &amp; Nộp học phí trực tuyến</text>
+<line x1="1483" y1="915" x2="1325" y2="1053.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="1053.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="1053.0" class="uc-title">Check-in Điểm danh ca học bằng Mã PIN</text>
+<line x1="1483" y1="915" x2="1325" y2="1113.0" class="assoc-line" />
+<ellipse cx="1165.0" cy="1113.0" rx="160.0" ry="23.0" class="uc-ellipse" />
+<text x="1165.0" y="1113.0" class="uc-title">Nộp Đơn Phúc khảo Điểm thi trực tuyến</text>
+<circle cx="75" cy="277" r="11" class="actor-body" />
+<line x1="75" y1="288" x2="75" y2="317" class="actor-body" />
+<line x1="58" y1="298" x2="92" y2="298" class="actor-body" />
+<line x1="75" y1="317" x2="62" y2="339" class="actor-body" />
+<line x1="75" y1="317" x2="88" y2="339" class="actor-body" />
+<text x="75" y="357" class="actor-label">Quản trị viên</text>
+<text x="75" y="373" class="actor-label">hệ thống (Admin)</text>
+<circle cx="75" cy="837" r="11" class="actor-body" />
+<line x1="75" y1="848" x2="75" y2="877" class="actor-body" />
+<line x1="58" y1="858" x2="92" y2="858" class="actor-body" />
+<line x1="75" y1="877" x2="62" y2="899" class="actor-body" />
+<line x1="75" y1="877" x2="88" y2="899" class="actor-body" />
+<text x="75" y="917" class="actor-label">Cán bộ</text>
+<text x="75" y="933" class="actor-label">Phòng Đào tạo</text>
+<circle cx="1505" cy="307" r="11" class="actor-body" />
+<line x1="1505" y1="318" x2="1505" y2="347" class="actor-body" />
+<line x1="1488" y1="328" x2="1522" y2="328" class="actor-body" />
+<line x1="1505" y1="347" x2="1492" y2="369" class="actor-body" />
+<line x1="1505" y1="347" x2="1518" y2="369" class="actor-body" />
+<text x="1505" y="387" class="actor-label">Giảng viên</text>
+<text x="1505" y="403" class="actor-label">(Lecturer)</text>
+<circle cx="1505" cy="887" r="11" class="actor-body" />
+<line x1="1505" y1="898" x2="1505" y2="927" class="actor-body" />
+<line x1="1488" y1="908" x2="1522" y2="908" class="actor-body" />
+<line x1="1505" y1="927" x2="1492" y2="949" class="actor-body" />
+<line x1="1505" y1="927" x2="1518" y2="949" class="actor-body" />
+<text x="1505" y="967" class="actor-label">Sinh viên</text>
+<text x="1505" y="983" class="actor-label">(Student)</text>
+</svg>

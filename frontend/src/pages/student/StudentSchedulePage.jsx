@@ -1,14 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Calendar, Clock, MapPin, User, BookOpen, Layers, CheckCircle2,
   Grid, List, Printer, School, CalendarDays, RefreshCw, Globe,
   KeyRound, XCircle
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { scheduleService, semesterService, attendanceService } from '../../services/dataService';
+import { scheduleService, semesterService, attendanceService, enrollmentService } from '../../services/dataService';
 import useAuthStore from '../../store/authStore';
 import StudentClassListModal from './StudentClassListModal';
 import StudentCheckInModal from '../../components/student/StudentCheckInModal';
+import WeekCalendarPicker, {
+  getMonday,
+  getWeekDays,
+  getCourseEndInfo,
+  PERIOD_END_TIMES,
+  formatViDate,
+  formatIsoDate,
+} from '../../components/common/WeekCalendarPicker';
 
 const DAYS = [
   { value: 2, label: 'Thứ Hai', short: 'T2', jsDay: 1 },
@@ -43,12 +51,24 @@ export default function StudentSchedulePage() {
   const [selectedSection, setSelectedSection] = useState(null);
   const [todayAttendance, setTodayAttendance] = useState({});
   const [checkInSection, setCheckInSection] = useState(null);
+  const [absenceStats, setAbsenceStats] = useState({});
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
 
   // Current day calculation
   const [todayVal] = useState(() => {
     const day = new Date().getDay(); // 0 = Sunday, 1 = Monday...
     return day === 0 ? 8 : day + 1; // 2..8
   });
+
+  const activeMonday = useMemo(() => getMonday(selectedDate), [selectedDate]);
+  const activeWeekDays = useMemo(() => getWeekDays(activeMonday), [activeMonday]);
+  const activeWeekMap = useMemo(() => {
+    const map = {};
+    activeWeekDays.forEach((w) => {
+      map[w.dayOfWeek] = w;
+    });
+    return map;
+  }, [activeWeekDays]);
 
   const loadTodayAttendance = useCallback(async () => {
     try {
@@ -62,6 +82,52 @@ export default function StudentSchedulePage() {
       // Ignore background error
     }
   }, []);
+
+  const loadEnrollmentAbsences = useCallback(async () => {
+    try {
+      const res = await enrollmentService.getMyEnrollments();
+      const map = {};
+      (res.data?.data || []).forEach((enr) => {
+        const sec = enr.courseSection || enr.section;
+        const secId = sec?.id;
+        if (secId) {
+          const absenceCount = enr.absenceCount ?? 0;
+          const credits = sec.subject?.credits || 3;
+          const totalCoursePeriods = credits * 15;
+          const absentPeriods =
+            enr.absentPeriods && enr.absentPeriods > 0
+              ? enr.absentPeriods
+              : absenceCount * 3;
+          const absentRate =
+            enr.absentRate != null && enr.absentRate > 0
+              ? Math.round(enr.absentRate * 100)
+              : totalCoursePeriods > 0
+              ? Math.round((absentPeriods / totalCoursePeriods) * 100)
+              : 0;
+
+          map[secId] = {
+            absenceCount,
+            absentPeriods,
+            absentRate,
+          };
+        }
+      });
+      setAbsenceStats(map);
+    } catch {
+      // Ignore background error
+    }
+  }, []);
+
+  const handleSelectSection = (s) => {
+    setSelectedSection({
+      ...s.courseSection,
+      room: s.room,
+      schedule: s,
+      startPeriod: s.startPeriod,
+      endPeriod: s.endPeriod,
+      periodTimeString: s.periodTimeString,
+    });
+  };
 
   const loadScheduleForSemester = async (semId) => {
     try {
@@ -90,6 +156,7 @@ export default function StudentSchedulePage() {
 
         await loadScheduleForSemester(defaultSemId);
         loadTodayAttendance();
+        loadEnrollmentAbsences();
       } catch {
         toast.error('Lỗi khi khởi tạo thời khóa biểu');
         setLoading(false);
@@ -97,7 +164,7 @@ export default function StudentSchedulePage() {
     };
 
     initData();
-  }, [loadTodayAttendance]);
+  }, [loadTodayAttendance, loadEnrollmentAbsences]);
 
   const handleSemesterChange = (newSemId) => {
     setSelectedSemesterId(newSemId);
@@ -261,7 +328,7 @@ export default function StudentSchedulePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <CalendarDays size={20} style={{ color: 'var(--primary)' }} />
             <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700 }}>
-              Hôm Nay ({DAYS.find((d) => d.value === todayVal)?.label}) — Lịch Trình Học Tập
+              Hôm Nay ({DAYS.find((d) => d.value === todayVal)?.label}, {formatViDate(new Date())}) — Lịch Trình Học Tập
             </h3>
           </div>
           <span className="badge badge-neutral" style={{ fontSize: '0.75rem' }}>
@@ -279,7 +346,7 @@ export default function StudentSchedulePage() {
             {todayClasses.map((s) => (
               <div
                 key={s.id}
-                onClick={() => setSelectedSection({ ...s.courseSection, room: s.room })}
+                onClick={() => handleSelectSection(s)}
                 title="Nhấn để xem danh sách lớp học và số buổi vắng"
                 style={{
                   background: 'var(--primary-light)',
@@ -311,10 +378,37 @@ export default function StudentSchedulePage() {
                   )}
                 </div>
 
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                   <Clock size={13} />
                   <strong>Tiết {s.startPeriod} - {s.endPeriod}</strong> ({s.periodTimeString || ''})
+                  {PERIOD_END_TIMES[s.endPeriod] && (
+                    <span style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                      • Tan: {PERIOD_END_TIMES[s.endPeriod]}
+                    </span>
+                  )}
                 </div>
+
+                {/* Course End Info */}
+                {(() => {
+                  const endInfo = getCourseEndInfo(s.endDate, new Date());
+                  if (!endInfo) return null;
+                  return (
+                    <div style={{
+                      fontSize: '0.75rem',
+                      marginTop: '4px',
+                      fontWeight: 600,
+                      color: endInfo.isCompleted ? '#059669' : '#b45309',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <span>{endInfo.text}</span>
+                      <span className={`badge ${endInfo.isCompleted ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.65rem', padding: '1px 5px' }}>
+                        {endInfo.badge}
+                      </span>
+                    </div>
+                  );
+                })()}
 
                 {s.courseSection?.lecturer?.fullName && (
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -328,6 +422,50 @@ export default function StudentSchedulePage() {
                     Lưu ý: {s.note}
                   </div>
                 )}
+
+                {/* Absence stats */}
+                {(() => {
+                  const stat = absenceStats[s.courseSection?.id];
+                  if (!stat) return null;
+                  const rate = stat.absentRate ?? 0;
+                  return (
+                    <div
+                      style={{
+                        marginTop: '8px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '6px',
+                        fontSize: '0.75rem',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        background:
+                          rate >= 20
+                            ? 'rgba(239, 68, 68, 0.12)'
+                            : rate >= 15
+                            ? 'rgba(245, 158, 11, 0.12)'
+                            : 'rgba(16, 185, 129, 0.1)',
+                        color: rate >= 20 ? '#dc2626' : rate >= 15 ? '#b45309' : '#047857',
+                        fontWeight: 600,
+                      }}
+                    >
+                      <span>Vắng mặt(Số buổi/Số tiết/Tỷ lệ):</span>
+                      <strong style={{ fontWeight: 700 }}>
+                        ({stat.absenceCount}/{stat.absentPeriods}/{rate}%)
+                      </strong>
+                      {rate >= 20 && (
+                        <span className="badge badge-danger" style={{ fontSize: '0.65rem', padding: '1px 5px', backgroundColor: '#dc2626' }}>
+                          Cấm thi
+                        </span>
+                      )}
+                      {rate >= 15 && rate < 20 && (
+                        <span className="badge badge-warning" style={{ fontSize: '0.65rem', padding: '1px 5px', backgroundColor: '#d97706', color: '#fff' }}>
+                          Nguy cơ cấm thi
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 {/* Attendance Status & Check-in Action */}
                 {(() => {
@@ -355,8 +493,9 @@ export default function StudentSchedulePage() {
                           justifyContent: 'center',
                           gap: '6px',
                           fontWeight: 700,
-                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                          borderColor: '#059669'
+                          background: 'var(--success, #16a34a)',
+                          borderColor: 'var(--success, #16a34a)',
+                          color: '#ffffff'
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -463,101 +602,143 @@ export default function StudentSchedulePage() {
         </div>
       ) : viewMode === 'grid' ? (
         /* ================= WEEKLY MATRIX GRID ================= */
-        <div className="card" style={{ padding: '20px', overflowX: 'auto' }}>
-          <div style={{ minWidth: '950px' }}>
-            {/* Days Header */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '150px repeat(7, 1fr)',
-                gap: '10px',
-                marginBottom: '12px',
-                textAlign: 'center',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-              }}
-            >
-              <div
-                style={{
-                  background: 'var(--bg-subtle)',
-                  padding: '12px',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-secondary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                }}
-              >
-                <Clock size={16} /> Ca / Tiết
-              </div>
-              {DAYS.map((d) => {
-                const isToday = d.value === todayVal;
-                return (
-                  <div
-                    key={d.value}
-                    style={{
-                      background: isToday ? 'var(--primary)' : 'var(--primary-light)',
-                      color: isToday ? '#ffffff' : 'var(--primary)',
-                      padding: '12px 6px',
-                      borderRadius: 'var(--radius-md)',
-                      border: isToday ? '2px solid var(--primary-hover)' : '1px solid var(--primary-border)',
-                      boxShadow: isToday ? 'var(--shadow-sm)' : 'none',
-                    }}
-                  >
-                    <div>{d.label}</div>
-                    <div style={{ fontSize: '0.725rem', opacity: isToday ? 0.95 : 0.8, fontWeight: 500 }}>
-                      {isToday ? '★ Hôm nay' : `${schedules.filter((s) => s.dayOfWeek === d.value).length} ca học`}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+        <div>
+          {/* Week & Date Navigation Picker */}
+          <WeekCalendarPicker
+            selectedDate={selectedDate}
+            onChangeDate={setSelectedDate}
+            semesterStartDate={activeSemesterObj?.startDate}
+          />
 
-            {/* Period Slots */}
-            {PERIOD_SLOTS.map((slot) => (
+          <div className="card" style={{ padding: '20px', overflowX: 'auto' }}>
+            <div style={{ minWidth: '950px' }}>
+              {/* Days Header */}
               <div
-                key={slot.slot}
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '150px repeat(7, 1fr)',
                   gap: '10px',
                   marginBottom: '12px',
-                  minHeight: '125px',
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
                 }}
               >
-                {/* Slot info */}
                 <div
                   style={{
                     background: 'var(--bg-subtle)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: 'var(--radius-md)',
                     padding: '12px',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--text-secondary)',
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: 'center',
                     justifyContent: 'center',
+                    gap: '6px',
                   }}
                 >
-                  <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.875rem' }}>
-                    {slot.slot}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    Tiết {slot.start} - {slot.end}
-                  </span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-light)', marginTop: '2px' }}>
-                    {slot.label.split('(')[1]?.replace(')', '') || ''}
-                  </span>
+                  <Clock size={16} /> Ca / Tiết
                 </div>
-
-                {/* Days */}
                 {DAYS.map((d) => {
-                  const isToday = d.value === todayVal;
-                  const cellSchedules = schedules.filter(
-                    (s) =>
-                      s.dayOfWeek === d.value &&
-                      s.startPeriod <= slot.end &&
-                      s.endPeriod >= slot.start
+                  const dayObj = activeWeekMap[d.value];
+                  const isToday = dayObj?.iso === formatIsoDate(new Date());
+                  const isSelected = dayObj?.iso === formatIsoDate(selectedDate);
+                  const dayClasses = schedules.filter((s) => {
+                    if (s.dayOfWeek !== d.value) return false;
+                    if (dayObj && s.startDate && s.endDate) {
+                      if (s.startDate > dayObj.iso || s.endDate < dayObj.iso) return false;
+                    }
+                    return true;
+                  });
+
+                  return (
+                    <div
+                      key={d.value}
+                      onClick={() => dayObj && setSelectedDate(dayObj.date)}
+                      title={`Xem lịch ${d.label} (${dayObj?.fullDate || ''})`}
+                      style={{
+                        background: isToday
+                          ? 'var(--primary)'
+                          : isSelected
+                          ? 'var(--primary-light)'
+                          : 'var(--bg-subtle)',
+                        color: isToday
+                          ? '#ffffff'
+                          : isSelected
+                          ? 'var(--primary)'
+                          : 'var(--text-main)',
+                        padding: '10px 4px',
+                        borderRadius: 'var(--radius-md)',
+                        border: isToday
+                          ? '2px solid var(--primary-hover)'
+                          : isSelected
+                          ? '2px solid var(--primary)'
+                          : '1px solid var(--border-color)',
+                        boxShadow: isToday ? 'var(--shadow-sm)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700 }}>{d.label}</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600, opacity: isToday ? 0.95 : 0.85, margin: '2px 0' }}>
+                        {dayObj?.shortDate || ''}
+                      </div>
+                      <div style={{ fontSize: '0.7rem', opacity: isToday ? 0.9 : 0.75, fontWeight: 500 }}>
+                        {isToday ? '★ Hôm nay' : `${dayClasses.length} ca học`}
+                      </div>
+                    </div>
                   );
+                })}
+              </div>
+
+              {/* Period Slots */}
+              {PERIOD_SLOTS.map((slot) => (
+                <div
+                  key={slot.slot}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '150px repeat(7, 1fr)',
+                    gap: '10px',
+                    marginBottom: '12px',
+                    minHeight: '125px',
+                  }}
+                >
+                  {/* Slot info */}
+                  <div
+                    style={{
+                      background: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <span style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.875rem' }}>
+                      {slot.slot}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      Tiết {slot.start} - {slot.end}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-light)', marginTop: '2px' }}>
+                      {slot.label.split('(')[1]?.replace(')', '') || ''}
+                    </span>
+                  </div>
+
+                  {/* Days */}
+                  {DAYS.map((d) => {
+                    const dayObj = activeWeekMap[d.value];
+                    const isToday = dayObj?.iso === formatIsoDate(new Date());
+                    const cellSchedules = schedules.filter(
+                      (s) => {
+                        if (s.dayOfWeek !== d.value) return false;
+                        if (s.startPeriod > slot.end || s.endPeriod < slot.start) return false;
+                        if (dayObj && s.startDate && s.endDate) {
+                          if (s.startDate > dayObj.iso || s.endDate < dayObj.iso) return false;
+                        }
+                        return true;
+                      }
+                    );
 
                   return (
                     <div
@@ -598,7 +779,7 @@ export default function StudentSchedulePage() {
                         return (
                           <div
                             key={s.id}
-                            onClick={() => setSelectedSection({ ...s.courseSection, room: s.room })}
+                            onClick={() => handleSelectSection(s)}
                             title="Nhấn để xem danh sách lớp học và số buổi vắng"
                             style={{
                               background: 'var(--bg-surface)',
@@ -619,7 +800,7 @@ export default function StudentSchedulePage() {
                               {isOnlineRoom(s.room) ? <Globe size={12} /> : <MapPin size={12} />}
                               <span>{isOnlineRoom(s.room) ? (String(s.room).length > 15 ? 'Online' : s.room) : `P.${s.room}`}</span>
                               <span className="badge badge-info" style={{ fontSize: '0.65rem', padding: '1px 5px', marginLeft: 'auto' }}>
-                                Tiết {s.startPeriod}-{s.endPeriod}
+                                Tiết {s.startPeriod}-{s.endPeriod} {PERIOD_END_TIMES[s.endPeriod] ? `(Tan: ${PERIOD_END_TIMES[s.endPeriod]})` : ''}
                               </span>
                             </div>
 
@@ -634,6 +815,58 @@ export default function StudentSchedulePage() {
                                 <User size={11} /> {lect.fullName}
                               </div>
                             )}
+
+                            {/* Course End Info */}
+                            {(() => {
+                              const endInfo = getCourseEndInfo(s.endDate, selectedDate);
+                              if (!endInfo) return null;
+                              return (
+                                <div
+                                  style={{
+                                    marginTop: '4px',
+                                    fontSize: '0.675rem',
+                                    fontWeight: 600,
+                                    color: endInfo.isCompleted ? '#059669' : '#b45309',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    gap: '4px',
+                                  }}
+                                >
+                                  <span>{endInfo.text}</span>
+                                  <span className={`badge ${endInfo.isCompleted ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.625rem', padding: '1px 4px' }}>
+                                    {endInfo.badge}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+
+                            {/* Absence stats */}
+                            {(() => {
+                              const stat = absenceStats[s.courseSection?.id];
+                              if (!stat) return null;
+                              const rate = stat.absentRate ?? 0;
+                              return (
+                                <div
+                                  style={{
+                                    marginTop: '4px',
+                                    fontSize: '0.675rem',
+                                    fontWeight: 600,
+                                    color: rate >= 20 ? '#dc2626' : rate >= 15 ? '#b45309' : '#059669',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                    gap: '3px',
+                                  }}
+                                  title={`Số buổi: ${stat.absenceCount}, Số tiết: ${stat.absentPeriods}, Tỷ lệ: ${rate}%`}
+                                >
+                                  <span>Vắng:</span>
+                                  <strong>({stat.absenceCount}/{stat.absentPeriods}/{rate}%)</strong>
+                                  {rate >= 20 && <span style={{ color: '#dc2626', fontWeight: 700 }}>⚠️ Cấm thi</span>}
+                                  {rate >= 15 && rate < 20 && <span style={{ color: '#b45309', fontWeight: 700 }}>⚠️ Nguy cơ</span>}
+                                </div>
+                              );
+                            })()}
 
                             {s.note && (
                               <div style={{ color: 'var(--text-light)', fontSize: '0.7rem', marginTop: '3px', fontStyle: 'italic' }}>
@@ -683,11 +916,15 @@ export default function StudentSchedulePage() {
                                     gap: '3px',
                                     background:
                                       todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
-                                        ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                        ? 'var(--success, #16a34a)'
                                         : undefined,
                                     borderColor:
                                       todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
-                                        ? '#059669'
+                                        ? 'var(--success, #16a34a)'
+                                        : undefined,
+                                    color:
+                                      todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                                        ? '#ffffff'
                                         : undefined,
                                   }}
                                   onClick={(e) => {
@@ -715,7 +952,8 @@ export default function StudentSchedulePage() {
             ))}
           </div>
         </div>
-      ) : (
+      </div>
+    ) : (
         /* ================= LIST VIEW ================= */
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div className="table-container">
@@ -736,7 +974,7 @@ export default function StudentSchedulePage() {
                 {schedules.map((s) => (
                   <tr 
                     key={s.id} 
-                    onClick={() => setSelectedSection({ ...s.courseSection, room: s.room })} 
+                    onClick={() => handleSelectSection(s)} 
                     style={{ cursor: 'pointer' }}
                     title="Nhấn để xem danh sách lớp học và số buổi vắng"
                   >
@@ -747,6 +985,34 @@ export default function StudentSchedulePage() {
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                         Mã HP: {s.courseSection?.sectionCode || '—'}
                       </div>
+                      {/* Absence stats */}
+                      {(() => {
+                        const stat = absenceStats[s.courseSection?.id];
+                        if (!stat) return null;
+                        const rate = stat.absentRate ?? 0;
+                        return (
+                          <div
+                            style={{
+                              fontSize: '0.725rem',
+                              color: rate >= 20 ? '#dc2626' : rate >= 15 ? '#b45309' : '#059669',
+                              fontWeight: 600,
+                              marginTop: '3px',
+                            }}
+                          >
+                            Vắng mặt(Số buổi/Số tiết/Tỷ lệ): <strong>({stat.absenceCount}/{stat.absentPeriods}/{rate}%)</strong>
+                            {rate >= 20 && (
+                              <span className="badge badge-danger" style={{ marginLeft: '4px', fontSize: '0.625rem', padding: '1px 4px' }}>
+                                Cấm thi
+                              </span>
+                            )}
+                            {rate >= 15 && rate < 20 && (
+                              <span className="badge badge-warning" style={{ marginLeft: '4px', fontSize: '0.625rem', padding: '1px 4px' }}>
+                                Nguy cơ
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td>
                       <span className="badge badge-info">
@@ -782,6 +1048,18 @@ export default function StudentSchedulePage() {
                       <div style={{ fontSize: '0.8rem' }}>
                         <div>{s.startDate || '—'}</div>
                         <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>đến {s.endDate || '—'}</div>
+                        {(() => {
+                          const endInfo = getCourseEndInfo(s.endDate, selectedDate);
+                          if (!endInfo) return null;
+                          return (
+                            <span
+                              className={`badge ${endInfo.isCompleted ? 'badge-success' : 'badge-warning'}`}
+                              style={{ marginTop: '4px', fontSize: '0.65rem', padding: '2px 5px', display: 'inline-block' }}
+                            >
+                              {endInfo.badge}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </td>
                     <td>
@@ -821,11 +1099,15 @@ export default function StudentSchedulePage() {
                             gap: '4px',
                             background:
                               todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
-                                ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                ? 'var(--success, #16a34a)'
                                 : undefined,
                             borderColor:
                               todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
-                                ? '#059669'
+                                ? 'var(--success, #16a34a)'
+                                : undefined,
+                            color:
+                              todayAttendance[s.courseSection?.id]?.sessionStatus === 'OPEN'
+                                ? '#ffffff'
                                 : undefined,
                           }}
                           onClick={(e) => {
@@ -855,7 +1137,10 @@ export default function StudentSchedulePage() {
         <StudentClassListModal 
           courseSection={selectedSection} 
           todayAttendance={todayAttendance}
-          onCheckInSuccess={loadTodayAttendance}
+          onCheckInSuccess={() => {
+            loadTodayAttendance();
+            loadEnrollmentAbsences();
+          }}
           onClose={() => setSelectedSection(null)} 
         />
       )}
@@ -864,7 +1149,10 @@ export default function StudentSchedulePage() {
         <StudentCheckInModal
           courseSection={checkInSection}
           onClose={() => setCheckInSection(null)}
-          onSuccess={loadTodayAttendance}
+          onSuccess={() => {
+            loadTodayAttendance();
+            loadEnrollmentAbsences();
+          }}
         />
       )}
     </div>

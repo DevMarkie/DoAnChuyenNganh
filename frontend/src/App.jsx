@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -54,8 +54,7 @@ function ProtectedRoute({ children, allowedRoles, fallbackLoginPath }) {
 
   if (!isAuthenticated) {
     const loginPath = fallbackLoginPath || (
-      allowedRoles?.includes('ACADEMIC_AFFAIRS') ? '/academic/login' :
-      allowedRoles?.includes('EXAMINATION_OFFICER') ? '/admin/login' :
+      (allowedRoles?.includes('ACADEMIC_AFFAIRS') || allowedRoles?.includes('ACADEMIC_STAFF') || allowedRoles?.includes('EXAMINATION_OFFICER')) ? '/academic/login' :
       allowedRoles?.includes('ADMIN') ? '/admin/login' :
       allowedRoles?.includes('LECTURER') ? '/lecturer/login' :
       '/student/login'
@@ -75,7 +74,12 @@ function ProtectedRoute({ children, allowedRoles, fallbackLoginPath }) {
 }
 
 export default function App() {
-  const { isAuthenticated, user } = useAuthStore();
+  const location = useLocation();
+  const { isAuthenticated, user, hasPortalSession, syncWithRoute } = useAuthStore();
+
+  useEffect(() => {
+    syncWithRoute(location.pathname);
+  }, [location.pathname, syncWithRoute]);
 
   const getDefaultRedirect = () => {
     if (!isAuthenticated) return '/login';
@@ -91,20 +95,18 @@ export default function App() {
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           {/* Dedicated Portal Login Routes */}
-          <Route path="/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalHubPage />
-          } />
+          <Route path="/login" element={<PortalHubPage />} />
           <Route path="/student/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalLoginPage portalType="student" />
+            hasPortalSession('student') ? <Navigate to="/student/dashboard" replace /> : <PortalLoginPage portalType="student" />
           } />
           <Route path="/lecturer/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalLoginPage portalType="lecturer" />
+            hasPortalSession('lecturer') ? <Navigate to="/lecturer/dashboard" replace /> : <PortalLoginPage portalType="lecturer" />
           } />
           <Route path="/academic/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalLoginPage portalType="academic" />
+            hasPortalSession('academic') ? <Navigate to="/academic/dashboard" replace /> : <PortalLoginPage portalType="academic" />
           } />
           <Route path="/admin/login" element={
-            isAuthenticated ? <Navigate to={getDefaultRedirect()} replace /> : <PortalLoginPage portalType="admin" />
+            hasPortalSession('admin') ? <Navigate to="/admin/dashboard" replace /> : <PortalLoginPage portalType="admin" />
           } />
 
           {/* Academic Affairs Routes */}

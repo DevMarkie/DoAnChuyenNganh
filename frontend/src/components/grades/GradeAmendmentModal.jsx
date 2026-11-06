@@ -170,11 +170,11 @@ export default function GradeAmendmentModal({
         <div
           style={{
             padding: '20px 24px',
-            borderBottom: '1px solid #e2e8f0',
+            borderBottom: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(to right, #f8fafc, #f1f5f9)',
+            background: 'var(--bg-surface)',
           }}
         >
           <div>

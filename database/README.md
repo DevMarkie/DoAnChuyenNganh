@@ -2,7 +2,7 @@
 ## DATABASE ARCHITECTURE, INDEXING STRATEGY & MIGRATION HANDBOOK
 > **Dự án:** Hệ Thống Quản Lý Đào Tạo & Sinh Viên (SMS / UAMS)  
 > **Hệ quản trị CSDL:** MySQL 8.0 (InnoDB Engine, Character set: `utf8mb4`, Collation: `utf8mb4_unicode_ci`)  
-> **Quy mô dữ liệu thực nghiệm:** 41 Bảng quan hệ · 2 Database Views · 27 Bản migration · 3.000 Sinh viên · 80 Giảng viên · 5 Học kỳ  
+> **Quy mô dữ liệu thực nghiệm:** 39 Bảng quan hệ · 2 Database Views · 27 Bản migration · 3.000 Sinh viên · 80 Giảng viên · 5 Học kỳ  
 > **Tác giả:** Nguyễn Duy Minh (MSV: 23010359)
 
 ---
@@ -10,7 +10,7 @@
 ## 📑 Mục lục
 1. [Tổng quan Kiến trúc CSDL](#1-tổng-quan-kiến-trúc-csdl)
 2. [Cấu trúc Thư mục `database/`](#2-cấu-trúc-thư-mục-database)
-3. [Danh mục Toàn bộ 41 Bảng Quan hệ theo 7 Phân nhóm](#3-danh-mục-toàn-bộ-41-bảng-quan-hệ-theo-7-phân-nhóm)
+3. [Danh mục Toàn bộ 39 Bảng Quan hệ theo 7 Phân nhóm](#3-danh-mục-toàn-bộ-39-bảng-quan-hệ-theo-7-phân-nhóm)
 4. [Hệ thống Database Views phục vụ Truy xuất dữ liệu siêu tốc](#4-hệ-thống-database-views-phục-vụ-truy-xuất-dữ-liệu-siêu-tốc)
 5. [Chiến lược Indexing & Tối ưu hóa truy vấn tải cao](#5-chiến-lược-indexing--tối-ưu-hóa-truy-vấn-tải-cao)
 6. [Sổ tay Migration & Lịch sử nâng cấp CSDL (27 bản vá)](#6-sổ-tay-migration--lịch-sử-nâng-cấp-csdl-27-bản-vá)
@@ -42,6 +42,7 @@ erDiagram
     ENROLLMENTS ||--|| GRADES : "chấm điểm"
     GRADES ||--o{ GRADE_APPEALS : "phúc khảo"
     STUDENTS ||--o{ STUDENT_INVOICES : "thanh toán"
+    STUDENTS ||--o{ ACADEMIC_SUMMARIES : "tổng kết GPA/CPA"
 ```
 
 * **Chuẩn hóa quan hệ chặt chẽ:** Đảm bảo toàn vẹn dữ liệu qua hệ thống khóa ngoại (`FOREIGN KEY`) với các chính sách `ON DELETE RESTRICT` cho các danh mục cốt lõi và `ON DELETE CASCADE` cho các thực thể phụ thuộc dữ liệu phiên.
@@ -54,7 +55,7 @@ erDiagram
 
 ```text
 database/
-├── schema.sql                 # Canonical DDL: Định nghĩa toàn vẹn 41 bảng, 2 views, composite indexes
+├── schema.sql                 # Canonical DDL: Định nghĩa toàn vẹn 39 bảng, 2 views, composite indexes
 ├── seed.sql                   # Bộ dữ liệu thực nghiệm mẫu hoàn chỉnh (3.000 SV, 80 GV, 28 ngành, 5 học kỳ)
 ├── migrations/                # Kho lưu trữ 27 bản vá nâng cấp CSDL từ phiên bản sơ khởi đến bản hiện tại
 └── README.md                  # Cẩm nang tài liệu kỹ thuật này
@@ -62,14 +63,14 @@ database/
 
 ---
 
-## 3. Danh mục Toàn bộ 41 Bảng Quan hệ theo 7 Phân nhóm
+## 3. Danh mục Toàn bộ 39 Bảng Quan hệ theo 7 Phân nhóm
 
-Hệ thống quản lý tổng cộng **41 bảng quan hệ** được tổ chức khoa học theo 7 miền nghiệp vụ:
+Hệ thống quản lý tổng cộng **39 bảng quan hệ** được tổ chức khoa học theo 7 miền nghiệp vụ:
 
 ### Phân nhóm 1: Hệ thống, Người dùng & Phân quyền (6 Bảng)
 | STT | Tên bảng | Chức năng chính | Khóa ngoại & Ràng buộc quan trọng |
 |:---:|:---|:---|:---|
-| 1 | `roles` | Danh mục vai trò người dùng trong hệ thống | ENUM: `ADMIN`, `ACADEMIC_AFFAIRS`, `LECTURER`, `STUDENT`, `EXAMINATION_OFFICER`. |
+| 1 | `roles` | Danh mục vai trò người dùng trong hệ thống | ENUM: `ADMIN`, `ACADEMIC_AFFAIRS`, `ACADEMIC_STAFF`, `EXAMINATION_OFFICER`, `LECTURER`, `STUDENT`. |
 | 2 | `users` | Tài khoản xác thực, mật khẩu mã hóa BCrypt | `role_id ➜ roles.id`, Unique `username`, `email`, cờ `must_change_password`. |
 | 3 | `password_reset_requests` | Yêu cầu cấp lại mật khẩu từ người dùng | `user_id ➜ users.id`, trạng thái `PENDING`, `APPROVED`, `REJECTED`. |
 | 4 | `system_configs` | Cấu hình tham số hệ thống động theo cặp key-value | Unique `config_key` (hạn nộp điểm, số TC tối đa, học phí/TC). |
@@ -89,7 +90,7 @@ Hệ thống quản lý tổng cộng **41 bảng quan hệ** được tổ ch�
 | 14 | `subject_prerequisites` | Quan hệ môn tiên quyết, học trước, song hành | `subject_id`, `prerequisite_id ➜ subjects.id`, `prerequisite_type`. |
 | 15 | `curriculum_block_subjects` | Ánh xạ môn học thuộc khối kiến thức | `block_id ➜ curriculum_blocks.id`, `subject_id ➜ subjects.id`, cờ `is_compulsory`. |
 
-### Phân nhóm 3: Hồ sơ Người học & Rèn luyện (6 Bảng)
+### Phân nhóm 3: Hồ sơ Người học, Rèn luyện & Tổng kết Học vụ (6 Bảng)
 | STT | Tên bảng | Chức năng chính | Khóa ngoại & Ràng buộc quan trọng |
 |:---:|:---|:---|:---|
 | 16 | `students` | Hồ sơ sinh viên, thông tin nhân thân, trạng thái học vụ | `user_id ➜ users.id`, `class_id ➜ classes.id`, Unique `student_code`. |
@@ -97,43 +98,41 @@ Hệ thống quản lý tổng cộng **41 bảng quan hệ** được tổ ch�
 | 18 | `student_achievements_disciplines` | Quyết định khen thưởng, kỷ luật sinh viên | `student_id ➜ students.id`, phân loại `REWARD` / `DISCIPLINE`. |
 | 19 | `student_training_points` | Điểm rèn luyện tổng kết từng học kỳ | `student_id ➜ students.id`, `semester_id ➜ semesters.id`, thang điểm 100. |
 | 20 | `conduct_scores` | Chi tiết các tiêu chí chấm điểm rèn luyện | `student_id`, `semester_id`, điểm ý thức học tập, đạo đức lối sống. |
-| 21 | `student_service_requests` | Dịch vụ sinh viên một cửa (xin giấy xác nhận, bảng điểm) | `student_id ➜ students.id`, trạng thái `PENDING`, `APPROVED`, `DELIVERED`. |
+| 21 | `academic_summaries` | Lưu vết GPA học kỳ, CPA tích lũy và cảnh báo học vụ | `student_id ➜ students.id`, `semester_id ➜ semesters.id`, Unique `(student_id, semester_id)`. |
 
-### Phân nhóm 4: Học kỳ, Đợt đăng ký & Lớp học phần (5 Bảng)
+### Phân nhóm 4: Học kỳ, Đợt đăng ký & Lớp học phần (4 Bảng)
 | STT | Tên bảng | Chức năng chính | Khóa ngoại & Ràng buộc quan trọng |
 |:---:|:---|:---|:---|
 | 22 | `semesters` | Danh mục các học kỳ đào tạo chính và học kỳ phụ | Unique `semester_code`, ngày bắt đầu/kết thúc, trạng thái kỳ. |
 | 23 | `registration_waves` | Các đợt mở cổng đăng ký tín chỉ phân theo khóa | `semester_id ➜ semesters.id`, khung giờ bắt đầu và kết thúc cổng đăng ký. |
 | 24 | `course_sections` | Lớp học phần được mở trong học kỳ | `subject_id`, `semester_id`, `lecturer_id`, `max_students`, `enrolled_students`. |
-| 25 | `class_opening_requests` | Đơn xin mở thêm lớp học phần từ sinh viên | `student_id`, `subject_id`, `semester_id`, trạng thái phê duyệt. |
-| 26 | `schedules` | Thời khóa biểu chi tiết của lớp học phần | `section_id ➜ course_sections.id`, phòng học, thứ, ca học, tuần học. |
+| 25 | `schedules` | Thời khóa biểu chi tiết của lớp học phần | `section_id ➜ course_sections.id`, phòng học, thứ, ca học, tuần học. |
 
 ### Phân nhóm 5: Đăng ký Tín chỉ, Điểm danh & Thông báo (4 Bảng)
 | STT | Tên bảng | Chức năng chính | Khóa ngoại & Ràng buộc quan trọng |
 |:---:|:---|:---|:---|
-| 27 | `enrollments` | Kết quả ghi danh học phần của sinh viên | `student_id`, `section_id`, trạng thái `ENROLLED`, `DROPPED`, `CANCELLED`. |
-| 28 | `attendance_sessions` | Phiên điểm danh lớp học trực tiếp | `section_id ➜ course_sections.id`, mã PIN ngẫu nhiên 6 chữ số, thời hạn phiên. |
-| 29 | `attendance_records` | Bản ghi điểm danh của từng sinh viên | `session_id`, `student_id`, trạng thái `PRESENT`, `LATE`, `ABSENT`. |
-| 30 | `notifications` | Thông báo học vụ thời gian thực đến người dùng | `user_id ➜ users.id`, tiêu đề, nội dung, loại thông báo, trạng thái đã đọc. |
+| 26 | `enrollments` | Kết quả ghi danh học phần của sinh viên | `student_id`, `section_id`, trạng thái `ENROLLED`, `DROPPED`, `CANCELLED`. |
+| 27 | `attendance_sessions` | Phiên điểm danh lớp học trực tiếp | `section_id ➜ course_sections.id`, mã PIN ngẫu nhiên 6 chữ số, thời hạn phiên. |
+| 28 | `attendance_records` | Bản ghi điểm danh của từng sinh viên | `session_id`, `student_id`, trạng thái `PRESENT`, `LATE`, `ABSENT`. |
+| 29 | `notifications` | Thông báo học vụ thời gian thực đến người dùng | `user_id ➜ users.id`, tiêu đề, nội dung, loại thông báo, trạng thái đã đọc. |
 
 ### Phân nhóm 6: Sổ điểm, Khảo thí & Phúc khảo (7 Bảng)
 | STT | Tên bảng | Chức năng chính | Khóa ngoại & Ràng buộc quan trọng |
 |:---:|:---|:---|:---|
-| 31 | `grades` | Bảng điểm 4 thành phần của sinh viên | `enrollment_id ➜ enrollments.id`, CC1 (5%), CC2 (5%), GK (30%), CK (60%). |
-| 32 | `grade_appeals` | Đơn khiếu nại, phúc khảo bài thi | `grade_id ➜ grades.id`, lý do, điểm cũ, điểm mới sau chấm lại. |
-| 33 | `exam_sessions` | Đợt thi kết thúc học phần | `semester_id ➜ semesters.id`, loại kỳ thi (Chính thức, Thi phụ, Thi lại). |
-| 34 | `exam_rooms` | Danh sách phòng thi và ca thi cụ thể | `session_id ➜ exam_sessions.id`, `subject_id`, phòng thi, thời gian thi. |
-| 35 | `exam_rosters` | Danh sách thí sinh trong phòng thi kèm Số báo danh | `room_id ➜ exam_rooms.id`, `student_id`, số báo danh, chữ ký thí sinh. |
-| 36 | `grade_change_tickets` | Đề xuất sửa đổi điểm sau khi đã khóa sổ 7 ngày | `grade_id`, người đề xuất, minh chứng đính kèm, trạng thái phê duyệt. |
-| 37 | `grade_audit_logs` | Nhật ký kiểm toán mọi biến động điểm số | `grade_id`, người chỉnh sửa, giá trị điểm cũ, giá trị điểm mới, thời điểm sửa. |
+| 30 | `grades` | Bảng điểm 4 thành phần của sinh viên | `enrollment_id ➜ enrollments.id`, CC1 (5%), CC2 (5%), GK (30%), CK (60%). |
+| 31 | `grade_appeals` | Đơn khiếu nại, phúc khảo bài thi | `grade_id ➜ grades.id`, lý do, điểm cũ, điểm mới sau chấm lại. |
+| 32 | `exam_sessions` | Đợt thi kết thúc học phần | `semester_id ➜ semesters.id`, loại kỳ thi (Chính thức, Thi phụ, Thi lại). |
+| 33 | `exam_rooms` | Danh sách phòng thi và ca thi cụ thể | `session_id ➜ exam_sessions.id`, `subject_id`, phòng thi, thời gian thi. |
+| 34 | `exam_rosters` | Danh sách thí sinh trong phòng thi kèm Số báo danh | `room_id ➜ exam_rooms.id`, `student_id`, số báo danh, chữ ký thí sinh. |
+| 35 | `grade_change_tickets` | Đề xuất sửa đổi điểm sau khi đã khóa sổ 7 ngày | `grade_id`, người đề xuất, minh chứng đính kèm, trạng thái phê duyệt. |
+| 36 | `grade_audit_logs` | Nhật ký kiểm toán mọi biến động điểm số | `grade_id`, người chỉnh sửa, giá trị điểm cũ, giá trị điểm mới, thời điểm sửa. |
 
-### Phân nhóm 7: Tài chính, Học phí & Học vụ ngoại lệ (4 Bảng)
+### Phân nhóm 7: Tài chính, Học phí & Xét tốt nghiệp (3 Bảng)
 | STT | Tên bảng | Chức năng chính | Khóa ngoại & Ràng buộc quan trọng |
 |:---:|:---|:---|:---|
-| 38 | `fee_scale_rules` | Biểu mức học phí tín chỉ theo ngành và quy mô lớp | Mức học phí chuẩn mỗi tín chỉ, hệ số lớp riêng dưới 15 sinh viên. |
-| 39 | `student_invoices` | Hóa đơn học phí học kỳ của sinh viên | `student_id`, `semester_id`, tổng tiền phải nộp, miễn giảm, đã thanh toán. |
-| 40 | `academic_exceptions` | Các trường hợp học vụ ngoại lệ được đặc xá | `student_id`, `semester_id`, lý do bảo lưu, gia hạn thời gian nộp học phí. |
-| 41 | `graduation_records` | Quyết định công nhận tốt nghiệp và xếp loại bằng | `student_id`, số quyết định, điểm CPA tốt nghiệp, xếp loại xuất sắc/giỏi/khá. |
+| 37 | `fee_scale_rules` | Biểu mức học phí tín chỉ theo ngành và quy mô lớp | Mức học phí chuẩn mỗi tín chỉ, hệ số lớp riêng dưới 15 sinh viên. |
+| 38 | `student_invoices` | Hóa đơn học phí học kỳ của sinh viên | `student_id`, `semester_id`, tổng tiền phải nộp, miễn giảm, đã thanh toán. |
+| 39 | `graduation_records` | Quyết định công nhận tốt nghiệp và xếp loại bằng | `student_id`, số quyết định, điểm CPA tốt nghiệp, xếp loại xuất sắc/giỏi/khá. |
 
 ---
 

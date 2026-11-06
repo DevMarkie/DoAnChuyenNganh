@@ -1,26 +1,84 @@
 import { useState, useEffect } from 'react';
-import { Award, AlertTriangle, User, ShieldAlert, Phone, Edit3, Check } from 'lucide-react';
+import { ShieldAlert, Phone, Edit3, Check, KeyRound, Lock, Eye, EyeOff, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { studentService, studentConductService } from '../../services/dataService';
+import { studentService, authService } from '../../services/dataService';
 import {
   genderLabel,
   studentStatusLabel,
   studentStatusBadgeClass,
-  conductTypeLabel,
-  conductTypeBadgeClass,
-  trainingRankLabel,
-  trainingRankBadgeClass,
 } from '../../utils/labels';
+
+function getPasswordStrength(pwd) {
+  if (!pwd) return { level: 0, label: '', color: 'transparent', percent: '0%' };
+  if (pwd.length < 6) return { level: 1, label: 'Yếu (Tối thiểu 6 ký tự)', color: '#ef4444', percent: '25%' };
+  let score = 0;
+  if (pwd.length >= 8) score += 1;
+  if (/[A-Z]/.test(pwd)) score += 1;
+  if (/[0-9]/.test(pwd)) score += 1;
+  if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+  if (score >= 3) return { level: 3, label: 'Mạnh', color: '#10b981', percent: '100%' };
+  if (score >= 1) return { level: 2, label: 'Trung bình', color: '#f59e0b', percent: '65%' };
+  return { level: 1, label: 'Yếu', color: '#ef4444', percent: '35%' };
+}
 
 export default function StudentProfilePage() {
   const [profile, setProfile] = useState(null);
-  const [achievements, setAchievements] = useState([]);
-  const [trainingPoints, setTrainingPoints] = useState([]);
-  const [activeTab, setActiveTab] = useState('profile'); // 'profile' | 'achievements' | 'training'
   const [loading, setLoading] = useState(true);
   const [editingContact, setEditingContact] = useState(false);
   const [contactForm, setContactForm] = useState({ phone: '', address: '' });
   const [savingContact, setSavingContact] = useState(false);
+
+  // Trạng thái đổi mật khẩu
+  const [passData, setPassData] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [changingPass, setChangingPass] = useState(false);
+
+  const strength = getPasswordStrength(passData.newPassword);
+  const isDuplicatePass = Boolean(passData.newPassword && passData.oldPassword && passData.newPassword === passData.oldPassword);
+  const isMatchedPass = Boolean(passData.confirmPassword && passData.newPassword === passData.confirmPassword);
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!passData.oldPassword || !passData.newPassword || !passData.confirmPassword) {
+      toast.warning('Vui lòng nhập đầy đủ các trường mật khẩu!');
+      return;
+    }
+    if (passData.newPassword.length < 6) {
+      toast.warning('Mật khẩu mới phải có ít nhất 6 ký tự!');
+      return;
+    }
+    if (passData.newPassword !== passData.confirmPassword) {
+      toast.warning('Mật khẩu mới và xác nhận không khớp!');
+      return;
+    }
+    if (passData.newPassword === passData.oldPassword) {
+      toast.warning('Mật khẩu mới không được trùng với mật khẩu hiện tại!');
+      return;
+    }
+    try {
+      setChangingPass(true);
+      await authService.changePassword({
+        oldPassword: passData.oldPassword,
+        newPassword: passData.newPassword,
+      });
+      toast.success('Đổi mật khẩu thành công!');
+      setPassData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      setShowOld(false);
+      setShowNew(false);
+      setShowConfirm(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Đổi mật khẩu thất bại. Vui lòng kiểm tra lại mật khẩu hiện tại.');
+    } finally {
+      setChangingPass(false);
+    }
+  };
 
   useEffect(() => {
     if (profile) {
@@ -48,16 +106,10 @@ export default function StudentProfilePage() {
 
   useEffect(() => {
     let ignore = false;
-    Promise.all([
-      studentService.getMe(),
-      studentConductService.getMyAchievements(),
-      studentConductService.getMyTrainingPoints(),
-    ])
-      .then(([resProfile, resAch, resTrn]) => {
+    studentService.getMe()
+      .then((resProfile) => {
         if (!ignore) {
           setProfile(resProfile.data?.data || null);
-          setAchievements(resAch.data?.data || []);
-          setTrainingPoints(resTrn.data?.data || []);
         }
       })
       .catch(() => {
@@ -91,44 +143,16 @@ export default function StudentProfilePage() {
     <div>
       <div className="page-header">
         <div>
-          <h1>Hồ Sơ Sinh Viên</h1>
+          <h1>Hồ Sơ Sinh Viên & Tài Khoản</h1>
           <p>
-            Lý lịch sinh viên chính quy, thông tin liên lạc khẩn cấp, khen thưởng, kỷ luật và kết quả rèn luyện
+            Lý lịch sinh viên chính quy, thông tin liên lạc khẩn cấp và thiết lập an toàn thông tin
           </p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-        <button
-          className={`btn ${activeTab === 'profile' ? 'btn-primary' : 'btn-outline'}`}
-          onClick={() => setActiveTab('profile')}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <User size={16} />
-          <span>Lý Lịch Cá Nhân</span>
-        </button>
-        <button
-          className={`btn ${activeTab === 'achievements' ? 'btn-primary' : 'btn-outline'}`}
-          onClick={() => setActiveTab('achievements')}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <Award size={16} />
-          <span>Khen Thưởng & Kỷ Luật ({achievements.length})</span>
-        </button>
-        <button
-          className={`btn ${activeTab === 'training' ? 'btn-primary' : 'btn-outline'}`}
-          onClick={() => setActiveTab('training')}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <AlertTriangle size={16} />
-          <span>Điểm Rèn Luyện ({trainingPoints.length})</span>
-        </button>
-      </div>
-
-      {/* Tab 1: Profile */}
-      {activeTab === 'profile' && (
-        <div style={{ maxWidth: '850px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: '24px', alignItems: 'start' }}>
+        {/* Cột trái: Thông tin học viên & Liên hệ khẩn cấp */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="card">
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3>Thông tin lý lịch học viên</h3>
@@ -312,119 +336,138 @@ export default function StudentProfilePage() {
             </div>
           </div>
         </div>
-      )}
 
-      {/* Tab 2: Achievements & Disciplines */}
-      {activeTab === 'achievements' && (
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div className="card-header" style={{ padding: '16px 20px' }}>
-            <h3>Hồ sơ Khen thưởng & Quyết định Kỷ luật</h3>
+        {/* Cột phải: Bảo mật & Đổi mật khẩu */}
+        <div className="card">
+          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ShieldCheck size={18} style={{ color: 'var(--primary)' }} />
+            <h3>Bảo mật & Đổi mật khẩu</h3>
           </div>
-          <div className="table-container">
-            <table className="table" style={{ margin: 0 }}>
-              <thead>
-                <tr>
-                  <th>Phân loại</th>
-                  <th>Số quyết định</th>
-                  <th>Ngày ban hành</th>
-                  <th>Tiêu đề & Nội dung</th>
-                  <th>Cấp quyết định</th>
-                  <th>Học kỳ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {achievements.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
-                      Bạn chưa có ghi nhận khen thưởng hoặc kỷ luật nào.
-                    </td>
-                  </tr>
-                ) : (
-                  achievements.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        <span className={`badge ${conductTypeBadgeClass(item.type)}`}>
-                          {conductTypeLabel(item.type)}
-                        </span>
-                      </td>
-                      <td>
-                        <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{item.decisionNumber}</span>
-                      </td>
-                      <td>{item.issueDate}</td>
-                      <td>
-                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{item.title}</div>
-                        {item.description && (
-                          <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                            {item.description}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        <span className="badge badge-neutral">{item.level || 'TRUONG'}</span>
-                      </td>
-                      <td>{item.semester?.semesterName || 'Toàn khóa'}</td>
-                    </tr>
-                  ))
+          <div className="card-body">
+            <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Mật khẩu hiện tại */}
+              <div>
+                <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                  Mật khẩu hiện tại <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                  <input
+                    type={showOld ? 'text' : 'password'}
+                    required
+                    value={passData.oldPassword}
+                    onChange={(e) => setPassData({ ...passData, oldPassword: e.target.value })}
+                    placeholder="Nhập mật khẩu đang sử dụng"
+                    className="form-control"
+                    style={{ paddingLeft: '38px', paddingRight: '42px' }}
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOld((v) => !v)}
+                    title={showOld ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
+                  >
+                    {showOld ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Mật khẩu mới */}
+              <div>
+                <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                  Mật khẩu mới <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                  <input
+                    type={showNew ? 'text' : 'password'}
+                    required
+                    value={passData.newPassword}
+                    onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })}
+                    placeholder="Tối thiểu 6 ký tự"
+                    className="form-control"
+                    style={{ paddingLeft: '38px', paddingRight: '42px' }}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNew((v) => !v)}
+                    title={showNew ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
+                  >
+                    {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+
+                {/* Thanh đo độ mạnh mật khẩu */}
+                {passData.newPassword && (
+                  <div style={{ marginTop: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '4px', color: 'var(--text-muted)' }}>
+                      <span>Độ mạnh: <strong style={{ color: strength.color }}>{strength.label}</strong></span>
+                    </div>
+                    <div style={{ height: '4px', width: '100%', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: strength.percent, height: '100%', backgroundColor: strength.color, transition: 'all 0.3s ease' }} />
+                    </div>
+                  </div>
                 )}
-              </tbody>
-            </table>
+
+                {/* Cảnh báo trùng mật khẩu cũ */}
+                {isDuplicatePass && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '0.78rem', color: '#ef4444' }}>
+                    <AlertTriangle size={14} />
+                    <span>Mật khẩu mới không được trùng với mật khẩu hiện tại.</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Xác nhận mật khẩu mới */}
+              <div>
+                <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                  Xác nhận mật khẩu mới <span style={{ color: '#ef4444' }}>*</span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                  <input
+                    type={showConfirm ? 'text' : 'password'}
+                    required
+                    value={passData.confirmPassword}
+                    onChange={(e) => setPassData({ ...passData, confirmPassword: e.target.value })}
+                    placeholder="Nhập lại mật khẩu mới"
+                    className="form-control"
+                    style={{ paddingLeft: '38px', paddingRight: '42px' }}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    title={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
+                  >
+                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {isMatchedPass && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px', fontSize: '0.78rem', color: '#10b981' }}>
+                    <CheckCircle2 size={14} />
+                    <span>Mật khẩu xác nhận đã trùng khớp.</span>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={changingPass}
+                className="btn btn-primary"
+                style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                <KeyRound size={16} />
+                <span>{changingPass ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}</span>
+              </button>
+            </form>
           </div>
         </div>
-      )}
-
-      {/* Tab 3: Training Points */}
-      {activeTab === 'training' && (
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-          <div className="card-header" style={{ padding: '16px 20px' }}>
-            <h3>Bảng Điểm Rèn Luyện Theo Từng Học Kỳ</h3>
-          </div>
-          <div className="table-container">
-            <table className="table" style={{ margin: 0 }}>
-              <thead>
-                <tr>
-                  <th>Học kỳ</th>
-                  <th>Năm học</th>
-                  <th>Điểm rèn luyện</th>
-                  <th>Xếp loại rèn luyện</th>
-                  <th>Nhận xét / Hoạt động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {trainingPoints.length === 0 ? (
-                  <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
-                      Chưa có dữ liệu điểm rèn luyện học kỳ.
-                    </td>
-                  </tr>
-                ) : (
-                  trainingPoints.map((item) => (
-                    <tr key={item.id}>
-                      <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>
-                        {item.semester?.semesterName}
-                      </td>
-                      <td>{item.semester?.academicYear}</td>
-                      <td>
-                        <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary)' }}>
-                          {item.score}
-                        </span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}> / 100</span>
-                      </td>
-                      <td>
-                        <span className={`badge ${trainingRankBadgeClass(item.evaluationGrade)}`}>
-                          {trainingRankLabel(item.evaluationGrade)}
-                        </span>
-                      </td>
-                      <td style={{ color: 'var(--text-secondary)' }}>
-                        {item.notes || '—'}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

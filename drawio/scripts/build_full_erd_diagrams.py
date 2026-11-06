@@ -445,8 +445,8 @@ def build_erd_04_students_conduct():
     model, root = create_model(w=1400, h=950)
     add_header(
         root,
-        "PHÂN HỆ 3: HỒ SƠ NGƯỜI HỌC, GIẢNG VIÊN & ĐIỂM RÈN LUYỆN (6 BẢNG)",
-        "Quản lý hồ sơ nhân thân sinh viên, giảng viên, điểm rèn luyện định kỳ, khen thưởng/kỷ luật và dịch vụ 1 cửa"
+        "PHÂN HỆ 3: HỒ SƠ NGƯỜI HỌC, GIẢNG VIÊN, ĐIỂM RÈN LUYỆN & HỌC VỤ (6 BẢNG)",
+        "Quản lý hồ sơ nhân thân sinh viên, giảng viên, điểm rèn luyện định kỳ, khen thưởng/kỷ luật và tổng kết học vụ GPA/CPA"
     )
     
     add_table(root, 'students', 'students', [
@@ -478,10 +478,11 @@ def build_erd_04_students_conduct():
         ('score', 'INT', ''), ('classification', 'VARCHAR(30)', ''), ('note', 'TEXT', '')
     ], 410, 520, 270)
     
-    add_table(root, 'student_service_requests', 'student_service_requests', [
-        ('id', 'BIGINT', 'PK'), ('student_id', 'BIGINT', 'FK'), ('request_type', 'VARCHAR(50)', ''),
-        ('quantity', 'INT', ''), ('purpose', 'VARCHAR(255)', ''), ('verification_code', 'VARCHAR(50)', 'UQ'),
-        ('status', 'VARCHAR(30)', ''), ('requested_at', 'DATETIME', '')
+    add_table(root, 'academic_summaries', 'academic_summaries', [
+        ('id', 'BIGINT', 'PK'), ('student_id', 'BIGINT', 'FK'), ('semester_id', 'INT', 'FK'),
+        ('semester_gpa', 'DECIMAL(4,2)', ''), ('cumulative_cpa', 'DECIMAL(4,2)', ''),
+        ('semester_credits', 'INT', ''), ('accumulated_credits', 'INT', ''),
+        ('debt_credits', 'INT', ''), ('warning_level', 'INT', ''), ('max_allowed_credits', 'INT', '')
     ], 760, 520, 290)
     
     # Edges
@@ -491,19 +492,19 @@ def build_erd_04_students_conduct():
     add_edge(root, 'e_st_cs', 'students', 'conduct_scores', '1 - N', exit_p=(0.8, 1), entry_p=(0.2, 0),
              waypoints=[(276, 440), (464, 440)])
     add_edge(root, 'e_lec_cs', 'lecturers', 'conduct_scores', '1 - N (CVHT thẩm định)', exit_p=(0.5, 1), entry_p=(0.5, 0))
-    add_edge(root, 'e_st_ssr', 'students', 'student_service_requests', '1 - N', exit_p=(0.9, 1), entry_p=(0.5, 0),
+    add_edge(root, 'e_st_as', 'students', 'academic_summaries', '1 - N (tổng kết học kỳ)', exit_p=(0.9, 1), entry_p=(0.5, 0),
              waypoints=[(303, 460), (905, 460)])
              
     return model
 
 # ==============================================================================
-# TAB 5: Phân hệ 4 - Lớp học phần & Xếp lịch (5 bảng)
+# TAB 5: Phân hệ 4 - Lớp học phần & Xếp lịch (4 bảng)
 # ==============================================================================
 def build_erd_05_sections_schedules():
     model, root = create_model(w=1400, h=900)
     add_header(
         root,
-        "PHÂN HỆ 4: LỚP HỌC PHẦN, ĐỢT ĐĂNG KÝ & XẾP LỊCH HỌC (5 BẢNG)",
+        "PHÂN HỆ 4: LỚP HỌC PHẦN, ĐỢT ĐĂNG KÝ & XẾP LỊCH HỌC (4 BẢNG)",
         "Tổ chức lớp học phần theo học kỳ, phân luồng đợt đăng ký tín chỉ (Registration Waves) và xếp phòng học ma trận"
     )
     
@@ -525,11 +526,6 @@ def build_erd_05_sections_schedules():
         ('max_capacity', 'INT', ''), ('enrolled_count', 'INT', ''), ('status', 'VARCHAR(20)', '')
     ], 780, 120, 280)
     
-    add_table(root, 'class_opening_requests', 'class_opening_requests', [
-        ('id', 'BIGINT', 'PK'), ('subject_id', 'BIGINT', 'FK'), ('semester_id', 'BIGINT', 'FK'),
-        ('requested_by', 'BIGINT', 'FK'), ('min_students_target', 'INT', ''), ('status', 'VARCHAR(20)', '')
-    ], 430, 480, 270)
-    
     add_table(root, 'schedules', 'schedules', [
         ('id', 'BIGINT', 'PK'), ('section_id', 'BIGINT', 'FK'), ('day_of_week', 'INT', ''),
         ('start_period', 'INT', ''), ('end_period', 'INT', ''), ('room', 'VARCHAR(50)', ''),
@@ -540,8 +536,6 @@ def build_erd_05_sections_schedules():
     add_edge(root, 'e_sem_rw', 'semesters', 'registration_waves', '1 - N', exit_p=(1, 0.4), entry_p=(0, 0.4))
     add_edge(root, 'e_sem_cs', 'semesters', 'course_sections', '1 - N', exit_p=(1, 0.2), entry_p=(0, 0.2),
              waypoints=[(380, 160), (380, 80), (740, 80), (740, 160)])
-    add_edge(root, 'e_sem_cor', 'semesters', 'class_opening_requests', '1 - N', exit_p=(0.5, 1), entry_p=(0, 0.4),
-             waypoints=[(210, 420), (390, 420), (390, 520)])
     add_edge(root, 'e_cs_sch', 'course_sections', 'schedules', '1 - N', exit_p=(0.5, 1), entry_p=(0.5, 0))
     
     return model
@@ -597,44 +591,37 @@ def build_erd_06_enrollments_grades():
     return model
 
 # ==============================================================================
-# TAB 7: Phân hệ 6 - Tài chính & Thu học phí (4 bảng)
+# TAB 7: Phân hệ 6 - Tài chính & Thu học phí (3 bảng)
 # ==============================================================================
 def build_erd_07_tuition_finance():
     model, root = create_model(w=1350, h=850)
     add_header(
         root,
-        "PHÂN HỆ 6: TÀI CHÍNH, ĐỊNH MỨC & THU HỌC PHÍ TÍN CHỈ (4 BẢNG)",
-        "Tính toán học phí theo tín chỉ lý thuyết/thực hành, xuất hóa đơn công nợ, quản lý miễn giảm và đặc cách học vụ"
+        "PHÂN HỆ 6: TÀI CHÍNH, ĐỊNH MỨC & THU HỌC PHÍ TÍN CHỈ (3 BẢNG)",
+        "Tính toán học phí theo tín chỉ lý thuyết/thực hành, xuất hóa đơn công nợ và thông báo tài chính trực tuyến"
     )
     
     add_table(root, 'fee_scale_rules', 'fee_scale_rules', [
         ('id', 'BIGINT', 'PK'), ('academic_year', 'VARCHAR(20)', ''),
         ('fee_per_credit_theory', 'DECIMAL(12,2)', ''), ('fee_per_credit_practice', 'DECIMAL(12,2)', ''),
         ('fee_multiplier_retake', 'DECIMAL(4,2)', '')
-    ], 80, 120, 280)
+    ], 120, 150, 300)
     
     add_table(root, 'student_invoices', 'student_invoices', [
         ('id', 'BIGINT', 'PK'), ('student_id', 'BIGINT', 'FK'), ('semester_id', 'BIGINT', 'FK'),
         ('total_amount', 'DECIMAL(12,2)', ''), ('discount_amount', 'DECIMAL(12,2)', ''),
         ('paid_amount', 'DECIMAL(12,2)', ''), ('status', 'VARCHAR(20)', ''),
         ('receipt_code', 'VARCHAR(50)', 'UQ'), ('payment_date', 'DATETIME', '')
-    ], 440, 120, 290)
-    
-    add_table(root, 'academic_exceptions', 'academic_exceptions', [
-        ('id', 'BIGINT', 'PK'), ('student_id', 'BIGINT', 'FK'), ('semester_id', 'BIGINT', 'FK'),
-        ('exception_type', 'VARCHAR(50)', ''), ('reason', 'TEXT', ''),
-        ('approved_by', 'BIGINT', 'FK'), ('approved_at', 'DATETIME', '')
-    ], 800, 120, 280)
+    ], 580, 150, 310)
     
     add_table(root, 'notifications', 'notifications', [
         ('id', 'BIGINT', 'PK'), ('user_id', 'BIGINT', 'FK'), ('title', 'VARCHAR(150)', ''),
         ('message', 'TEXT', ''), ('type', 'VARCHAR(30)', ''), ('is_read', 'BOOLEAN', ''),
         ('created_at', 'DATETIME', '')
-    ], 440, 480, 290)
+    ], 580, 480, 310)
     
     # Edges
     add_edge(root, 'e_fsr_inv', 'fee_scale_rules', 'student_invoices', 'áp dụng định mức', exit_p=(1, 0.4), entry_p=(0, 0.4))
-    add_edge(root, 'e_ae_inv', 'academic_exceptions', 'student_invoices', '1 - N (miễn giảm học phí)', exit_p=(0, 0.4), entry_p=(1, 0.4))
     add_edge(root, 'e_inv_notif', 'student_invoices', 'notifications', '1 - N (thông báo công nợ)', exit_p=(0.5, 1), entry_p=(0.5, 0))
     
     return model

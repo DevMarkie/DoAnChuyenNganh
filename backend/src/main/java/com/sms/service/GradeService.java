@@ -306,6 +306,11 @@ public class GradeService {
 
         // Luồng 2: Kiểm tra trạng thái khóa sổ đối với Giảng viên
         if (lecturer != null) {
+            Semester semester = section.getSemester();
+            if (semester != null && (!Boolean.TRUE.equals(semester.getIsCurrent()) || semester.getStatus() == Semester.SemesterStatus.COMPLETED)) {
+                throw new BadRequestException("Học kỳ đã kết thúc. Không thể nhập hoặc chỉnh sửa điểm của học kỳ cũ. Giảng viên chỉ được xem hoặc tạo yêu cầu sửa điểm (Grade Amendment).");
+            }
+
             String submissionStatus = section.getGradeSubmissionStatus();
             if ("SUBMITTED".equalsIgnoreCase(submissionStatus)) {
                 throw new BadRequestException("Bảng điểm đã được gửi duyệt & khóa sổ. Giảng viên không thể tự ý sửa điểm.");
@@ -650,6 +655,11 @@ public class GradeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học phần"));
 
         assertCanViewSection(lecturerUserId, sectionId);
+
+        Semester semester = section.getSemester();
+        if (semester != null && (!Boolean.TRUE.equals(semester.getIsCurrent()) || semester.getStatus() == Semester.SemesterStatus.COMPLETED)) {
+            throw new BadRequestException("Học kỳ đã kết thúc. Không thể nộp bảng điểm của học kỳ cũ.");
+        }
 
         List<Enrollment> active = enrollmentRepository.findActiveBySectionId(sectionId);
         if (active.isEmpty()) {

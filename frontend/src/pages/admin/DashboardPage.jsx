@@ -15,7 +15,7 @@ import {
   GraduationCapIcon,
 } from '../../components/icons';
 
-const CHART_COLORS = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#38bdf8', '#34d399'];
+const CHART_COLORS = ['#2563eb', '#64748b', '#059669', '#d97706', '#3b82f6', '#475569', '#0284c7', '#94a3b8'];
 
 export default function DashboardPage() {
   const [data, setData] = useState(null);
@@ -134,12 +134,6 @@ export default function DashboardPage() {
             {deptData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={deptData} margin={{ top: 20, right: 20, left: -10, bottom: 25 }}>
-                  <defs>
-                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
-                      <stop offset="100%" stopColor="#06b6d4" stopOpacity={0.7} />
-                    </linearGradient>
-                  </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                   <XAxis
                     dataKey="name"
@@ -157,17 +151,15 @@ export default function DashboardPage() {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: 'var(--bg-surface)',
-                      backdropFilter: 'var(--glass-blur)',
-                      WebkitBackdropFilter: 'var(--glass-blur)',
                       borderColor: 'var(--border-color)',
-                      borderRadius: '12px',
-                      boxShadow: 'var(--shadow-md), var(--glass-inset-shine)',
+                      borderRadius: 'var(--radius-md)',
+                      boxShadow: 'var(--shadow-sm)',
                       color: 'var(--text-main)',
                       fontSize: '0.85rem'
                     }}
                     cursor={{ fill: 'var(--bg-subtle)' }}
                   />
-                  <Bar dataKey="count" fill="url(#barGradient)" radius={[8, 8, 0, 0]} barSize={38} />
+                  <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={34} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

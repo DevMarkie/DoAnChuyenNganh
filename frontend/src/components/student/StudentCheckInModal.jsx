@@ -89,17 +89,17 @@ export default function StudentCheckInModal({ courseSection, onClose, onSuccess 
         <div
           style={{
             padding: '16px 20px',
-            borderBottom: '1px solid var(--border, #e5e7eb)',
+            borderBottom: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: '#ffffff',
+            background: 'var(--bg-surface)',
+            color: 'var(--text-main)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <KeyRound size={20} />
-            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#ffffff' }}>
+            <KeyRound size={20} color="var(--primary)" />
+            <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>
               Điểm danh buổi học
             </h3>
           </div>
@@ -107,7 +107,7 @@ export default function StudentCheckInModal({ courseSection, onClose, onSuccess 
           <button
             onClick={onClose}
             className="btn btn-outline"
-            style={{ padding: '6px', borderRadius: '50%', color: '#ffffff', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+            style={{ padding: '6px', borderRadius: 'var(--radius-sm)', color: 'var(--text-muted)' }}
             title="Đóng (Esc)"
           >
             <X size={18} />

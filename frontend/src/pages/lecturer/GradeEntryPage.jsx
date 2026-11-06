@@ -26,6 +26,7 @@ import GradeHistoryModal from "../../components/grades/GradeHistoryModal";
 export default function GradeEntryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mySections, setMySections] = useState([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [selectedSection, setSelectedSection] = useState(
     searchParams.get("sectionId") || "",
   );
@@ -40,17 +41,75 @@ export default function GradeEntryPage() {
   const [selectedGradeForHistory, setSelectedGradeForHistory] = useState(null);
   const saveInFlight = useRef(false);
 
+  // Danh sách các học kỳ mà giảng viên có lớp giảng dạy
+  const semesters = useMemo(() => {
+    const semMap = new Map();
+    mySections.forEach((s) => {
+      if (s.semester?.id && !semMap.has(s.semester.id)) {
+        semMap.set(s.semester.id, s.semester);
+      }
+    });
+    const list = Array.from(semMap.values());
+    list.sort((a, b) => {
+      if (a.isCurrent && !b.isCurrent) return -1;
+      if (!a.isCurrent && b.isCurrent) return 1;
+      if (a.status === "ACTIVE" && b.status !== "ACTIVE") return -1;
+      if (a.status !== "ACTIVE" && b.status === "ACTIVE") return 1;
+      return (b.startDate || "").localeCompare(a.startDate || "");
+    });
+    return list;
+  }, [mySections]);
+
+  // Các lớp học phần thuộc học kỳ đang được chọn
+  const filteredSections = useMemo(() => {
+    if (!selectedSemesterId) return mySections;
+    return mySections.filter((s) => s.semester?.id === parseInt(selectedSemesterId));
+  }, [mySections, selectedSemesterId]);
+
   const loadSections = async () => {
     try {
       const res = await courseSectionService.getMySections();
       const list = res.data.data || [];
       setMySections(list);
+
+      const semMap = new Map();
+      list.forEach((s) => {
+        if (s.semester?.id && !semMap.has(s.semester.id)) {
+          semMap.set(s.semester.id, s.semester);
+        }
+      });
+      const semList = Array.from(semMap.values()).sort((a, b) => {
+        if (a.isCurrent && !b.isCurrent) return -1;
+        if (!a.isCurrent && b.isCurrent) return 1;
+        if (a.status === "ACTIVE" && b.status !== "ACTIVE") return -1;
+        if (a.status !== "ACTIVE" && b.status === "ACTIVE") return 1;
+        return (b.startDate || "").localeCompare(a.startDate || "");
+      });
+
       const paramId = searchParams.get("sectionId");
       if (paramId) {
+        const found = list.find((s) => s.id === parseInt(paramId));
+        if (found && found.semester?.id) {
+          setSelectedSemesterId(String(found.semester.id));
+        } else if (semList.length > 0) {
+          const currentSem = semList.find((s) => s.isCurrent) || semList[0];
+          setSelectedSemesterId(String(currentSem.id));
+        }
         setSelectedSection(paramId);
         loadGrades(paramId);
+      } else if (semList.length > 0) {
+        const currentSem = semList.find((s) => s.isCurrent) || semList[0];
+        setSelectedSemesterId(String(currentSem.id));
+        const semSections = list.filter((s) => s.semester?.id === currentSem.id);
+        if (semSections.length > 0) {
+          setSelectedSection(String(semSections[0].id));
+          loadGrades(semSections[0].id);
+        } else if (list.length > 0) {
+          setSelectedSection(String(list[0].id));
+          loadGrades(list[0].id);
+        }
       } else if (list.length > 0) {
-        setSelectedSection(list[0].id);
+        setSelectedSection(String(list[0].id));
         loadGrades(list[0].id);
       }
     } catch {
@@ -84,6 +143,23 @@ export default function GradeEntryPage() {
       toast.error("Lỗi khi tải bảng điểm");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSemesterChange = (e) => {
+    const semId = e.target.value;
+    setSelectedSemesterId(semId);
+    const secs = mySections.filter((s) => s.semester?.id === parseInt(semId));
+    if (secs.length > 0) {
+      const firstSecId = String(secs[0].id);
+      setSelectedSection(firstSecId);
+      setSearchParams({ sectionId: firstSecId });
+      setGroupFilter(null);
+      loadGrades(firstSecId);
+    } else {
+      setSelectedSection("");
+      setGrades([]);
+      setSearchParams({});
     }
   };
 
@@ -267,6 +343,14 @@ export default function GradeEntryPage() {
   const currentSectionInfo = mySections.find(
     (s) => s.id === parseInt(selectedSection),
   );
+  const activeSemesterObj =
+    currentSectionInfo?.semester ||
+    semesters.find((s) => s.id === parseInt(selectedSemesterId));
+
+  const isSemesterEnded = activeSemesterObj
+    ? (!Boolean(activeSemesterObj.isCurrent) || activeSemesterObj.status === "COMPLETED")
+    : false;
+
   const passedCount = grades.filter((g) => isStudentPassed(g) === true).length;
   const gradedCount = grades.filter(isGraded).length;
   const passRate =
@@ -281,8 +365,8 @@ export default function GradeEntryPage() {
   const isSubmitted = submissionStatus === "SUBMITTED";
   const isPublished = submissionStatus === "PUBLISHED";
   const isReturned = submissionStatus === "RETURNED";
-  // Bảng điểm bị khoá cứng (Read-only) khi đã nộp duyệt hoặc đã công bố
-  const isLocked = isSubmitted || isPublished;
+  // Bảng điểm bị khoá cứng (Read-only) khi đã nộp duyệt, đã công bố hoặc học kỳ đã kết thúc
+  const isLocked = isSubmitted || isPublished || isSemesterEnded;
 
   return (
     <div>
@@ -333,6 +417,48 @@ export default function GradeEntryPage() {
                     borderRadius: "8px",
                   }}
                   title="Tạo đơn yêu cầu điều chỉnh điểm sau khóa sổ trình Trưởng bộ môn & Phòng Đào tạo"
+                >
+                  <ShieldCheck size={16} />
+                  <span>Yêu cầu sửa điểm</span>
+                </button>
+              </>
+            ) : isSemesterEnded ? (
+              <>
+                <span
+                  className="badge"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "6px 14px",
+                    fontSize: "0.85rem",
+                    backgroundColor: "rgba(100, 116, 139, 0.12)",
+                    color: "#475569",
+                    border: "1px solid #cbd5e1",
+                    fontWeight: 600,
+                  }}
+                  title="Học kỳ này đã kết thúc, bảng điểm chỉ được xem (Read-only)."
+                >
+                  <Lock size={15} />
+                  <span>HỌC KỲ ĐÃ KẾT THÚC (CHỈ XEM)</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedStudentForAmendment(null);
+                    setAmendmentModalOpen(true);
+                  }}
+                  className="btn btn-warning"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    padding: "6px 14px",
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                    borderRadius: "8px",
+                  }}
+                  title="Tạo đơn yêu cầu điều chỉnh điểm trình Trưởng bộ môn & Phòng Đào tạo"
                 >
                   <ShieldCheck size={16} />
                   <span>Yêu cầu sửa điểm</span>
@@ -447,8 +573,8 @@ export default function GradeEntryPage() {
         )}
       </div>
 
-      {/* Banner cảnh báo trả về nếu có */}
-      {isReturned && (
+      {/* Banner cảnh báo trả về nếu có (chỉ hiển thị khi kỳ chưa kết thúc) */}
+      {!isSemesterEnded && isReturned && (
         <div
           style={{
             marginBottom: "20px",
@@ -536,6 +662,29 @@ export default function GradeEntryPage() {
         </div>
       )}
 
+      {/* Banner thông báo học kỳ đã kết thúc (Read-only) */}
+      {!isPublished && !isSubmitted && isSemesterEnded && (
+        <div
+          style={{
+            marginBottom: "20px",
+            padding: "14px 18px",
+            borderRadius: "10px",
+            backgroundColor: "rgba(100, 116, 139, 0.08)",
+            border: "1px solid rgba(100, 116, 139, 0.3)",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            color: "#334155",
+            fontSize: "0.88rem",
+          }}
+        >
+          <Lock size={18} style={{ flexShrink: 0, color: "#64748b" }} />
+          <span>
+            Học kỳ này đã kết thúc ({activeSemesterObj?.semesterName || "Kỳ trước"}). Bảng điểm đang ở chế độ <strong>Chỉ xem (Read-only)</strong>. Giảng viên không thể trực tiếp sửa điểm. Nếu cần điều chỉnh điểm sai sót, vui lòng bấm nút <strong>"Yêu cầu sửa điểm"</strong> để gửi đơn giải trình lên Phòng Đào tạo duyệt.
+          </span>
+        </div>
+      )}
+
       {/* Selector Card */}
       <div className="card" style={{ marginBottom: "20px" }}>
         <div
@@ -544,7 +693,7 @@ export default function GradeEntryPage() {
             padding: "16px 20px",
             display: "flex",
             alignItems: "center",
-            gap: "14px",
+            gap: "16px",
             justifyContent: "space-between",
             flexWrap: "wrap",
           }}
@@ -553,38 +702,85 @@ export default function GradeEntryPage() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "12px",
+              gap: "16px",
               flex: 1,
-              minWidth: "min(100%, 260px)",
+              flexWrap: "wrap",
             }}
           >
-            <Layers
-              size={18}
-              style={{ color: "var(--primary)", flexShrink: 0 }}
-            />
-            <span
+            {/* Bộ lọc Học kỳ */}
+            <div
               style={{
-                fontWeight: 600,
-                fontSize: "0.9rem",
-                color: "var(--text-main)",
-                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                minWidth: "260px",
               }}
             >
-              Lớp học phần:
-            </span>
-            <select
-              value={selectedSection}
-              onChange={handleSectionChange}
-              className="form-select"
-              style={{ flex: 1, maxWidth: "540px" }}
+              <span
+                style={{
+                  fontWeight: 600,
+                  fontSize: "0.9rem",
+                  color: "var(--text-main)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Học kỳ:
+              </span>
+              <select
+                value={selectedSemesterId}
+                onChange={handleSemesterChange}
+                className="form-select"
+                style={{ flex: 1, minWidth: "200px" }}
+              >
+                {semesters.map((sem) => (
+                  <option key={sem.id} value={sem.id}>
+                    {sem.semesterName} {sem.isCurrent ? "— [Hiện tại]" : sem.status === "COMPLETED" ? "(Đã kết thúc)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Dropdown Chọn Lớp học phần */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flex: 1,
+                minWidth: "min(100%, 320px)",
+              }}
             >
-              {mySections.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.sectionCode} — {s.subject?.subjectName} (
-                  {s.semester?.semesterName})
-                </option>
-              ))}
-            </select>
+              <Layers
+                size={18}
+                style={{ color: "var(--primary)", flexShrink: 0 }}
+              />
+              <span
+                style={{
+                  fontWeight: 600,
+                  fontSize: "0.9rem",
+                  color: "var(--text-main)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Lớp học phần:
+              </span>
+              <select
+                value={selectedSection}
+                onChange={handleSectionChange}
+                className="form-select"
+                style={{ flex: 1, maxWidth: "540px" }}
+              >
+                {filteredSections.length === 0 ? (
+                  <option value="">Không có lớp học phần nào trong học kỳ này</option>
+                ) : (
+                  filteredSections.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.sectionCode} — {s.subject?.subjectName} ({s.credits ?? s.subject?.credits} TC)
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
           </div>
 
           {currentSectionInfo && (
@@ -702,16 +898,16 @@ export default function GradeEntryPage() {
                 <th style={{ textAlign: "center" }}>Điểm chữ</th>
                 <th style={{ textAlign: "center" }}>Kết quả</th>
                 <th style={{ textAlign: "center", width: "85px" }}>Lịch sử</th>
-                {isPublished && <th style={{ textAlign: "center", width: "95px" }}>Sửa điểm</th>}
+                {(isPublished || isSemesterEnded) && <th style={{ textAlign: "center", width: "95px" }}>Sửa điểm</th>}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <TableRowSkeleton columns={14} />
+                <TableRowSkeleton columns={isPublished || isSemesterEnded ? 14 : 13} />
               ) : grades.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="14"
+                    colSpan={isPublished || isSemesterEnded ? 14 : 13}
                     style={{
                       textAlign: "center",
                       padding: "48px 20px",
@@ -724,7 +920,7 @@ export default function GradeEntryPage() {
               ) : displayedGrades.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="13"
+                    colSpan={isPublished || isSemesterEnded ? 14 : 13}
                     style={{
                       textAlign: "center",
                       padding: "36px 20px",
@@ -923,7 +1119,7 @@ export default function GradeEntryPage() {
                         <span>Lịch sử</span>
                       </button>
                     </td>
-                    {isPublished && (
+                    {(isPublished || isSemesterEnded) && (
                       <td style={{ textAlign: "center" }}>
                         <button
                           type="button"
@@ -1090,7 +1286,7 @@ export default function GradeEntryPage() {
         student={selectedStudentForAmendment}
         grades={grades}
         onSuccess={() => {
-          fetchGrades(selectedSection);
+          loadGrades(selectedSection);
         }}
       />
 

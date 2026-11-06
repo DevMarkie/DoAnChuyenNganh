@@ -95,6 +95,8 @@ describe('StudentClassListModal Component', () => {
       expect(screen.getByText('Anh')).toBeDefined();
       expect(screen.getByText('Bách')).toBeDefined();
       expect(screen.getByText('Bạn')).toBeDefined();
+      expect(screen.getByText(/Vắng mặt\(Số buổi\/Số tiết\/Tỷ lệ\):/i)).toBeDefined();
+      expect(screen.queryByText('Số buổi vắng')).toBeNull();
     });
   });
 

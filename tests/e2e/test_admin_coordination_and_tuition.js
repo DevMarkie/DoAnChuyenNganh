@@ -347,10 +347,16 @@ async function run() {
     fail('Tải tổng quan nộp điểm thất bại', overviewRes.data);
   }
 
-  // 4.2 Thử nghiệm Unpublish / Mở khóa điểm lớp
-  // Lấy 1 section có điểm để test
+  // 4.2 Thử nghiệm Unpublish / Mở khóa điểm lớp (chỉ áp dụng cho lớp đã nộp SUBMITTED chưa PUBLISHED)
   const existingSecRes = await api('/course-sections', { token: adminToken });
-  const secToTest = existingSecRes.data?.data?.find(s => s.status === 'COMPLETED') || existingSecRes.data?.data?.[0];
+  let secToTest = existingSecRes.data?.data?.find(s => s.gradeSubmissionStatus === 'SUBMITTED');
+  if (!secToTest) {
+    const cand = existingSecRes.data?.data?.find(s => s.gradeSubmissionStatus !== 'PUBLISHED' && s.currentStudents > 0);
+    if (cand) {
+      queryDb(`UPDATE course_sections SET grade_submission_status = 'SUBMITTED' WHERE id = ${cand.id};`);
+      secToTest = cand;
+    }
+  }
   if (secToTest) {
     const unpubRes = await api(`/grades/section/${secToTest.id}/unpublish?reason=TestUnpublish`, {
       method: 'POST',

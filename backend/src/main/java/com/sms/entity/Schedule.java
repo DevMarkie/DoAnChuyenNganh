@@ -72,6 +72,18 @@ public class Schedule {
     /**
      * Ghi chú: Lý thuyết, Thực hành máy...
      */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 30)
+    @Builder.Default
+    private ScheduleStatus status = ScheduleStatus.NORMAL;
+
+    public enum ScheduleStatus {
+        NORMAL,
+        ROOM_CHANGED,
+        CANCELLED,
+        MAKEUP
+    }
+
     @Column(length = 255)
     private String note;
 

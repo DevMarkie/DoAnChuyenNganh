@@ -184,6 +184,8 @@ export const scheduleService = {
   create: (data) => api.post('/schedules', data),
   update: (id, data) => api.put(`/schedules/${id}`, data),
   delete: (id) => api.delete(`/schedules/${id}`),
+  exportIcs: (params) => api.get('/schedules/my/export-ics', { params, responseType: 'blob' }),
+  exportExcel: (params) => api.get('/schedules/my/export-excel', { params, responseType: 'blob' }),
 };
 
 export const dashboardService = {
@@ -229,6 +231,9 @@ export const attendanceService = {
 };
 
 export const examService = {
+  getMyExamSchedule: (params) => api.get('/exam-sessions/my-schedule', { params }),
+  getMyProctorSchedule: (params) => api.get('/exam-sessions/lecturer/proctor-schedule', { params }),
+  exportMyExamIcs: (params) => api.get('/exam-sessions/my-schedule/export-ics', { params, responseType: 'blob' }),
   createSession: (data) => api.post('/exam-sessions', data),
   getSessionsBySemester: (semesterId) => api.get(`/exam-sessions/semester/${semesterId}`),
   getSessionById: (id) => api.get(`/exam-sessions/${id}`),

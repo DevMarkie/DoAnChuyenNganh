@@ -159,9 +159,7 @@ public class StudentService {
 
         if (request.getStatus() != null) {
             Student.StudentStatus parsedStatus = parseStatus(request.getStatus());
-            if (parsedStatus == Student.StudentStatus.GRADUATED) {
-                curriculumService.validateGraduationEligibility(id);
-            }
+            validateStateTransition(student.getStatus(), parsedStatus, id);
             student.setStatus(parsedStatus);
         }
 
@@ -182,29 +180,90 @@ public class StudentService {
         Student student = findById(id);
         Student.StudentStatus parsedStatus = parseStatus(status);
 
-        // BR-GRADUATION: Thẩm định điều kiện tốt nghiệp nếu chuyển trạng thái sang GRADUATED
-        if (parsedStatus == Student.StudentStatus.GRADUATED) {
-            curriculumService.validateGraduationEligibility(id);
-        }
+        validateStateTransition(student.getStatus(), parsedStatus, id);
 
         student.setStatus(parsedStatus);
         studentRepository.save(student);
 
-        // BR-Account-Lifecycle: Lock user account if student is SUSPENDED or INACTIVE (thôi học)
+        // BR-Account-Lifecycle: Lock user account if student is INACTIVE (thôi học)
         User user = student.getUser();
         if (user != null) {
-            boolean shouldBeActive = (parsedStatus == Student.StudentStatus.ACTIVE || parsedStatus == Student.StudentStatus.GRADUATED || parsedStatus == Student.StudentStatus.SUSPENDED);
+            boolean shouldBeActive = (parsedStatus == Student.StudentStatus.ACTIVE || parsedStatus == Student.StudentStatus.GRADUATED || parsedStatus == Student.StudentStatus.SUSPENDED || parsedStatus == Student.StudentStatus.RESERVED);
             user.setIsActive(shouldBeActive);
             userRepository.save(user);
         }
     }
 
+    /**
+     * Quy tắc chuyển đổi trạng thái sinh viên (Student Lifecycle State Machine):
+     * - ACTIVE (Đang học / Nhập học): có thể sang RESERVED, SUSPENDED, INACTIVE, hoặc GRADUATED (khi thỏa mãn chuẩn đầu ra).
+     * - RESERVED (Bảo lưu): chỉ có thể quay lại ACTIVE hoặc bị INACTIVE (buộc thôi học).
+     * - SUSPENDED (Đình chỉ): chỉ có thể quay lại ACTIVE hoặc bị INACTIVE.
+     * - GRADUATED / INACTIVE: Trạng thái kết thúc (Terminal State), không được nhảy sang trạng thái khác.
+     */
+    public void validateStateTransition(Student.StudentStatus currentStatus, Student.StudentStatus targetStatus, Long studentId) {
+        if (currentStatus == null || targetStatus == null || currentStatus == targetStatus) {
+            return;
+        }
+
+        // Terminal state 1: Sinh viên đã tốt nghiệp không thể chuyển về trạng thái khác
+        if (currentStatus == Student.StudentStatus.GRADUATED) {
+            throw new BadRequestException("Vi phạm luồng trạng thái sinh viên: Sinh viên đã tốt nghiệp (GRADUATED), không thể thay đổi trạng thái.");
+        }
+
+        // Terminal state 2: Sinh viên đã thôi học không thể tự ý quay lại các trạng thái khác
+        if (currentStatus == Student.StudentStatus.INACTIVE) {
+            throw new BadRequestException("Vi phạm luồng trạng thái sinh viên: Sinh viên đã thôi học (INACTIVE), không thể chuyển đổi trạng thái.");
+        }
+
+        // Anti-skip to GRADUATED: Chỉ sinh viên đang học (ACTIVE) mới được xét chuyển sang GRADUATED
+        if (targetStatus == Student.StudentStatus.GRADUATED) {
+            if (currentStatus != Student.StudentStatus.ACTIVE) {
+                throw new BadRequestException("Vi phạm luồng trạng thái: Chỉ sinh viên đang học (ACTIVE) mới được xét chuyển sang Tốt nghiệp. Trạng thái hiện tại: " + currentStatus);
+            }
+            curriculumService.validateGraduationEligibility(studentId);
+        }
+
+        // Sinh viên đang bảo lưu (RESERVED) chỉ có thể quay lại học (ACTIVE) hoặc thôi học (INACTIVE)
+        if (currentStatus == Student.StudentStatus.RESERVED) {
+            if (targetStatus != Student.StudentStatus.ACTIVE && targetStatus != Student.StudentStatus.INACTIVE) {
+                throw new BadRequestException("Vi phạm luồng trạng thái: Sinh viên đang bảo lưu (RESERVED) chỉ có thể quay lại học tập (ACTIVE) hoặc thôi học (INACTIVE).");
+            }
+        }
+
+        // Sinh viên đang bị tạm đình chỉ (SUSPENDED) chỉ có thể quay lại học (ACTIVE) hoặc thôi học (INACTIVE)
+        if (currentStatus == Student.StudentStatus.SUSPENDED) {
+            if (targetStatus != Student.StudentStatus.ACTIVE && targetStatus != Student.StudentStatus.INACTIVE) {
+                throw new BadRequestException("Vi phạm luồng trạng thái: Sinh viên đang bị đình chỉ (SUSPENDED) chỉ có thể quay lại học tập (ACTIVE) hoặc thôi học (INACTIVE).");
+            }
+        }
+    }
+
     @Transactional
     public Student updateMyContact(Long userId, String phone, String address) {
+        return updateMyContact(userId, phone, address, null, null, null);
+    }
+
+    @Transactional
+    public Student updateMyContact(Long userId, String phone, String address,
+                                   String emergencyContactName, String emergencyContactPhone, String emergencyContactRelationship) {
         Student student = studentRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
         if (phone != null) student.setPhone(phone.trim());
         if (address != null) student.setAddress(address.trim());
+        if (emergencyContactName != null) {
+            student.setEmergencyContactName(emergencyContactName.trim());
+        }
+        if (emergencyContactPhone != null) {
+            String cleanPhone = emergencyContactPhone.trim();
+            if (!cleanPhone.isEmpty() && !cleanPhone.matches("^0\\d{9}$")) {
+                throw new BadRequestException("Số điện thoại khẩn cấp không đúng định dạng Việt Nam (10 chữ số bắt đầu bằng 0)");
+            }
+            student.setEmergencyContactPhone(cleanPhone);
+        }
+        if (emergencyContactRelationship != null) {
+            student.setEmergencyContactRelationship(emergencyContactRelationship.trim());
+        }
         return studentRepository.save(student);
     }
 

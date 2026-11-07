@@ -174,7 +174,7 @@ export default function ClassesPage() {
                 type="button"
                 className="btn btn-outline"
                 onClick={() => { setSearch(''); setSelectedDept(''); }}
-                title="Xóa bộ lọc"
+                title="Xóa bộ lọc" aria-label="Xóa bộ lọc"
                 style={{ padding: '8px 12px' }}
               >
                 <RotateCcw size={14} />
@@ -191,7 +191,7 @@ export default function ClassesPage() {
 
       {/* Table */}
       <div className="card">
-        <div className="table-container">
+        <div className="table-container table-mobile-cards">
           <table className="table">
             <thead>
               <tr>
@@ -215,9 +215,7 @@ export default function ClassesPage() {
               ) : (
                 filtered.map((c) => (
                   <tr key={c.id}>
-                    <td>
-                      <span
-                        style={{
+                    <td data-label="Mã lớp"><span style={{
                           display: 'inline-block',
                           fontFamily: 'monospace',
                           fontWeight: 700,
@@ -232,24 +230,22 @@ export default function ClassesPage() {
                         {c.code}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.name}</td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{c.department?.name || '—'}</td>
-                    <td>
-                      <span className="badge badge-info">{c.academicYear}</span>
+                    <td data-label="Tên lớp" style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.name}</td>
+                    <td data-label="Khoa" style={{ color: 'var(--text-secondary)' }}>{c.department?.name || '—'}</td>
+                    <td data-label="Niên khóa"><span className="badge badge-info">{c.academicYear}</span>
                     </td>
-                    <td>
-                      <span className={`badge ${c.isActive ? 'badge-success' : 'badge-danger'}`}>
+                    <td data-label="Trạng thái"><span className={`badge ${c.isActive ? 'badge-success' : 'badge-danger'}`}>
                         {c.isActive ? 'Đang hoạt động' : 'Tạm dừng'}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td data-label="Thao tác" style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '4px' }}>
-                        <button className="btn-icon" title="Sửa" onClick={() => handleOpenModal(c)}>
+                        <button className="btn-icon" title="Sửa" aria-label="Sửa lớp sinh hoạt" onClick={() => handleOpenModal(c)}>
                           <Edit2 size={15} />
                         </button>
                         <button
                           className="btn-icon"
-                          title={c.isActive ? 'Tạm dừng' : 'Kích hoạt'}
+                          title={c.isActive ? 'Tạm dừng' : 'Kích hoạt'} aria-label={c.isActive ? 'Tạm dừng lớp' : 'Kích hoạt lớp'}
                           style={{ color: c.isActive ? 'var(--danger)' : 'var(--success)' }}
                           onClick={() => handleToggle(c.id)}
                         >
@@ -271,7 +267,7 @@ export default function ClassesPage() {
           <div className="modal-content" style={{ maxWidth: '520px' }}>
             <div className="modal-header">
               <h3>{editingClass ? 'Cập Nhật Lớp Sinh Hoạt' : 'Thêm Lớp Sinh Hoạt Mới'}</h3>
-              <button className="btn-icon" onClick={() => setIsModalOpen(false)}>
+              <button className="btn-icon" title="Đóng" aria-label="Đóng" onClick={() => setIsModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>

@@ -87,8 +87,12 @@ public class StudentController {
             @RequestBody java.util.Map<String, String> payload) {
         String phone = payload.get("phone");
         String address = payload.get("address");
+        String emergencyContactName = payload.get("emergencyContactName");
+        String emergencyContactPhone = payload.get("emergencyContactPhone");
+        String emergencyContactRelationship = payload.get("emergencyContactRelationship");
         return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin liên lạc thành công",
-                studentService.updateMyContact(user.getId(), phone, address)));
+                studentService.updateMyContact(user.getId(), phone, address,
+                        emergencyContactName, emergencyContactPhone, emergencyContactRelationship)));
     }
 
     @GetMapping("/search")

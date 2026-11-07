@@ -178,6 +178,48 @@ public class NotificationService {
     }
 
     /**
+     * Tạo và đẩy thông báo thay đổi thời khóa biểu (đổi phòng, báo nghỉ, học bù) cho sinh viên lớp học phần.
+     */
+    @Transactional
+    public void notifyScheduleChange(Long sectionId, String title, String message) {
+        CourseSection section = courseSectionRepository.findById(sectionId).orElse(null);
+        if (section == null) {
+            return;
+        }
+
+        List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(sectionId);
+        if (enrollments.isEmpty()) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        List<Notification> notificationsToSave = new ArrayList<>(enrollments.size());
+
+        for (Enrollment enrollment : enrollments) {
+            Student student = enrollment.getStudent();
+            if (student == null) continue;
+
+            Notification n = Notification.builder()
+                    .student(student)
+                    .title(title)
+                    .message(message)
+                    .type(NotificationType.SCHEDULE_CHANGE)
+                    .relatedId(sectionId)
+                    .isRead(false)
+                    .createdAt(now)
+                    .build();
+            notificationsToSave.add(n);
+        }
+
+        List<Notification> saved = notificationRepository.saveAll(notificationsToSave);
+        for (Notification n : saved) {
+            NotificationResponse resp = NotificationResponse.from(n);
+            pushRealtime(n.getStudent().getId(), resp);
+        }
+        log.info("Đã gửi {} thông báo thay đổi lịch học lớp {}", saved.size(), section.getSectionCode());
+    }
+
+    /**
      * Gửi event SSE đến các kết nối đang hoạt động của sinh viên
      */
     private void pushRealtime(Long studentId, NotificationResponse response) {

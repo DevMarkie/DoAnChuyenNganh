@@ -52,6 +52,10 @@ public class GraduationRecord {
     @Builder.Default
     private Boolean englishCertificateStatus = false;
 
+    @Column(name = "it_certificate_status", nullable = false)
+    @Builder.Default
+    private Boolean itCertificateStatus = false;
+
     @Column(name = "system_recommendation", nullable = false, length = 30)
     @Builder.Default
     private String systemRecommendation = "DISQUALIFIED"; // QUALIFIED, DISQUALIFIED

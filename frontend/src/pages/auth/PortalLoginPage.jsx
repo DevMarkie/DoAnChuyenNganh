@@ -499,13 +499,16 @@ export default function PortalLoginPage({ portalType = 'student' }) {
           {/* Form */}
           <form onSubmit={handleSubmit}>
             <div className="form-group" style={{ marginBottom: '18px' }}>
-              <label className="form-label">{config.userLabel} *</label>
+              <label className="form-label" htmlFor="portal-login-username">{config.userLabel} *</label>
               <div style={{ position: 'relative' }}>
                 <User size={16} style={{
                   position: 'absolute', left: '12px', top: '50%',
                   transform: 'translateY(-50%)', color: 'var(--text-light)',
                 }} />
                 <input
+                  id="portal-login-username"
+                  name="username"
+                  autoComplete="username"
                   type="text"
                   value={username}
                   onChange={(e) => {
@@ -522,13 +525,17 @@ export default function PortalLoginPage({ portalType = 'student' }) {
 
             <div className="form-group" style={{ marginBottom: '22px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <label className="form-label" style={{ marginBottom: 0 }}>Mật khẩu truy cập *</label>
-                <span
+                <label className="form-label" htmlFor="portal-login-password" style={{ marginBottom: 0 }}>Mật khẩu truy cập *</label>
+                <button
+                  type="button"
                   onClick={handleOpenForgotModal}
-                  style={{ fontSize: '0.78rem', color: accent, cursor: 'pointer', fontWeight: 600 }}
+                  style={{
+                    fontSize: '0.78rem', color: accent, cursor: 'pointer', fontWeight: 600,
+                    background: 'none', border: 'none', padding: 0
+                  }}
                 >
                   Quên mật khẩu?
-                </span>
+                </button>
               </div>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{
@@ -536,6 +543,9 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                   transform: 'translateY(-50%)', color: 'var(--text-light)',
                 }} />
                 <input
+                  id="portal-login-password"
+                  name="password"
+                  autoComplete="current-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => {
@@ -644,7 +654,7 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                   {forgotStep === 1 ? 'Bước 1: Xác nhận tài khoản & Nhận mã OTP' : 'Bước 2: Xác thực mã OTP & Đặt mật khẩu mới'}
                 </div>
               </div>
-              <button type="button" onClick={() => setIsForgotModalOpen(false)} className="btn-icon">
+              <button type="button" onClick={() => setIsForgotModalOpen(false)} className="btn-icon" aria-label="Đóng" title="Đóng">
                 <X size={18} />
               </button>
             </div>

@@ -94,6 +94,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/lecturer/**").hasRole("LECTURER")
 
                 // Exam sessions & rooms (Khảo thí, Admin, Cán bộ đào tạo, Giảng viên)
+                // Exam schedule for student
+                .requestMatchers("/api/exam-sessions/my-schedule/**").hasRole("STUDENT")
+
+                // Exam sessions & rooms (Khảo thí, Admin, Cán bộ đào tạo, Giảng viên)
                 .requestMatchers("/api/exam-sessions/**", "/api/exam-rooms/**").hasAnyRole("ADMIN", "EXAMINATION_OFFICER", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF", "LECTURER")
 
                 // Enrollment overrides & actions

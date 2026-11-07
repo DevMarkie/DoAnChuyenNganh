@@ -350,7 +350,20 @@ a.nav-item:focus:not(:focus-visible) {
     display: none !important;
   }
 
+  .header-breadcrumb {
+    max-width: 140px;
+    overflow: hidden;
+  }
+  .breadcrumb-current {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
   .user-pill-text {
+    display: none !important;
+  }
+  .user-pill-badge {
     display: none !important;
   }
 

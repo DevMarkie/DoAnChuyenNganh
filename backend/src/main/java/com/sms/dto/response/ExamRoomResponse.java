@@ -24,4 +24,8 @@ public class ExamRoomResponse {
     private ExamRoomStatus status;
     private int studentCount;
     private int scoredCount;
+    private Long proctor1Id;
+    private String proctor1Name;
+    private Long proctor2Id;
+    private String proctor2Name;
 }

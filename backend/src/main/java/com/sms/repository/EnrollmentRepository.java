@@ -63,6 +63,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     @Query("SELECT e FROM Enrollment e " +
            "JOIN FETCH e.student s " +
+           "JOIN FETCH e.section cs " +
+           "JOIN FETCH cs.subject sub " +
            "WHERE e.section.id = :sectionId AND e.status != 'CANCELLED'")
     List<Enrollment> findActiveBySectionId(@Param("sectionId") Long sectionId);
 

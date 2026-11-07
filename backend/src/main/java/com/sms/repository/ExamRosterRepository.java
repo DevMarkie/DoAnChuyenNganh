@@ -29,6 +29,20 @@ public interface ExamRosterRepository extends JpaRepository<ExamRoster, Long> {
 
     Optional<ExamRoster> findByEnrollmentId(Long enrollmentId);
 
+    @EntityGraph(attributePaths = {"examRoom", "examRoom.proctor1", "examRoom.proctor2", "examRoom.examSession", "examRoom.examSession.subject", "examRoom.examSession.semester", "enrollment"})
+    List<ExamRoster> findByStudentId(Long studentId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT r FROM ExamRoster r " +
+           "JOIN FETCH r.examRoom rm " +
+           "JOIN FETCH rm.examSession s " +
+           "JOIN FETCH s.subject sub " +
+           "JOIN FETCH s.semester sem " +
+           "JOIN FETCH r.enrollment e " +
+           "WHERE r.student.id = :studentId AND sem.id = :semesterId " +
+           "ORDER BY s.examDate ASC, s.startTime ASC")
+    List<ExamRoster> findByStudentIdAndSemesterId(@org.springframework.data.repository.query.Param("studentId") Long studentId,
+                                                 @org.springframework.data.repository.query.Param("semesterId") Integer semesterId);
+
     boolean existsByExamRoomExamSessionIdAndEnrollmentId(Long examSessionId, Long enrollmentId);
 
     long countByExamRoomId(Long examRoomId);

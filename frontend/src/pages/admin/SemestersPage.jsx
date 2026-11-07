@@ -209,7 +209,7 @@ export default function SemestersPage() {
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <button className="btn btn-outline" style={{ padding: "4px 8px", fontSize: "0.75rem", color: "#2563eb", borderColor: "#bfdbfe", marginRight: "6px" }} onClick={() => setWavesModal({ isOpen: true, semester: s })} title="Quản lý các đợt đăng ký theo Khóa/Khoa"><CalendarDays size={13} style={{ marginRight: "4px" }} /> Đợt ĐK</button>
-                      <button className="btn-icon" title="Sửa" onClick={() => handleOpenModal(s)}>
+                      <button className="btn-icon" title="Sửa" aria-label="Sửa học kỳ" onClick={() => handleOpenModal(s)}>
                         <Edit2 size={15} />
                       </button>
                     </td>
@@ -227,7 +227,7 @@ export default function SemestersPage() {
           <div className="modal-content" style={{ maxWidth: '600px' }}>
             <div className="modal-header">
               <h3>{editingSem ? 'Cập Nhật Kỳ Học' : 'Thêm Mới Học Kỳ'}</h3>
-              <button className="btn-icon" onClick={() => setIsModalOpen(false)}>
+              <button className="btn-icon" title="Đóng" aria-label="Đóng" onClick={() => setIsModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>

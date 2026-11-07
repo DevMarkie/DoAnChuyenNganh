@@ -45,8 +45,9 @@ export default function EnrollPage() {
   const isSuspended = warningLevel >= 3;
   const maxAllowedCredits = transcriptData?.maxAllowedCredits || (warningLevel === 2 ? 10 : warningLevel === 1 ? 14 : 24);
   const isTuitionOverdue = Boolean(tuitionSummary?.isTuitionOverdue || tuitionSummary?.financialHold);
+  const isRegistrationOpen = Boolean(currentSemester?.registrationOpen);
   const isEligibleToEnroll = Boolean(
-    currentSemester?.registrationOpen &&
+    isRegistrationOpen &&
       (regStatus ? regStatus.canRegister : true) &&
       !isTuitionOverdue &&
       !isSuspended
@@ -68,11 +69,12 @@ export default function EnrollPage() {
       setCurrentSemester(sem);
       const enrList = resEnr.data.data || [];
       setMyEnrollments(enrList);
-      setRegStatus(resWave?.data?.data || null);
+      const waveData = resWave?.data?.data || null;
+      setRegStatus(waveData);
       setTuitionSummary(resTuition?.data?.data || null);
       setTranscriptData(resTranscript?.data?.data || null);
 
-      if (sem?.registrationOpen) {
+      if (sem?.registrationOpen || waveData?.canRegister) {
         const resSec = await courseSectionService.getOpenBySemester(sem.id);
         setAvailableSections(resSec.data.data || []);
       } else {
@@ -136,8 +138,11 @@ export default function EnrollPage() {
     }
   };
 
+  const removeAccents = (str) =>
+    str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase() : "";
+
   const handleCancelEnrollment = async (enrollmentId, subjectName) => {
-    if (!currentSemester?.registrationOpen) {
+    if (!currentSemester?.registrationOpen && !regStatus?.canRegister) {
       toast.warning("Cổng đăng ký hiện đang đóng. Không thể thao tác hủy môn.");
       return;
     }
@@ -184,16 +189,16 @@ export default function EnrollPage() {
   }, [myEnrollments, currentSemester]);
 
   const filtered = useMemo(() => {
+    const q = removeAccents(search.trim());
     return availableSections.filter((s) => {
       if (filterTab === "enrolled" && !enrolledSectionIds.has(s.id)) {
         return false;
       }
-      if (!search) return true;
-      const q = search.toLowerCase();
+      if (!q) return true;
       return (
-        s.sectionCode?.toLowerCase().includes(q) ||
-        s.subject?.subjectName?.toLowerCase().includes(q) ||
-        s.lecturer?.fullName?.toLowerCase().includes(q)
+        removeAccents(s.sectionCode).includes(q) ||
+        removeAccents(s.subject?.subjectName).includes(q) ||
+        removeAccents(s.lecturer?.fullName).includes(q)
       );
     });
   }, [availableSections, filterTab, enrolledSectionIds, search]);
@@ -212,7 +217,7 @@ export default function EnrollPage() {
         </div>
       </div>
 
-      {currentSemester && !currentSemester.registrationOpen && (
+      {currentSemester && !currentSemester.registrationOpen && !regStatus?.canRegister && (
         <div
           className="card"
           style={{
@@ -537,11 +542,14 @@ export default function EnrollPage() {
                 }}
               />
               <input
+                id="course-section-search"
+                name="courseSectionSearch"
+                aria-label="Tìm theo mã HP, tên môn, giảng viên"
                 type="text"
                 placeholder="Tìm theo mã HP, tên môn, giảng viên..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                disabled={!currentSemester?.registrationOpen}
+                disabled={!currentSemester?.registrationOpen && !regStatus?.canRegister}
                 className="form-control"
                 style={{ paddingLeft: "36px" }}
               />
@@ -569,7 +577,7 @@ export default function EnrollPage() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-            {currentSemester?.registrationOpen && (
+            {(currentSemester?.registrationOpen || regStatus?.canRegister) && (
               <button
                 type="button"
                 className="btn btn-outline"
@@ -804,7 +812,7 @@ export default function EnrollPage() {
                             >
                               <Check size={14} /> Đã ĐK
                             </span>
-                            {currentSemester?.registrationOpen ? (
+                            {(currentSemester?.registrationOpen || regStatus?.canRegister) ? (
                               <button
                                 type="button"
                                 className="btn btn-outline btn-sm"
@@ -868,13 +876,13 @@ export default function EnrollPage() {
                         ) : (
                           <button
                             className="btn btn-primary btn-sm"
-                            disabled={!isEligibleToEnroll || enrollingId === s.id}
+                            disabled={!isRegistrationOpen || !isEligibleToEnroll || enrollingId === s.id}
                             onClick={() => handleEnroll(s.id)}
                             title={
-                              isTuitionOverdue
-                                ? "Tạm khóa do nợ học phí quá hạn"
-                                : !currentSemester?.registrationOpen
-                                  ? "Cổng đăng ký đang đóng"
+                              !isRegistrationOpen
+                                ? "Đã đóng đăng ký"
+                                : isTuitionOverdue
+                                  ? "Tạm khóa do nợ học phí quá hạn"
                                   : !isEligibleToEnroll
                                     ? (regStatus?.message || "Ngoài khung giờ đăng ký")
                                     : "Đăng ký môn này"
@@ -884,10 +892,10 @@ export default function EnrollPage() {
                             <span>
                               {enrollingId === s.id
                                 ? "Đang ghi nhận..."
-                                : isTuitionOverdue
-                                  ? "Khóa nợ HP"
-                                  : !currentSemester?.registrationOpen
-                                    ? "Cổng đóng"
+                                : !isRegistrationOpen
+                                  ? "Đã đóng đăng ký"
+                                  : isTuitionOverdue
+                                    ? "Khóa nợ HP"
                                     : !isEligibleToEnroll
                                       ? "Chưa đến đợt"
                                       : "Đăng ký môn"}

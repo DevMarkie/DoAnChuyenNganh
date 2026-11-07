@@ -43,6 +43,7 @@ const LecturerProfilePage = lazy(() => import('./pages/lecturer/LecturerProfileP
 // Student Pages - Lazy Loaded
 const StudentDashboard = lazy(() => import('./pages/student/StudentDashboard'));
 const StudentSchedulePage = lazy(() => import('./pages/student/StudentSchedulePage'));
+const StudentExamSchedulePage = lazy(() => import('./pages/student/StudentExamSchedulePage'));
 const EnrollPage = lazy(() => import('./pages/student/EnrollPage'));
 const MyEnrollmentsPage = lazy(() => import('./pages/student/MyEnrollmentsPage'));
 const TranscriptPage = lazy(() => import('./pages/student/TranscriptPage'));
@@ -191,6 +192,7 @@ export default function App() {
           }>
             <Route path="/student/dashboard" element={<StudentDashboard />} />
             <Route path="/student/schedule" element={<StudentSchedulePage />} />
+            <Route path="/student/exam-schedule" element={<StudentExamSchedulePage />} />
             <Route path="/student/enroll" element={<EnrollPage />} />
             <Route path="/student/enrollments" element={<MyEnrollmentsPage />} />
             <Route path="/student/tuition" element={<MyEnrollmentsPage />} />

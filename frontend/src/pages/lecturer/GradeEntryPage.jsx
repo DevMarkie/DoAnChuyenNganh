@@ -130,7 +130,14 @@ export default function GradeEntryPage() {
         courseSectionService.getById(sectionId)
       ]);
       if (gradesRes.status === "fulfilled") {
-        setGrades(gradesRes.value.data?.data || []);
+        const raw = gradesRes.value.data?.data || [];
+        setGrades(raw.map((g) => ({
+          ...g,
+          cc1Score: g.cc1Score != null ? Number(Number(g.cc1Score).toFixed(1)) : g.cc1Score,
+          cc2Score: g.cc2Score != null ? Number(Number(g.cc2Score).toFixed(1)) : g.cc2Score,
+          midtermScore: g.midtermScore != null ? Number(Number(g.midtermScore).toFixed(1)) : g.midtermScore,
+          finalScore: g.finalScore != null ? Number(Number(g.finalScore).toFixed(1)) : g.finalScore,
+        })));
       }
       if (sectionRes.status === "fulfilled" && sectionRes.value.data?.data) {
         const secData = sectionRes.value.data.data;
@@ -172,7 +179,7 @@ export default function GradeEntryPage() {
   };
 
   const handleScoreChange = (enrollmentId, field, value) => {
-    const val = value === "" ? "" : parseFloat(value);
+    const val = value === "" ? "" : isNaN(parseFloat(value)) ? value : Math.round(parseFloat(value) * 10) / 10;
     setGrades((prev) =>
       prev.map((g) =>
         g.enrollment?.id === enrollmentId ? { ...g, [field]: val } : g
@@ -990,7 +997,7 @@ export default function GradeEntryPage() {
                             max="10"
                             step="0.1"
                             placeholder={isFinalExamField ? "Khảo thí" : "0.0"}
-                            value={g[field] ?? ""}
+                            value={g[field] != null && g[field] !== "" ? Number(Number(g[field]).toFixed(1)) : ""}
                             onChange={(e) =>
                               handleScoreChange(enrollmentId, field, e.target.value)
                             }

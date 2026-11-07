@@ -40,6 +40,34 @@ public class ExamController {
     // EXAM SESSIONS
     // ==========================================
 
+    @GetMapping("/exam-sessions/my-schedule")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<List<com.sms.dto.response.StudentExamScheduleResponse>>> getMyExamSchedule(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(required = false) Long semesterId) {
+        return ResponseEntity.ok(ApiResponse.success(examService.getStudentExamSchedule(user.getId(), semesterId)));
+    }
+
+    @GetMapping("/exam-sessions/my-schedule/export-ics")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<byte[]> exportMyExamIcs(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(required = false) Long semesterId) {
+        byte[] icsData = examService.exportStudentExamIcs(user.getId(), semesterId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"lich_thi.ics\"")
+                .contentType(MediaType.parseMediaType("text/calendar; charset=utf-8"))
+                .body(icsData);
+    }
+
+    @GetMapping("/exam-sessions/lecturer/proctor-schedule")
+    @PreAuthorize("hasRole('LECTURER')")
+    public ResponseEntity<ApiResponse<List<ExamRoomResponse>>> getMyProctorSchedule(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(required = false) Long semesterId) {
+        return ResponseEntity.ok(ApiResponse.success(examService.getLecturerProctorSchedule(user.getId(), semesterId)));
+    }
+
     @PostMapping("/exam-sessions")
     @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
     public ResponseEntity<ApiResponse<ExamSessionResponse>> createSession(@Valid @RequestBody ExamSessionRequest req) {

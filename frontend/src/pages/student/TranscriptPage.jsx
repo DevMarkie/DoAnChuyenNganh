@@ -360,7 +360,7 @@ export default function TranscriptPage() {
               </div>
             </div>
 
-            <div className="table-container">
+            <div className="table-container table-mobile-cards">
               <table className="table">
                 <thead>
                   <tr>
@@ -393,9 +393,7 @@ export default function TranscriptPage() {
                 <tbody>
                   {sem.courses?.map((c, cIdx) => (
                     <tr key={cIdx}>
-                      <td>
-                        <span
-                          style={{
+                      <td data-label="Mã môn"><span style={{
                             display: 'inline-block',
                             fontFamily: 'var(--font-mono, monospace)',
                             fontWeight: 700,
@@ -411,27 +409,27 @@ export default function TranscriptPage() {
                           {c.subjectCode}
                         </span>
                       </td>
-                      <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.subjectName}</td>
-                      <td><span className="badge badge-info">{c.credits} TC</span></td>
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
+                      <td data-label="Tên môn học" style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.subjectName}</td>
+                      <td data-label="Số TC"><span className="badge badge-info">{c.credits} TC</span></td>
+                      <td data-label="CC1 (5%)" style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
                         {c.cc1Score != null ? Number(c.cc1Score).toFixed(1) : '—'}
                       </td>
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
+                      <td data-label="CC2 (5%)" style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
                         {c.cc2Score != null ? Number(c.cc2Score).toFixed(1) : '—'}
                       </td>
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
+                      <td data-label="Giữa kỳ (30%)" style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
                         {c.midtermScore != null ? Number(c.midtermScore).toFixed(1) : '—'}
                       </td>
-                      <td style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
+                      <td data-label="Cuối kỳ (60%)" style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
                         {c.finalScore != null ? Number(c.finalScore).toFixed(1) : '—'}
                       </td>
-                      <td style={{ textAlign: 'center', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums', color: 'var(--primary)' }}>
+                      <td data-label="Tổng kết (hệ 10)" style={{ textAlign: 'center', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums', color: 'var(--primary)' }}>
                         {c.totalScore != null ? Number(c.totalScore).toFixed(1) : '—'}
                       </td>
-                      <td style={{ textAlign: 'center', fontWeight: 600, fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
+                      <td data-label="Hệ 4" style={{ textAlign: 'center', fontWeight: 600, fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
                         {c.gpaPoint != null ? Number(c.gpaPoint).toFixed(2) : '—'}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td data-label="Điểm chữ" style={{ textAlign: 'center' }}>
                         {c.status === 'ADJUSTING' || c.letterGrade === 'Đang điều chỉnh' ? (
                           <span
                             className="badge"

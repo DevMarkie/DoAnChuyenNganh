@@ -56,15 +56,41 @@ public class GraduationService {
                     && !student.isFinancialHold()
                     && (tuitionService == null || !tuitionService.isTuitionOverdue(student.getId()));
             record.setTuitionCleared(tuitionCleared);
-            record.setPhysicalEducationPassed(true); // chuẩn đầu ra
-            record.setDefenseEducationPassed(true);
-            record.setEnglishCertificateStatus(true);
-            boolean isQualified = eligibility.isEligible() && tuitionCleared;
+
+            if (record.getPhysicalEducationPassed() == null) record.setPhysicalEducationPassed(true);
+            if (record.getDefenseEducationPassed() == null) record.setDefenseEducationPassed(true);
+            if (record.getEnglishCertificateStatus() == null) record.setEnglishCertificateStatus(true);
+            if (record.getItCertificateStatus() == null) record.setItCertificateStatus(true);
+
+            boolean certsPassed = Boolean.TRUE.equals(record.getPhysicalEducationPassed())
+                    && Boolean.TRUE.equals(record.getDefenseEducationPassed())
+                    && Boolean.TRUE.equals(record.getEnglishCertificateStatus())
+                    && Boolean.TRUE.equals(record.getItCertificateStatus());
+
+            List<String> failedReasons = new ArrayList<>();
+            if (eligibility.getUnsatisfiedReasons() != null) {
+                failedReasons.addAll(eligibility.getUnsatisfiedReasons());
+            }
+            if (!tuitionCleared && !failedReasons.contains("Chưa hoàn thành công nợ học phí theo quy chế")) {
+                failedReasons.add("Chưa hoàn thành công nợ học phí theo quy chế");
+            }
+            if (!Boolean.TRUE.equals(record.getPhysicalEducationPassed())) {
+                failedReasons.add("Chưa hoàn thành chuẩn đầu ra Giáo dục thể chất (GDTC)");
+            }
+            if (!Boolean.TRUE.equals(record.getDefenseEducationPassed())) {
+                failedReasons.add("Chưa hoàn thành chuẩn đầu ra Giáo dục quốc phòng (GDQP)");
+            }
+            if (!Boolean.TRUE.equals(record.getEnglishCertificateStatus())) {
+                failedReasons.add("Chưa nộp hoặc chưa đạt chuẩn đầu ra Chứng chỉ Ngoại ngữ");
+            }
+            if (!Boolean.TRUE.equals(record.getItCertificateStatus())) {
+                failedReasons.add("Chưa nộp hoặc chưa đạt chuẩn đầu ra Chứng chỉ Tin học");
+            }
+
+            boolean isQualified = eligibility.isEligible() && tuitionCleared && certsPassed;
             record.setSystemRecommendation(isQualified ? "QUALIFIED" : "DISQUALIFIED");
-            if (!isQualified && eligibility.getUnsatisfiedReasons() != null && !eligibility.getUnsatisfiedReasons().isEmpty()) {
-                record.setNote(String.join("; ", eligibility.getUnsatisfiedReasons()));
-            } else if (!isQualified) {
-                record.setNote("Chưa hoàn thành công nợ học phí theo quy chế");
+            if (!isQualified) {
+                record.setNote(String.join("; ", failedReasons));
             } else {
                 record.setNote("Đủ điều kiện tốt nghiệp theo chuẩn Khung CTĐT");
             }

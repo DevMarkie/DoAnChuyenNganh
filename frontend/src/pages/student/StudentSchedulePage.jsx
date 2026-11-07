@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Calendar, Clock, MapPin, User, BookOpen, Layers, CheckCircle2,
   Grid, List, Printer, School, CalendarDays, RefreshCw, Globe,
-  KeyRound, XCircle
+  KeyRound, XCircle, Download, FileSpreadsheet
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { scheduleService, semesterService, attendanceService, enrollmentService } from '../../services/dataService';
@@ -42,6 +43,7 @@ const isOnlineRoom = (room) => {
 };
 
 export default function StudentSchedulePage() {
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const [schedules, setSchedules] = useState([]);
   const [semesters, setSemesters] = useState([]);
@@ -203,7 +205,46 @@ export default function StudentSchedulePage() {
     0
   );
 
-  const activeSemesterObj = semesters.find((s) => String(s.id) === String(selectedSemesterId));
+    const activeSemesterObj = semesters.find((s) => String(s.id) === String(selectedSemesterId));
+
+  const handleExportIcs = async () => {
+    try {
+      toast.info('Đang chuẩn bị file đồng bộ iCalendar...');
+      const res = await scheduleService.exportIcs({ semesterId: selectedSemesterId || undefined });
+      const blob = new Blob([res.data], { type: 'text/calendar;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ThoiKhoaBieu_GoogleCalendar.ics`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Đã tải file .ics! Mở tệp để đồng bộ vào Google Calendar / Outlook.');
+    } catch {
+      toast.error('Không thể xuất file iCalendar');
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      toast.info('Đang xuất file Excel thời khóa biểu...');
+      const res = await scheduleService.exportExcel({ semesterId: selectedSemesterId || undefined });
+      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const semName = activeSemesterObj ? activeSemesterObj.semesterName.replace(/\s+/g, '_') : 'KyHoc';
+      a.download = `ThoiKhoaBieu_${semName}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Xuất file Excel thời khóa biểu thành công!');
+    } catch {
+      toast.error('Không thể xuất file Excel');
+    }
+  };
 
   return (
     <div>
@@ -254,6 +295,20 @@ export default function StudentSchedulePage() {
             </select>
           </div>
 
+          <button
+            className="btn btn-outline"
+            onClick={handleExportExcel}
+            title="Xuất file Excel (.xlsx)"
+          >
+            <FileSpreadsheet size={16} /> Xuất Excel
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={handleExportIcs}
+            title="Đồng bộ Google Calendar (.ics)"
+          >
+            <Download size={16} /> Đồng bộ Cal (.ics)
+          </button>
           <button
             className="btn btn-outline"
             onClick={() => window.print()}

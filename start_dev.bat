@@ -3,7 +3,7 @@ chcp 65001 >nul
 title Khởi chạy Hệ Thống Quản Lý Sinh Viên
 
 echo ======================================================================
-echo    HỆ THỐNG QUẢN LÝ SINH VIÊN (SMS) - KHỞI CHẠY PHÁT TRIỂN ^& NỘI BỘ
+echo    HỆ THỐNG QUẢN LÝ SINH VIÊN (SMS) - KHỞI CHẠY PHÁT TRIỂN & NỘI BỘ
 echo ======================================================================
 echo.
 
@@ -67,12 +67,12 @@ echo ======================================================================
 echo                     HỆ THỐNG ĐANG ĐƯỢC KHỞI ĐỘNG!
 echo ======================================================================
 echo.
-echo 💻 TRUY CẬP TRÊN MÁY NÀY:
+echo [1] TRUY CẬP TRÊN MÁY NÀY:
 echo    - Frontend App:   http://localhost:5173
 echo    - Backend API:    http://localhost:8080/api
 echo    - Swagger Docs:   http://localhost:8080/swagger-ui.html
 echo.
-echo 📱 TRUY CẬP TỪ THIẾT BỊ KHÁC TRONG MẠNG LAN / CÙNG WI-FI:
+echo [2] TRUY CẬP TỪ THIẾT BỊ KHÁC TRONG MẠNG LAN / CÙNG WI-FI:
 for /f "tokens=4" %%a in ('route print ^| findstr 0.0.0.0.*0.0.0.0') do (
     set LOCAL_IP=%%a
     goto :ip_found
@@ -81,12 +81,15 @@ for /f "tokens=4" %%a in ('route print ^| findstr 0.0.0.0.*0.0.0.0') do (
 echo    - Mở trình duyệt trên điện thoại/laptop khác gõ:
 echo      http://%LOCAL_IP%:5173
 echo.
-echo 🔑 TÀI KHOẢN MẪU:
-echo    + Admin:       admin    / 123456
-echo    + Giảng viên:  1000001  / 123456
-echo    + Sinh viên:   2500001  / 123456
+echo [3] TÀI KHOẢN ĐĂNG NHẬP MẪU:
+echo    + Quản trị viên (Admin)       : admin       / 123456
+echo    + Cán bộ Phòng Đào tạo (SMS) : daotao      / Daotao@2026!  (hoặc 123456)
+echo    + Cán bộ Khảo thí             : khaothi     / Khaothi@2026! (hoặc 123456)
+echo    + Giáo vụ Khoa CNTT           : giaovu_cntt / 123456
+echo    + Giảng viên đại diện         : 1000001     / 123456
+echo    + Sinh viên đại diện          : 2500001     / 123456
 echo.
-echo 🌐 Để chia sẻ link ra toàn Internet cho mọi người truy cập:
+echo [4] Để chia sẻ link ra toàn Internet cho mọi người truy cập:
 echo    Chạy file: share_internet.bat
 echo ======================================================================
 pause

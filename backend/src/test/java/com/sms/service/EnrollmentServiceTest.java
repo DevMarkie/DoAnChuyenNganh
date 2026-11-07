@@ -587,4 +587,127 @@ class EnrollmentServiceTest {
         // Đảm bảo bồi hoàn slot trên Redis
         verify(redisCourseSectionService).incrementSlot(sectionId);
     }
+
+    @Test
+    @DisplayName("RÀNG BUỘC TÍN CHỈ: Vượt quá 24 tín chỉ diện bình thường bị chặn")
+    void enroll_fails_whenCreditsExceedNormalLimit_24Credits() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+
+        Subject subj = new Subject();
+        subj.setId(10);
+        subj.setCredits(3);
+        subj.setPrerequisites(Collections.emptySet());
+
+        Student student = createStudent(studentId, userId);
+        CourseSection section = createSection(sectionId, subj, 40, 10);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(10);
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(22); // 22 + 3 = 25 > 24
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Vượt quá số tín chỉ tối đa trong học kỳ (24)");
+    }
+
+    @Test
+    @DisplayName("RÀNG BUỘC HỌC VỤ: Cảnh báo học vụ Mức 1 vượt quá 14 tín chỉ bị chặn")
+    void enroll_fails_whenAcademicWarning1_exceeds14Credits() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+
+        Subject subj = new Subject();
+        subj.setId(10);
+        subj.setCredits(3);
+        subj.setPrerequisites(Collections.emptySet());
+
+        Student student = createStudent(studentId, userId);
+        student.setAcademicWarningLevel(1);
+        CourseSection section = createSection(sectionId, subj, 40, 10);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(10);
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(12); // 12 + 3 = 15 > 14
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Cảnh báo học vụ Mức 1. Hạn mức đăng ký tối đa là 14 tín chỉ");
+    }
+
+    @Test
+    @DisplayName("RÀNG BUỘC HỌC VỤ: Cảnh báo học vụ Mức >= 3 hoặc Buộc thôi học bị khóa hoàn toàn")
+    void enroll_fails_whenSuspendedOrAcademicWarning3() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+
+        Subject subj = new Subject();
+        subj.setId(10);
+        subj.setCredits(3);
+        subj.setPrerequisites(Collections.emptySet());
+
+        Student student = createStudent(studentId, userId);
+        student.setStatus(Student.StudentStatus.ACTIVE);
+        student.setAcademicWarningLevel(3);
+        CourseSection section = createSection(sectionId, subj, 40, 10);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(10);
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Tài khoản của bạn đang trong diện BUỘC THÔI HỌC");
+    }
+
+    @Test
+    @DisplayName("TRÙNG LỊCH HỌC: Chặn đăng ký 2 lớp có lịch học trùng thứ và tiết")
+    void enroll_fails_whenScheduleConflicts() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+
+        Subject subj = new Subject();
+        subj.setId(10);
+        subj.setCredits(3);
+        subj.setPrerequisites(Collections.emptySet());
+
+        Student student = createStudent(studentId, userId);
+        CourseSection section = createSection(sectionId, subj, 40, 10);
+
+        Schedule currentSch = new Schedule();
+        currentSch.setDayOfWeek(2); // Thứ 2
+        currentSch.setStartPeriod(1);
+        currentSch.setEndPeriod(3);
+        currentSch.setStartDate(LocalDate.now().minusDays(10));
+        currentSch.setEndDate(LocalDate.now().plusDays(50));
+        currentSch.setSection(section);
+
+        Schedule newSch = new Schedule();
+        newSch.setDayOfWeek(2); // Trùng thứ 2
+        newSch.setStartPeriod(2); // Trùng tiết 2-4 với 1-3
+        newSch.setEndPeriod(4);
+        newSch.setStartDate(LocalDate.now().minusDays(10));
+        newSch.setEndDate(LocalDate.now().plusDays(50));
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(10);
+        when(enrollmentRepository.findByStudentIdAndSectionId(studentId, sectionId)).thenReturn(Optional.empty());
+        when(enrollmentRepository.countEnrolledCredits(studentId, 1)).thenReturn(0);
+        when(scheduleRepository.findSchedulesForStudentAndSemester(studentId, 1, 1L)).thenReturn(List.of(currentSch));
+        when(scheduleRepository.findBySectionId(sectionId)).thenReturn(List.of(newSch));
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Trùng lịch học!");
+    }
 }

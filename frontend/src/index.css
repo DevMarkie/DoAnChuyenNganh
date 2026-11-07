@@ -346,12 +346,18 @@ p {
   font-weight: 700;
   color: var(--text-main);
   letter-spacing: -0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .page-header p {
   color: var(--text-muted);
   font-size: 0.9rem;
   margin-top: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .page-header-actions {
@@ -1306,6 +1312,85 @@ textarea.form-control {
   .page-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .page-header h1 {
+    font-size: 1.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .table-container .table {
+    min-width: 600px;
+  }
+  /* Mobile Card View for Responsive Tables */
+  .table-container.table-mobile-cards {
+    background: transparent !important;
+    border: none !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    max-height: none !important;
+    min-height: auto !important;
+  }
+  .table-container.table-mobile-cards .table {
+    display: block;
+    min-width: 0 !important;
+    width: 100%;
+    border: none;
+  }
+  .table-container.table-mobile-cards .table thead {
+    display: none;
+  }
+  .table-container.table-mobile-cards .table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  .table-container.table-mobile-cards .table tbody tr {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-xs);
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .table-container.table-mobile-cards .table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border-color);
+    font-size: 0.85rem;
+    text-align: right;
+    word-break: break-word;
+  }
+  .table-container.table-mobile-cards .table tbody td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .table-container.table-mobile-cards .table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-align: left;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  .table-container.table-mobile-cards .table tbody td[colspan] {
+    display: block;
+    text-align: center !important;
+    justify-content: center;
+    border-bottom: none;
+    padding: 24px 12px;
+  }
+  .table-container.table-mobile-cards .table tbody td[colspan]::before {
+    display: none;
   }
   input, select, textarea, .form-control {
     font-size: 16px !important;

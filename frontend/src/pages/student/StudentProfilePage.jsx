@@ -7,6 +7,7 @@ import {
   studentStatusLabel,
   studentStatusBadgeClass,
 } from '../../utils/labels';
+import { maskCitizenId, maskPhone } from '../../utils/security';
 
 function getPasswordStrength(pwd) {
   if (!pwd) return { level: 0, label: '', color: 'transparent', percent: '0%' };
@@ -22,12 +23,27 @@ function getPasswordStrength(pwd) {
   return { level: 1, label: 'Yếu', color: '#ef4444', percent: '35%' };
 }
 
+const STANDARD_RELATIONSHIPS = ['Bố', 'Mẹ', 'Anh/Chị/Em', 'Ông/Bà', 'Người giám hộ'];
+
 export default function StudentProfilePage() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingContact, setEditingContact] = useState(false);
   const [contactForm, setContactForm] = useState({ phone: '', address: '' });
   const [savingContact, setSavingContact] = useState(false);
+  const [showCccd, setShowCccd] = useState(false);
+  const [showPhone, setShowPhone] = useState(false);
+
+  // Trạng thái liên hệ khẩn cấp
+  const [editingEmergency, setEditingEmergency] = useState(false);
+  const [savingEmergency, setSavingEmergency] = useState(false);
+  const [showEmergencyPhone, setShowEmergencyPhone] = useState(false);
+  const [emergencyForm, setEmergencyForm] = useState({
+    name: '',
+    relationship: 'Bố',
+    customRelationship: '',
+    phone: '',
+  });
 
   // Trạng thái đổi mật khẩu
   const [passData, setPassData] = useState({
@@ -80,12 +96,25 @@ export default function StudentProfilePage() {
     }
   };
 
+  const initEmergencyForm = (currProfile = profile) => {
+    if (!currProfile) return;
+    const rel = currProfile.emergencyContactRelationship || '';
+    const isStandard = STANDARD_RELATIONSHIPS.includes(rel);
+    setEmergencyForm({
+      name: currProfile.emergencyContactName || '',
+      relationship: isStandard ? rel : (rel ? 'Khác' : 'Bố'),
+      customRelationship: isStandard ? '' : rel,
+      phone: currProfile.emergencyContactPhone || '',
+    });
+  };
+
   useEffect(() => {
     if (profile) {
       setContactForm({
         phone: profile.phone || '',
         address: profile.address || '',
       });
+      initEmergencyForm(profile);
     }
   }, [profile]);
 
@@ -101,6 +130,55 @@ export default function StudentProfilePage() {
       toast.error(err.response?.data?.message || 'Lỗi khi cập nhật thông tin liên lạc');
     } finally {
       setSavingContact(false);
+    }
+  };
+
+  const handleSaveEmergency = async (e) => {
+    e?.preventDefault();
+    const name = (emergencyForm.name || '').trim();
+    const rel = emergencyForm.relationship === 'Khác'
+      ? (emergencyForm.customRelationship || '').trim()
+      : (emergencyForm.relationship || '').trim();
+    const phone = (emergencyForm.phone || '').trim();
+
+    if (!name) {
+      toast.warning('Vui lòng nhập họ tên người liên hệ khẩn cấp');
+      return;
+    }
+    if (!rel) {
+      toast.warning('Vui lòng chọn hoặc nhập mối quan hệ');
+      return;
+    }
+    if (!phone) {
+      toast.warning('Vui lòng nhập số điện thoại khẩn cấp');
+      return;
+    }
+    const phoneRegex = /^0\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      toast.warning('Số điện thoại khẩn cấp không đúng định dạng Việt Nam (10 chữ số, bắt đầu bằng số 0)');
+      return;
+    }
+
+    try {
+      setSavingEmergency(true);
+      const res = await studentService.updateMyContact({
+        emergencyContactName: name,
+        emergencyContactRelationship: rel,
+        emergencyContactPhone: phone,
+      });
+      toast.success('Cập nhật thông tin liên lạc khẩn cấp thành công!');
+      setProfile((prev) => ({
+        ...prev,
+        ...res.data?.data,
+        emergencyContactName: name,
+        emergencyContactRelationship: rel,
+        emergencyContactPhone: phone,
+      }));
+      setEditingEmergency(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Lỗi khi cập nhật thông tin liên lạc khẩn cấp');
+    } finally {
+      setSavingEmergency(false);
     }
   };
 
@@ -234,9 +312,20 @@ export default function StudentProfilePage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                 <div>
-                  <label className="form-label">Số CCCD / CMND</label>
-                  <div style={{ fontWeight: 600, color: 'var(--text-main)', fontFamily: 'monospace' }}>
-                    {profile?.citizenId || 'Chưa cập nhật'}
+                  <label className="form-label">Số CCCD / CMND (Bảo mật PII)</label>
+                  <div style={{ fontWeight: 600, color: 'var(--text-main)', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{showCccd ? profile?.citizenId : maskCitizenId(profile?.citizenId)}</span>
+                    {profile?.citizenId && (
+                      <button
+                        type="button"
+                        onClick={() => setShowCccd(!showCccd)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--text-secondary)' }}
+                        title={showCccd ? 'Ẩn bớt số CCCD' : 'Xem đầy đủ số CCCD'}
+                        aria-label={showCccd ? 'Ẩn bớt số CCCD' : 'Xem đầy đủ số CCCD'}
+                      >
+                        {showCccd ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div>
@@ -266,9 +355,22 @@ export default function StudentProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <label className="form-label">Số điện thoại</label>
+                  <label className="form-label">Số điện thoại (Bảo mật PII)</label>
                   {!editingContact ? (
-                    <div style={{ color: 'var(--text-main)', fontWeight: '500' }}>{profile?.phone || 'Chưa cập nhật'}</div>
+                    <div style={{ color: 'var(--text-main)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>{showPhone ? profile?.phone : maskPhone(profile?.phone)}</span>
+                      {profile?.phone && (
+                        <button
+                          type="button"
+                          onClick={() => setShowPhone(!showPhone)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--text-secondary)' }}
+                          title={showPhone ? 'Ẩn bớt số điện thoại' : 'Xem đầy đủ số điện thoại'}
+                          aria-label={showPhone ? 'Ẩn bớt số điện thoại' : 'Xem đầy đủ số điện thoại'}
+                        >
+                          {showPhone ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <input
                       type="text"
@@ -307,30 +409,163 @@ export default function StudentProfilePage() {
 
           {/* Khối liên hệ khẩn cấp */}
           <div className="card">
-            <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ShieldAlert size={18} style={{ color: 'var(--warning)' }} />
-              <h3>Thông tin liên lạc khẩn cấp (Phụ huynh / Người thân)</h3>
+            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ShieldAlert size={18} style={{ color: 'var(--warning)' }} />
+                <h3 style={{ margin: 0 }}>Thông tin liên lạc khẩn cấp (Phụ huynh / Người thân)</h3>
+              </div>
+              {!editingEmergency ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    initEmergencyForm();
+                    setEditingEmergency(true);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '12px',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--primary)',
+                    color: 'var(--primary)',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                  }}
+                >
+                  <Edit3 size={14} />
+                  <span>Cập nhật</span>
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingEmergency(false);
+                      initEmergencyForm();
+                    }}
+                    style={{
+                      fontSize: '12px',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      background: '#fff',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveEmergency}
+                    disabled={savingEmergency}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '12px',
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      background: 'var(--primary)',
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                    }}
+                  >
+                    <Check size={14} />
+                    <span>{savingEmergency ? 'Đang lưu...' : 'Lưu thay đổi'}</span>
+                  </button>
+                </div>
+              )}
             </div>
             <div className="card-body">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                 <div>
-                  <label className="form-label">Họ tên người liên hệ</label>
-                  <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
-                    {profile?.emergencyContactName || 'Chưa đăng ký'}
-                  </div>
+                  <label className="form-label">
+                    Họ tên người liên hệ {editingEmergency && <span style={{ color: '#ef4444' }}>*</span>}
+                  </label>
+                  {!editingEmergency ? (
+                    <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                      {profile?.emergencyContactName || 'Chưa đăng ký'}
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={emergencyForm.name}
+                      onChange={(e) => setEmergencyForm({ ...emergencyForm, name: e.target.value })}
+                      placeholder="Họ tên phụ huynh / người thân..."
+                      style={{ width: '100%', padding: '6px 10px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                    />
+                  )}
                 </div>
+
                 <div>
-                  <label className="form-label">Mối quan hệ</label>
-                  <div style={{ color: 'var(--text-main)' }}>
-                    {profile?.emergencyContactRelationship || 'Bố/Mẹ'}
-                  </div>
+                  <label className="form-label">
+                    Mối quan hệ {editingEmergency && <span style={{ color: '#ef4444' }}>*</span>}
+                  </label>
+                  {!editingEmergency ? (
+                    <div style={{ color: 'var(--text-main)' }}>
+                      {profile?.emergencyContactRelationship || 'Chưa cập nhật'}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <select
+                        value={emergencyForm.relationship}
+                        onChange={(e) => setEmergencyForm({ ...emergencyForm, relationship: e.target.value })}
+                        style={{ width: '100%', padding: '6px 10px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff' }}
+                      >
+                        {STANDARD_RELATIONSHIPS.map((rel) => (
+                          <option key={rel} value={rel}>{rel}</option>
+                        ))}
+                        <option value="Khác">Khác (Tự nhập)</option>
+                      </select>
+                      {emergencyForm.relationship === 'Khác' && (
+                        <input
+                          type="text"
+                          value={emergencyForm.customRelationship}
+                          onChange={(e) => setEmergencyForm({ ...emergencyForm, customRelationship: e.target.value })}
+                          placeholder="Nhập mối quan hệ (VD: Chú, Bác, Cậu...)"
+                          style={{ width: '100%', padding: '6px 10px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
+
                 <div>
-                  <label className="form-label">Số điện thoại khẩn cấp</label>
-                  <div style={{ color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Phone size={14} />
-                    <span>{profile?.emergencyContactPhone || 'Chưa đăng ký'}</span>
-                  </div>
+                  <label className="form-label">
+                    Số điện thoại khẩn cấp {editingEmergency && <span style={{ color: '#ef4444' }}>*</span>}
+                  </label>
+                  {!editingEmergency ? (
+                    <div style={{ color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Phone size={14} />
+                        <span>{showEmergencyPhone ? (profile?.emergencyContactPhone || 'Chưa cập nhật') : maskPhone(profile?.emergencyContactPhone)}</span>
+                      </div>
+                      {profile?.emergencyContactPhone && (
+                        <button
+                          type="button"
+                          onClick={() => setShowEmergencyPhone(!showEmergencyPhone)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--text-secondary)' }}
+                          title={showEmergencyPhone ? 'Ẩn bớt số điện thoại' : 'Xem đầy đủ số điện thoại'}
+                          aria-label={showEmergencyPhone ? 'Ẩn bớt số điện thoại' : 'Xem đầy đủ số điện thoại'}
+                        >
+                          {showEmergencyPhone ? <EyeOff size={14} /> : <Eye size={14} />}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <input
+                      type="tel"
+                      value={emergencyForm.phone}
+                      onChange={(e) => setEmergencyForm({ ...emergencyForm, phone: e.target.value })}
+                      placeholder="VD: 0987654321 (10 chữ số)"
+                      style={{ width: '100%', padding: '6px 10px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -366,6 +601,7 @@ export default function StudentProfilePage() {
                     type="button"
                     onClick={() => setShowOld((v) => !v)}
                     title={showOld ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    aria-label={showOld ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                     style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
                   >
                     {showOld ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -394,6 +630,7 @@ export default function StudentProfilePage() {
                     type="button"
                     onClick={() => setShowNew((v) => !v)}
                     title={showNew ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    aria-label={showNew ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                     style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
                   >
                     {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -442,6 +679,7 @@ export default function StudentProfilePage() {
                     type="button"
                     onClick={() => setShowConfirm((v) => !v)}
                     title={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    aria-label={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                     style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
                   >
                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}

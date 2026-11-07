@@ -217,7 +217,7 @@ export default function DepartmentsPage() {
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '4px' }}>
-                        <button className="btn-icon" title="Sửa" onClick={() => handleOpenModal(d)}>
+                        <button className="btn-icon" title="Sửa" aria-label="Sửa khoa" onClick={() => handleOpenModal(d)}>
                           <Edit2 size={15} />
                         </button>
                         <button
@@ -244,7 +244,7 @@ export default function DepartmentsPage() {
           <div className="modal-content" style={{ maxWidth: '520px' }}>
             <div className="modal-header">
               <h3>{editingDept ? 'Cập Nhật Khoa Viện' : 'Thêm Mới Khoa Viện'}</h3>
-              <button className="btn-icon" onClick={() => setIsModalOpen(false)}>
+              <button className="btn-icon" title="Đóng" aria-label="Đóng" onClick={() => setIsModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>

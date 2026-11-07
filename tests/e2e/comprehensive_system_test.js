@@ -708,13 +708,96 @@ async function executeFullTest() {
       }
       sampleSectionId = res.data.data[0].id;
       // Find section taught by lecturer 1 (1000001) and lecturer 2 (1000002)
-      const sec1 = res.data.data.find(
+      let sec1 = res.data.data.find(
         (s) => s.lecturer?.lecturerCode === "1000001" && s.status === "ACTIVE" && s.gradeSubmissionStatus !== "PUBLISHED",
       );
-      const sec2 = res.data.data.find(
+      let sec2 = res.data.data.find(
         (s) => s.lecturer?.lecturerCode === "1000002" && s.status === "ACTIVE" && s.gradeSubmissionStatus !== "PUBLISHED",
       );
-      if (sec1) sampleSectionId = sec1.id;
+
+      // If active section not found, look for candidate section in current/active semester and activate it
+      if (!sec1) {
+        const cand1 = res.data.data.find(
+          (s) => s.lecturer?.lecturerCode === "1000001" && s.gradeSubmissionStatus !== "PUBLISHED",
+        );
+        if (cand1) {
+          if (cand1.status === "OPEN") {
+            await api(`/course-sections/${cand1.id}`, {
+              method: "PUT",
+              token: adminToken,
+              body: {
+                sectionCode: cand1.sectionCode,
+                subjectId: cand1.subject?.id,
+                semesterId: cand1.semester?.id,
+                lecturerId: cand1.lecturer?.id,
+                maxStudents: cand1.maxStudents,
+                status: "CLOSED",
+              },
+            });
+            await api(`/course-sections/${cand1.id}`, {
+              method: "PUT",
+              token: adminToken,
+              body: {
+                sectionCode: cand1.sectionCode,
+                subjectId: cand1.subject?.id,
+                semesterId: cand1.semester?.id,
+                lecturerId: cand1.lecturer?.id,
+                maxStudents: cand1.maxStudents,
+                status: "ACTIVE",
+              },
+            });
+            cand1.status = "ACTIVE";
+          }
+          sec1 = cand1;
+        }
+      }
+
+      if (!sec2) {
+        const cand2 = res.data.data.find(
+          (s) => s.lecturer?.lecturerCode === "1000002" && s.gradeSubmissionStatus !== "PUBLISHED",
+        );
+        if (cand2) {
+          if (cand2.status === "OPEN") {
+            await api(`/course-sections/${cand2.id}`, {
+              method: "PUT",
+              token: adminToken,
+              body: {
+                sectionCode: cand2.sectionCode,
+                subjectId: cand2.subject?.id,
+                semesterId: cand2.semester?.id,
+                lecturerId: cand2.lecturer?.id,
+                maxStudents: cand2.maxStudents,
+                status: "CLOSED",
+              },
+            });
+            await api(`/course-sections/${cand2.id}`, {
+              method: "PUT",
+              token: adminToken,
+              body: {
+                sectionCode: cand2.sectionCode,
+                subjectId: cand2.subject?.id,
+                semesterId: cand2.semester?.id,
+                lecturerId: cand2.lecturer?.id,
+                maxStudents: cand2.maxStudents,
+                status: "ACTIVE",
+              },
+            });
+            cand2.status = "ACTIVE";
+          }
+          sec2 = cand2;
+        }
+      }
+
+      if (sec1) {
+        sampleSectionId = sec1.id;
+        // Make sure its semester is active/current so lecturer can enter grades
+        if (sec1.semester && !sec1.semester.isCurrent) {
+          await api(`/semesters/${sec1.semester.id}/open-registration?days=14&deadline=2026-11-30`, {
+            method: "PUT",
+            token: adminToken,
+          });
+        }
+      }
       if (sec2) otherLecturerSectionId = sec2.id;
     },
   );
@@ -805,7 +888,7 @@ async function executeFullTest() {
             finalize: false,
           },
         });
-        if (!res.ok || !res.data.success) throw new Error("Lưu điểm thất bại");
+        if (!res.ok || !res.data?.success) throw new Error("Lưu điểm thất bại: " + (res.data?.message || res.status));
         const g = res.data.data;
         const expectedTotal = 10.0 * 0.1 + 8.5 * 0.3 + 9.0 * 0.6; // 8.95
         const diff = Math.abs(parseFloat(g.totalScore) - expectedTotal);
@@ -943,7 +1026,7 @@ async function executeFullTest() {
           } catch (e) {}
           try {
             execSync(
-              `docker exec student_management_db mysql -uroot student_management -e "${expireSql}"`,
+              `docker exec student_management_db mysql -u sms_app -psms_dev_pw student_management -e "${expireSql}"`,
               { stdio: "ignore" }
             );
           } catch (e) {}
@@ -972,7 +1055,7 @@ async function executeFullTest() {
             execSync(`"C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysql.exe" -uroot student_management -e "${restoreSql}"`, { stdio: "ignore" });
           } catch (e) {}
           try {
-            execSync(`docker exec student_management_db mysql -uroot student_management -e "${restoreSql}"`, { stdio: "ignore" });
+            execSync(`docker exec student_management_db mysql -u sms_app -psms_dev_pw student_management -e "${restoreSql}"`, { stdio: "ignore" });
           } catch (e) {}
         } catch (e) {}
 
@@ -1308,8 +1391,9 @@ async function executeFullTest() {
           semesterId: testSemId,
           lecturerId: testLecId,
           room: "P.TEST-301",
-          minStudents: 15,
+          minStudents: 5,
           maxStudents: 40,
+          sectionType: "SPECIAL",
         },
       });
 
@@ -1328,6 +1412,7 @@ async function executeFullTest() {
           semesterId: testSemId,
           lecturerId: testLecId,
           maxStudents: 40,
+          sectionType: "SPECIAL",
           status: "CLOSED",
         },
       });
@@ -1343,6 +1428,7 @@ async function executeFullTest() {
           semesterId: testSemId,
           lecturerId: testLecId,
           maxStudents: 40,
+          sectionType: "SPECIAL",
           status: "ACTIVE",
         },
       });

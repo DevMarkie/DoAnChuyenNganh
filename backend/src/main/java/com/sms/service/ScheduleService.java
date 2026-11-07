@@ -6,12 +6,19 @@ import com.sms.exception.BadRequestException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,6 +31,8 @@ public class ScheduleService {
     private final LecturerRepository lecturerRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final SemesterRepository semesterRepository;
+    private final NotificationService notificationService;
+    private final ExcelExportService excelExportService;
 
     public List<Schedule> findAll() {
         return scheduleRepository.findAll();
@@ -116,6 +125,13 @@ public class ScheduleService {
         }
         checkStudentScheduleConflicts(section, request, start, end, null);
 
+        Schedule.ScheduleStatus status = Schedule.ScheduleStatus.NORMAL;
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            try {
+                status = Schedule.ScheduleStatus.valueOf(request.getStatus().trim().toUpperCase());
+            } catch (Exception ignored) {}
+        }
+
         Schedule schedule = Schedule.builder()
                 .section(section)
                 .classEntity(classEntity)
@@ -126,13 +142,14 @@ public class ScheduleService {
                 .startDate(start)
                 .endDate(end)
                 .note(request.getNote())
+                .status(status)
                 .build();
 
         return scheduleRepository.save(schedule);
     }
 
     /**
-     * Cập nhật lịch học
+     * Cập nhật lịch học kèm đồng bộ thông báo đổi phòng / báo nghỉ / học bù
      */
     @Transactional
     public Schedule update(Long id, ScheduleRequest request) {
@@ -160,6 +177,16 @@ public class ScheduleService {
         }
         checkStudentScheduleConflicts(section, request, start, end, id);
 
+        boolean roomChanged = !request.getRoom().trim().equalsIgnoreCase(schedule.getRoom());
+        Schedule.ScheduleStatus oldStatus = schedule.getStatus() != null ? schedule.getStatus() : Schedule.ScheduleStatus.NORMAL;
+        Schedule.ScheduleStatus newStatus = oldStatus;
+        if (request.getStatus() != null && !request.getStatus().isBlank()) {
+            try {
+                newStatus = Schedule.ScheduleStatus.valueOf(request.getStatus().trim().toUpperCase());
+            } catch (Exception ignored) {}
+        }
+        boolean statusChanged = (oldStatus != newStatus);
+
         schedule.setSection(section);
         schedule.setClassEntity(classEntity);
         schedule.setDayOfWeek(request.getDayOfWeek());
@@ -169,14 +196,146 @@ public class ScheduleService {
         schedule.setStartDate(start);
         schedule.setEndDate(end);
         schedule.setNote(request.getNote());
+        schedule.setStatus(newStatus);
 
-        return scheduleRepository.save(schedule);
+        Schedule updated = scheduleRepository.save(schedule);
+
+        // Tự động đồng bộ thông báo tới sinh viên trong lớp học phần khi có thay đổi trạng thái hoặc đổi phòng
+        if ((roomChanged || statusChanged) && notificationService != null) {
+            String subjectName = (section.getSubject() != null) ? section.getSubject().getSubjectName() : section.getSectionCode();
+            String title = "Cập nhật lịch học: " + subjectName;
+            String message;
+            if (newStatus == Schedule.ScheduleStatus.CANCELLED) {
+                message = String.format("Lớp %s (%s) vào %s (Tiết %d-%d) đã BÁO NGHỈ. Ghi chú: %s",
+                        section.getSectionCode(), subjectName, schedule.getDayOfWeekName(),
+                        schedule.getStartPeriod(), schedule.getEndPeriod(),
+                        request.getNote() != null ? request.getNote() : "Theo thông báo của giảng viên");
+            } else if (newStatus == Schedule.ScheduleStatus.MAKEUP) {
+                message = String.format("Lớp %s (%s) được xếp HỌC BÙ vào %s (Tiết %d-%d) tại phòng %s. Ghi chú: %s",
+                        section.getSectionCode(), subjectName, schedule.getDayOfWeekName(),
+                        schedule.getStartPeriod(), schedule.getEndPeriod(), schedule.getRoom(),
+                        request.getNote() != null ? request.getNote() : "");
+            } else if (roomChanged || newStatus == Schedule.ScheduleStatus.ROOM_CHANGED) {
+                message = String.format("Lớp %s (%s) vào %s (Tiết %d-%d) đã ĐỔI PHÒNG HỌC sang phòng %s.",
+                        section.getSectionCode(), subjectName, schedule.getDayOfWeekName(),
+                        schedule.getStartPeriod(), schedule.getEndPeriod(), schedule.getRoom());
+            } else {
+                message = String.format("Lịch học lớp %s (%s) đã được cập nhật.", section.getSectionCode(), subjectName);
+            }
+            try {
+                notificationService.notifyScheduleChange(section.getId(), title, message);
+            } catch (Exception ex) {
+                log.warn("Không thể gửi thông báo thay đổi lịch học: {}", ex.getMessage());
+            }
+        }
+
+        return updated;
     }
 
     @Transactional
     public void delete(Long id) {
         Schedule schedule = findById(id);
         scheduleRepository.delete(schedule);
+    }
+
+    // ==========================================
+    // EXPORT THỜI KHÓA BIỂU (.ICS & .XLSX)
+    // ==========================================
+
+    public byte[] exportStudentIcs(Long userId, Long semesterId) {
+        List<Schedule> schedules = getStudentSchedule(userId, semesterId);
+        Student student = studentRepository.findByUserId(userId).orElse(null);
+        String title = "TKB_SinhVien_" + (student != null ? student.getStudentCode() : "SV");
+        return generateIcalendar(schedules, title);
+    }
+
+    public byte[] exportLecturerIcs(Long userId, Long semesterId) {
+        List<Schedule> schedules = getLecturerSchedule(userId, semesterId);
+        Lecturer lecturer = lecturerRepository.findByUserId(userId).orElse(null);
+        String title = "LichGiangDay_" + (lecturer != null ? lecturer.getFullName() : "GV");
+        return generateIcalendar(schedules, title);
+    }
+
+    public byte[] exportStudentExcel(Long userId, Long semesterId) throws IOException {
+        List<Schedule> schedules = getStudentSchedule(userId, semesterId);
+        Student student = studentRepository.findByUserId(userId).orElse(null);
+        String title = "THỜI KHÓA BIỂU SINH VIÊN - " + (student != null ? student.getFullName() + " (" + student.getStudentCode() + ")" : "");
+        return excelExportService.exportSchedule(schedules, title);
+    }
+
+    public byte[] exportLecturerExcel(Long userId, Long semesterId) throws IOException {
+        List<Schedule> schedules = getLecturerSchedule(userId, semesterId);
+        Lecturer lecturer = lecturerRepository.findByUserId(userId).orElse(null);
+        String title = "LỊCH GIẢNG DẠY GIẢNG VIÊN - " + (lecturer != null ? lecturer.getFullName() : "");
+        return excelExportService.exportSchedule(schedules, title);
+    }
+
+    /**
+     * Sinh định dạng tệp iCalendar chuẩn RFC 5545 để đồng bộ Google Calendar / Outlook
+     */
+    public byte[] generateIcalendar(List<Schedule> schedules, String calName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("BEGIN:VCALENDAR\r\n");
+        sb.append("VERSION:2.0\r\n");
+        sb.append("PRODID:-//Phenikaa University//SMS Timetable//VI\r\n");
+        sb.append("CALSCALE:GREGORIAN\r\n");
+        sb.append("METHOD:PUBLISH\r\n");
+        sb.append("X-WR-CALNAME:").append(calName != null ? calName : "ThoiKhoaBieu").append("\r\n");
+        sb.append("X-WR-TIMEZONE:Asia/Ho_Chi_Minh\r\n");
+
+        DateTimeFormatter basicDateFmt = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'"));
+
+        String[] periodStartTimes = {
+                "", "07:00:00", "07:50:00", "08:45:00", "09:35:00", "10:30:00", "11:20:00",
+                "12:30:00", "13:20:00", "14:15:00", "15:05:00", "16:00:00", "16:50:00"
+        };
+        String[] periodEndTimes = {
+                "", "07:45:00", "08:35:00", "09:30:00", "10:20:00", "11:15:00", "12:05:00",
+                "13:15:00", "14:05:00", "15:00:00", "15:50:00", "16:45:00", "17:35:00"
+        };
+
+        for (Schedule s : schedules) {
+            if (s.getDayOfWeek() == null || s.getStartDate() == null || s.getEndDate() == null) continue;
+            DayOfWeek targetDow = (s.getDayOfWeek() == 8) ? DayOfWeek.SUNDAY : DayOfWeek.of(s.getDayOfWeek() - 1);
+
+            LocalDate firstDate = s.getStartDate();
+            while (firstDate.getDayOfWeek() != targetDow && !firstDate.isAfter(s.getEndDate())) {
+                firstDate = firstDate.plusDays(1);
+            }
+            if (firstDate.isAfter(s.getEndDate())) continue;
+
+            int sp = (s.getStartPeriod() != null && s.getStartPeriod() >= 1 && s.getStartPeriod() <= 12) ? s.getStartPeriod() : 1;
+            int ep = (s.getEndPeriod() != null && s.getEndPeriod() >= 1 && s.getEndPeriod() <= 12) ? s.getEndPeriod() : sp;
+
+            String dtStart = firstDate.format(basicDateFmt) + "T" + periodStartTimes[sp].replace(":", "");
+            String dtEnd = firstDate.format(basicDateFmt) + "T" + periodEndTimes[ep].replace(":", "");
+            String untilStr = s.getEndDate().format(basicDateFmt) + "T235959Z";
+
+            String subName = (s.getSection() != null && s.getSection().getSubject() != null)
+                    ? s.getSection().getSubject().getSubjectName() : "Hoc phan";
+            String secCode = s.getSection() != null ? s.getSection().getSectionCode() : "";
+            String lecturerName = (s.getSection() != null && s.getSection().getLecturer() != null)
+                    ? s.getSection().getLecturer().getFullName() : "N/A";
+
+            sb.append("BEGIN:VEVENT\r\n");
+            sb.append("UID:schedule-").append(s.getId()).append("-").append(firstDate).append("@phenikaa-uni.edu.vn\r\n");
+            sb.append("DTSTAMP:").append(nowStr).append("\r\n");
+            sb.append("DTSTART;TZID=Asia/Ho_Chi_Minh:").append(dtStart).append("\r\n");
+            sb.append("DTEND;TZID=Asia/Ho_Chi_Minh:").append(dtEnd).append("\r\n");
+            sb.append("RRULE:FREQ=WEEKLY;UNTIL=").append(untilStr).append("\r\n");
+            sb.append("SUMMARY:").append(subName).append(" (").append(secCode).append(")\r\n");
+            sb.append("LOCATION:").append(s.getRoom() != null ? s.getRoom() : "Online").append("\r\n");
+            sb.append("DESCRIPTION:Giang vien: ").append(lecturerName)
+                    .append(" - Tiet: ").append(s.getStartPeriod()).append("-").append(s.getEndPeriod())
+                    .append(" - Ghi chu: ").append(s.getNote() != null ? s.getNote() : "")
+                    .append("\r\n");
+            sb.append("STATUS:").append(s.getStatus() == Schedule.ScheduleStatus.CANCELLED ? "CANCELLED" : "CONFIRMED").append("\r\n");
+            sb.append("END:VEVENT\r\n");
+        }
+        sb.append("END:VCALENDAR\r\n");
+
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     private void validatePeriodsAndDates(ScheduleRequest request) {
@@ -227,11 +386,6 @@ public class ScheduleService {
         }
     }
 
-    /**
-     * A schedule may be added after students have enrolled in its section.  At
-     * that point enrollment-time validation is too late, so protect every
-     * affected student's timetable here as well.
-     */
     private void checkStudentScheduleConflicts(CourseSection section, ScheduleRequest request,
                                                LocalDate startDate, LocalDate endDate, Long excludeId) {
         for (var enrollment : enrollmentRepository.findActiveBySectionId(section.getId())) {

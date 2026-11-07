@@ -338,7 +338,7 @@ export default function CourseSectionsPage() {
 
       {/* Table */}
       <div className="card">
-        <div className="table-container">
+        <div className="table-container table-mobile-cards">
           <table className="table">
             <thead>
               <tr>
@@ -380,8 +380,7 @@ export default function CourseSectionsPage() {
 
                   return (
                     <tr key={s.id}>
-                      <td>
-                        <span
+                      <td data-label="Mã LHP"><span
                           style={{
                             display: "inline-block",
                             fontFamily: "monospace",
@@ -402,34 +401,24 @@ export default function CourseSectionsPage() {
                       >
                         {s.subject?.subjectName}
                       </td>
-                      <td>
-                        <span className="badge badge-info">
+                      <td data-label="Tín chỉ"><span className="badge badge-info">
                           {s.subject?.credits} TC
                         </span>
                       </td>
-                      <td style={{ color: "var(--text-secondary)" }}>
+                      <td data-label="Giảng viên" style={{ color: "var(--text-secondary)" }}>
                         {s.lecturer?.fullName || "—"}
                       </td>
-                      <td style={{ color: "var(--text-secondary)" }}>
+                      <td data-label="Lịch học" style={{ color: "var(--text-secondary)" }}>
                         {s.schedule || "—"}
                       </td>
-                      <td>
+                      <td data-label="Phòng">
                         <span className="badge badge-neutral">
                           {s.room || "—"}
                         </span>
                       </td>
-                      <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontWeight: 700,
+                      <td data-label="Sĩ số">
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 700,
                               fontVariantNumeric: "tabular-nums",
                               color: isFull || isOverCapacity
                                 ? "var(--danger)"
@@ -448,10 +437,8 @@ export default function CourseSectionsPage() {
                           ) : null}
                         </div>
                       </td>
-                      <td>
-                        <span
-                          className={`badge ${
-                            s.status === "OPEN"
+                      <td data-label="Trạng thái">
+                        <span className={`badge ${s.status === "OPEN"
                               ? "badge-success"
                               : s.status === "CLOSED"
                                 ? "badge-warning"
@@ -465,10 +452,9 @@ export default function CourseSectionsPage() {
                               : "Đã hủy"}
                         </span>
                       </td>
-                      <td style={{ textAlign: "right" }}>
-                        <button
-                          className="btn-icon"
-                          title="Sửa"
+                      <td data-label="Thao tác" style={{ textAlign: "right" }}>
+                        <button className="btn-icon"
+                          title="Sửa" aria-label="Sửa lớp học phần"
                           onClick={() => handleOpenModal(s)}
                         >
                           <Edit2 size={15} />
@@ -498,6 +484,8 @@ export default function CourseSectionsPage() {
               </h3>
               <button
                 className="btn-icon"
+                title="Đóng"
+                aria-label="Đóng"
                 onClick={() => setIsModalOpen(false)}
               >
                 <X size={18} />

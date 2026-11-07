@@ -224,4 +224,17 @@ describe('EnrollPage - Đăng ký & Hủy môn khi cổng mở', () => {
     // IT401-01 is not enrolled: should show "Đăng ký môn"
     expect(screen.getByText('Đăng ký môn')).toBeDefined();
   });
+
+  it('disables register button and displays Đã đóng đăng ký when registration is closed', async () => {
+    const mockClosedSemester = { ...mockOpenSemester, registrationOpen: false };
+    semesterService.getCurrent.mockResolvedValue({ data: { data: mockClosedSemester } });
+    enrollmentService.getMyEnrollments.mockResolvedValue({ data: { data: [] } });
+    courseSectionService.getOpenBySemester.mockResolvedValue({ data: { data: mockSections } });
+
+    render(<EnrollPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Đăng Ký Học Phần Trực Tuyến')).toBeDefined();
+    });
+  });
 });

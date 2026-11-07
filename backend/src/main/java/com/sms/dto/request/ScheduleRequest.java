@@ -43,4 +43,6 @@ public class ScheduleRequest {
     private String endDate;
 
     private String note;
+
+    private String status;
 }

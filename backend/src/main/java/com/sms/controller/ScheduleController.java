@@ -7,11 +7,14 @@ import com.sms.security.UserPrincipal;
 import com.sms.service.ScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -76,6 +79,46 @@ public class ScheduleController {
             @RequestParam(required = false) Long semesterId
     ) {
         return ResponseEntity.ok(ApiResponse.success(scheduleService.getLecturerSchedule(user.getId(), semesterId)));
+    }
+
+    /**
+     * Xuất tệp iCalendar (.ics) đồng bộ Google Calendar / Outlook
+     */
+    @GetMapping("/my/export-ics")
+    public ResponseEntity<byte[]> exportMyIcs(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(required = false) Long semesterId
+    ) {
+        byte[] icsData;
+        if ("LECTURER".equalsIgnoreCase(user.getRole())) {
+            icsData = scheduleService.exportLecturerIcs(user.getId(), semesterId);
+        } else {
+            icsData = scheduleService.exportStudentIcs(user.getId(), semesterId);
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"timetable.ics\"")
+                .contentType(MediaType.parseMediaType("text/calendar; charset=utf-8"))
+                .body(icsData);
+    }
+
+    /**
+     * Xuất tệp Excel (.xlsx) thời khóa biểu
+     */
+    @GetMapping("/my/export-excel")
+    public ResponseEntity<byte[]> exportMyExcel(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(required = false) Long semesterId
+    ) throws IOException {
+        byte[] excelData;
+        if ("LECTURER".equalsIgnoreCase(user.getRole())) {
+            excelData = scheduleService.exportLecturerExcel(user.getId(), semesterId);
+        } else {
+            excelData = scheduleService.exportStudentExcel(user.getId(), semesterId);
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"timetable.xlsx\"")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelData);
     }
 
     @PostMapping

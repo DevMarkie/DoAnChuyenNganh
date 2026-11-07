@@ -47,6 +47,10 @@ public class ExamServiceTest {
     private GradeRepository gradeRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private StudentRepository studentRepository;
+    @Mock
+    private LecturerRepository lecturerRepository;
 
     @InjectMocks
     private ExamService examService;
@@ -238,5 +242,101 @@ public class ExamServiceTest {
         assertEquals(Grade.SpecialGrade.V, roster.getSpecialGrade());
         assertEquals(Grade.SpecialGrade.V, grade.getSpecialGrade());
         assertTrue(grade.getIsFinalized());
+    }
+
+    @Test
+    void testAutoAssignRooms_FiltersOutDisqualifiedStudents() {
+        Enrollment disqualified = new Enrollment();
+        disqualified.setId(101L);
+        disqualified.setAttendanceStatus(Enrollment.AttendanceStatus.DISQUALIFIED);
+
+        when(examSessionRepository.findById(1L)).thenReturn(Optional.of(session));
+        when(enrollmentRepository.findActiveBySemesterIdAndSubjectId(1, 101))
+                .thenReturn(List.of(enrollment, disqualified));
+        when(examRoomRepository.findByExamSessionId(1L)).thenReturn(List.of());
+        when(examRoomRepository.save(any(ExamRoom.class))).thenReturn(room);
+
+        AutoAssignExamRoomsRequest req = AutoAssignExamRoomsRequest.builder()
+                .studentsPerRoom(30)
+                .roomPrefix("P")
+                .startRoomNumber(1)
+                .build();
+
+        List<ExamRoomResponse> responses = examService.autoAssignRooms(1L, req);
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        verify(examRosterRepository, times(1)).saveAll(argThat(list -> ((List<?>) list).size() == 1));
+    }
+
+    @Test
+    void testCommitExamGrades_WhenStudentDisqualified_ThrowsBadRequest() {
+        enrollment.setAttendanceStatus(Enrollment.AttendanceStatus.DISQUALIFIED);
+        when(examRoomRepository.findById(10L)).thenReturn(Optional.of(room));
+        when(examRosterRepository.findById(200L)).thenReturn(Optional.of(roster));
+
+        ExamGradeCommitItem item = ExamGradeCommitItem.builder()
+                .rosterId(200L)
+                .studentCode("24010001")
+                .sbd("IT301-P01-001")
+                .score(new BigDecimal("7.0"))
+                .build();
+
+        ExamGradeCommitRequest req = ExamGradeCommitRequest.builder()
+                .items(List.of(item))
+                .build();
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> examService.commitExamGrades(1L, 10L, req));
+        assertTrue(ex.getMessage().contains("cấm thi"));
+    }
+
+    @Test
+    void testGetStudentExamSchedule_ReturnsScheduleAndDisqualifiedProperly() {
+        when(studentRepository.findByUserId(10L)).thenReturn(Optional.of(student));
+
+        CourseSection sec = new CourseSection();
+        sec.setId(100L);
+        sec.setSectionCode("IT301-01");
+        sec.setSubject(subject);
+        sec.setSemester(semester);
+        enrollment.setSection(sec);
+
+        when(enrollmentRepository.findAllByStudentIdWithDetails(student.getId()))
+                .thenReturn(List.of(enrollment));
+        when(examRosterRepository.findByStudentId(student.getId()))
+                .thenReturn(List.of(roster));
+        when(examSessionRepository.findBySemesterId(1))
+                .thenReturn(List.of(session));
+
+        var schedules = examService.getStudentExamSchedule(10L, 1L);
+        assertNotNull(schedules);
+        assertEquals(1, schedules.size());
+        assertTrue(schedules.get(0).isHasExamSchedule());
+        assertEquals("IT301-P01-001", schedules.get(0).getSbd());
+        assertEquals("P.01", schedules.get(0).getRoomCode());
+        assertFalse(schedules.get(0).isDisqualified());
+    }
+
+    @Test
+    void testExportStudentExamIcs_GeneratesValidIcalendar() {
+        when(studentRepository.findByUserId(10L)).thenReturn(Optional.of(student));
+
+        CourseSection sec = new CourseSection();
+        sec.setId(100L);
+        sec.setSectionCode("IT301-01");
+        sec.setSubject(subject);
+        sec.setSemester(semester);
+        enrollment.setSection(sec);
+
+        when(enrollmentRepository.findAllByStudentIdWithDetails(student.getId()))
+                .thenReturn(List.of(enrollment));
+        when(examRosterRepository.findByStudentId(student.getId()))
+                .thenReturn(List.of(roster));
+
+        byte[] ics = examService.exportStudentExamIcs(10L, 1L);
+        assertNotNull(ics);
+        String icsContent = new String(ics, java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(icsContent.contains("BEGIN:VCALENDAR"));
+        assertTrue(icsContent.contains("SUMMARY:Thi môn: Lập trình Web"));
+        assertTrue(icsContent.contains("END:VCALENDAR"));
     }
 }

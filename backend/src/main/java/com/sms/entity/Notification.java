@@ -81,6 +81,7 @@ public class Notification {
         GRADE_FINALIZED,
         ATTENDANCE_WARNING,
         APPEAL_STATUS,
+        SCHEDULE_CHANGE,
         SYSTEM
     }
 }

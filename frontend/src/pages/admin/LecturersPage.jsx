@@ -316,7 +316,7 @@ export default function LecturersPage() {
                         >
                           <KeyRound size={15} />
                         </button>
-                        <button className="btn-icon" title="Sửa" onClick={() => handleOpenModal(l)}>
+                        <button className="btn-icon" title="Sửa" aria-label="Sửa giảng viên" onClick={() => handleOpenModal(l)}>
                           <Edit2 size={15} />
                         </button>
                         <button
@@ -343,7 +343,7 @@ export default function LecturersPage() {
           <div className="modal-content" style={{ maxWidth: '640px' }}>
             <div className="modal-header">
               <h3>{editingLecturer ? 'Cập Nhật Hồ Sơ Giảng Viên' : 'Thêm Giảng Viên Mới'}</h3>
-              <button className="btn-icon" onClick={() => setIsModalOpen(false)}>
+              <button className="btn-icon" title="Đóng" aria-label="Đóng" onClick={() => setIsModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>

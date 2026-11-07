@@ -184,4 +184,80 @@ class DegreeAuditEngineTest {
         assertThat(audit.getOfficialCpa()).isEqualTo(BigDecimal.valueOf(3.17));
         assertThat(audit.getAuditCpa()).isGreaterThan(audit.getOfficialCpa());
     }
+
+    @Test
+    @DisplayName("Điều kiện chuẩn đầu ra: Tổng tín chỉ tích lũy chưa đạt mức tối thiểu CTĐT -> Không đủ điều kiện tốt nghiệp")
+    void testInsufficientTotalCredits_GraduationDisqualified() {
+        // Required is 12 credits, student only passed 1 course of 3 credits
+        CurriculumBlockSubject c1 = createLink(compBlock, comp1);
+
+        Map<Integer, Grade> grades = Map.of(
+                comp1.getId(), createGrade(3.5, "B+", 8.0)
+        );
+
+        DegreeAuditResponse audit = auditEngine.auditStudent(
+                student, program, List.of(compBlock), List.of(c1), grades);
+
+        assertThat(audit.getIsGraduationEligible()).isFalse();
+        assertThat(audit.getTotalCompletedCredits()).isEqualTo(3);
+        assertThat(audit.getUnsatisfiedReasons())
+                .anyMatch(r -> r.contains("Chưa tích lũy đủ số tín chỉ tốt nghiệp"));
+    }
+
+    @Test
+    @DisplayName("Điều kiện chuẩn đầu ra: CPA < 2.00 -> Không đủ điều kiện tốt nghiệp")
+    void testLowCpaThreshold_GraduationDisqualified() {
+        // Complete compulsory blocks (6 credits) + elective block (6 credits) = 12 credits, but all D/D+ with CPA < 2.00
+        CurriculumBlockSubject c1 = createLink(compBlock, comp1);
+        CurriculumBlockSubject c2 = createLink(compBlock, comp2);
+        CurriculumBlockSubject e1 = createLink(elecBlock, elec1);
+        CurriculumBlockSubject e2 = createLink(elecBlock, elec2);
+
+        Map<Integer, Grade> lowGrades = Map.of(
+                comp1.getId(), createGrade(1.5, "D+", 5.0),
+                comp2.getId(), createGrade(1.5, "D+", 5.0),
+                elec1.getId(), createGrade(1.0, "D", 4.0),
+                elec2.getId(), createGrade(1.5, "D+", 5.0)
+        );
+
+        DegreeAuditResponse audit = auditEngine.auditStudent(
+                student, program, List.of(compBlock, elecBlock), List.of(c1, c2, e1, e2), lowGrades);
+
+        assertThat(audit.getAuditCpa().doubleValue()).isLessThan(2.00);
+        assertThat(audit.getIsGraduationEligible()).isFalse();
+        assertThat(audit.getUnsatisfiedReasons())
+                .anyMatch(r -> r.contains("Điểm trung bình tích lũy CPA chưa đạt chuẩn (>= 2.00)"));
+    }
+
+    @Test
+    @DisplayName("Điều kiện chuẩn đầu ra: Sinh viên đang BẢO LƯU hoặc ĐÌNH CHỈ -> Không đủ điều kiện tốt nghiệp")
+    void testSuspendedOrReservedStudent_GraduationDisqualified() {
+        CurriculumBlockSubject c1 = createLink(compBlock, comp1);
+        CurriculumBlockSubject c2 = createLink(compBlock, comp2);
+        CurriculumBlockSubject e1 = createLink(elecBlock, elec1);
+        CurriculumBlockSubject e2 = createLink(elecBlock, elec2);
+
+        Map<Integer, Grade> goodGrades = Map.of(
+                comp1.getId(), createGrade(3.5, "B+", 8.0),
+                comp2.getId(), createGrade(4.0, "A", 9.0),
+                elec1.getId(), createGrade(3.0, "B", 7.0),
+                elec2.getId(), createGrade(3.5, "B+", 8.0)
+        );
+
+        // Sinh viên đang SUSPENDED (Đình chỉ)
+        student.setStatus(Student.StudentStatus.SUSPENDED);
+        DegreeAuditResponse auditSuspended = auditEngine.auditStudent(
+                student, program, List.of(compBlock, elecBlock), List.of(c1, c2, e1, e2), goodGrades);
+        assertThat(auditSuspended.getIsGraduationEligible()).isFalse();
+        assertThat(auditSuspended.getUnsatisfiedReasons())
+                .anyMatch(r -> r.contains("đình chỉ học tập"));
+
+        // Sinh viên đang RESERVED (Bảo lưu)
+        student.setStatus(Student.StudentStatus.RESERVED);
+        DegreeAuditResponse auditReserved = auditEngine.auditStudent(
+                student, program, List.of(compBlock, elecBlock), List.of(c1, c2, e1, e2), goodGrades);
+        assertThat(auditReserved.getIsGraduationEligible()).isFalse();
+        assertThat(auditReserved.getUnsatisfiedReasons())
+                .anyMatch(r -> r.contains("bảo lưu hoặc không hoạt động"));
+    }
 }

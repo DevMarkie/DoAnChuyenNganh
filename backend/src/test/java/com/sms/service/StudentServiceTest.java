@@ -238,4 +238,29 @@ public class StudentServiceTest {
         verify(userRepository).save(any(User.class));
         verify(studentRepository).save(any(Student.class));
     }
+
+    @Test
+    void updateMyContact_WithEmergencyContact_Success() {
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
+        when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Student result = studentService.updateMyContact(1L, "0912345678", "Hà Nội",
+                "Nguyễn Văn Cha", "0987654321", "Bố");
+
+        assertNotNull(result);
+        assertEquals("0912345678", result.getPhone());
+        assertEquals("Hà Nội", result.getAddress());
+        assertEquals("Nguyễn Văn Cha", result.getEmergencyContactName());
+        assertEquals("0987654321", result.getEmergencyContactPhone());
+        assertEquals("Bố", result.getEmergencyContactRelationship());
+    }
+
+    @Test
+    void updateMyContact_InvalidEmergencyPhone_ThrowsBadRequest() {
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
+
+        assertThrows(BadRequestException.class, () ->
+                studentService.updateMyContact(1L, "0912345678", "Hà Nội",
+                        "Nguyễn Văn Cha", "12345", "Bố"));
+    }
 }

@@ -8,22 +8,38 @@ import useAuthStore from '../../store/authStore';
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('student_profile') || 'null');
+    } catch {
+      return null;
+    }
+  });
   const [transcript, setTranscript] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!profile);
 
   const loadData = async () => {
     try {
-      setLoading(true);
-      const [resProfile, resTrans, resEnr] = await Promise.all([
+      if (!profile) setLoading(true);
+      const [resProfile, resTrans, resEnr] = await Promise.allSettled([
         studentService.getMe(),
         transcriptService.getMyTranscript(),
         enrollmentService.getMyEnrollments(),
       ]);
-      setProfile(resProfile.data.data);
-      setTranscript(resTrans.data.data);
-      setEnrollments(resEnr.data.data || []);
+      if (resProfile.status === 'fulfilled' && resProfile.value.data?.data) {
+        const prof = resProfile.value.data.data;
+        setProfile(prof);
+        try {
+          localStorage.setItem('student_profile', JSON.stringify(prof));
+        } catch {}
+      }
+      if (resTrans.status === 'fulfilled' && resTrans.value.data?.data) {
+        setTranscript(resTrans.value.data.data);
+      }
+      if (resEnr.status === 'fulfilled' && resEnr.value.data?.data) {
+        setEnrollments(resEnr.value.data.data || []);
+      }
     } catch {
       // console.error removed for security
     } finally {
@@ -42,9 +58,9 @@ export default function StudentDashboard() {
     <div>
       <div className="page-header">
         <div>
-          <h1>Cổng Sinh Viên — {profile?.fullName || user?.username}</h1>
+          <h1>Cổng Sinh Viên — {profile?.fullName || user?.fullName || user?.username}</h1>
           <p>
-            Mã SV: {profile?.studentCode} • Lớp: {profile?.classEntity?.name || profile?.classEntity?.code || '—'} • Khoa: {profile?.classEntity?.department?.name || '—'}
+            Mã SV: {profile?.studentCode || user?.username} • Lớp: {profile?.classEntity?.name || profile?.classEntity?.code || (loading ? 'Đang tải...' : 'Chưa phân lớp')} • Khoa: {profile?.classEntity?.department?.name || profile?.department?.name || (loading ? 'Đang tải...' : 'Chưa phân khoa')}
           </p>
         </div>
         <div className="page-header-actions">
@@ -104,7 +120,7 @@ export default function StudentDashboard() {
             Chi tiết học vụ
           </button>
         </div>
-        <div className="table-container">
+        <div className="table-container table-mobile-cards">
           <table className="table">
             <thead>
               <tr>
@@ -146,11 +162,11 @@ export default function StudentDashboard() {
                         {e.courseSection?.sectionCode}
                       </span>
                     </td>
-                    <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{e.courseSection?.subject?.subjectName}</td>
-                    <td><span className="badge badge-info">{e.courseSection?.subject?.credits} TC</span></td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{e.courseSection?.lecturer?.fullName || '—'}</td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{e.courseSection?.schedule || '—'}</td>
-                    <td><span className="badge badge-neutral">{e.courseSection?.room || '—'}</span></td>
+                    <td data-label="Tên môn học" style={{ fontWeight: 600, color: 'var(--text-main)' }}>{e.courseSection?.subject?.subjectName}</td>
+                    <td data-label="Số tín chỉ"><span className="badge badge-info">{e.courseSection?.subject?.credits} TC</span></td>
+                    <td data-label="Giảng viên" style={{ color: 'var(--text-secondary)' }}>{e.courseSection?.lecturer?.fullName || '—'}</td>
+                    <td data-label="Lịch học" style={{ color: 'var(--text-secondary)' }}>{e.courseSection?.schedule || '—'}</td>
+                    <td data-label="Phòng học"><span className="badge badge-neutral">{e.courseSection?.room || '—'}</span></td>
                     <td>
                       <span className={`badge ${
                         e.status === 'ENROLLED' ? 'badge-success'

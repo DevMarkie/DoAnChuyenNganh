@@ -437,7 +437,7 @@ export default function AdminGradesPage() {
 
           {/* Overview Table */}
           <div className="card">
-            <div className="table-container">
+            <div className="table-container table-mobile-cards">
               <table className="table">
                 <thead>
                   <tr>
@@ -464,9 +464,7 @@ export default function AdminGradesPage() {
                       const isActioning = actionLoadingId === item.sectionId;
                       return (
                         <tr key={item.sectionId}>
-                          <td>
-                            <span
-                              style={{
+                          <td data-label="Mã LHP"><span style={{
                                 display: 'inline-block',
                                 fontFamily: 'monospace',
                                 fontWeight: 700,
@@ -481,17 +479,14 @@ export default function AdminGradesPage() {
                               {item.sectionCode}
                             </span>
                           </td>
-                          <td>
-                            <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{item.subjectName}</div>
+                          <td data-label="Học phần"><div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{item.subjectName}</div>
                             <div style={{ fontSize: '0.78rem', color: 'var(--text-light)' }}>{item.subjectCode}</div>
                           </td>
-                          <td>
-                            <span className="badge badge-info">{item.credits} TC</span>
+                          <td data-label="Số TC"><span className="badge badge-info">{item.credits} TC</span>
                           </td>
-                          <td style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
-                            {item.lecturerName}
+                          <td data-label="Giảng viên" style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>{item.lecturerName}
                           </td>
-                          <td style={{ minWidth: '160px' }}>
+                          <td data-label="Tiến độ" style={{ minWidth: '160px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '4px' }}>
                               <span style={{ fontWeight: 600 }}>{item.gradedCount} / {item.enrolledCount} SV</span>
                               <span style={{ color: item.completionRate === 100 ? '#059669' : '#64748b', fontWeight: 600 }}>
@@ -509,8 +504,7 @@ export default function AdminGradesPage() {
                               />
                             </div>
                           </td>
-                          <td>
-                            {item.gradeStatus === 'PUBLISHED' ? (
+                          <td data-label="Trạng thái">{item.gradeStatus === 'PUBLISHED' ? (
                               <span
                                 className="badge badge-success"
                                 style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 8px', fontWeight: 700 }}
@@ -557,13 +551,12 @@ export default function AdminGradesPage() {
                               </span>
                             )}
                           </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <td data-label="Thao tác" style={{ textAlign: 'right' }}><div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                               <button
                                 className="btn btn-outline"
                                 style={{ padding: '4px 8px', fontSize: '0.78rem' }}
                                 onClick={() => handleViewSectionDetail(item.sectionId)}
-                                title="Xem chi tiết bảng điểm"
+                                title="Xem chi tiết bảng điểm" aria-label="Xem chi tiết bảng điểm"
                               >
                                 <Eye size={13} style={{ marginRight: '4px' }} /> Xem điểm
                               </button>
@@ -835,7 +828,7 @@ export default function AdminGradesPage() {
               </div>
             )}
 
-            <div className="table-container">
+            <div className="table-container table-mobile-cards">
               <table className="table">
                 <thead>
                   <tr>

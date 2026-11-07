@@ -65,10 +65,13 @@ export default function MyEnrollmentsPage() {
       setSelectedSemesterId((prev) => {
         if (prev) return prev;
         const currentSem = semList.find((s) => s.isCurrent);
-        if (currentSem) return String(currentSem.id);
+        if (currentSem && enrList.some((e) => String(e.courseSection?.semester?.id) === String(currentSem.id))) {
+          return String(currentSem.id);
+        }
         if (enrList.length > 0 && enrList[0].courseSection?.semester?.id) {
           return String(enrList[0].courseSection.semester.id);
         }
+        if (currentSem) return String(currentSem.id);
         if (semList.length > 0) return String(semList[0].id);
         return "ALL";
       });
@@ -556,7 +559,7 @@ export default function MyEnrollmentsPage() {
           </span>
         </div>
 
-        <div className="table-container">
+        <div className="table-container table-mobile-cards">
           <table className="table">
             <thead>
               <tr>

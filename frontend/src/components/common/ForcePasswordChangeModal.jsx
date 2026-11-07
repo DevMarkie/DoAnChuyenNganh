@@ -124,6 +124,7 @@ export default function ForcePasswordChangeModal() {
                 type="button"
                 onClick={() => setShowCurrent((v) => !v)}
                 title={showCurrent ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                aria-label={showCurrent ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
               >
                 {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -151,6 +152,7 @@ export default function ForcePasswordChangeModal() {
                 type="button"
                 onClick={() => setShowNew((v) => !v)}
                 title={showNew ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                aria-label={showNew ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
               >
                 {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -198,6 +200,7 @@ export default function ForcePasswordChangeModal() {
                 type="button"
                 onClick={() => setShowConfirm((v) => !v)}
                 title={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                aria-label={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '4px', display: 'flex' }}
               >
                 {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}

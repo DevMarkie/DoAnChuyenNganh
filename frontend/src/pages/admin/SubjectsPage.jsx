@@ -200,7 +200,7 @@ export default function SubjectsPage() {
 
       {/* Table */}
       <div className="card">
-        <div className="table-container">
+        <div className="table-container table-mobile-cards">
           <table className="table">
             <thead>
               <tr>
@@ -226,9 +226,7 @@ export default function SubjectsPage() {
               ) : (
                 filtered.map((s) => (
                   <tr key={s.id}>
-                    <td>
-                      <span
-                        style={{
+                    <td data-label="Mã môn"><span style={{
                           display: 'inline-block',
                           fontFamily: 'monospace',
                           fontWeight: 700,
@@ -263,11 +261,7 @@ export default function SubjectsPage() {
                         <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{s.subjectName}</span>
                       </div>
                     </td>
-                    <td>
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          fontWeight: 700,
+                    <td data-label="Số TC"><span style={{ display: 'inline-block', fontWeight: 700,
                           fontSize: '0.8rem',
                           padding: '3px 8px',
                           borderRadius: '4px',
@@ -279,8 +273,8 @@ export default function SubjectsPage() {
                         {s.credits} Tín chỉ
                       </span>
                     </td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{s.department?.name || '—'}</td>
-                    <td style={{ minWidth: '150px' }}>
+                    <td data-label="Khoa" style={{ color: 'var(--text-secondary)' }}>{s.department?.name || '—'}</td>
+                    <td data-label="Tiên quyết" style={{ minWidth: '150px' }}>
                       {s.prerequisites?.length ? (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                           {s.prerequisites.map((prerequisite) => (
@@ -295,22 +289,21 @@ export default function SubjectsPage() {
                         </div>
                       ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
                     </td>
-                    <td style={{ color: 'var(--text-secondary)', maxWidth: '280px', lineHeight: '1.4' }}>
+                    <td data-label="Mô tả" style={{ color: 'var(--text-secondary)', maxWidth: '280px', lineHeight: '1.4' }}>
                       {s.description || '—'}
                     </td>
-                    <td>
-                      <span className={`badge ${s.isActive ? 'badge-success' : 'badge-danger'}`}>
+                    <td data-label="Trạng thái"><span className={`badge ${s.isActive ? 'badge-success' : 'badge-danger'}`}>
                         {s.isActive ? 'Hoạt động' : 'Tạm dừng'}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td data-label="Thao tác" style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '4px' }}>
-                        <button className="btn-icon" title="Sửa" onClick={() => handleOpenModal(s)}>
+                        <button className="btn-icon" title="Sửa" aria-label="Sửa môn học" onClick={() => handleOpenModal(s)}>
                           <Edit2 size={15} />
                         </button>
                         <button
                           className="btn-icon"
-                          title={s.isActive ? 'Tạm dừng' : 'Kích hoạt'}
+                          title={s.isActive ? 'Tạm dừng' : 'Kích hoạt'} aria-label={s.isActive ? 'Tạm dừng môn' : 'Kích hoạt môn'}
                           style={{ color: s.isActive ? 'var(--danger)' : 'var(--success)' }}
                           onClick={() => handleToggle(s.id)}
                         >
@@ -332,7 +325,7 @@ export default function SubjectsPage() {
           <div className="modal-content" style={{ maxWidth: '540px' }}>
             <div className="modal-header">
               <h3>{editingSubject ? 'Cập Nhật Môn Học' : 'Thêm Môn Học Mới'}</h3>
-              <button className="btn-icon" onClick={() => setIsModalOpen(false)}>
+              <button className="btn-icon" title="Đóng" aria-label="Đóng" onClick={() => setIsModalOpen(false)}>
                 <X size={18} />
               </button>
             </div>

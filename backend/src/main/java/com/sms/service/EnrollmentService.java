@@ -76,9 +76,12 @@ public class EnrollmentService {
 
     private void populateAbsenceStats(Enrollment e, int absentSessions, Long knownSectionId) {
         Long secId = knownSectionId != null ? knownSectionId : (e.getSection() != null ? e.getSection().getId() : null);
-        CourseSection sec = (e.getSection() != null && e.getSection().getSubject() != null)
-                ? e.getSection()
-                : (secId != null && courseSectionRepository != null ? courseSectionRepository.findById(secId).orElse(null) : null);
+        CourseSection sec = null;
+        if (secId != null && courseSectionRepository != null) {
+            sec = courseSectionRepository.findById(secId).orElse(null);
+        } else if (e.getSection() != null) {
+            sec = e.getSection();
+        }
         Subject subj = sec != null ? sec.getSubject() : null;
         int credits = (subj != null && subj.getCredits() != null && subj.getCredits() > 0) ? subj.getCredits() : 3;
         int totalPeriods = credits * 15;
@@ -117,10 +120,12 @@ public class EnrollmentService {
         return enrollments;
     }
 
+    @Transactional(readOnly = true)
     public List<Enrollment> findBySection(Long sectionId) {
         return findBySection(sectionId, null);
     }
 
+    @Transactional(readOnly = true)
     public List<Enrollment> findBySection(Long sectionId, Long currentUserId) {
         List<Enrollment> enrollments = enrollmentRepository.findActiveBySectionId(sectionId);
         Map<Long, Long> absences = (attendanceRecordRepository != null)

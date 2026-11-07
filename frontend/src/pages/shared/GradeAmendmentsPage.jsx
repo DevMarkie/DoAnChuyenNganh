@@ -33,7 +33,7 @@ const compLabels = {
 };
 
 export default function GradeAmendmentsPage() {
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const role = user?.role;
   const isLecturer = role === 'LECTURER';
   const isAcademic = role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF' || role === 'ADMIN';
@@ -69,8 +69,8 @@ export default function GradeAmendmentsPage() {
   };
 
   useEffect(() => {
-    fetchTickets();
-  }, []);
+    if (token) fetchTickets(); else setLoading(false);
+  }, [token]);
 
   const filteredTickets = useMemo(() => {
     return tickets.filter((t) => {
@@ -144,7 +144,7 @@ export default function GradeAmendmentsPage() {
       }
 
       handleCloseAction();
-      fetchTickets();
+      if (token) fetchTickets(); else setLoading(false);
     } catch (err) {
       console.error('Lỗi xử lý đơn sửa điểm:', err);
       toast.error(err.response?.data?.message || 'Có lỗi xảy ra khi xử lý đơn');

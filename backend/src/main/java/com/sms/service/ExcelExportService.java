@@ -579,4 +579,133 @@ public class ExcelExportService {
             return out.toByteArray();
         }
     }
+
+    /**
+     * Xuất Thời khóa biểu ra file Excel (.xlsx)
+     */
+    public byte[] exportSchedule(List<Schedule> schedules, String title) throws IOException {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Thời Khóa Biểu");
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 16);
+            titleFont.setFontName("Times New Roman");
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 11);
+            headerFont.setFontName("Times New Roman");
+            headerStyle.setFont(headerFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle dataCenterStyle = workbook.createCellStyle();
+            Font dataFont = workbook.createFont();
+            dataFont.setFontHeightInPoints((short) 11);
+            dataFont.setFontName("Times New Roman");
+            dataCenterStyle.setFont(dataFont);
+            dataCenterStyle.setAlignment(HorizontalAlignment.CENTER);
+            dataCenterStyle.setBorderTop(BorderStyle.THIN);
+            dataCenterStyle.setBorderBottom(BorderStyle.THIN);
+            dataCenterStyle.setBorderLeft(BorderStyle.THIN);
+            dataCenterStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataLeftStyle = workbook.createCellStyle();
+            dataLeftStyle.setFont(dataFont);
+            dataLeftStyle.setBorderTop(BorderStyle.THIN);
+            dataLeftStyle.setBorderBottom(BorderStyle.THIN);
+            dataLeftStyle.setBorderLeft(BorderStyle.THIN);
+            dataLeftStyle.setBorderRight(BorderStyle.THIN);
+
+            Row titleRow = sheet.createRow(1);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(title != null ? title : "THỜI KHÓA BIỂU ĐÀO TẠO");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 8));
+
+            String[] headers = {"STT", "Mã Lớp HP", "Tên Môn Học", "Thứ", "Tiết Học", "Phòng Học", "Giảng Viên", "Trạng Thái", "Ghi Chú"};
+            Row hRow = sheet.createRow(3);
+            for (int i = 0; i < headers.length; i++) {
+                Cell c = hRow.createCell(i);
+                c.setCellValue(headers[i]);
+                c.setCellStyle(headerStyle);
+            }
+
+            int rowIdx = 4;
+            int stt = 1;
+            for (Schedule s : schedules) {
+                Row row = sheet.createRow(rowIdx++);
+                Cell c0 = row.createCell(0);
+                c0.setCellValue(stt++);
+                c0.setCellStyle(dataCenterStyle);
+
+                Cell c1 = row.createCell(1);
+                c1.setCellValue(s.getSection() != null ? s.getSection().getSectionCode() : "");
+                c1.setCellStyle(dataCenterStyle);
+
+                Cell c2 = row.createCell(2);
+                String subName = (s.getSection() != null && s.getSection().getSubject() != null)
+                        ? s.getSection().getSubject().getSubjectName() : "";
+                c2.setCellValue(subName);
+                c2.setCellStyle(dataLeftStyle);
+
+                Cell c3 = row.createCell(3);
+                c3.setCellValue(s.getDayOfWeekName());
+                c3.setCellStyle(dataCenterStyle);
+
+                Cell c4 = row.createCell(4);
+                c4.setCellValue(String.format("Tiết %d - %d (%s)", s.getStartPeriod(), s.getEndPeriod(), s.getTimeRange()));
+                c4.setCellStyle(dataCenterStyle);
+
+                Cell c5 = row.createCell(5);
+                c5.setCellValue(s.getRoom());
+                c5.setCellStyle(dataCenterStyle);
+
+                Cell c6 = row.createCell(6);
+                String gv = (s.getSection() != null && s.getSection().getLecturer() != null)
+                        ? s.getSection().getLecturer().getFullName() : "";
+                c6.setCellValue(gv);
+                c6.setCellStyle(dataLeftStyle);
+
+                Cell c7 = row.createCell(7);
+                String statusStr = switch (s.getStatus() != null ? s.getStatus() : Schedule.ScheduleStatus.NORMAL) {
+                    case ROOM_CHANGED -> "Đổi phòng học";
+                    case CANCELLED -> "Báo nghỉ";
+                    case MAKEUP -> "Học bù";
+                    default -> "Bình thường";
+                };
+                c7.setCellValue(statusStr);
+                c7.setCellStyle(dataCenterStyle);
+
+                Cell c8 = row.createCell(8);
+                c8.setCellValue(s.getNote() != null ? s.getNote() : "");
+                c8.setCellStyle(dataLeftStyle);
+            }
+
+            sheet.setColumnWidth(0, 1800);
+            sheet.setColumnWidth(1, 4000);
+            sheet.setColumnWidth(2, 7500);
+            sheet.setColumnWidth(3, 3500);
+            sheet.setColumnWidth(4, 6000);
+            sheet.setColumnWidth(5, 3500);
+            sheet.setColumnWidth(6, 6000);
+            sheet.setColumnWidth(7, 4500);
+            sheet.setColumnWidth(8, 6000);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
 }

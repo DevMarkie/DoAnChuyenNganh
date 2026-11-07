@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Clock, MapPin, Layers, Users,
-  Grid, List, Printer, School, RefreshCw, ArrowUpRight, Search, CheckCircle2, AlertTriangle
+  Grid, List, Printer, School, RefreshCw, ArrowUpRight, Search, CheckCircle2, AlertTriangle,
+  ShieldCheck, Download, X
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { scheduleService, semesterService, courseSectionService } from '../../services/dataService';
+import { scheduleService, semesterService, courseSectionService, examService } from '../../services/dataService';
 import SectionStudentsModal from '../../components/lecturer/SectionStudentsModal';
 import LecturerAttendanceModal from '../../components/lecturer/LecturerAttendanceModal';
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
@@ -35,6 +36,278 @@ const PERIOD_SLOTS = [
   { slot: 'Chiều 2', start: 10, end: 12, label: 'Tiết 10 - 12 (15:45 - 18:20)' },
 ];
 
+function ProctorRosterModal({ room, onClose }) {
+  const [roster, setRoster] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const fetchRoster = async () => {
+      try {
+        setLoading(true);
+        const res = await examService.getRoster(room.id);
+        setRoster(res.data?.data || res.data || []);
+      } catch {
+        toast.error('Không thể tải danh sách thí sinh phòng thi');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (room?.id) fetchRoster();
+  }, [room?.id]);
+
+  const filteredRoster = useMemo(() => {
+    if (!search.trim()) return roster;
+    const q = search.toLowerCase();
+    return roster.filter(
+      (r) =>
+        r.studentCode?.toLowerCase().includes(q) ||
+        r.studentName?.toLowerCase().includes(q) ||
+        r.sbd?.toLowerCase().includes(q) ||
+        r.className?.toLowerCase().includes(q)
+    );
+  }, [roster, search]);
+
+  const handleDownloadExcel = async () => {
+    try {
+      const res = await examService.downloadTemplate(room.id);
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `danh_sach_thi_${room.roomCode || room.id}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Đã tải danh sách phòng thi');
+    } catch {
+      toast.error('Lỗi khi xuất danh sách phòng thi');
+    }
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="modal-backdrop"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="modal-content"
+        style={{ maxWidth: '950px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}
+      >
+        <div
+          style={{
+            padding: '16px 20px',
+            borderBottom: '1px solid var(--border-color)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'var(--bg-surface)'
+          }}
+        >
+          <div>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: '1.15rem',
+                fontWeight: 700,
+                color: 'var(--text-main)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Users size={20} style={{ color: 'var(--primary)' }} />
+              Danh Sách Thí Sinh — Phòng {room.roomCode} ({room.subjectName})
+            </h3>
+            <div
+              style={{
+                fontSize: '0.82rem',
+                color: 'var(--text-muted)',
+                marginTop: '4px',
+                display: 'flex',
+                gap: '14px',
+                flexWrap: 'wrap'
+              }}
+            >
+              <span>Ca thi: <strong>{room.examDate}</strong> ({room.startTime} - {room.endTime})</span>
+              <span>Địa điểm: <strong>{room.roomLocation || room.roomCode}</strong></span>
+              <span>Sĩ số: <strong>{roster.length}</strong> thí sinh</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={handleDownloadExcel}
+              title="Tải bảng danh sách thí sinh phòng thi (.xlsx)"
+            >
+              <Download size={14} /> Xuất Excel
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => window.print()}
+              title="In danh sách thí sinh"
+            >
+              <Printer size={14} /> In
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline"
+              style={{ padding: '6px', lineHeight: 0 }}
+              onClick={onClose}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div
+          style={{
+            padding: '12px 20px',
+            borderBottom: '1px solid var(--border-color)',
+            background: 'var(--bg-subtle)'
+          }}
+        >
+          <div style={{ position: 'relative', maxWidth: '360px' }}>
+            <Search
+              size={15}
+              style={{
+                position: 'absolute',
+                left: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-light)'
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Tìm theo SBD, Mã SV, Tên, Lớp..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="form-control"
+              style={{ paddingLeft: '32px', height: '34px', fontSize: '0.85rem' }}
+            />
+          </div>
+        </div>
+
+        {/* Table */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+          {loading ? (
+            <div style={{ padding: '48px 0', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <RefreshCw
+                size={24}
+                className="animate-spin"
+                style={{ color: 'var(--primary)', margin: '0 auto 8px' }}
+              />
+              <p style={{ fontSize: '0.85rem', margin: 0 }}>Đang tải danh sách thí sinh...</p>
+            </div>
+          ) : filteredRoster.length === 0 ? (
+            <div
+              style={{
+                padding: '48px 0',
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                fontSize: '0.88rem'
+              }}
+            >
+              {search
+                ? 'Không tìm thấy thí sinh phù hợp.'
+                : 'Phòng thi chưa có thí sinh nào được xếp danh sách.'}
+            </div>
+          ) : (
+            <table className="table">
+              <thead>
+                <tr>
+                  <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
+                  <th style={{ width: '130px' }}>Số Báo Danh</th>
+                  <th style={{ width: '110px' }}>Mã SV</th>
+                  <th>Họ và Tên</th>
+                  <th style={{ width: '100px' }}>Ngày sinh</th>
+                  <th style={{ width: '110px' }}>Lớp</th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>Trạng thái</th>
+                  <th style={{ width: '100px', textAlign: 'center' }}>Ký nộp bài</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRoster.map((r, idx) => (
+                  <tr key={r.id || idx}>
+                    <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{idx + 1}</td>
+                    <td>
+                      <span
+                        style={{
+                          fontFamily: 'monospace',
+                          fontWeight: 700,
+                          color: 'var(--primary)',
+                          background: 'var(--primary-light)',
+                          padding: '2px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.85rem'
+                        }}
+                      >
+                        {r.sbd || `P01-${String(idx + 1).padStart(2, '0')}`}
+                      </span>
+                    </td>
+                    <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>{r.studentCode}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{r.studentName}</td>
+                    <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      {r.dateOfBirth || '—'}
+                    </td>
+                    <td style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                      {r.className || '—'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {r.attendanceStatus === 'DISQUALIFIED' ? (
+                        <span className="badge badge-danger">Cấm thi</span>
+                      ) : (
+                        <span className="badge badge-success">Đủ ĐK</span>
+                      )}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: 'center',
+                        color: 'var(--text-muted)',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      ..................
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        <div
+          style={{
+            padding: '12px 20px',
+            borderTop: '1px solid var(--border-color)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: 'var(--bg-subtle)',
+            fontSize: '0.82rem',
+            color: 'var(--text-secondary)'
+          }}
+        >
+          <div>
+            Tổng số: <strong>{filteredRoster.length}</strong> / <strong>{roster.length}</strong> thí
+            sinh
+          </div>
+          <button type="button" className="btn btn-outline btn-sm" onClick={onClose}>
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function LecturerSchedulePage() {
   const navigate = useNavigate();
   const [schedules, setSchedules] = useState([]);
@@ -46,6 +319,8 @@ export default function LecturerSchedulePage() {
   const [search, setSearch] = useState('');
   const [selectedSectionModal, setSelectedSectionModal] = useState(null);
   const [selectedAttendanceModal, setSelectedAttendanceModal] = useState(null);
+  const [proctorSchedules, setProctorSchedules] = useState([]);
+  const [selectedProctorRoom, setSelectedProctorRoom] = useState(null);
 
   const [todayVal] = useState(() => {
     const day = new Date().getDay();
@@ -66,12 +341,14 @@ export default function LecturerSchedulePage() {
   const loadData = async (semId) => {
     try {
       setLoading(true);
-      const [secRes, schedRes] = await Promise.all([
+      const [secRes, schedRes, proctorRes] = await Promise.all([
         courseSectionService.getMySections(),
         scheduleService.getLecturerSchedule(semId ? { semesterId: semId } : {}),
+        examService.getMyProctorSchedule(semId ? { semesterId: semId } : {}).catch(() => ({ data: { data: [] } })),
       ]);
       setSections(secRes.data?.data || []);
       setSchedules(schedRes.data?.data || []);
+      setProctorSchedules(proctorRes.data?.data || []);
     } catch {
       toast.error('Lỗi khi tải dữ liệu lịch giảng dạy');
     } finally {
@@ -122,6 +399,21 @@ export default function LecturerSchedulePage() {
       s.room?.toLowerCase().includes(q)
     );
   }, [semesterSections, search]);
+
+  // Filter proctor schedules by search keyword
+  const filteredProctorSchedules = useMemo(() => {
+    if (!search.trim()) return proctorSchedules;
+    const q = search.toLowerCase();
+    return proctorSchedules.filter((p) =>
+      p.subjectCode?.toLowerCase().includes(q) ||
+      p.subjectName?.toLowerCase().includes(q) ||
+      p.roomCode?.toLowerCase().includes(q) ||
+      p.roomLocation?.toLowerCase().includes(q) ||
+      p.sessionName?.toLowerCase().includes(q) ||
+      p.proctor1Name?.toLowerCase().includes(q) ||
+      p.proctor2Name?.toLowerCase().includes(q)
+    );
+  }, [proctorSchedules, search]);
 
   const activeSemesterObj = semesters.find((s) => String(s.id) === String(selectedSemesterId));
   const totalStudentsInSem = semesterSections.reduce((acc, cur) => acc + (cur.currentStudents || 0), 0);
@@ -194,49 +486,99 @@ export default function LecturerSchedulePage() {
       </div>
 
       {/* KPI Stats */}
-      <div className="stats-grid" style={{ marginBottom: '20px' }}>
-        <div className="stat-card">
-          <div className="stat-icon-wrapper stat-icon--primary">
-            <Layers size={24} />
-          </div>
-          <div>
-            <div className="stat-value">{semesterSections.length}</div>
-            <div className="stat-label">Lớp học phần phân công</div>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon-wrapper stat-icon--info">
-            <Users size={24} />
-          </div>
-          <div>
-            <div className="stat-value">{totalStudentsInSem}</div>
-            <div className="stat-label">Tổng sinh viên theo học</div>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon-wrapper stat-icon--success">
-            <CheckCircle2 size={24} />
-          </div>
-          <div>
-            <div className="stat-value">{completedSectionsCount} / {semesterSections.length}</div>
-            <div className="stat-label">Lớp đã chốt điểm</div>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon-wrapper stat-icon--warning">
-            <Clock size={24} />
-          </div>
-          <div>
-            <div className="stat-value">
-              {schedules.filter((s) => s.dayOfWeek === todayVal).length}
+      {viewMode === 'proctoring' ? (
+        <div className="stats-grid" style={{ marginBottom: '20px' }}>
+          <div className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--primary">
+              <ShieldCheck size={24} />
             </div>
-            <div className="stat-label">Ca dạy hôm nay</div>
+            <div>
+              <div className="stat-value">{proctorSchedules.length}</div>
+              <div className="stat-label">Tổng ca coi thi phân công</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--info">
+              <Users size={24} />
+            </div>
+            <div>
+              <div className="stat-value">
+                {proctorSchedules.reduce((acc, cur) => acc + (cur.studentCount || 0), 0)}
+              </div>
+              <div className="stat-label">Tổng thí sinh phụ trách</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--success">
+              <CheckCircle2 size={24} />
+            </div>
+            <div>
+              <div className="stat-value">
+                {proctorSchedules.filter((p) => p.status === 'FINALIZED').length} / {proctorSchedules.length}
+              </div>
+              <div className="stat-label">Phòng thi hoàn tất điểm</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--warning">
+              <Clock size={24} />
+            </div>
+            <div>
+              <div className="stat-value">
+                {proctorSchedules.filter((p) => p.examDate === formatIsoDate(new Date())).length}
+              </div>
+              <div className="stat-label">Ca coi thi hôm nay</div>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="stats-grid" style={{ marginBottom: '20px' }}>
+          <div className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--primary">
+              <Layers size={24} />
+            </div>
+            <div>
+              <div className="stat-value">{semesterSections.length}</div>
+              <div className="stat-label">Lớp học phần phân công</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--info">
+              <Users size={24} />
+            </div>
+            <div>
+              <div className="stat-value">{totalStudentsInSem}</div>
+              <div className="stat-label">Tổng sinh viên theo học</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--success">
+              <CheckCircle2 size={24} />
+            </div>
+            <div>
+              <div className="stat-value">{completedSectionsCount} / {semesterSections.length}</div>
+              <div className="stat-label">Lớp đã chốt điểm</div>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon-wrapper stat-icon--warning">
+              <Clock size={24} />
+            </div>
+            <div>
+              <div className="stat-value">
+                {schedules.filter((s) => s.dayOfWeek === todayVal).length}
+              </div>
+              <div className="stat-label">Ca dạy hôm nay</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* View Switcher & Toolbar */}
       <div
@@ -256,7 +598,7 @@ export default function LecturerSchedulePage() {
           <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
           <input
             type="text"
-            placeholder="Tìm theo mã lớp, tên môn học, phòng..."
+            placeholder={viewMode === 'proctoring' ? 'Tìm môn thi, số phòng, cán bộ...' : 'Tìm theo mã lớp, tên môn học, phòng...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="form-control"
@@ -265,7 +607,7 @@ export default function LecturerSchedulePage() {
         </div>
 
         {/* View Mode Buttons */}
-        <div style={{ display: 'flex', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: '3px' }}>
+        <div style={{ display: 'flex', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-md)', padding: '3px', gap: '2px' }}>
           <button
             className={`btn btn-sm ${viewMode === 'sections' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => setViewMode('sections')}
@@ -280,11 +622,40 @@ export default function LecturerSchedulePage() {
           >
             <Grid size={15} /> <span>Ma trận tuần</span>
           </button>
+          <button
+            className={`btn btn-sm ${viewMode === 'proctoring' ? 'btn-primary' : 'btn-outline'}`}
+            onClick={() => setViewMode('proctoring')}
+            style={{
+              border: 'none',
+              padding: '6px 14px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <ShieldCheck size={15} />
+            <span>Lịch coi thi</span>
+            {proctorSchedules.length > 0 && (
+              <span
+                style={{
+                  backgroundColor: viewMode === 'proctoring' ? 'rgba(255,255,255,0.25)' : 'var(--primary)',
+                  color: '#fff',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  padding: '1px 6px',
+                  borderRadius: '10px',
+                  lineHeight: 1.2
+                }}
+              >
+                {proctorSchedules.length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
       {/* ================= PRIMARY VIEW: SECTIONS TABLE ================= */}
-      {viewMode === 'sections' ? (
+      {viewMode === 'sections' && (
         <div className="card">
           <div className="table-container">
             <table className="table">
@@ -402,8 +773,10 @@ export default function LecturerSchedulePage() {
             </table>
           </div>
         </div>
-      ) : (
-        /* ================= SECONDARY VIEW: WEEKLY GRID ================= */
+      )}
+
+      {/* ================= SECONDARY VIEW: WEEKLY GRID ================= */}
+      {viewMode === 'grid' && (
         <div>
           {/* Week & Date Navigation Picker */}
           <WeekCalendarPicker
@@ -680,6 +1053,181 @@ export default function LecturerSchedulePage() {
         <LecturerAttendanceModal
           courseSection={selectedAttendanceModal}
           onClose={() => setSelectedAttendanceModal(null)}
+        />
+      )}
+
+      {/* ================= TERTIARY VIEW: PROCTORING SCHEDULE ================= */}
+      {viewMode === 'proctoring' && (
+        <div className="card">
+          {/* Banner Quy chế coi thi */}
+          <div style={{
+            padding: '16px 20px',
+            background: 'linear-gradient(135deg, rgba(238, 77, 45, 0.05) 0%, rgba(249, 115, 22, 0.05) 100%)',
+            borderBottom: '1px solid rgba(238, 77, 45, 0.15)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '14px'
+          }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(238, 77, 45, 0.12)',
+              color: 'var(--primary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              marginTop: '2px'
+            }}>
+              <ShieldCheck size={20} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <h4 style={{ margin: '0 0 4px', fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                Quy chế & Nhiệm vụ Cán bộ coi thi (CBCT)
+              </h4>
+              <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                Cán bộ coi thi có mặt tại Phòng Khảo thí trước giờ phát đề thi ít nhất <strong>20 phút</strong> để nhận túi đề thi và bảng danh sách phòng thi. Đối chiếu thẻ sinh viên/CCCD trước khi cho thí sinh vào phòng. Thu bài, đếm đủ số bài và số tờ thi, niêm phong túi bài thi và bàn giao cho Ban Khảo thí ngay sau ca thi.
+              </p>
+            </div>
+          </div>
+
+          {/* Table Ca Coi Thi */}
+          <div className="table-container">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th style={{ width: '135px' }}>Ngày thi</th>
+                  <th style={{ width: '130px' }}>Khung giờ</th>
+                  <th>Học phần & Ca thi</th>
+                  <th style={{ width: '120px' }}>Hình thức</th>
+                  <th style={{ width: '180px' }}>Phòng & Địa điểm</th>
+                  <th style={{ width: '90px', textAlign: 'center' }}>Sĩ số</th>
+                  <th style={{ width: '230px' }}>Cán bộ coi thi</th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>Trạng thái</th>
+                  <th style={{ width: '140px', textAlign: 'right' }}>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <TableRowSkeleton columns={9} />
+                ) : filteredProctorSchedules.length === 0 ? (
+                  <tr>
+                    <td colSpan="9" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
+                      {search ? 'Không tìm thấy ca coi thi phù hợp với từ khóa tìm kiếm.' : 'Giảng viên chưa có lịch phân công coi thi trong học kỳ này.'}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredProctorSchedules.map((room) => {
+                    const isToday = room.examDate === formatIsoDate(new Date());
+                    const isThesis = room.roomCode?.startsWith('HĐ') || (room.startTime === '08:00' && room.endTime === '17:00');
+                    return (
+                      <tr key={room.id} style={isToday ? { backgroundColor: 'var(--primary-light)' } : {}}>
+                        <td>
+                          <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.875rem' }}>
+                            {room.examDate ? formatViDate(new Date(room.examDate + 'T00:00:00')) : '—'}
+                          </div>
+                          {isToday && (
+                            <span className="badge badge-warning" style={{ fontSize: '0.675rem', marginTop: '2px' }}>
+                              Hôm nay
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontFamily: 'monospace',
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                            color: 'var(--primary)',
+                            background: 'var(--bg-subtle)',
+                            padding: '3px 8px',
+                            borderRadius: '4px'
+                          }}>
+                            <Clock size={12} />
+                            {room.startTime} - {room.endTime}
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
+                            {room.subjectName}
+                          </div>
+                          <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Mã HP: <strong>{room.subjectCode}</strong> • {room.sessionName}
+                          </div>
+                        </td>
+                        <td>
+                          {isThesis ? (
+                            <span className="badge badge-purple" style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                              Bảo vệ Hội đồng
+                            </span>
+                          ) : (
+                            <span className="badge badge-info" style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                              Thi tập trung
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>
+                            Phòng {room.roomCode}
+                          </div>
+                          <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)' }}>
+                            {room.roomLocation || 'Giảng đường'}
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className="badge badge-outline" style={{ fontWeight: 700 }}>
+                            {room.studentCount || 0} SV
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '0.8rem', lineHeight: 1.4 }}>
+                            <div style={{ color: 'var(--text-main)', fontWeight: 600 }}>
+                              CB1: {room.proctor1Name || 'Chưa phân công'}
+                            </div>
+                            <div style={{ color: 'var(--text-secondary)' }}>
+                              CB2: {room.proctor2Name || 'Chưa phân công'}
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          {room.status === 'FINALIZED' ? (
+                            <span className="badge badge-success">Đã hoàn thành</span>
+                          ) : room.status === 'IN_PROGRESS' ? (
+                            <span className="badge badge-warning">Đang diễn ra</span>
+                          ) : (
+                            <span className="badge badge-primary">Sắp diễn ra</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-xs"
+                            onClick={() => setSelectedProctorRoom(room)}
+                            title="Xem danh sách thí sinh phòng thi"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <Users size={12} />
+                            <span>DS Thí sinh</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Proctor Roster Modal */}
+      {selectedProctorRoom && (
+        <ProctorRosterModal
+          room={selectedProctorRoom}
+          onClose={() => setSelectedProctorRoom(null)}
         />
       )}
     </div>

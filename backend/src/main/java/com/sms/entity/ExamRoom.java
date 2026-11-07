@@ -38,6 +38,16 @@ public class ExamRoom {
     @Builder.Default
     private ExamRoomStatus status = ExamRoomStatus.SCHEDULED;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proctor1_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "user"})
+    private Lecturer proctor1;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "proctor2_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "user"})
+    private Lecturer proctor2;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

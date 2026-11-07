@@ -431,7 +431,7 @@ export default function StudentsPage() {
       {/* Students Data Table - Continuous Scroll */}
       <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div
-          className="table-container"
+          className="table-container table-mobile-cards"
           style={{
             maxHeight: 'calc(100vh - 290px)',
             minHeight: '350px',
@@ -628,7 +628,7 @@ export default function StudentsPage() {
                         <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
                           <button
                             className="btn-icon"
-                            title="Cấp lại mật khẩu mặc định (123456) tại quầy"
+                            title="Cấp lại mật khẩu mặc định (123456) tại quầy" aria-label="Cấp lại mật khẩu"
                             style={{
                               color: '#b45309',
                               backgroundColor: 'var(--bg-subtle)',
@@ -640,7 +640,7 @@ export default function StudentsPage() {
                           </button>
                           <button
                             className="btn-icon"
-                            title="Chỉnh sửa toàn bộ hồ sơ sinh viên"
+                            title="Chỉnh sửa toàn bộ hồ sơ sinh viên" aria-label="Chỉnh sửa hồ sơ sinh viên"
                             onClick={() => handleOpenModal(s)}
                             style={{
                               backgroundColor: 'var(--bg-subtle)',
@@ -651,7 +651,7 @@ export default function StudentsPage() {
                           </button>
                           <button
                             className="btn-icon"
-                            title={isStudying ? 'Chuyển nhanh sang Tạm đình chỉ' : 'Kích hoạt lại trạng thái Đang học'}
+                            title={isStudying ? 'Chuyển nhanh sang Tạm đình chỉ' : 'Kích hoạt lại trạng thái Đang học'} aria-label={isStudying ? 'Tạm đình chỉ sinh viên' : 'Kích hoạt sinh viên'}
                             style={{
                               color: isStudying ? 'var(--warning)' : 'var(--success)',
                               backgroundColor: 'var(--bg-subtle)',

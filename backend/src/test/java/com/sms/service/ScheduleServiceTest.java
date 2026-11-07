@@ -6,6 +6,7 @@ import com.sms.entity.CourseSection;
 import com.sms.entity.Enrollment;
 import com.sms.entity.Lecturer;
 import com.sms.entity.Schedule;
+import com.sms.entity.Schedule.ScheduleStatus;
 import com.sms.entity.Student;
 import com.sms.entity.Subject;
 import com.sms.entity.Semester;
@@ -25,12 +26,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +54,10 @@ public class ScheduleServiceTest {
     private EnrollmentRepository enrollmentRepository;
     @Mock
     private SemesterRepository semesterRepository;
+    @Mock
+    private NotificationService notificationService;
+    @Mock
+    private ExcelExportService excelExportService;
 
     @InjectMocks
     private ScheduleService scheduleService;
@@ -83,6 +91,8 @@ public class ScheduleServiceTest {
 
         student = new Student();
         student.setId(1L);
+        student.setStudentCode("23010359");
+        student.setFullName("Nguyen Duy Minh");
         student.setClassEntity(classEntity);
 
         schedule = new Schedule();
@@ -93,6 +103,7 @@ public class ScheduleServiceTest {
         schedule.setStartPeriod(1);
         schedule.setEndPeriod(3);
         schedule.setRoom("A101");
+        schedule.setStatus(ScheduleStatus.NORMAL);
         schedule.setStartDate(LocalDate.parse("2023-09-01"));
         schedule.setEndDate(LocalDate.parse("2023-12-31"));
 
@@ -206,7 +217,26 @@ public class ScheduleServiceTest {
         when(scheduleRepository.findRoomConflicts(any(), any(), any(), any(), any(), any(), eq(null)))
                 .thenReturn(List.of(conflicting));
 
-        assertThrows(BadRequestException.class, () -> scheduleService.create(request));
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> scheduleService.create(request));
+        assertTrue(ex.getMessage().contains("Trùng phòng học"));
+    }
+
+    @Test
+    void create_LecturerConflict_Throws() {
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));
+        when(scheduleRepository.findRoomConflicts(any(), any(), any(), any(), any(), any(), eq(null)))
+                .thenReturn(List.of());
+
+        Schedule conflicting = new Schedule();
+        conflicting.setDayOfWeek(2);
+        conflicting.setStartPeriod(1);
+        conflicting.setEndPeriod(3);
+        when(scheduleRepository.findLecturerConflicts(any(), any(), any(), any(), any(), any(), eq(null)))
+                .thenReturn(List.of(conflicting));
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> scheduleService.create(request));
+        assertTrue(ex.getMessage().contains("Trùng lịch giảng viên"));
     }
 
     @Test
@@ -248,7 +278,24 @@ public class ScheduleServiceTest {
     }
 
     @Test
-    void update_Success() {
+    void update_Success_WithoutNotificationWhenNoCriticalChange() {
+        when(scheduleRepository.findById(1L)).thenReturn(Optional.of(schedule));
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));
+        when(scheduleRepository.findRoomConflicts(any(), any(), any(), any(), any(), any(), eq(1L)))
+                .thenReturn(List.of());
+        when(scheduleRepository.findLecturerConflicts(any(), any(), any(), any(), any(), any(), eq(1L)))
+                .thenReturn(List.of());
+        when(scheduleRepository.save(any(Schedule.class))).thenReturn(schedule);
+
+        request.setNote("Ghi chú mới");
+        Schedule updated = scheduleService.update(1L, request);
+        assertNotNull(updated);
+        verify(notificationService, never()).notifyScheduleChange(any(), any(), any());
+    }
+
+    @Test
+    void update_RoomChanged_NotifiesStudents() {
         when(scheduleRepository.findById(1L)).thenReturn(Optional.of(schedule));
         when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
         when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));
@@ -261,7 +308,84 @@ public class ScheduleServiceTest {
         request.setRoom("B202");
         Schedule updated = scheduleService.update(1L, request);
         assertEquals("B202", updated.getRoom());
-        verify(scheduleRepository).save(any(Schedule.class));
+        verify(notificationService, times(1)).notifyScheduleChange(eq(1L), contains("Cập nhật lịch học"), contains("ĐỔI PHÒNG HỌC"));
+    }
+
+    @Test
+    void update_CancelledStatus_NotifiesStudents() {
+        when(scheduleRepository.findById(1L)).thenReturn(Optional.of(schedule));
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));
+        when(scheduleRepository.findRoomConflicts(any(), any(), any(), any(), any(), any(), eq(1L)))
+                .thenReturn(List.of());
+        when(scheduleRepository.findLecturerConflicts(any(), any(), any(), any(), any(), any(), eq(1L)))
+                .thenReturn(List.of());
+        when(scheduleRepository.save(any(Schedule.class))).thenReturn(schedule);
+
+        request.setStatus("CANCELLED");
+        request.setNote("Giảng viên bận công tác");
+        Schedule updated = scheduleService.update(1L, request);
+        assertNotNull(updated);
+        verify(notificationService, times(1)).notifyScheduleChange(eq(1L), contains("Cập nhật lịch học"), contains("BÁO NGHỈ"));
+    }
+
+    @Test
+    void update_MakeupStatus_NotifiesStudents() {
+        when(scheduleRepository.findById(1L)).thenReturn(Optional.of(schedule));
+        when(courseSectionRepository.findById(1L)).thenReturn(Optional.of(section));
+        when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));
+        when(scheduleRepository.findRoomConflicts(any(), any(), any(), any(), any(), any(), eq(1L)))
+                .thenReturn(List.of());
+        when(scheduleRepository.findLecturerConflicts(any(), any(), any(), any(), any(), any(), eq(1L)))
+                .thenReturn(List.of());
+        when(scheduleRepository.save(any(Schedule.class))).thenReturn(schedule);
+
+        request.setStatus("MAKEUP");
+        request.setNote("Dạy bù ngày 10/10");
+        Schedule updated = scheduleService.update(1L, request);
+        assertNotNull(updated);
+        verify(notificationService, times(1)).notifyScheduleChange(eq(1L), contains("Cập nhật lịch học"), contains("HỌC BÙ"));
+    }
+
+    @Test
+    void generateIcalendar_ValidRFC5545Format() {
+        byte[] icsBytes = scheduleService.generateIcalendar(List.of(schedule), "TKB_Test");
+        assertNotNull(icsBytes);
+        String icsContent = new String(icsBytes, StandardCharsets.UTF_8);
+
+        assertTrue(icsContent.contains("BEGIN:VCALENDAR"));
+        assertTrue(icsContent.contains("VERSION:2.0"));
+        assertTrue(icsContent.contains("BEGIN:VEVENT"));
+        assertTrue(icsContent.contains("RRULE:FREQ=WEEKLY"));
+        assertTrue(icsContent.contains("SUMMARY:Lập trình Java (SE01)"));
+        assertTrue(icsContent.contains("LOCATION:A101"));
+        assertTrue(icsContent.contains("END:VEVENT"));
+        assertTrue(icsContent.contains("END:VCALENDAR"));
+    }
+
+    @Test
+    void exportStudentIcs_Success() {
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
+        when(scheduleRepository.findSchedulesForStudentAndSemester(1L, 1, 1L))
+                .thenReturn(List.of(schedule));
+
+        byte[] result = scheduleService.exportStudentIcs(1L, 1L);
+        assertNotNull(result);
+        String text = new String(result, StandardCharsets.UTF_8);
+        assertTrue(text.contains("BEGIN:VCALENDAR"));
+    }
+
+    @Test
+    void exportStudentExcel_Success() throws IOException {
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
+        when(scheduleRepository.findSchedulesForStudentAndSemester(1L, 1, 1L))
+                .thenReturn(List.of(schedule));
+        when(excelExportService.exportSchedule(any(), any())).thenReturn(new byte[]{1, 2, 3});
+
+        byte[] result = scheduleService.exportStudentExcel(1L, 1L);
+        assertNotNull(result);
+        assertEquals(3, result.length);
+        verify(excelExportService).exportSchedule(any(), any());
     }
 
     @Test

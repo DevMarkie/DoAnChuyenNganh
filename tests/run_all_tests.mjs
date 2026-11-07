@@ -59,7 +59,7 @@ function runCommand(command, args, cwd = ROOT_DIR, env = process.env) {
 const testSuites = [
   {
     tier: 'TẦNG 1: LOGIC & MÃ NGUỒN CỐT LÕI (UNIT TESTS)',
-    name: '[1/10] Backend JUnit 43 Test Suites (Spring Boot)',
+    name: '[01/15] Backend JUnit 43 Test Suites (Spring Boot)',
     cmd: process.platform === 'win32' ? '.\\mvnw.cmd' : './mvnw',
     args: ['test', '-Dtest=*Test'],
     cwd: path.join(ROOT_DIR, 'backend'),
@@ -67,7 +67,7 @@ const testSuites = [
   },
   {
     tier: 'TẦNG 1: LOGIC & MÃ NGUỒN CỐT LÕI (UNIT TESTS)',
-    name: '[2/10] Frontend Vitest Component Tests (React SPA)',
+    name: '[02/15] Frontend Vitest Component Tests (React SPA)',
     cmd: 'npm',
     args: ['--prefix', 'frontend', 'test'],
     cwd: ROOT_DIR,
@@ -75,7 +75,7 @@ const testSuites = [
   },
   {
     tier: 'TẦNG 2: KIỂM TRA SỨC KHỎE API & HẠ TẦNG (SMOKE TEST)',
-    name: '[3/10] Smoke Test nhanh toàn bộ Endpoint API',
+    name: '[03/15] Smoke Test nhanh toàn bộ Endpoint API',
     cmd: 'node',
     args: [path.join(ROOT_DIR, 'tests', 'smoke', 'smoke_test.js')],
     cwd: ROOT_DIR,
@@ -83,7 +83,7 @@ const testSuites = [
   },
   {
     tier: 'TẦNG 3: NGHIỆP VỤ LIÊN THÔNG 4 PHÂN HỆ (BUSINESS FLOWS)',
-    name: '[4/10] Phân hệ Quản trị viên (Admin & Thu ngân Học phí)',
+    name: '[04/15] Phân hệ Quản trị viên (Admin & Thu ngân Học phí)',
     cmd: 'node',
     args: [path.join(ROOT_DIR, 'tests', 'e2e', 'test_admin_coordination_and_tuition.js')],
     cwd: ROOT_DIR,
@@ -91,7 +91,15 @@ const testSuites = [
   },
   {
     tier: 'TẦNG 3: NGHIỆP VỤ LIÊN THÔNG 4 PHÂN HỆ (BUSINESS FLOWS)',
-    name: '[5/10] Phân hệ Đào tạo & Khảo thí (Đính chính điểm 3 cấp)',
+    name: '[05/15] Phân hệ Học phí, Miễn giảm, Cổng VNPAY & Gạch nợ IPN',
+    cmd: 'node',
+    args: [path.join(ROOT_DIR, 'tests', 'e2e', 'test_tuition_and_payment_gateway.js')],
+    cwd: ROOT_DIR,
+    expected: 'Tính công nợ, Miễn giảm, VNPAY 5 mã & Gạch nợ Rule B',
+  },
+  {
+    tier: 'TẦNG 3: NGHIỆP VỤ LIÊN THÔNG 4 PHÂN HỆ (BUSINESS FLOWS)',
+    name: '[06/15] Phân hệ Đào tạo & Khảo thí (Đính chính điểm 3 cấp)',
     cmd: 'node',
     args: [path.join(ROOT_DIR, 'tests', 'e2e', 'test_grade_amendment_e2e.cjs')],
     cwd: ROOT_DIR,
@@ -99,7 +107,7 @@ const testSuites = [
   },
   {
     tier: 'TẦNG 3: NGHIỆP VỤ LIÊN THÔNG 4 PHÂN HỆ (BUSINESS FLOWS)',
-    name: '[6/10] Phân hệ Giảng viên (Điểm danh PIN 6 số & Excel)',
+    name: '[07/15] Phân hệ Giảng viên (Điểm danh PIN 6 số & Excel)',
     cmd: 'node',
     args: [path.join(ROOT_DIR, 'tests', 'integration', 'test_attendance_feature.js')],
     cwd: ROOT_DIR,
@@ -107,7 +115,15 @@ const testSuites = [
   },
   {
     tier: 'TẦNG 3: NGHIỆP VỤ LIÊN THÔNG 4 PHÂN HỆ (BUSINESS FLOWS)',
-    name: '[7/10] Phân hệ Sinh viên (Hành trình Trải nghiệm Portal)',
+    name: '[08/15] Phân hệ Thời khóa biểu & Lịch thi (Chống trùng, iCal, Export)',
+    cmd: 'node',
+    args: [path.join(ROOT_DIR, 'tests', 'integration', 'test_schedule_and_exam_module.js')],
+    cwd: ROOT_DIR,
+    expected: 'Chống trùng lịch, tải iCal & xuất Excel',
+  },
+  {
+    tier: 'TẦNG 3: NGHIỆP VỤ LIÊN THÔNG 4 PHÂN HỆ (BUSINESS FLOWS)',
+    name: '[09/15] Phân hệ Sinh viên (Hành trình Trải nghiệm Portal)',
     cmd: 'node',
     args: [path.join(ROOT_DIR, 'tests', 'e2e', 'user_experience_journey_test.js')],
     cwd: ROOT_DIR,
@@ -115,7 +131,7 @@ const testSuites = [
   },
   {
     tier: 'TẦNG 3: NGHIỆP VỤ LIÊN THÔNG 4 PHÂN HỆ (BUSINESS FLOWS)',
-    name: '[8/10] Hệ thống Nghiệp vụ Toàn diện Deep-Test E2E',
+    name: '[10/15] Hệ thống Nghiệp vụ Toàn diện Deep-Test E2E',
     cmd: 'node',
     args: [path.join(ROOT_DIR, 'tests', 'e2e', 'comprehensive_system_test.js')],
     cwd: ROOT_DIR,
@@ -123,26 +139,50 @@ const testSuites = [
   },
   {
     tier: 'TẦNG 4: AN NINH & BẢO MẬT HỆ THỐNG (SECURITY AUDIT)',
-    name: '[9/10] Kiểm thử Bảo mật (SQLi, IDOR, JWT, Brute-Force)',
+    name: '[11/15] Kiểm thử Bảo mật cơ bản (SQLi, IDOR, JWT, Brute-Force)',
     cmd: 'node',
     args: [path.join(ROOT_DIR, 'tests', 'security', 'basic_security_test.js')],
     cwd: ROOT_DIR,
     expected: 'Phòng chống các lỗ hổng OWASP Top 10',
   },
   {
-    tier: 'TẦNG 5: HIỆU NĂNG & KHÓA PHÂN TÁN REDIS (CONCURRENCY)',
-    name: '[10/10] Tranh chấp Slot Đăng ký 600 Sinh viên Đồng thời',
+    tier: 'TẦNG 4: AN NINH & BẢO MẬT HỆ THỐNG (SECURITY AUDIT)',
+    name: '[12/15] Bộ Phân quyền & Bảo mật Chốt (RBAC 5 Roles, IDOR, PII, Session)',
+    cmd: 'node',
+    args: [path.join(ROOT_DIR, 'tests', 'security', 'final_security_authorization_test.js')],
+    cwd: ROOT_DIR,
+    expected: 'Ma trận RBAC, chống IDOR & che chắn PII',
+  },
+  {
+    tier: 'TẦNG 5: HIỆU NĂNG, QUÁ TẢI & KHÓA PHÂN TÁN (STRESS & CONCURRENCY)',
+    name: '[13/15] Kiểm thử Quá tải & Áp lực Hệ thống Chuyên sâu (5 Giai đoạn)',
+    cmd: 'node',
+    args: [path.join(ROOT_DIR, 'tests', 'performance', 'overload_stress_test.js')],
+    cwd: ROOT_DIR,
+    expected: '200 Luồng, BCrypt Burst, HikariCP Pool & Tự phục hồi',
+  },
+  {
+    tier: 'TẦNG 5: HIỆU NĂNG, QUÁ TẢI & KHÓA PHÂN TÁN (STRESS & CONCURRENCY)',
+    name: '[14/15] Tranh chấp Slot Đăng ký 600 Sinh viên Đồng thời',
     cmd: 'node',
     args: [path.join(ROOT_DIR, 'tests', 'performance', 'simulate_600_enrollment.js')],
     cwd: ROOT_DIR,
     expected: 'Atomic Redis Counter & Chống tràn sĩ số',
+  },
+  {
+    tier: 'TẦNG 5: HIỆU NĂNG, QUÁ TẢI & KHÓA PHÂN TÁN (STRESS & CONCURRENCY)',
+    name: '[15/15] Bộ Kiểm thử Phi chức năng (4 Trụ cột NFR: Tải, Race, Excel, Mobile)',
+    cmd: 'node',
+    args: [path.join(ROOT_DIR, 'tests', 'non_functional', 'run_all.js')],
+    cwd: ROOT_DIR,
+    expected: 'Tải đỉnh, Race 1-slot, Excel lớn & Đa nền tảng',
   },
 ];
 
 async function main() {
   console.log(`\n${colors.bold}${colors.cyan}========================================================================================${colors.reset}`);
   console.log(`${colors.bold}${colors.cyan}         HỆ THỐNG QUẢN LÝ ĐÀO TẠO & SINH VIÊN (SMS / UAMS) - MASTER TEST RUNNER        ${colors.reset}`);
-  console.log(`${colors.bold}${colors.cyan}          KỊCH BẢN KIỂM THỬ TOÀN DIỆN 100% DỰ ÁN FULL-STACK (10 BÀI TEST CHỦ LỰC)       ${colors.reset}`);
+  console.log(`${colors.bold}${colors.cyan}          KỊCH BẢN KIỂM THỬ TOÀN DIỆN 100% DỰ ÁN FULL-STACK (15 BÀI TEST CHỦ LỰC)       ${colors.reset}`);
   console.log(`${colors.bold}${colors.cyan}========================================================================================${colors.reset}\n`);
 
   const results = [];

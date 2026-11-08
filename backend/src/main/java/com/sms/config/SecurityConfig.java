@@ -119,7 +119,28 @@ public class SecurityConfig {
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             // Rate limiting uses the authenticated principal, so it must run after JWT auth.
-            .addFilterAfter(rateLimitFilter, JwtAuthFilter.class);
+            .addFilterAfter(rateLimitFilter, JwtAuthFilter.class)
+            // Trả 401 JSON khi không xác thực được, thay vì 403 mặc định của Spring Security
+            // để frontend redirect về trang login khi token hết hạn.
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"success\":false,\"message\":\"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    org.springframework.security.core.Authentication auth =
+                            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+                    if (auth == null || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken) {
+                        response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.getWriter().write("{\"success\":false,\"message\":\"Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.\"}");
+                    } else {
+                        response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.getWriter().write("{\"success\":false,\"message\":\"Bạn không có quyền truy cập tài nguyên này.\"}");
+                    }
+                }));
 
         return http.build();
     }

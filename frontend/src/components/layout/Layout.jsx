@@ -34,9 +34,9 @@ export default function Layout() {
       />
       <div className={`main-content ${collapsed ? 'collapsed' : ''}`}>
         <Header onToggleMobileMenu={() => setMobileOpen(!mobileOpen)} />
-        <div className="page-content">
+        <main id="main-content" className="page-content">
           <Outlet />
-        </div>
+        </main>
       </div>
       {/* BR-SEC-01: khoá toàn ứng dụng cho tới khi đổi mật khẩu tạm thành công. */}
       <ForcePasswordChangeModal />

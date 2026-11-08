@@ -945,7 +945,7 @@ CREATE TABLE IF NOT EXISTS graduation_records (
     CONSTRAINT fk_graduation_records_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
     CONSTRAINT fk_graduation_records_cohort FOREIGN KEY (cohort_id) REFERENCES cohorts(id) ON DELETE SET NULL,
     CONSTRAINT fk_graduation_records_assessed_by FOREIGN KEY (assessed_by) REFERENCES users(id) ON DELETE SET NULL,
-    INDEX idx_graduation_records_student (student_id),
+    CONSTRAINT uk_graduation_records_student UNIQUE (student_id),
     INDEX idx_graduation_records_status (official_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

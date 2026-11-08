@@ -38,6 +38,10 @@ public class ScheduleService {
         return scheduleRepository.findAll();
     }
 
+    public List<Schedule> findBySectionId(Long sectionId) {
+        return scheduleRepository.findBySectionId(sectionId);
+    }
+
     public List<Schedule> findBySemester(Long semesterId) {
         return scheduleRepository.findBySectionSemesterId(semesterId);
     }

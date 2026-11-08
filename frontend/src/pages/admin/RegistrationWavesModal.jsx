@@ -193,6 +193,16 @@ export default function RegistrationWavesModal({ isOpen, onClose, semester }) {
         isActive: formData.isActive,
       };
 
+      if (semester?.startDate && formData.endTime) {
+        const waveEndDate = formData.endTime.substring(0, 10);
+        const semStartDate = semester.startDate.substring(0, 10);
+        if (waveEndDate > semStartDate) {
+          toast.error(`Thời gian kết thúc ca đăng ký (${waveEndDate}) không thể sau ngày bắt đầu học kỳ (${semStartDate})!`);
+          setSaving(false);
+          return;
+        }
+      }
+
       if (editingId) {
         await registrationWaveService.update(editingId, payload);
         toast.success('Cập nhật ca đăng ký thành công!');
@@ -300,6 +310,7 @@ export default function RegistrationWavesModal({ isOpen, onClose, semester }) {
                       type="date"
                       className="form-control"
                       style={{ padding: '3px 8px', fontSize: '0.8rem', width: 'auto' }}
+                      max={semester?.startDate ? semester.startDate.substring(0, 10) : undefined}
                       value={presetDate}
                       onChange={(e) => setPresetDate(e.target.value)}
                     />

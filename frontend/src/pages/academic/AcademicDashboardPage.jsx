@@ -98,8 +98,8 @@ export default function AcademicDashboardPage() {
       badge: `${stats.appealsPending} chờ duyệt`,
     },
     {
-      title: 'Chạy thuật toán Xét tốt nghiệp',
-      desc: 'Thực thi thuật toán quét chuẩn đầu ra theo khóa/ngành, phê duyệt tốt nghiệp và xuất quyết định.',
+      title: 'Hội đồng Xét tốt nghiệp',
+      desc: 'Thẩm định chuẩn đầu ra theo khóa/ngành, phê duyệt tốt nghiệp và xuất quyết định.',
       path: '/academic/graduation',
       icon: GraduationCap,
       color: '#16a34a',

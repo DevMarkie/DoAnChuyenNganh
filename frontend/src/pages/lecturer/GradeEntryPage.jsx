@@ -87,18 +87,25 @@ export default function GradeEntryPage() {
       });
 
       const paramId = searchParams.get("sectionId");
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const resolveCurrentSem = (items) =>
+        items.find((s) => s.isCurrent && (!s.endDate || s.endDate >= todayIso))
+        || items.find((s) => s.startDate && s.endDate && todayIso >= s.startDate && todayIso <= s.endDate)
+        || items.find((s) => s.isCurrent)
+        || items[0];
+
       if (paramId) {
         const found = list.find((s) => s.id === parseInt(paramId));
         if (found && found.semester?.id) {
           setSelectedSemesterId(String(found.semester.id));
         } else if (semList.length > 0) {
-          const currentSem = semList.find((s) => s.isCurrent) || semList[0];
+          const currentSem = resolveCurrentSem(semList);
           setSelectedSemesterId(String(currentSem.id));
         }
         setSelectedSection(paramId);
         loadGrades(paramId);
       } else if (semList.length > 0) {
-        const currentSem = semList.find((s) => s.isCurrent) || semList[0];
+        const currentSem = resolveCurrentSem(semList);
         setSelectedSemesterId(String(currentSem.id));
         const semSections = list.filter((s) => s.semester?.id === currentSem.id);
         if (semSections.length > 0) {
@@ -734,6 +741,9 @@ export default function GradeEntryPage() {
                 Học kỳ:
               </span>
               <select
+                id="grade-semester-select"
+                name="semesterId"
+                aria-label="Chọn học kỳ"
                 value={selectedSemesterId}
                 onChange={handleSemesterChange}
                 className="form-select"
@@ -772,6 +782,9 @@ export default function GradeEntryPage() {
                 Lớp học phần:
               </span>
               <select
+                id="grade-section-select"
+                name="sectionId"
+                aria-label="Chọn lớp học phần"
                 value={selectedSection}
                 onChange={handleSectionChange}
                 className="form-select"
@@ -992,6 +1005,9 @@ export default function GradeEntryPage() {
                         return (
                         <td key={field} style={{ textAlign: "center" }}>
                           <input
+                            id={`grade_${enrollmentId}_${field}`}
+                            name={`grade_${enrollmentId}_${field}`}
+                            aria-label={`Điểm ${field} của sinh viên ${g.studentCode || ''}`}
                             type="number"
                             min="0"
                             max="10"
@@ -1032,6 +1048,9 @@ export default function GradeEntryPage() {
                       })}
                       <td style={{ textAlign: "center" }}>
                         <select
+                          id={`special_${enrollmentId}`}
+                          name={`special_${enrollmentId}`}
+                          aria-label={`Điểm đặc biệt của sinh viên ${g.studentCode || ''}`}
                           value={g.specialGrade || "NONE"}
                           onChange={(e) =>
                             handleSpecialChange(enrollmentId, e.target.value)

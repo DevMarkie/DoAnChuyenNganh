@@ -273,6 +273,10 @@ export default function CurriculumRoadmapPage() {
     100 - completedWidth,
     Math.max(0, (progress.inProgressCredits / (progress.requiredCredits || 1)) * 100)
   );
+  const unregisteredCredits = Math.max(
+    0,
+    (progress.requiredCredits || 0) - (progress.completedCredits || 0) - (progress.inProgressCredits || 0)
+  );
 
   const compulsoryCount = blocks.filter((b) => b.type === 'COMPULSORY').length;
   const electiveCount = blocks.filter((b) => b.type === 'ELECTIVE').length;
@@ -425,7 +429,7 @@ export default function CurriculumRoadmapPage() {
               <div className="curriculum-legend-item">
                 <span className="curriculum-legend-dot curriculum-legend-dot--remaining" />
                 <span>
-                  Còn lại: <strong>{progress.remainingCredits} TC</strong>
+                  Chưa đăng ký: <strong>{unregisteredCredits} TC</strong>
                 </span>
               </div>
             </div>
@@ -465,8 +469,8 @@ export default function CurriculumRoadmapPage() {
                 <Compass size={22} />
               </div>
               <div>
-                <div className="stat-value">{progress.remainingCredits}</div>
-                <div className="stat-label">Còn lại cần học</div>
+                <div className="stat-value">{unregisteredCredits}</div>
+                <div className="stat-label">Chưa đăng ký</div>
               </div>
             </div>
           </div>
@@ -501,6 +505,9 @@ export default function CurriculumRoadmapPage() {
               <div className="curriculum-search-wrapper">
                 <Search size={14} className="curriculum-search-icon" />
                 <input
+                  id="curriculum-search-input"
+                  name="curriculumSearch"
+                  aria-label="Tìm môn học hoặc khối kiến thức"
                   type="text"
                   className="curriculum-search-input"
                   placeholder="Tìm môn học hoặc khối..."
@@ -713,6 +720,9 @@ export default function CurriculumRoadmapPage() {
                   {/* Filter and Search */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <select
+                      id="graph-filter-status"
+                      name="graphFilterStatus"
+                      aria-label="Lọc trạng thái môn học trên đồ thị"
                       className="input input-sm"
                       style={{ minWidth: '160px', padding: '6px 10px', fontSize: '0.8125rem' }}
                       value={graphFilterStatus}
@@ -729,6 +739,9 @@ export default function CurriculumRoadmapPage() {
                     <div className="curriculum-search-wrapper">
                       <Search size={14} className="curriculum-search-icon" />
                       <input
+                        id="graph-search-input"
+                        name="graphSearch"
+                        aria-label="Tìm mã hoặc tên môn trên đồ thị DAG"
                         type="text"
                         className="curriculum-search-input"
                         placeholder="Tìm mã hoặc tên môn..."

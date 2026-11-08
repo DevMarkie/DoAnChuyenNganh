@@ -190,8 +190,10 @@ export default function StudentProfilePage() {
           setProfile(resProfile.data?.data || null);
         }
       })
-      .catch(() => {
-        toast.error('Lỗi khi tải thông tin sinh viên');
+      .catch((err) => {
+        if (!ignore) {
+          toast.error(err.response?.data?.message || 'Lỗi khi tải thông tin sinh viên');
+        }
       })
       .finally(() => {
         if (!ignore) setLoading(false);

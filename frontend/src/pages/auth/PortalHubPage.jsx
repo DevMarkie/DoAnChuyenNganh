@@ -73,7 +73,7 @@ export default function PortalHubPage() {
         </div>
 
         <div className="hub-anim" style={{ animationDelay: '0.26s' }}>
-          <div className="hub-term"><b>Học kỳ 1</b>&nbsp;&nbsp;năm học 2025–2026</div>
+          <div className="hub-term"><b>Học kỳ 1</b>&nbsp;&nbsp;năm học 2026–2027</div>
           <span className="hub-live"><i />Đợt đăng ký tín chỉ đang mở</span>
         </div>
       </aside>
@@ -87,8 +87,11 @@ export default function PortalHubPage() {
         <div className="hub-doors">
           {DOORS.map((door, i) => {
             const DoorIcon = door.Icon;
-            const isSessionActive = hasPortalSession(door.id);
-            const targetPath = isSessionActive ? door.dashboardPath : door.path;
+            const isSessionActive = hasPortalSession(door.id) || (door.id === 'academic' && hasPortalSession('exam'));
+            let targetPath = isSessionActive ? door.dashboardPath : door.path;
+            if (door.id === 'academic' && hasPortalSession('exam') && !hasPortalSession('academic')) {
+              targetPath = '/exam/rooms';
+            }
             return (
               <Link
                 key={door.id}
@@ -122,9 +125,9 @@ export default function PortalHubPage() {
                           fontSize: '0.68rem',
                           padding: '2px 8px',
                           borderRadius: '999px',
-                          background: 'rgba(16, 185, 129, 0.15)',
-                          color: '#10b981',
-                          fontWeight: 600,
+                          background: '#047857',
+                          color: '#ffffff',
+                          fontWeight: 700,
                         }}>
                           ● Đang mở phiên
                         </span>

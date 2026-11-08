@@ -110,6 +110,8 @@ public class CurriculumService {
         BigDecimal percent = requiredCredits == 0 ? BigDecimal.ZERO
                 : BigDecimal.valueOf(completedCredits * 100.0 / requiredCredits).setScale(1, RoundingMode.HALF_UP);
 
+        int remainingCredits = Math.max(0, requiredCredits - completedCredits - inProgressCredits);
+
         return CurriculumResponse.builder()
                 .program(CurriculumResponse.ProgramSummary.builder()
                         .id(program.getId()).code(program.getCode()).name(program.getName())
@@ -118,7 +120,7 @@ public class CurriculumService {
                         .totalRequiredCredits(requiredCredits).build())
                 .progress(CurriculumResponse.ProgressSummary.builder()
                         .requiredCredits(requiredCredits).completedCredits(completedCredits)
-                        .inProgressCredits(inProgressCredits).remainingCredits(Math.max(0, requiredCredits - completedCredits))
+                        .inProgressCredits(inProgressCredits).remainingCredits(remainingCredits)
                         .completionPercent(percent).build())
                 .blocks(blocks).build();
     }

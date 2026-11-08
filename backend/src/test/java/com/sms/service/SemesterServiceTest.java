@@ -123,6 +123,18 @@ public class SemesterServiceTest {
     }
 
     @Test
+    void create_RegistrationEndAfterStartDate_ThrowsBadRequestException() {
+        request.setStartDate("2026-09-01");
+        request.setEndDate("2027-01-15");
+        request.setRegistrationStart("2026-11-01");
+        request.setRegistrationEnd("2026-11-07"); // Sau startDate 2026-09-01
+
+        when(semesterRepository.existsBySemesterCode("HK1_2324")).thenReturn(false);
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> semesterService.create(request));
+        assertTrue(ex.getMessage().contains("Hạn chót đăng ký môn học không thể sau ngày bắt đầu học kỳ"));
+    }
+
+    @Test
     void update_Success() {
         when(semesterRepository.findById(1)).thenReturn(Optional.of(semester));
         when(semesterRepository.save(any(Semester.class))).thenReturn(semester);

@@ -13,7 +13,8 @@ export const getPortalScope = (path) => {
   if (!targetPath) return '';
   if (targetPath.startsWith('/student')) return 'student';
   if (targetPath.startsWith('/lecturer')) return 'lecturer';
-  if (targetPath.startsWith('/academic') || targetPath.startsWith('/exam')) return 'academic';
+  if (targetPath.startsWith('/academic')) return 'academic';
+  if (targetPath.startsWith('/exam')) return 'exam';
   if (targetPath.startsWith('/admin')) return 'admin';
   return '';
 };
@@ -21,7 +22,8 @@ export const getPortalScope = (path) => {
 export const getRoleScope = (role) => {
   if (role === 'STUDENT') return 'student';
   if (role === 'LECTURER') return 'lecturer';
-  if (role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF' || role === 'EXAMINATION_OFFICER') return 'academic';
+  if (role === 'ACADEMIC_AFFAIRS' || role === 'ACADEMIC_STAFF') return 'academic';
+  if (role === 'EXAMINATION_OFFICER') return 'exam';
   if (role === 'ADMIN') return 'admin';
   return '';
 };
@@ -89,6 +91,7 @@ const resolveInitialSession = () => {
   if (scope) {
     const session = getPortalSession(scope);
     if (session) return { ...session, valid: true };
+    return { token: null, user: null, valid: false };
   }
 
   const storedToken = localStorage.getItem('token');

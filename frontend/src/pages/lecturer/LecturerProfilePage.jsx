@@ -15,21 +15,13 @@ export default function LecturerProfilePage() {
     confirmPassword: '',
   });
 
-  const loadProfile = async () => {
-    try {
-      setLoading(true);
-      const res = await lecturerService.getMe();
-      setProfile(res.data.data);
-    } catch {
-      toast.error('Lỗi khi tải thông tin cá nhân');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadProfile();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    let ignore = false;
+    lecturerService.getMe()
+      .then((res) => { if (!ignore) setProfile(res.data?.data); })
+      .catch((err) => { if (!ignore) toast.error(err.response?.data?.message || 'Lỗi khi tải thông tin cá nhân'); })
+      .finally(() => { if (!ignore) setLoading(false); });
+    return () => { ignore = true; };
   }, []);
 
   const handleChangePassword = async (e) => {

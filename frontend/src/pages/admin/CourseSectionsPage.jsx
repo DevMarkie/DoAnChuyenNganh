@@ -209,6 +209,9 @@ export default function CourseSectionsPage() {
                 }}
               />
               <input
+                id="course-section-search-input"
+                name="courseSectionSearch"
+                aria-label="Tìm mã lớp HP, tên môn, giảng viên"
                 type="text"
                 placeholder="Tìm mã lớp HP, tên môn, giảng viên..."
                 value={search}
@@ -228,6 +231,9 @@ export default function CourseSectionsPage() {
             >
               <Filter size={15} style={{ color: "var(--text-muted)" }} />
               <select
+                id="course-section-semester-filter"
+                name="courseSectionSemesterFilter"
+                aria-label="Lọc theo học kỳ"
                 value={selectedSemester}
                 onChange={(e) => setSelectedSemester(e.target.value)}
                 className="form-select"
@@ -243,6 +249,9 @@ export default function CourseSectionsPage() {
             </div>
 
             <select
+              id="course-section-subject-filter"
+              name="courseSectionSubjectFilter"
+              aria-label="Lọc theo môn học"
               value={selectedSubject}
               onChange={(e) => setSelectedSubject(e.target.value)}
               className="form-select"

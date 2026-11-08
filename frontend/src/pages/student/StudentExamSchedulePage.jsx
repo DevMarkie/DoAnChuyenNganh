@@ -39,7 +39,11 @@ export default function StudentExamSchedulePage() {
         const semList = semRes.data?.data || [];
         setSemesters(semList);
 
-        const currentSem = semList.find((s) => s.isCurrent) || semList[0];
+        const todayIso = new Date().toISOString().slice(0, 10);
+        const currentSem = semList.find((s) => s.isCurrent && (!s.endDate || s.endDate >= todayIso))
+          || semList.find((s) => s.startDate && s.endDate && todayIso >= s.startDate && todayIso <= s.endDate)
+          || semList.find((s) => s.isCurrent)
+          || semList[0];
         const defaultSemId = currentSem ? currentSem.id : '';
         setSelectedSemesterId(defaultSemId);
 

@@ -54,6 +54,10 @@ public class RegistrationWaveService {
         Semester semester = semesterRepository.findById(request.getSemesterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học kỳ: " + request.getSemesterId()));
 
+        if (semester.getStartDate() != null && request.getEndTime().toLocalDate().isAfter(semester.getStartDate())) {
+            throw new BadRequestException("Thời gian kết thúc ca đăng ký không thể sau ngày bắt đầu học kỳ (" + semester.getStartDate() + ")");
+        }
+
         Cohort cohort = null;
         if (request.getCohortId() != null) {
             cohort = cohortRepository.findById(request.getCohortId())
@@ -104,6 +108,11 @@ public class RegistrationWaveService {
             Semester semester = semesterRepository.findById(request.getSemesterId())
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học kỳ: " + request.getSemesterId()));
             wave.setSemester(semester);
+        }
+
+        Semester currentSemester = wave.getSemester();
+        if (currentSemester != null && currentSemester.getStartDate() != null && request.getEndTime().toLocalDate().isAfter(currentSemester.getStartDate())) {
+            throw new BadRequestException("Thời gian kết thúc ca đăng ký không thể sau ngày bắt đầu học kỳ (" + currentSemester.getStartDate() + ")");
         }
 
         Cohort cohort = null;

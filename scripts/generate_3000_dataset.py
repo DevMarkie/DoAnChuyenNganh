@@ -37,6 +37,15 @@ def chunk_inserts(table_name, columns, rows, chunk_size=100):
         lines.append(f"INSERT INTO {table_name} ({cols_str}) VALUES\n" + ",\n".join(val_lines) + ";\n")
     return "\n".join(lines)
 
+def chunk_attendance_records(records, chunk_size=500):
+    lines = []
+    total = len(records)
+    for i in range(0, total, chunk_size):
+        chunk = records[i:i + chunk_size]
+        val_lines = [f"({r['id']}, {r['session_id']}, {r['enrollment_id']}, {1 if r['is_present'] else 0})" for r in chunk]
+        lines.append("INSERT INTO attendance_records (id, session_id, enrollment_id, is_present) VALUES\n" + ",\n".join(val_lines) + ";\n")
+    return "\n".join(lines)
+
 print("--- STEP 1: REFERENCE METADATA ---")
 
 DEPARTMENTS = [
@@ -751,11 +760,14 @@ student_failed = {s["id"]: set() for s in STUDENTS}
 sections = []
 schedules = []
 enrollments = []
+attendance_sessions = []
+attendance_records = []
 grades = []
 invoices = []
 exam_sessions = []
 exam_rooms = []
 exam_rosters = []
+notifications = []
 
 section_id_counter = 1
 enrollment_id_counter = 1
@@ -764,12 +776,16 @@ invoice_id_counter = 1
 exam_session_id_counter = 1
 exam_room_id_counter = 1
 exam_roster_id_counter = 1
+attendance_session_id_counter = 1
+attendance_record_id_counter = 1
+notification_id_counter = 1
 
 for sem in SEMESTERS:
     sem_id = sem["id"]
     sem_code = sem["semester_code"]
     sem_status = sem["status"]
     cohort_terms = SEMESTER_COHORT_TERMS[sem_id]
+    hk7_open_count = 0
     
     print(f"  Simulating {sem_code} ({sem_status})...")
     
@@ -934,6 +950,7 @@ for sem in SEMESTERS:
                 "enrolled_count": len(chunk),
                 "schedule": schedule_desc,
                 "room": room_str,
+                "version": 0,
                 "status": sec_status,
                 "section_type": "SPECIAL" if len(chunk) < 15 else "REGULAR",
                 "min_students": 15,
@@ -949,6 +966,7 @@ for sem in SEMESTERS:
                 "start_period": start_p,
                 "end_period": end_p,
                 "room": room_str,
+                "version": 0,
                 "start_date": sem["start_date"],
                 "end_date": sem["end_date"]
             })
@@ -977,22 +995,79 @@ for sem in SEMESTERS:
                 "status": "FINALIZED" if sem_status == "COMPLETED" else "SCHEDULED"
             })
             
+            sec_has_cc2 = (random.random() < 0.90) if sem_status != "COMPLETED" else True
+            sec_has_midterm = (sec_has_cc2 and (random.random() < (0.85 / 0.90))) if sem_status != "COMPLETED" else True
+
+            # Generate Attendance Sessions for this CourseSection
+            start_date_obj = datetime.date.fromisoformat(sem["start_date"])
+            end_date_obj = datetime.date.fromisoformat(sem["end_date"])
+            current_date_obj = datetime.date(2026, 11, 8)
+            
+            py_weekday = (day_of_week - 2) % 7
+            days_ahead = (py_weekday - start_date_obj.weekday()) % 7
+            first_session_date = start_date_obj + datetime.timedelta(days=days_ahead)
+            
+            sec_session_defs = []
+            if sem_status == "COMPLETED":
+                for w in range(15):
+                    s_date = first_session_date + datetime.timedelta(weeks=w)
+                    if s_date > end_date_obj:
+                        break
+                    kw = "".join(random.choices("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", k=6))
+                    sec_session_defs.append((s_date, "SAVED", kw, None))
+            else:
+                # Active semester HK1-2026: up to current_date_obj (2026-11-08)
+                w = 0
+                while w < 15:
+                    s_date = first_session_date + datetime.timedelta(weeks=w)
+                    if s_date > current_date_obj:
+                        break
+                    if s_date == current_date_obj:
+                        kw = "".join(random.choices("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", k=6))
+                        exp = f"{s_date} 23:59:59"
+                        sec_session_defs.append((s_date, "OPEN", kw, exp))
+                    else:
+                        kw = "".join(random.choices("ABCDEFGHJKLMNPQRSTUVWXYZ23456789", k=6))
+                        sec_session_defs.append((s_date, "SAVED", kw, None))
+                    w += 1
+                
+                # Ensure sections in HK7 have active OPEN sessions on current_date_obj for live demo
+                existing_dates = {sd[0] for sd in sec_session_defs}
+                if sem_id == 7 and hk7_open_count < 15 and current_date_obj not in existing_dates:
+                    demo_kw = f"PK{curr_sec_id:04d}"[-6:]
+                    exp = f"{current_date_obj} 23:59:59"
+                    sec_session_defs.append((current_date_obj, "OPEN", demo_kw, exp))
+                    hk7_open_count += 1
+
+            sec_session_meta = []
+            for s_date, s_status, s_kw, s_exp in sec_session_defs:
+                sess_id = attendance_session_id_counter
+                attendance_session_id_counter += 1
+                
+                attendance_sessions.append({
+                    "id": sess_id,
+                    "section_id": curr_sec_id,
+                    "session_date": s_date.isoformat(),
+                    "attendance_keyword": s_kw,
+                    "status": s_status,
+                    "expires_at": s_exp,
+                    "created_at": f"{s_date} 07:30:00"
+                })
+                sec_session_meta.append((sess_id, s_status))
+
+            past_session_ids = [s_id for s_id, st in sec_session_meta if st == "SAVED"]
+            open_session_ids = [s_id for s_id, st in sec_session_meta if st == "OPEN"]
+            K = len(past_session_ids)
+            credits = sub_info["credits"]
+            total_course_periods = credits * 15
+            min_absent_for_disqualify = 3 if credits >= 3 else 2
+
             for st_id, is_retake in chunk:
                 curr_enroll_id = enrollment_id_counter
                 enrollment_id_counter += 1
                 
                 enroll_status = "COMPLETED" if sem_status == "COMPLETED" else "ENROLLED"
                 enroll_type = "RETAKE" if is_retake else "FIRST_TIME"
-                
-                enrollments.append({
-                    "id": curr_enroll_id,
-                    "student_id": st_id,
-                    "section_id": curr_sec_id,
-                    "enrolled_at": f"{sem['start_date']} 08:30:00",
-                    "status": enroll_status,
-                    "enrollment_type": enroll_type,
-                    "attendance_status": "QUALIFIED"
-                })
                 
                 inv_status = "PAID" if sem_status == "COMPLETED" else ("PAID" if random.random() < 0.75 else "UNPAID")
                 paid_at_str = f"{sem['start_date']} 14:00:00" if inv_status == "PAID" else None
@@ -1017,97 +1092,230 @@ for sem in SEMESTERS:
                 
                 sbd_str = f"{sub_info['code']}-{curr_enroll_id:05d}"
                 ability = STUDENT_ABILITIES[st_id]
-                
-                if sem_status == "COMPLETED":
-                    cc1 = round(min(10.0, max(6.0, ability + random.gauss(0.5, 0.4))), 1)
-                    cc2 = round(min(10.0, max(6.0, ability + random.gauss(0.4, 0.4))), 1)
-                    mid = round(min(10.0, max(3.0, ability + random.gauss(0.0, 0.6))), 1)
-                    final_exam = round(min(10.0, max(1.5, ability + random.gauss(-0.2, 0.8))), 1)
-                    
-                    total = round(cc1 * 0.05 + cc2 * 0.05 + mid * 0.30 + final_exam * 0.60, 2)
-                    
-                    if final_exam < 3.0 or total < 4.0:
-                        letter = "F"
-                        gpa = 0.0
-                        student_failed[st_id].add(sub_id)
-                    else:
-                        if total >= 8.5:   letter, gpa = "A", 4.0
-                        elif total >= 8.0: letter, gpa = "B+", 3.5
-                        elif total >= 7.0: letter, gpa = "B", 3.0
-                        elif total >= 6.5: letter, gpa = "C+", 2.5
-                        elif total >= 5.5: letter, gpa = "C", 2.0
-                        elif total >= 5.0: letter, gpa = "D+", 1.5
-                        else:              letter, gpa = "D", 1.0
-                        
-                        student_passed[st_id].add(sub_id)
-                        if sub_id in student_failed[st_id]:
-                            student_failed[st_id].remove(sub_id)
-                    
-                    curr_grade_id = grade_id_counter
-                    grade_id_counter += 1
-                    
-                    grades.append({
-                        "id": curr_grade_id,
-                        "enrollment_id": curr_enroll_id,
-                        "cc1_score": cc1,
-                        "cc2_score": cc2,
-                        "midterm_score": mid,
-                        "final_score": final_exam,
-                        "total_score": total,
-                        "letter_grade": letter,
-                        "gpa_point": gpa,
-                        "is_finalized": 1,
-                        "finalized_at": f"{sem['end_date']} 16:00:00",
-                        "special_grade": "NONE"
-                    })
-                    
-                    exam_rosters.append({
-                        "id": exam_roster_id_counter,
-                        "exam_room_id": exam_rm_id,
-                        "enrollment_id": curr_enroll_id,
-                        "student_id": st_id,
-                        "sbd": sbd_str,
-                        "score": final_exam,
-                        "special_grade": "NONE",
-                        "scored_at": f"{sem['end_date']} 15:30:00",
-                        "scored_by": 1
-                    })
-                    exam_roster_id_counter += 1
-                else:
-                    has_cc = (random.random() < 0.60)
-                    cc1 = round(min(10.0, max(6.0, ability + random.gauss(0.5, 0.4))), 1) if has_cc else None
-                    cc2 = round(min(10.0, max(6.0, ability + random.gauss(0.4, 0.4))), 1) if has_cc else None
-                    
-                    grades.append({
-                        "id": grade_id_counter,
-                        "enrollment_id": curr_enroll_id,
-                        "cc1_score": cc1,
-                        "cc2_score": cc2,
-                        "midterm_score": None,
-                        "final_score": None,
-                        "total_score": None,
-                        "letter_grade": None,
-                        "gpa_point": None,
-                        "is_finalized": 0,
-                        "finalized_at": None,
-                        "special_grade": "NONE"
-                    })
-                    grade_id_counter += 1
-                    
-                    exam_rosters.append({
-                        "id": exam_roster_id_counter,
-                        "exam_room_id": exam_rm_id,
-                        "enrollment_id": curr_enroll_id,
-                        "student_id": st_id,
-                        "sbd": sbd_str,
-                        "score": None,
-                        "special_grade": "NONE",
-                        "scored_at": None,
-                        "scored_by": None
-                    })
-                    exam_roster_id_counter += 1
 
-print(f"Simulation summary: Sections={len(sections)}, Enrollments={len(enrollments)}, Grades={len(grades)}")
+                # Realistic Attendance distribution correlated with student ability
+                if ability < 4.0:
+                    disqualify_prob = 0.35
+                    moderate_prob = 0.30
+                elif ability < 5.5:
+                    disqualify_prob = 0.15
+                    moderate_prob = 0.28
+                elif ability < 7.0:
+                    disqualify_prob = 0.045
+                    moderate_prob = 0.18
+                elif ability < 8.5:
+                    disqualify_prob = 0.015
+                    moderate_prob = 0.10
+                else:
+                    disqualify_prob = 0.003
+                    moderate_prob = 0.05
+                
+                rand_att = random.random()
+                if rand_att < disqualify_prob and K >= min_absent_for_disqualify:
+                    is_disqualified = True
+                    num_absent = min(K, random.randint(min_absent_for_disqualify, min_absent_for_disqualify + 2))
+                    absent_sess_indices = set(random.sample(range(K), num_absent))
+                    attendance_status = "DISQUALIFIED"
+                elif rand_att < (disqualify_prob + moderate_prob) and K > 0:
+                    is_disqualified = False
+                    max_safe = min_absent_for_disqualify - 1
+                    num_absent = random.randint(1, max(1, max_safe))
+                    num_absent = min(K, num_absent)
+                    absent_sess_indices = set(random.sample(range(K), num_absent))
+                    attendance_status = "QUALIFIED"
+                else:
+                    is_disqualified = False
+                    if credits >= 3 and random.random() < 0.15 and K > 0:
+                        num_absent = 1
+                        absent_sess_indices = set(random.sample(range(K), 1))
+                    else:
+                        num_absent = 0
+                        absent_sess_indices = set()
+                    attendance_status = "QUALIFIED"
+
+                # Generate attendance records for past sessions
+                for idx, sess_id in enumerate(past_session_ids):
+                    is_pres = (idx not in absent_sess_indices)
+                    attendance_records.append({
+                        "id": attendance_record_id_counter,
+                        "session_id": sess_id,
+                        "enrollment_id": curr_enroll_id,
+                        "is_present": is_pres
+                    })
+                    attendance_record_id_counter += 1
+                
+                # Generate attendance records for open sessions (today)
+                for sess_id in open_session_ids:
+                    is_pres = (random.random() < 0.25)
+                    attendance_records.append({
+                        "id": attendance_record_id_counter,
+                        "session_id": sess_id,
+                        "enrollment_id": curr_enroll_id,
+                        "is_present": is_pres
+                    })
+                    attendance_record_id_counter += 1
+
+                enrollments.append({
+                    "id": curr_enroll_id,
+                    "student_id": st_id,
+                    "section_id": curr_sec_id,
+                    "enrolled_at": f"{sem['start_date']} 08:30:00",
+                    "status": enroll_status,
+                    "enrollment_type": enroll_type,
+                    "attendance_status": attendance_status
+                })
+
+                absent_periods = num_absent * 3
+                absent_rate = absent_periods / total_course_periods
+
+                if is_disqualified:
+                    # Disqualified by Cross-Cutting Rule A: Cấm thi
+                    if sem_status == "COMPLETED":
+                        student_failed[st_id].add(sub_id)
+                        grades.append({
+                            "id": grade_id_counter,
+                            "enrollment_id": curr_enroll_id,
+                            "cc1_score": 0.0,
+                            "cc2_score": 0.0,
+                            "midterm_score": 0.0,
+                            "final_score": 0.0,
+                            "total_score": 0.0,
+                            "letter_grade": "F",
+                            "gpa_point": 0.0,
+                            "is_finalized": 1,
+                            "finalized_at": f"{sem['end_date']} 16:00:00",
+                            "special_grade": "NONE"
+                        })
+                        grade_id_counter += 1
+                    else:
+                        grades.append({
+                            "id": grade_id_counter,
+                            "enrollment_id": curr_enroll_id,
+                            "cc1_score": 0.0,
+                            "cc2_score": 0.0 if sec_has_cc2 else None,
+                            "midterm_score": 0.0 if sec_has_midterm else None,
+                            "final_score": 0.0,
+                            "total_score": 0.0,
+                            "letter_grade": "F",
+                            "gpa_point": 0.0,
+                            "is_finalized": 0,
+                            "finalized_at": None,
+                            "special_grade": "NONE"
+                        })
+                        grade_id_counter += 1
+                    
+                    # Do NOT append to exam_rosters! (Excluded from final exam)
+
+                    # ATTENDANCE_WARNING notification
+                    notif_date = f"{sem['start_date']} 17:00:00" if sem_status == "COMPLETED" else "2026-11-06 17:00:00"
+                    notifications.append({
+                        "id": notification_id_counter,
+                        "student_id": st_id,
+                        "title": f"Cảnh báo cấm thi: {sub_info['code']}",
+                        "message": f"Bạn đã nghỉ quá 20% số tiết môn {sub_info['code']} - {sub_info['name']} ({absent_periods}/{total_course_periods} tiết, {absent_rate*100:.1f}%) và bị cấm thi theo quy chế.",
+                        "type": "ATTENDANCE_WARNING",
+                        "related_id": curr_sec_id,
+                        "is_read": 1 if sem_status == "COMPLETED" else 0,
+                        "created_at": notif_date
+                    })
+                    notification_id_counter += 1
+
+                else:
+                    # Qualified student: CC1 maps to attendance
+                    if num_absent == 0:
+                        cc1 = round(min(10.0, max(9.0, 10.0 - random.choice([0.0, 0.0, 0.0, 0.5]))), 1)
+                    elif num_absent == 1:
+                        cc1 = round(min(9.0, max(8.0, 8.5 + random.choice([-0.5, 0.0, 0.5]))), 1)
+                    else:
+                        cc1 = round(min(8.0, max(6.5, 7.0 + random.choice([-0.5, 0.0, 0.5]))), 1)
+                    
+                    if sem_status == "COMPLETED":
+                        cc2 = round(min(10.0, max(6.0, ability + random.gauss(0.4, 0.4))), 1)
+                        mid = round(min(10.0, max(3.0, ability + random.gauss(0.0, 0.6))), 1)
+                        final_exam = round(min(10.0, max(1.5, ability + random.gauss(-0.2, 0.8))), 1)
+                        
+                        total = round(cc1 * 0.05 + cc2 * 0.05 + mid * 0.30 + final_exam * 0.60, 2)
+                        
+                        if final_exam < 3.0 or total < 4.0:
+                            letter = "F"
+                            gpa = 0.0
+                            student_failed[st_id].add(sub_id)
+                        else:
+                            if total >= 8.5:   letter, gpa = "A", 4.0
+                            elif total >= 8.0: letter, gpa = "B+", 3.5
+                            elif total >= 7.0: letter, gpa = "B", 3.0
+                            elif total >= 6.5: letter, gpa = "C+", 2.5
+                            elif total >= 5.5: letter, gpa = "C", 2.0
+                            elif total >= 5.0: letter, gpa = "D+", 1.5
+                            else:              letter, gpa = "D", 1.0
+                            
+                            student_passed[st_id].add(sub_id)
+                            if sub_id in student_failed[st_id]:
+                                student_failed[st_id].remove(sub_id)
+                        
+                        grades.append({
+                            "id": grade_id_counter,
+                            "enrollment_id": curr_enroll_id,
+                            "cc1_score": cc1,
+                            "cc2_score": cc2,
+                            "midterm_score": mid,
+                            "final_score": final_exam,
+                            "total_score": total,
+                            "letter_grade": letter,
+                            "gpa_point": gpa,
+                            "is_finalized": 1,
+                            "finalized_at": f"{sem['end_date']} 16:00:00",
+                            "special_grade": "NONE"
+                        })
+                        grade_id_counter += 1
+                        
+                        exam_rosters.append({
+                            "id": exam_roster_id_counter,
+                            "exam_room_id": exam_rm_id,
+                            "enrollment_id": curr_enroll_id,
+                            "student_id": st_id,
+                            "sbd": sbd_str,
+                            "score": final_exam,
+                            "special_grade": "NONE",
+                            "scored_at": f"{sem['end_date']} 15:30:00",
+                            "scored_by": 1
+                        })
+                        exam_roster_id_counter += 1
+                    else:
+                        # Active semester HK1-2026
+                        cc2 = round(min(10.0, max(5.0, ability + random.gauss(0.4, 0.4))), 1) if sec_has_cc2 else None
+                        mid = round(min(10.0, max(1.0, ability + random.gauss(0.0, 0.8))), 1) if sec_has_midterm else None
+                        
+                        grades.append({
+                            "id": grade_id_counter,
+                            "enrollment_id": curr_enroll_id,
+                            "cc1_score": cc1,
+                            "cc2_score": cc2,
+                            "midterm_score": mid,
+                            "final_score": None,
+                            "total_score": None,
+                            "letter_grade": None,
+                            "gpa_point": None,
+                            "is_finalized": 0,
+                            "finalized_at": None,
+                            "special_grade": "NONE"
+                        })
+                        grade_id_counter += 1
+                        
+                        exam_rosters.append({
+                            "id": exam_roster_id_counter,
+                            "exam_room_id": exam_rm_id,
+                            "enrollment_id": curr_enroll_id,
+                            "student_id": st_id,
+                            "sbd": sbd_str,
+                            "score": None,
+                            "special_grade": "NONE",
+                            "scored_at": None,
+                            "scored_by": None
+                        })
+                        exam_roster_id_counter += 1
+
+print(f"Simulation summary: Sections={len(sections)}, Enrollments={len(enrollments)}, Sessions={len(attendance_sessions)}, Records={len(attendance_records)}, Grades={len(grades)}, Rosters={len(exam_rosters)}, Notifications={len(notifications)}")
 
 print("--- STEP 5: SQL SERIALIZATION & DB IMPORT ---")
 
@@ -1201,8 +1409,8 @@ sql_parts.append(chunk_inserts("lecturers", [
 ], LECTURERS, chunk_size=100))
 
 sql_parts.append("-- 9. SUBJECTS")
-sql_parts.append(chunk_inserts("subjects", ["id", "subject_code", "subject_name", "credits", "description", "department_id"], [
-    {"id": s["id"], "subject_code": s["code"], "subject_name": s["name"], "credits": s["credits"], "description": s["desc"], "department_id": s["dept"]}
+sql_parts.append(chunk_inserts("subjects", ["id", "subject_code", "subject_name", "credits", "description", "department_id", "version"], [
+    {"id": s["id"], "subject_code": s["code"], "subject_name": s["name"], "credits": s["credits"], "description": s["desc"], "department_id": s["dept"], "version": 0}
     for s in SUBJECTS.values()
 ], chunk_size=100))
 
@@ -1229,19 +1437,27 @@ sql_parts.append(chunk_inserts("students", [
 sql_parts.append("-- 13. COURSE SECTIONS")
 sql_parts.append(chunk_inserts("course_sections", [
     "id", "section_code", "subject_id", "lecturer_id", "semester_id",
-    "max_students", "enrolled_count", "schedule", "room", "status",
+    "max_students", "enrolled_count", "schedule", "room", "version", "status",
     "section_type", "min_students", "scale_coefficient", "base_tuition_rate", "grade_submission_status"
 ], sections, chunk_size=100))
 
 sql_parts.append("-- 14. SCHEDULES")
 sql_parts.append(chunk_inserts("schedules", [
-    "id", "section_id", "day_of_week", "start_period", "end_period", "room", "start_date", "end_date"
+    "id", "section_id", "day_of_week", "start_period", "end_period", "room", "version", "start_date", "end_date"
 ], schedules, chunk_size=100))
 
 sql_parts.append("-- 15. ENROLLMENTS")
 sql_parts.append(chunk_inserts("enrollments", [
     "id", "student_id", "section_id", "enrolled_at", "status", "enrollment_type", "attendance_status"
 ], enrollments, chunk_size=200))
+
+sql_parts.append("-- 15.1 ATTENDANCE SESSIONS")
+sql_parts.append(chunk_inserts("attendance_sessions", [
+    "id", "section_id", "session_date", "attendance_keyword", "status", "expires_at", "created_at"
+], attendance_sessions, chunk_size=200))
+
+sql_parts.append("-- 15.2 ATTENDANCE RECORDS")
+sql_parts.append(chunk_attendance_records(attendance_records, chunk_size=500))
 
 sql_parts.append("-- 16. GRADES")
 sql_parts.append(chunk_inserts("grades", [
@@ -1270,6 +1486,11 @@ sql_parts.append("-- 18.2 EXAM ROSTERS")
 sql_parts.append(chunk_inserts("exam_rosters", [
     "id", "exam_room_id", "enrollment_id", "student_id", "sbd", "score", "special_grade", "scored_at", "scored_by"
 ], exam_rosters, chunk_size=200))
+
+sql_parts.append("-- 18.3 NOTIFICATIONS")
+sql_parts.append(chunk_inserts("notifications", [
+    "id", "student_id", "title", "message", "type", "related_id", "is_read", "created_at"
+], notifications, chunk_size=200))
 
 sql_parts.append("""-- 19. SYSTEM CONFIGS & CONDUCT SCORES
 INSERT INTO system_configs (config_key, config_value, description, created_at, updated_at) VALUES

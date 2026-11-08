@@ -10,10 +10,10 @@ const BASE_URL = process.env.API_URL || 'http://localhost:8080';
 
 async function prepareTokens() {
   console.log('--- 1. Quét 100 sinh viên hợp lệ từ MySQL ---');
-  const sql = "SELECT s.id, s.student_code, s.full_name, u.username FROM students s JOIN users u ON s.user_id = u.id JOIN classes c ON s.class_id = c.id JOIN curriculum_programs cp ON cp.major_id = c.major_id AND cp.cohort_id = c.cohort_id JOIN curriculum_blocks cb ON cb.program_id = cp.id JOIN curriculum_block_subjects cbs ON cbs.block_id = cb.id AND cbs.subject_id = 1 WHERE s.status = 'ACTIVE' AND (s.financial_hold = 0 OR s.financial_hold IS NULL) AND (s.academic_warning_level IS NULL OR s.academic_warning_level = 0) AND (SELECT COALESCE(SUM(sub.credits), 0) FROM enrollments e JOIN course_sections cs ON e.section_id = cs.id JOIN subjects sub ON sub.id = cs.subject_id WHERE e.student_id = s.id AND cs.semester_id = 5 AND e.status != 'CANCELLED') + 3 <= 24 AND NOT EXISTS (SELECT 1 FROM enrollments e JOIN course_sections cs ON e.section_id = cs.id WHERE e.student_id = s.id AND cs.semester_id = 5 AND cs.subject_id = 1 AND e.status != 'CANCELLED') ORDER BY s.id ASC LIMIT 100;";
+  const sql = "SELECT s.id, s.student_code, s.full_name, u.username FROM students s JOIN users u ON s.user_id = u.id JOIN classes c ON s.class_id = c.id JOIN curriculum_programs cp ON cp.major_id = c.major_id AND cp.cohort_id = c.cohort_id JOIN curriculum_blocks cb ON cb.program_id = cp.id JOIN curriculum_block_subjects cbs ON cbs.block_id = cb.id AND cbs.subject_id = 1 WHERE s.status = 'ACTIVE' AND (s.financial_hold = 0 OR s.financial_hold IS NULL) AND (s.academic_warning_level IS NULL OR s.academic_warning_level = 0) AND (SELECT COALESCE(SUM(sub.credits), 0) FROM enrollments e JOIN course_sections cs ON e.section_id = cs.id JOIN subjects sub ON sub.id = cs.subject_id WHERE e.student_id = s.id AND cs.semester_id = 7 AND e.status != 'CANCELLED') + 3 <= 24 AND NOT EXISTS (SELECT 1 FROM enrollments e JOIN course_sections cs ON e.section_id = cs.id WHERE e.student_id = s.id AND cs.semester_id = 7 AND cs.subject_id = 1 AND e.status != 'CANCELLED') ORDER BY s.id ASC LIMIT 100;";
 
-  const cmd = `docker exec student_management_db mysql -u sms_app -psms_dev_pw student_management -N -e "${sql}"`;
-  const raw = execSync(cmd, { encoding: 'utf8' });
+  const cmd = `docker exec -i student_management_db mysql -u sms_app -psms_dev_pw --default-character-set=utf8mb4 student_management -N`;
+  const raw = execSync(cmd, { input: sql, encoding: 'utf8' });
   const lines = raw.trim().split('\n').filter(Boolean);
 
   const students = lines.map(line => {

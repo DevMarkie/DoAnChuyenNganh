@@ -15,7 +15,8 @@ import {
   ArrowRight,
   X,
   RefreshCw,
-  BookOpen
+  BookOpen,
+  ChevronDown
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { examService, semesterService, subjectService } from "../../services/dataService";
@@ -80,28 +81,47 @@ export default function ExamRoomsPage() {
     init();
   }, []);
 
-  // Load Sessions when Semester changes
+  const [expandedSessionIds, setExpandedSessionIds] = useState(new Set());
+  const [sessionRoomsMap, setSessionRoomsMap] = useState({});
+  const [loadingRoomsSessionId, setLoadingRoomsSessionId] = useState(null);
+
+  const fetchSessionRooms = useCallback(async (sessionId) => {
+    try {
+      setLoadingRoomsSessionId(sessionId);
+      const res = await examService.getRoomsBySession(sessionId);
+      const rooms = res.data?.data || res.data || [];
+      setSessionRoomsMap(prev => ({ ...prev, [sessionId]: rooms }));
+      return rooms;
+    } catch {
+      toast.error("Không thể tải danh sách phòng thi");
+      return [];
+    } finally {
+      setLoadingRoomsSessionId(null);
+    }
+  }, []);
+
+  const toggleSessionExpand = useCallback(async (sessionId) => {
+    const isExpanding = !expandedSessionIds.has(sessionId);
+    setExpandedSessionIds(prev => {
+      const next = new Set(prev);
+      if (next.has(sessionId)) next.delete(sessionId);
+      else next.add(sessionId);
+      return next;
+    });
+
+    if (isExpanding && !sessionRoomsMap[sessionId]) {
+      await fetchSessionRooms(sessionId);
+    }
+  }, [expandedSessionIds, sessionRoomsMap, fetchSessionRooms]);
+
+  // Load Sessions when Semester changes - 1 single fast request without N+1 storm
   const fetchSessions = useCallback(async () => {
     if (!selectedSemesterId) return;
     try {
       setLoading(true);
       const res = await examService.getSessionsBySemester(Number(selectedSemesterId));
       const list = res.data?.data || res.data || [];
-
-      // For each session, fetch its rooms
-      const sessionsWithRooms = await Promise.all(
-        list.map(async (sess) => {
-          try {
-            const roomRes = await examService.getRoomsBySession(sess.id);
-            const rooms = roomRes.data?.data || roomRes.data || [];
-            return { ...sess, rooms };
-          } catch {
-            return { ...sess, rooms: [] };
-          }
-        })
-      );
-
-      setSessions(sessionsWithRooms);
+      setSessions(list);
     } catch {
       toast.error("Không thể tải danh sách ca thi");
     } finally {
@@ -184,8 +204,11 @@ export default function ExamRoomsPage() {
         locationPrefix: autoAssignForm.locationPrefix.trim()
       });
       toast.success(`Tự động phân phòng và cấp SBD thành công cho ca thi!`);
+      const targetSessionId = autoAssignSession.id;
       setAutoAssignSession(null);
-      fetchSessions();
+      await fetchSessions();
+      await fetchSessionRooms(targetSessionId);
+      setExpandedSessionIds(prev => new Set(prev).add(targetSessionId));
     } catch (err) {
       toast.error(err.response?.data?.message || "Lỗi khi phân phòng thi tự động");
     }
@@ -418,7 +441,7 @@ export default function ExamRoomsPage() {
                       </span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
                         <Building size={14} style={{ color: "var(--secondary)" }} />
-                        <strong>{session.rooms?.length || 0}</strong> phòng thi
+                        <strong>{session.totalRooms ?? (sessionRoomsMap[session.id] || session.rooms || []).length}</strong> phòng thi
                       </span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
                         <Users size={14} style={{ color: "var(--success)" }} />
@@ -430,6 +453,22 @@ export default function ExamRoomsPage() {
 
                 {/* Session Action Buttons */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline"
+                    onClick={() => toggleSessionExpand(session.id)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                  >
+                    {loadingRoomsSessionId === session.id ? (
+                      <span>Đang tải...</span>
+                    ) : (
+                      <>
+                        <span>{expandedSessionIds.has(session.id) ? "Thu gọn phòng" : `Xem phòng (${session.totalRooms ?? (sessionRoomsMap[session.id] || session.rooms || []).length})`}</span>
+                        <ChevronDown size={14} style={{ transform: expandedSessionIds.has(session.id) ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+                      </>
+                    )}
+                  </button>
+
                   <button
                     className="btn btn-sm btn-outline"
                     onClick={() => {
@@ -459,9 +498,19 @@ export default function ExamRoomsPage() {
                 </div>
               </div>
 
-              {/* Rooms Grid */}
-              <div style={{ padding: "20px" }}>
-                {(!session.rooms || session.rooms.length === 0) ? (
+              {/* Rooms Grid - Lazy Loaded */}
+              {expandedSessionIds.has(session.id) && (() => {
+                const currentRooms = sessionRoomsMap[session.id] || session.rooms || [];
+                if (loadingRoomsSessionId === session.id && currentRooms.length === 0) {
+                  return (
+                    <div style={{ padding: "28px 20px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.88rem" }}>
+                      Đang tải danh sách phòng thi...
+                    </div>
+                  );
+                }
+                return (
+                  <div style={{ padding: "20px" }}>
+                    {currentRooms.length === 0 ? (
                   <div
                     style={{
                       border: "2px dashed var(--border-color)",
@@ -491,7 +540,7 @@ export default function ExamRoomsPage() {
                       gap: "16px"
                     }}
                   >
-                    {session.rooms.map((room) => {
+                    {currentRooms.map((room) => {
                       const isScored = room.status === "SCORED";
                       const studentCount = room.studentCount || 0;
                       const scoredCount = room.scoredCount || 0;
@@ -621,6 +670,8 @@ export default function ExamRoomsPage() {
                   </div>
                 )}
               </div>
+                );
+              })()}
             </div>
           ))}
         </div>

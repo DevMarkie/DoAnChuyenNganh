@@ -150,6 +150,19 @@ export default function StudentsPage() {
     });
   }, [students, search, selectedDepartment, selectedCohort, selectedClass, selectedStatus]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 50;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedDepartment, selectedCohort, selectedClass, selectedStatus]);
+
+  const totalPages = Math.ceil(filteredStudents.length / PAGE_SIZE) || 1;
+  const pagedStudents = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredStudents.slice(start, start + PAGE_SIZE);
+  }, [filteredStudents, currentPage]);
+
   const handleOpenModal = (student = null) => {
     if (student) {
       setEditingStudent(student);
@@ -339,7 +352,7 @@ export default function StudentsPage() {
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
               <input
                 type="text"
-                placeholder="Tìm theo mã SV, họ tên, email, SĐT..."
+                id="student-search-input" name="studentSearch" placeholder="Tìm theo mã SV, họ tên, email, SĐT..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="form-control"
@@ -369,7 +382,7 @@ export default function StudentsPage() {
             </div>
 
             {/* Cohort / Khóa học Filter */}
-            <select
+            <select id="student-filter-cohort" name="studentFilterCohort"
               value={selectedCohort}
               onChange={(e) => setSelectedCohort(e.target.value)}
               className="form-select"
@@ -383,7 +396,8 @@ export default function StudentsPage() {
             </select>
 
             {/* Department Filter */}
-            <select
+            <select id="student-filter-department" name="studentFilterDepartment"
+              aria-label="Lọc theo Khoa/Viện đào tạo"
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
               className="form-select"
@@ -396,7 +410,8 @@ export default function StudentsPage() {
             </select>
 
             {/* Class Filter */}
-            <select
+            <select id="student-filter-class" name="studentFilterClass"
+              aria-label="Lọc theo lớp sinh hoạt"
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
               className="form-select"
@@ -409,7 +424,8 @@ export default function StudentsPage() {
             </select>
 
             {/* Status Filter */}
-            <select
+            <select id="student-filter-status" name="studentFilterStatus"
+              aria-label="Lọc theo trạng thái sinh viên"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="form-select"
@@ -502,7 +518,7 @@ export default function StudentsPage() {
                   </td>
                 </tr>
               ) : (
-                filteredStudents.map((s) => {
+                pagedStudents.map((s) => {
                   const isStudying = s.status === 'STUDYING' || s.status === 'ACTIVE';
                   const isGraduated = s.status === 'GRADUATED';
                   const isSuspended = s.status === 'SUSPENDED';
@@ -594,8 +610,11 @@ export default function StudentsPage() {
 
                       {/* Status - Interactive Direct Changer */}
                       <td>
-                        <select
+                        <select id="student-filter-cohort" name="studentFilterCohort"
                           value={s.status === 'STUDYING' ? 'ACTIVE' : s.status}
+                          name={`student-status-${s.id}`}
+                          id={`student-status-${s.id}`}
+                          aria-label={`Đổi trạng thái sinh viên ${s.studentCode}`}
                           onChange={(e) => handleDirectStatusChange(s, e.target.value)}
                           className={`badge ${
                             isStudying ? 'badge-success'
@@ -671,20 +690,40 @@ export default function StudentsPage() {
           </table>
         </div>
 
-        {/* Scroll Info Footer */}
+        {/* Pagination Footer */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           padding: '12px 20px', borderTop: '1px solid var(--border-color)',
           fontSize: '0.85rem', color: 'var(--text-muted)',
-          backgroundColor: 'var(--bg-subtle)'
+          backgroundColor: 'var(--bg-subtle)', flexWrap: 'wrap', gap: '10px'
         }}>
           <span>
-            Đang hiển thị <strong>{filteredStudents.length}</strong> / <strong>{students.length}</strong> sinh viên
-            {filteredStudents.length < students.length && ' (đã áp dụng bộ lọc)'}
+            Hiển thị <strong>{filteredStudents.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}</strong> - <strong>{Math.min(currentPage * PAGE_SIZE, filteredStudents.length)}</strong> trên <strong>{filteredStudents.length}</strong> sinh viên
+            {filteredStudents.length < students.length && ' (đã lọc)'}
           </span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span>↕️</span> Cuộn chuột để xem tất cả sinh viên (không chia trang)
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              style={{ padding: '4px 12px', fontSize: '0.8rem', minHeight: '30px' }}
+            >
+              Trang trước
+            </button>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              style={{ padding: '4px 12px', fontSize: '0.8rem', minHeight: '30px' }}
+            >
+              Trang sau
+            </button>
+          </div>
         </div>
       </div>
 
@@ -759,7 +798,7 @@ export default function StudentsPage() {
                   {/* Giới tính */}
                   <div className="form-group">
                     <label className="form-label">Giới Tính</label>
-                    <select
+                    <select id="student-filter-cohort" name="studentFilterCohort"
                       value={formData.gender}
                       onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                       className="form-select"
@@ -798,7 +837,7 @@ export default function StudentsPage() {
                   {/* Lớp sinh hoạt */}
                   <div className="form-group">
                     <label className="form-label">Lớp Sinh Hoạt *</label>
-                    <select
+                    <select id="student-filter-cohort" name="studentFilterCohort"
                       required
                       value={formData.classId}
                       onChange={(e) => setFormData({ ...formData, classId: e.target.value })}
@@ -816,7 +855,7 @@ export default function StudentsPage() {
                   {/* Trạng thái */}
                   <div className="form-group">
                     <label className="form-label">Trạng Thái Đào Tạo</label>
-                    <select
+                    <select id="student-filter-cohort" name="studentFilterCohort"
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                       className="form-select"

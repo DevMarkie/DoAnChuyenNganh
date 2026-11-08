@@ -1,5 +1,5 @@
 import TableRowSkeleton from '../../components/common/TableRowSkeleton';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Plus, Edit2, Star, X, CalendarDays } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { semesterService } from '../../services/dataService';
@@ -75,8 +75,26 @@ export default function SemestersPage() {
     setIsModalOpen(true);
   };
 
+  const dateErrors = useMemo(() => {
+    const errors = [];
+    if (formData.startDate && formData.endDate && formData.startDate >= formData.endDate) {
+      errors.push('Ngày kết thúc học kỳ phải sau ngày bắt đầu học.');
+    }
+    if (formData.registrationStart && formData.registrationEnd && formData.registrationStart > formData.registrationEnd) {
+      errors.push('Hạn chót ĐK môn không thể trước ngày mở ĐK.');
+    }
+    if (formData.startDate && formData.registrationEnd && formData.registrationEnd > formData.startDate) {
+      errors.push(`Hạn chót ĐK môn (${formData.registrationEnd}) phải trước hoặc trùng ngày bắt đầu học (${formData.startDate}).`);
+    }
+    return errors;
+  }, [formData.startDate, formData.endDate, formData.registrationStart, formData.registrationEnd]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (dateErrors.length > 0) {
+      toast.error(dateErrors[0]);
+      return;
+    }
     try {
       if (editingSem) {
         await semesterService.update(editingSem.id, formData);
@@ -283,6 +301,7 @@ export default function SemestersPage() {
                   <input
                     type="date"
                     required
+                    max={formData.endDate || undefined}
                     value={formData.startDate}
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                     className="form-control"
@@ -293,6 +312,7 @@ export default function SemestersPage() {
                   <input
                     type="date"
                     required
+                    min={formData.startDate || undefined}
                     value={formData.endDate}
                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
                     className="form-control"
@@ -302,6 +322,7 @@ export default function SemestersPage() {
                   <label className="form-label">Bắt đầu mở ĐK môn</label>
                   <input
                     type="date"
+                    max={formData.startDate || formData.endDate || undefined}
                     value={formData.registrationStart}
                     onChange={(e) => setFormData({ ...formData, registrationStart: e.target.value })}
                     className="form-control"
@@ -311,11 +332,20 @@ export default function SemestersPage() {
                   <label className="form-label">Hạn chót ĐK môn</label>
                   <input
                     type="date"
+                    min={formData.registrationStart || undefined}
+                    max={formData.startDate || undefined}
                     value={formData.registrationEnd}
                     onChange={(e) => setFormData({ ...formData, registrationEnd: e.target.value })}
                     className="form-control"
                   />
                 </div>
+                {dateErrors.length > 0 && (
+                  <div style={{ gridColumn: '1 / -1', color: '#b91c1c', backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '8px 12px', borderRadius: '6px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {dateErrors.map((err, idx) => (
+                      <div key={idx}>⚠️ {err}</div>
+                    ))}
+                  </div>
+                )}
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label className="form-label">Trạng thái học kỳ *</label>
                   <select
@@ -334,7 +364,7 @@ export default function SemestersPage() {
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-outline" onClick={() => setIsModalOpen(false)}>Huỷ</button>
-                <button type="submit" className="btn btn-primary">{editingSem ? 'Lưu thay đổi' : 'Tạo học kỳ'}</button>
+                <button type="submit" className="btn btn-primary" disabled={dateErrors.length > 0}>{editingSem ? 'Lưu thay đổi' : 'Tạo học kỳ'}</button>
               </div>
             </form>
           </div>

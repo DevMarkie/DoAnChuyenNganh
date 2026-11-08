@@ -138,12 +138,14 @@ export default function GradeAuditLogsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
             {/* MSSV */}
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <label htmlFor="audit-filter-student-code" className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Mã sinh viên (MSSV)
               </label>
               <div style={{ position: 'relative' }}>
                 <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                 <input
+                  id="audit-filter-student-code"
+                  name="studentCode"
                   type="text"
                   placeholder="Nhập MSSV..."
                   value={studentCode}
@@ -156,10 +158,12 @@ export default function GradeAuditLogsPage() {
 
             {/* Thành phần điểm */}
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <label htmlFor="audit-filter-component" className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Đầu điểm
               </label>
               <select
+                id="audit-filter-component"
+                name="component"
                 value={component}
                 onChange={(e) => setComponent(e.target.value)}
                 className="form-select"
@@ -175,10 +179,12 @@ export default function GradeAuditLogsPage() {
 
             {/* Từ ngày */}
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <label htmlFor="audit-filter-start-date" className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Từ ngày
               </label>
               <input
+                id="audit-filter-start-date"
+                name="startDate"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -189,10 +195,12 @@ export default function GradeAuditLogsPage() {
 
             {/* Đến ngày */}
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              <label htmlFor="audit-filter-end-date" className="form-label" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 Đến ngày
               </label>
               <input
+                id="audit-filter-end-date"
+                name="endDate"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}

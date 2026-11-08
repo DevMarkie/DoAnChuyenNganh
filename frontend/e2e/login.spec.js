@@ -7,7 +7,7 @@ test('vào cổng đăng nhập quản trị từ hub', async ({ page }) => {
 
   await page.locator('[data-portal="admin"]').click();
 
-  await expect(page.getByPlaceholder('VD: admin')).toBeVisible();
+  await expect(page.getByPlaceholder(/admin/i)).toBeVisible();
   await expect(page.locator('input[type="password"]')).toBeVisible();
   await expect(page.getByRole('button', { name: /Đăng nhập/ })).toBeVisible();
 });

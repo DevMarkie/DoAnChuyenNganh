@@ -22,6 +22,7 @@ const {
   transcriptService,
 } = dataServices;
 import SmartScheduleModal from "./SmartScheduleModal";
+import SectionScheduleDetailModal from "../../components/student/SectionScheduleDetailModal";
 
 export default function EnrollPage() {
   const [currentSemester, setCurrentSemester] = useState(null);
@@ -35,6 +36,7 @@ export default function EnrollPage() {
   const [cancellingId, setCancellingId] = useState(null);
   const [filterTab, setFilterTab] = useState("all"); // 'all' | 'enrolled'
   const [smartModalOpen, setSmartModalOpen] = useState(false);
+  const [selectedDetailSection, setSelectedDetailSection] = useState(null);
   const [regStatus, setRegStatus] = useState(null);
   const [tuitionSummary, setTuitionSummary] = useState(null);
   const [transcriptData, setTranscriptData] = useState(null);
@@ -746,7 +748,12 @@ export default function EnrollPage() {
                   const isFull = (s.currentStudents || 0) >= s.maxStudents;
 
                   return (
-                    <tr key={s.id}>
+                    <tr
+                      key={s.id}
+                      onClick={() => setSelectedDetailSection(s)}
+                      style={{ cursor: "pointer" }}
+                      title="Bấm vào hàng để xem chi tiết lịch học & các buổi trong kỳ"
+                    >
                       <td>
                         <span
                           style={{
@@ -759,6 +766,7 @@ export default function EnrollPage() {
                             padding: "3px 8px",
                             borderRadius: "4px",
                             border: "1px solid var(--primary-border)",
+                            boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
                           }}
                         >
                           {s.sectionCode}
@@ -767,7 +775,10 @@ export default function EnrollPage() {
                       <td
                         style={{ fontWeight: 600, color: "var(--text-main)" }}
                       >
-                        {s.subject?.subjectName}
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          {s.subject?.subjectName}
+                          <Calendar size={13} style={{ color: "var(--primary)", opacity: 0.6 }} />
+                        </span>
                       </td>
                       <td>
                         <span className="badge badge-info">
@@ -798,7 +809,7 @@ export default function EnrollPage() {
                           {s.currentStudents || 0} / {s.maxStudents}
                         </span>
                       </td>
-                      <td style={{ textAlign: "right" }}>
+                      <td style={{ textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
                         {enrolled ? (
                           <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", justifyContent: "flex-end" }}>
                             <span
@@ -928,6 +939,22 @@ export default function EnrollPage() {
           enrolledSubjectIds={enrolledSubjectIds}
           onEnrollSection={handleEnroll}
           onClose={() => setSmartModalOpen(false)}
+        />
+      )}
+
+      {/* Section Schedule Detail Modal */}
+      {selectedDetailSection && (
+        <SectionScheduleDetailModal
+          section={selectedDetailSection}
+          isOpen={Boolean(selectedDetailSection)}
+          onClose={() => setSelectedDetailSection(null)}
+          isEnrolled={enrolledSectionIds.has(selectedDetailSection.id)}
+          enrolledSections={availableSections.filter((sec) => enrolledSectionIds.has(sec.id))}
+          onEnroll={handleEnroll}
+          onCancel={handleCancelEnrollment}
+          enrollmentId={enrolledSectionMap.get(selectedDetailSection.id)?.id}
+          isEnrolling={enrollingId === selectedDetailSection?.id || cancellingId === enrolledSectionMap.get(selectedDetailSection?.id)?.id}
+          canRegister={isEligibleToEnroll}
         />
       )}
     </div>

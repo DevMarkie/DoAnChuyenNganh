@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Award,
   BookOpen,
@@ -46,6 +46,19 @@ export default function TranscriptPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Sắp xếp học kỳ mới nhất lên đầu (descending); các môn trong kỳ sắp xếp theo mã môn (A-Z)
+  const sortedSemesters = useMemo(() => {
+    if (!transcript?.semesters) return [];
+    return [...transcript.semesters]
+      .sort((a, b) => (b.semesterId || 0) - (a.semesterId || 0))
+      .map((sem) => ({
+        ...sem,
+        courses: sem.courses
+          ? [...sem.courses].sort((a, b) => (a.subjectCode || '').localeCompare(b.subjectCode || ''))
+          : [],
+      }));
+  }, [transcript?.semesters]);
 
   const handleOpenAppeal = (course) => {
     setAppealCourse(course);
@@ -325,22 +338,51 @@ export default function TranscriptPage() {
         <div className="card" style={{ padding: '48px 20px', textAlign: 'center', marginTop: '24px', color: 'var(--text-muted)' }}>
           Đang tải bảng điểm học tập...
         </div>
-      ) : !transcript?.semesters || transcript.semesters.length === 0 ? (
+      ) : !sortedSemesters || sortedSemesters.length === 0 ? (
         <div className="card" style={{ padding: '48px 20px', textAlign: 'center', marginTop: '24px', color: 'var(--text-muted)' }}>
           Chưa có dữ liệu điểm học kỳ nào được ghi nhận trong hệ thống.
         </div>
       ) : (
-        transcript.semesters.map((sem, sIdx) => (
-          <div key={sem.semesterId || sIdx} className="card" style={{ marginTop: '24px' }}>
-            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <FileText size={18} style={{ color: 'var(--primary)' }} />
-                <h3 style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>
-                  {sem.academicYear && !sem.semesterName?.includes(sem.academicYear)
-                    ? `${sem.semesterName} (${sem.academicYear})`
-                    : sem.semesterName}
-                </h3>
-              </div>
+        sortedSemesters.map((sem, sIdx) => {
+          const isCurrentSem = sIdx === 0;
+          return (
+            <div
+              key={sem.semesterId || sIdx}
+              className="card"
+              style={{
+                marginTop: '24px',
+                border: isCurrentSem ? '2px solid var(--primary, #2563eb)' : undefined,
+                boxShadow: isCurrentSem ? '0 4px 16px rgba(37, 99, 235, 0.12)' : undefined,
+                position: 'relative'
+              }}
+            >
+              <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <FileText size={18} style={{ color: 'var(--primary)' }} />
+                  <h3 style={{ fontSize: '1.05rem', color: 'var(--text-main)', display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    {sem.academicYear && !sem.semesterName?.includes(sem.academicYear)
+                      ? `${sem.semesterName} (${sem.academicYear})`
+                      : sem.semesterName}
+                    {isCurrentSem && (
+                      <span
+                        className="badge badge-primary"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          backgroundColor: 'var(--primary, #2563eb)',
+                          color: '#ffffff',
+                          fontSize: '0.78rem',
+                          padding: '3px 8px',
+                          borderRadius: '9999px',
+                          fontWeight: 600
+                        }}
+                      >
+                        <CheckCircle2 size={13} /> Học kỳ hiện tại
+                      </span>
+                    )}
+                  </h3>
+                </div>
               <div style={{ display: 'flex', gap: '12px', fontSize: '0.9rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span>
                   GPA Kỳ: <strong style={{ color: 'var(--primary)', fontVariantNumeric: 'tabular-nums' }}>
@@ -359,6 +401,29 @@ export default function TranscriptPage() {
                 </span>
               </div>
             </div>
+
+            {sem.isOngoing && (
+              <div
+                style={{
+                  margin: '14px 20px 4px 20px',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                  border: '1px solid rgba(37, 99, 235, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  color: 'var(--primary, #2563eb)',
+                  fontSize: '0.86rem',
+                  fontWeight: 500
+                }}
+              >
+                <Clock size={16} style={{ flexShrink: 0 }} />
+                <span>
+                  {sem.publishNotice || 'Học kỳ đang diễn ra — Điểm các môn học sẽ được công bố sau ngày kết thúc học kỳ.'}
+                </span>
+              </div>
+            )}
 
             <div className="table-container table-mobile-cards">
               <table className="table">
@@ -391,7 +456,10 @@ export default function TranscriptPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sem.courses?.map((c, cIdx) => (
+                  {sem.courses?.map((c, cIdx) => {
+                    const isDraftOrOngoing = sem.isOngoing && !c.isFinalized;
+                    const isDisqualified = c.isDisqualified || c.attendanceStatus === 'DISQUALIFIED';
+                    return (
                     <tr key={cIdx}>
                       <td data-label="Mã môn"><span style={{
                             display: 'inline-block',
@@ -412,22 +480,22 @@ export default function TranscriptPage() {
                       <td data-label="Tên môn học" style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.subjectName}</td>
                       <td data-label="Số TC"><span className="badge badge-info">{c.credits} TC</span></td>
                       <td data-label="CC1 (5%)" style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
-                        {c.cc1Score != null ? Number(c.cc1Score).toFixed(1) : '—'}
+                        {(!isDraftOrOngoing && c.cc1Score != null) ? Number(c.cc1Score).toFixed(1) : '—'}
                       </td>
                       <td data-label="CC2 (5%)" style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
-                        {c.cc2Score != null ? Number(c.cc2Score).toFixed(1) : '—'}
+                        {(!isDraftOrOngoing && c.cc2Score != null) ? Number(c.cc2Score).toFixed(1) : '—'}
                       </td>
                       <td data-label="Giữa kỳ (30%)" style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
-                        {c.midtermScore != null ? Number(c.midtermScore).toFixed(1) : '—'}
+                        {(!isDraftOrOngoing && c.midtermScore != null) ? Number(c.midtermScore).toFixed(1) : '—'}
                       </td>
                       <td data-label="Cuối kỳ (60%)" style={{ textAlign: 'center', fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
-                        {c.finalScore != null ? Number(c.finalScore).toFixed(1) : '—'}
+                        {(!isDraftOrOngoing && c.finalScore != null) ? Number(c.finalScore).toFixed(1) : '—'}
                       </td>
                       <td data-label="Tổng kết (hệ 10)" style={{ textAlign: 'center', fontWeight: 700, fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums', color: 'var(--primary)' }}>
-                        {c.totalScore != null ? Number(c.totalScore).toFixed(1) : '—'}
+                        {(!isDraftOrOngoing && c.totalScore != null) ? Number(c.totalScore).toFixed(1) : '—'}
                       </td>
                       <td data-label="Hệ 4" style={{ textAlign: 'center', fontWeight: 600, fontFamily: 'var(--font-mono, monospace)', fontVariantNumeric: 'tabular-nums' }}>
-                        {c.gpaPoint != null ? Number(c.gpaPoint).toFixed(2) : '—'}
+                        {(!isDraftOrOngoing && c.gpaPoint != null) ? Number(c.gpaPoint).toFixed(2) : '—'}
                       </td>
                       <td data-label="Điểm chữ" style={{ textAlign: 'center' }}>
                         {c.status === 'ADJUSTING' || c.letterGrade === 'Đang điều chỉnh' ? (
@@ -446,7 +514,7 @@ export default function TranscriptPage() {
                           >
                             Đang điều chỉnh
                           </span>
-                        ) : c.isDisqualified || c.attendanceStatus === 'DISQUALIFIED' ? (
+                        ) : isDisqualified ? (
                           <span
                             className="badge badge-danger"
                             style={{
@@ -460,7 +528,20 @@ export default function TranscriptPage() {
                             }}
                             title="Nghỉ quá 20% số tiết học phần - Bị cấm thi theo quy chế"
                           >
-                            F (CẤM THI)
+                            Cấm thi
+                          </span>
+                        ) : isDraftOrOngoing ? (
+                          <span
+                            className="badge badge-info"
+                            style={{
+                              fontWeight: 600,
+                              fontSize: '0.75rem',
+                              padding: '3px 8px',
+                              whiteSpace: 'nowrap'
+                            }}
+                            title="Học phần đang diễn ra, chưa kết thúc và chưa chốt điểm chính thức"
+                          >
+                            Đang học
                           </span>
                         ) : (
                           <span
@@ -476,7 +557,7 @@ export default function TranscriptPage() {
                         )}
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        {c.canAppeal && !c.isDisqualified && c.attendanceStatus !== 'DISQUALIFIED' ? (
+                        {c.canAppeal && !isDisqualified ? (
                           <button
                             type="button"
                             className="btn btn-primary"
@@ -497,12 +578,14 @@ export default function TranscriptPage() {
                         )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           </div>
-        ))
+        );
+      })
       )}
       {/* Modal Nộp Đơn Phúc Khảo (Luồng 2) */}
       {appealCourse && (

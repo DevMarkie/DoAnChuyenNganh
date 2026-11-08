@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import com.sms.entity.Cohort;
 import com.sms.entity.CourseSection;
 import com.sms.entity.Enrollment;
@@ -98,7 +101,21 @@ public class TranscriptService {
                 .toList();
     }
 
+    private boolean isStaffOrAdminUser() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) return false;
+            return auth.getAuthorities().stream().anyMatch(a ->
+                    "ROLE_ADMIN".equals(a.getAuthority())
+                    || "ROLE_ACADEMIC_AFFAIRS".equals(a.getAuthority())
+                    || "ROLE_DEPARTMENT_HEAD".equals(a.getAuthority()));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private TranscriptResponse buildTranscript(Student student, List<Grade> grades) {
+        boolean isStaffOrAdmin = isStaffOrAdminUser();
         // Group by semester
         Map<Integer, List<Grade>> bySemester = grades.stream()
                 .collect(Collectors.groupingBy(g ->
@@ -112,6 +129,10 @@ public class TranscriptService {
             List<Grade> semGrades = entry.getValue();
             Semester semester = semGrades.get(0).getEnrollment().getSection().getSemester();
 
+            boolean isOngoing = Boolean.TRUE.equals(semester.getIsCurrent())
+                    || semester.getStatus() == Semester.SemesterStatus.ACTIVE
+                    || (semester.getEndDate() != null && semester.getEndDate().isAfter(LocalDate.now()));
+
             BigDecimal semWeightedGpa = BigDecimal.ZERO;
             int semCredits = 0;
             List<TranscriptResponse.CourseGrade> courseGrades = new ArrayList<>();
@@ -121,8 +142,15 @@ public class TranscriptService {
                 CourseSection section = grade.getEnrollment().getSection();
                 int credits = subject.getCredits();
                 boolean isFinalized = Boolean.TRUE.equals(grade.getIsFinalized());
-                LocalDateTime pubAt = section.getPublishedAt() != null ? section.getPublishedAt() : grade.getFinalizedAt();
+                boolean isDisqualified = grade.getEnrollment() != null && grade.getEnrollment().getAttendanceStatus() == AttendanceStatus.DISQUALIFIED;
+                LocalDateTime pubAt = section != null && section.getPublishedAt() != null ? section.getPublishedAt() : grade.getFinalizedAt();
                 boolean appealWindowValid = isFinalized && pubAt != null && pubAt.plusDays(7).isAfter(LocalDateTime.now());
+
+                // Quy tắc bảo mật công bố điểm: Nếu môn chưa chốt điểm chính thức (isFinalized=false)
+                // hoặc học kỳ đang diễn ra (isOngoing=true), sinh viên không được xem điểm nháp
+                boolean hideDraft = (isOngoing || !isFinalized) && !isStaffOrAdmin;
+
+                String displayLetter = isDisqualified ? "F (CẤM THI)" : (isFinalized ? grade.getLetterGrade() : "Đang học");
 
                 courseGrades.add(TranscriptResponse.CourseGrade.builder()
                         .enrollmentId(grade.getEnrollment().getId())
@@ -130,21 +158,21 @@ public class TranscriptService {
                         .sectionCode(section != null ? section.getSectionCode() : null)
                         .finalizedAt(isFinalized ? grade.getFinalizedAt() : null)
                         .publishedAt(pubAt)
-                        .canAppeal(appealWindowValid)
+                        .canAppeal(appealWindowValid && !isDisqualified)
                         .subjectCode(subject.getSubjectCode())
                         .subjectName(subject.getSubjectName())
                         .credits(credits)
-                        .cc1Score(grade.getCc1Score())
-                        .cc2Score(grade.getCc2Score())
-                        .midtermScore(grade.getMidtermScore())
-                        .finalScore(isFinalized ? grade.getFinalScore() : null)
-                        .totalScore(isFinalized ? grade.getTotalScore() : null)
-                        .letterGrade(isFinalized ? grade.getLetterGrade() : "Đang học / Chưa công bố")
-                        .gpaPoint(isFinalized ? grade.getGpaPoint() : null)
+                        .cc1Score(hideDraft ? null : grade.getCc1Score())
+                        .cc2Score(hideDraft ? null : grade.getCc2Score())
+                        .midtermScore(hideDraft ? null : grade.getMidtermScore())
+                        .finalScore((hideDraft || !isFinalized) ? null : grade.getFinalScore())
+                        .totalScore((hideDraft || !isFinalized) ? null : grade.getTotalScore())
+                        .letterGrade(displayLetter)
+                        .gpaPoint((hideDraft || !isFinalized) ? null : grade.getGpaPoint())
                         .isFinalized(isFinalized)
-                        .status(isFinalized ? "PUBLISHED" : "IN_PROGRESS")
+                        .status(isDisqualified ? "DISQUALIFIED" : (isFinalized ? "PUBLISHED" : "IN_PROGRESS"))
                         .attendanceStatus(grade.getEnrollment() != null && grade.getEnrollment().getAttendanceStatus() != null ? grade.getEnrollment().getAttendanceStatus().name() : "QUALIFIED")
-                        .isDisqualified(grade.getEnrollment() != null && grade.getEnrollment().getAttendanceStatus() == AttendanceStatus.DISQUALIFIED)
+                        .isDisqualified(isDisqualified)
                         .build());
 
                 if (isFinalized && grade.getGpaPoint() != null) {
@@ -163,6 +191,15 @@ public class TranscriptService {
             boolean isFirst = (semesterGrades.isEmpty());
             boolean isWarning = isSemesterWarning(semesterGpa, isFirst);
 
+            // Sắp xếp môn học trong kỳ theo mã môn tăng dần (A-Z)
+            courseGrades.sort(Comparator.comparing(TranscriptResponse.CourseGrade::getSubjectCode, Comparator.nullsLast(String::compareTo)));
+
+            String publishNotice = isOngoing
+                    ? String.format("Học kỳ đang diễn ra (%s – %s) — Điểm các môn học sẽ được công bố sau ngày kết thúc học kỳ.",
+                            semester.getStartDate() != null ? semester.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "",
+                            semester.getEndDate() != null ? semester.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "")
+                    : null;
+
             semesterGrades.add(TranscriptResponse.SemesterGrade.builder()
                     .semesterId(semester.getId())
                     .semesterName(semester.getSemesterName())
@@ -172,6 +209,8 @@ public class TranscriptService {
                     .semesterClassification(classifyAcademicStanding(semesterGpa))
                     .isSemesterWarning(isWarning)
                     .semesterCredits(semCredits)
+                    .isOngoing(isOngoing)
+                    .publishNotice(publishNotice)
                     .courses(courseGrades)
                     .build());
         }
@@ -248,6 +287,9 @@ public class TranscriptService {
             case 1 -> 14; // Cảnh báo mức 1: tối đa 14 TC
             default -> 24; // Bình thường: tối đa 24 TC
         };
+
+        // Đảo ngược thứ tự học kỳ sang giảm dần (kỳ mới nhất lên đầu) để sinh viên dễ theo dõi
+        semesterGrades.sort(Comparator.comparing(TranscriptResponse.SemesterGrade::getSemesterId).reversed());
 
         return TranscriptResponse.builder()
                 .studentId(student.getId())

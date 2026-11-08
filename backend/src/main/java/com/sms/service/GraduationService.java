@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -44,7 +45,7 @@ public class GraduationService {
         for (Student student : students) {
             GraduationEligibilityResponse eligibility = curriculumService.checkGraduationEligibility(student.getId());
 
-            GraduationRecord record = graduationRecordRepository.findByStudentId(student.getId())
+            GraduationRecord record = findExistingRecord(student.getId())
                     .orElseGet(() -> GraduationRecord.builder()
                             .student(student)
                             .cohort(cohort)
@@ -99,6 +100,20 @@ public class GraduationService {
         }
 
         return results;
+    }
+
+    /**
+     * A unique constraint now prevents duplicate records.  Keep a defensive
+     * fallback for databases that have not applied that migration yet, so a
+     * single legacy duplicate cannot abort a whole cohort assessment.
+     */
+    private java.util.Optional<GraduationRecord> findExistingRecord(Long studentId) {
+        try {
+            return graduationRecordRepository.findByStudentId(studentId);
+        } catch (IncorrectResultSizeDataAccessException exception) {
+            log.warn("Found duplicate graduation records for student {}; using the most recently updated record until the database migration is applied", studentId);
+            return graduationRecordRepository.findFirstByStudentIdOrderByUpdatedAtDescIdDesc(studentId);
+        }
     }
 
     public Page<GraduationRecord> getGraduationRecords(Integer cohortId, String status, Pageable pageable) {

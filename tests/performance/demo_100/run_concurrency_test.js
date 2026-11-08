@@ -55,33 +55,57 @@ async function runConcurrencyDemo(options = {}) {
     // ignore
   }
 
-  // 3. Đảm bảo học kỳ 5 mở đăng ký và có registration wave
+  // 3. Đảm bảo học kỳ hiện tại mở đăng ký và có registration wave
   execSync(
-    `docker exec student_management_db mysql -u sms_app -psms_dev_pw student_management -e "
-    UPDATE semesters SET registration_start = DATE_SUB(CURDATE(), INTERVAL 1 DAY), registration_end = DATE_ADD(CURDATE(), INTERVAL 30 DAY) WHERE id = 5;
+    `docker exec -i student_management_db mysql -u sms_app -psms_dev_pw --default-character-set=utf8mb4 student_management`,
+    {
+      input: `
+    UPDATE semesters SET status = 'ACTIVE', registration_start = DATE_SUB(CURDATE(), INTERVAL 1 DAY), registration_end = DATE_ADD(CURDATE(), INTERVAL 30 DAY) WHERE is_current = 1;
     INSERT INTO registration_waves (semester_id, name, shift_name, description, start_time, end_time, is_active, cohort_id, department_id, major_id, created_at, updated_at)
-    SELECT 5, 'Đợt ĐKHP Toàn Trường', 'Ca mở rộng', 'Đăng ký toàn trường', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), 1, NULL, NULL, NULL, NOW(), NOW()
-    FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM registration_waves WHERE semester_id = 5);
-    UPDATE registration_waves SET is_active = 1 WHERE semester_id = 5;
-  "`,
-    { stdio: "ignore" },
+    SELECT s.id, 'Đợt ĐKHP Toàn Trường', 'Ca mở rộng', 'Đăng ký toàn trường', DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), 1, NULL, NULL, NULL, NOW(), NOW()
+    FROM semesters s WHERE s.is_current = 1 AND NOT EXISTS (SELECT 1 FROM registration_waves rw WHERE rw.semester_id = s.id);
+    UPDATE registration_waves rw JOIN semesters s ON rw.semester_id = s.id SET rw.start_time = DATE_SUB(NOW(), INTERVAL 1 DAY), rw.end_time = DATE_ADD(NOW(), INTERVAL 30 DAY), rw.is_active = 1 WHERE s.is_current = 1;
+  `,
+      stdio: "ignore",
+    },
   );
+
+  // Lấy semester_id hiện tại (is_current = 1)
+  let currentSemesterId = 7;
+  try {
+    const semOut = execSync(
+      `docker exec student_management_db mysql -u sms_app -psms_dev_pw student_management -N -s -e "SELECT id FROM semesters WHERE is_current = 1 ORDER BY id DESC LIMIT 1;"`,
+      { encoding: "utf8" }
+    );
+    const parsedSemId = Number(
+      semOut
+        .trim()
+        .split(/\s+/)
+        .filter((x) => !x.startsWith("mysql:") && !x.includes("[Warning]"))
+        .pop()
+    );
+    if (parsedSemId && !isNaN(parsedSemId)) {
+      currentSemesterId = parsedSemId;
+    }
+  } catch (e) {
+    // fallback 7
+  }
 
   // 4. Tạo Lớp Học Phần mới
   const testSectionCode = `DEMO100_${Date.now().toString().slice(-6)}`;
   console.log(`\n[Bước 1] Khởi tạo Lớp Học Phần: ${testSectionCode}`);
   console.log(
-    `         Môn học: BS101 - Giải tích 1 (3 tín chỉ) | Sức chứa: ${capacity} chỗ ngồi`,
+    `         Môn học: BS101 - Giải tích 1 (3 tín chỉ) | Sức chứa: ${capacity} chỗ ngồi | Học kỳ ID: ${currentSemesterId}`,
   );
 
   const createSql = `
     INSERT INTO course_sections (section_code, subject_id, lecturer_id, semester_id, max_students, enrolled_count, schedule, room, status, section_type, min_students, scale_coefficient, base_tuition_rate, grade_submission_status)
-    VALUES ('${testSectionCode}', 1, 1, 5, ${capacity}, 0, 'Chủ Nhật (19:00-21:30)', 'LAB-ONLINE', 'OPEN', 'REGULAR', 1, 1.00, 450000.00, 'DRAFT');
+    VALUES ('${testSectionCode}', 1, 1, ${currentSemesterId}, ${capacity}, 0, 'Chủ Nhật (19:00-21:30)', 'LAB-ONLINE', 'OPEN', 'REGULAR', 1, 1.00, 450000.00, 'DRAFT');
     SELECT id FROM course_sections WHERE section_code = '${testSectionCode}';
   `;
   const out = execSync(
-    `docker exec student_management_db mysql -u sms_app -psms_dev_pw student_management -N -s -e "${createSql.replace(/\n/g, " ")}"`,
-    { encoding: "utf8" },
+    `docker exec -i student_management_db mysql -u sms_app -psms_dev_pw --default-character-set=utf8mb4 student_management -N -s`,
+    { input: createSql, encoding: "utf8" },
   );
   const sectionId = Number(out.trim().split(/\s+/)[0]);
 

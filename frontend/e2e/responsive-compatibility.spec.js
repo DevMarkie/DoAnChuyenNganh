@@ -1,11 +1,19 @@
 import { test, expect } from '@playwright/test';
 
+async function loginStudent(page) {
+  await page.goto('/student/login');
+  await page.fill('input[name="username"]', '2300001');
+  await page.fill('input[type="password"]', '123456');
+  await page.click('button[type="submit"]');
+  await page.waitForURL(/student\/dashboard/, { timeout: 10_000 });
+}
+
 test.describe('Responsive & Cross-Browser Compatibility (UI/UX)', () => {
 
   test('Hub & Cổng Đăng nhập không bị tràn ngang và input đạt chuẩn iOS 16px', async ({ page }) => {
     // 1. Kiểm tra Portal Hub trên mobile 390px
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/#/login');
+    await page.goto('/login');
     await expect(page.getByRole('heading', { name: /Chọn cổng/i })).toBeVisible();
 
     let isOverflowing = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
@@ -28,12 +36,7 @@ test.describe('Responsive & Cross-Browser Compatibility (UI/UX)', () => {
 
   test('Mobile Drawer Sidebar mở/đóng mượt mà qua nút Hamburger và nút Đóng/Backdrop', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/#/student/login');
-    await page.waitForSelector('button[type="submit"]');
-    await page.click('button[type="submit"]');
-
-    // Chờ vào Student Dashboard
-    await page.waitForURL(/student\/dashboard/, { timeout: 10_000 });
+    await loginStudent(page);
     await expect(page.locator('.app-header')).toBeVisible();
 
     // 1. Sidebar ban đầu ẩn khỏi màn hình
@@ -95,16 +98,14 @@ test.describe('Responsive & Cross-Browser Compatibility (UI/UX)', () => {
 
   test('Toàn bộ các trang sinh viên không bị vỡ layout trên Mobile 390px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/#/student/login');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/student\/dashboard/, { timeout: 10_000 });
+    await loginStudent(page);
 
     const studentRoutes = [
-      '/#/student/dashboard',
-      '/#/student/schedule',
-      '/#/student/transcript',
-      '/#/student/enroll',
-      '/#/student/profile'
+      '/student/dashboard',
+      '/student/schedule',
+      '/student/transcript',
+      '/student/enroll',
+      '/student/profile'
     ];
 
     for (const route of studentRoutes) {
@@ -123,9 +124,7 @@ test.describe('Responsive & Cross-Browser Compatibility (UI/UX)', () => {
 
   test('Kiểm tra chế độ Dark/Light Mode chuyển đổi đồng nhất không vỡ giao diện', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto('/#/student/login');
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/student\/dashboard/, { timeout: 10_000 });
+    await loginStudent(page);
 
     // Target nút theme trên header-right
     const themeToggleBtn = page.locator('[data-testid="theme-toggle-btn"], button[title*="chế độ"]').first();

@@ -5,7 +5,6 @@ import {
   Award, 
   CheckCircle2, 
   AlertTriangle, 
-  Play, 
   Download, 
   Search, 
   CheckCheck, 
@@ -25,7 +24,6 @@ export default function GraduationPage() {
   const [selectedCohort, setSelectedCohort] = useState(1);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [evaluating, setEvaluating] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL'); // ALL, QUALIFIED, DISQUALIFIED, APPROVED
   const [decisionNo, setDecisionNo] = useState(() => `QD-TN-${new Date().getFullYear()}/QĐ-ĐH`);
@@ -46,23 +44,6 @@ export default function GraduationPage() {
   useEffect(() => {
     loadRecords();
   }, [loadRecords]);
-
-  const handleRunEvaluation = async () => {
-    if (!selectedCohort) {
-      toast.warning('Vui lòng chọn khóa tuyển sinh');
-      return;
-    }
-    try {
-      setEvaluating(true);
-      const res = await graduationService.evaluateCohort(selectedCohort);
-      toast.success(res.data?.message || 'Đã thực thi thuật toán xét tốt nghiệp thành công!');
-      await loadRecords();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Không thể chạy thuật toán xét tốt nghiệp');
-    } finally {
-      setEvaluating(false);
-    }
-  };
 
   const handleApproveSingle = async (record) => {
     try {
@@ -152,7 +133,7 @@ export default function GraduationPage() {
             </div>
             <div>
               <h1 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-main, #0f172a)', margin: 0 }}>
-                Hội đồng & Thuật toán Xét tốt nghiệp
+                Hội đồng xét tốt nghiệp
               </h1>
               <p style={{ margin: '4px 0 0', color: 'var(--text-secondary, #64748b)', fontSize: '14px' }}>
                 Phân hệ nghiệp vụ Cán bộ Đào tạo — Thẩm định chuẩn đầu ra, công nhận tốt nghiệp & xuất quyết định
@@ -182,37 +163,19 @@ export default function GraduationPage() {
             <Download size={16} />
             <span>Xuất quyết định (CSV)</span>
           </button>
-
-          <button
-            onClick={handleRunEvaluation}
-            disabled={evaluating}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '9px 18px',
-              borderRadius: '8px',
-              border: 'none',
-              background: '#7c3aed',
-              color: '#fff',
-              fontWeight: '600',
-              cursor: evaluating ? 'not-allowed' : 'pointer',
-              boxShadow: '0 2px 4px rgba(124, 58, 237, 0.2)'
-            }}
-          >
-            <Play size={16} fill="currentColor" />
-            <span>{evaluating ? 'Đang chạy thuật toán...' : 'Chạy xét tốt nghiệp'}</span>
-          </button>
         </div>
       </div>
 
       {/* Filter and Cohort Selector Banner */}
       <div style={{ background: '#fff', padding: '16px 20px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ fontWeight: '600', fontSize: '14px', color: '#334155' }}>Chọn Khóa xét duyệt:</label>
+          <label htmlFor="graduation-cohort-select" style={{ fontWeight: '600', fontSize: '14px', color: '#334155' }}>Chọn Khóa xét duyệt:</label>
           <select
+            id="graduation-cohort-select"
+            name="cohortId"
             value={selectedCohort}
             onChange={(e) => setSelectedCohort(Number(e.target.value))}
+            aria-label="Chọn Khóa xét duyệt"
             style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '14px', fontWeight: '500', outline: 'none' }}
           >
             {COHORTS.map((c) => (
@@ -226,17 +189,23 @@ export default function GraduationPage() {
           <div style={{ position: 'relative', width: '260px' }}>
             <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
             <input
+              id="graduation-search-input"
+              name="search"
               type="text"
               placeholder="Tìm theo MSSV, Họ tên, Lớp..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              aria-label="Tìm kiếm hồ sơ sinh viên"
               style={{ width: '100%', padding: '8px 12px 8px 34px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
             />
           </div>
 
           <select
+            id="graduation-status-filter"
+            name="statusFilter"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
+            aria-label="Lọc theo trạng thái tốt nghiệp"
             style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
           >
             <option value="ALL">Tất cả kết quả ({records.length})</option>
@@ -322,14 +291,8 @@ export default function GraduationPage() {
         ) : !records.length ? (
           <div style={{ padding: '60px', textAlign: 'center', color: '#64748b' }}>
             <GraduationCap size={44} style={{ margin: '0 auto 12px', color: '#cbd5e1' }} />
-            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#334155', margin: '0 0 6px' }}>Chưa có dữ liệu xét tốt nghiệp cho khóa này</h3>
-            <p style={{ margin: '0 0 16px', fontSize: '14px' }}>Bấm nút "Chạy xét tốt nghiệp" phía trên để hệ thống quét toàn bộ điểm và chuẩn đầu ra.</p>
-            <button
-              onClick={handleRunEvaluation}
-              style={{ padding: '8px 18px', background: '#7c3aed', color: '#fff', borderRadius: '8px', border: 'none', fontWeight: '600', cursor: 'pointer' }}
-            >
-              Chạy thuật toán xét tốt nghiệp ngay
-            </button>
+            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#334155', margin: '0 0 6px' }}>Không có dữ liệu xét tốt nghiệp cho khóa này</h3>
+            <p style={{ margin: 0, fontSize: '14px' }}>Vui lòng chọn khóa tuyển sinh khác hoặc làm mới trang.</p>
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
@@ -442,10 +405,12 @@ export default function GraduationPage() {
             </p>
 
             <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
+              <label htmlFor="decision-no-input" style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>
                 Số Quyết định tốt nghiệp:
               </label>
               <input
+                id="decision-no-input"
+                name="decisionNo"
                 type="text"
                 value={decisionNo}
                 onChange={(e) => setDecisionNo(e.target.value)}

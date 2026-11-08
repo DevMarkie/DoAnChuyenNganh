@@ -27,8 +27,12 @@ public class ScheduleController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<Schedule>>> getSchedules(
             @RequestParam(required = false) Long semesterId,
-            @RequestParam(required = false) Integer classId
+            @RequestParam(required = false) Integer classId,
+            @RequestParam(required = false) Long sectionId
     ) {
+        if (sectionId != null) {
+            return ResponseEntity.ok(ApiResponse.success(scheduleService.findBySectionId(sectionId)));
+        }
         if (semesterId != null) {
             return ResponseEntity.ok(ApiResponse.success(scheduleService.findBySemester(semesterId)));
         }

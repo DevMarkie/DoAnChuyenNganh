@@ -168,6 +168,7 @@ export default function Header({ onToggleMobileMenu }) {
         <button
           className="btn btn-outline btn-sm btn-logout"
           onClick={handleLogout}
+          aria-label="Đăng xuất khỏi hệ thống"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -175,7 +176,8 @@ export default function Header({ onToggleMobileMenu }) {
             color: 'var(--danger-text)',
             backgroundColor: 'var(--danger-bg)',
             borderColor: 'var(--danger-border)',
-            padding: '6px 10px'
+            padding: '7px 12px',
+            minHeight: '36px'
           }}
           title="Đăng xuất"
         >

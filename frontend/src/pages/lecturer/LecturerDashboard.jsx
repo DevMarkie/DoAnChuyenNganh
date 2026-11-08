@@ -34,6 +34,8 @@ export default function LecturerDashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const currentSections = mySections.filter(s => s.semester?.isCurrent);
+  const displaySections = currentSections.length > 0 ? currentSections : mySections;
   const totalStudents = mySections.reduce((acc, s) => acc + (s.currentStudents || 0), 0);
 
   return (
@@ -42,7 +44,7 @@ export default function LecturerDashboard() {
         <div>
           <h1>Cổng Giảng Viên — {profile?.fullName || user?.username}</h1>
           <p>
-            Khoa: {profile?.department?.name || 'Chưa cập nhật'} • Học vị: {profile?.degree || 'Giảng viên'} • Mã GV: {profile?.lecturerCode}
+            Khoa: {profile?.department?.name || profile?.specialization || 'Khoa Công nghệ Thông tin'} • Học vị: {profile?.degree || 'Giảng viên'} • Mã GV: {profile?.lecturerCode}
           </p>
         </div>
         <div className="page-header-actions">
@@ -112,14 +114,14 @@ export default function LecturerDashboard() {
             <tbody>
               {loading ? (
                 <TableRowSkeleton columns={7} />
-              ) : mySections.length === 0 ? (
+              ) : displaySections.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Thầy/Cô chưa được phân công lớp học phần nào trong học kỳ này.
                   </td>
                 </tr>
               ) : (
-                mySections.map((s) => (
+                displaySections.map((s) => (
                   <tr key={s.id}>
                     <td>
                       <span

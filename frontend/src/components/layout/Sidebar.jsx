@@ -21,6 +21,7 @@ const adminNavGroups = [
     group: 'Hệ thống & Tài khoản',
     items: [
       { path: '/admin/students', icon: Users, label: 'Quản lý tài khoản SV' },
+      { path: '/admin/student-conduct', icon: Award, label: 'Khen thưởng & Kỷ luật' },
       { path: '/admin/lecturers', icon: UserCog, label: 'Giảng viên' },
       { path: '/admin/staffs', icon: ShieldCheck, label: 'Cán bộ & Nhân viên' },
       { path: '/admin/password-resets', icon: KeyRound, label: 'Cấp lại mật khẩu', showBadge: true },
@@ -178,9 +179,10 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
   const [pendingResets, setPendingResets] = useState(0);
 
   useEffect(() => {
-    if (role === 'ADMIN') {
+    if (role === 'ADMIN' && window.location.pathname.startsWith('/admin')) {
       let isMounted = true;
       const fetchPending = async () => {
+        if (typeof document !== 'undefined' && document.hidden) return;
         try {
           const res = await passwordResetService.getPendingCount();
           const count = res?.data?.data?.count ?? res?.data?.count;

@@ -135,4 +135,63 @@ describe('TranscriptPage - Clean Student Portal View', () => {
     expect(screen.queryByRole('button', { name: /Phúc khảo/i })).toBeNull();
     expect(screen.queryByText(/Đang phúc khảo/i)).toBeNull();
   });
+
+  it('renders semesters in descending order with current semester badge on top and courses sorted A-Z', async () => {
+    const mockMultiSemTranscript = {
+      ...mockTranscriptNormal,
+      semesters: [
+        {
+          semesterId: 1,
+          semesterName: 'Học kỳ 1',
+          academicYear: '2023-2024',
+          semesterGpa: 3.2,
+          semesterCredits: 15,
+          courses: [
+            { subjectCode: 'BS102', subjectName: 'Đại số tuyến tính', credits: 3, cc1Score: 8, cc2Score: 8, midtermScore: 8, finalScore: 8, totalScore: 8, letterGrade: 'B+', gpaPoint: 3.5, isFinalized: true },
+            { subjectCode: 'BS101', subjectName: 'Giải tích 1', credits: 3, cc1Score: 8, cc2Score: 8, midtermScore: 8, finalScore: 8, totalScore: 8, letterGrade: 'B+', gpaPoint: 3.5, isFinalized: true },
+          ],
+        },
+        {
+          semesterId: 7,
+          semesterName: 'Học kỳ 1',
+          academicYear: '2026-2027',
+          semesterGpa: null,
+          semesterCredits: 12,
+          isOngoing: true,
+          publishNotice: 'Học kỳ đang diễn ra (01/09/2026 – 15/01/2027) — Điểm các môn học sẽ được công bố sau ngày kết thúc học kỳ.',
+          courses: [
+            { subjectCode: 'IT306', subjectName: 'Điện toán đám mây & DevOps', credits: 3, cc1Score: 7, cc2Score: 7, midtermScore: 7, finalScore: null, totalScore: null, letterGrade: null, gpaPoint: null, isFinalized: false },
+            { subjectCode: 'IT305', subjectName: 'An toàn thông tin', credits: 3, cc1Score: 8, cc2Score: 8, midtermScore: 8, finalScore: null, totalScore: null, letterGrade: null, gpaPoint: null, isFinalized: false },
+          ],
+        },
+      ],
+    };
+
+    transcriptService.getMyTranscript.mockResolvedValueOnce({
+      data: { data: mockMultiSemTranscript },
+    });
+
+    render(<TranscriptPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Học kỳ 1 \(2026-2027\)/)).toBeDefined();
+    });
+
+    // Verify current semester badge
+    expect(screen.getByText('Học kỳ hiện tại')).toBeDefined();
+
+    // Verify ongoing semester banner
+    expect(screen.getByText(/Học kỳ đang diễn ra/i)).toBeDefined();
+
+    // Verify semesters order: semester 7 appears before semester 1
+    const headers = screen.getAllByRole('heading', { level: 3 });
+    const semesterHeaderTexts = headers.map((h) => h.textContent);
+    expect(semesterHeaderTexts[0]).toContain('2026-2027');
+    expect(semesterHeaderTexts[1]).toContain('2023-2024');
+
+    // Verify course order in semester 7: IT305 appears before IT306
+    const it305 = screen.getByText('IT305');
+    const it306 = screen.getByText('IT306');
+    expect(it305.compareDocumentPosition(it306) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });

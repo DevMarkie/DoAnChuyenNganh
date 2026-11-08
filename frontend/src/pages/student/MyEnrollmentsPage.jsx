@@ -20,6 +20,7 @@ import { toast } from "react-toastify";
 import { enrollmentService, semesterService, tuitionService } from "../../services/dataService";
 import useAuthStore from "../../store/authStore";
 import Skeleton from "../../components/common/Skeleton";
+import SectionScheduleDetailModal from "../../components/student/SectionScheduleDetailModal";
 
 export default function MyEnrollmentsPage() {
   const { user } = useAuthStore();
@@ -32,6 +33,7 @@ export default function MyEnrollmentsPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [selectedDetailSection, setSelectedDetailSection] = useState(null);
   const cancellationInFlight = useRef(false);
 
   const unitRate = 450000; // 450.000 đ / TC quy chuẩn
@@ -620,11 +622,14 @@ export default function MyEnrollmentsPage() {
                   return (
                     <tr
                       key={e.id}
+                      onClick={() => setSelectedDetailSection(e.courseSection)}
                       style={{
+                        cursor: "pointer",
                         backgroundColor: isCancelled
                           ? "rgba(239, 68, 68, 0.03)"
                           : "transparent",
                       }}
+                      title="Bấm vào hàng để xem chi tiết lịch học & các buổi trong kỳ"
                     >
                       <td style={{ textAlign: "center", color: "var(--text-muted)", fontWeight: 600 }}>
                         {index + 1}
@@ -653,7 +658,10 @@ export default function MyEnrollmentsPage() {
                           textDecoration: isCancelled ? "line-through" : "none",
                         }}
                       >
-                        {e.courseSection?.subject?.subjectName}
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                          {e.courseSection?.subject?.subjectName}
+                          <Calendar size={13} style={{ color: "var(--primary)", opacity: 0.6 }} />
+                        </span>
                         {(e.attendanceStatus === "DISQUALIFIED" || e.isDisqualified) && (
                           <span
                             className="badge badge-danger"
@@ -768,7 +776,7 @@ export default function MyEnrollmentsPage() {
                           </span>
                         )}
                       </td>
-                      <td style={{ textAlign: "right" }}>
+                      <td style={{ textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
                         {e.status === "ENROLLED" &&
                           (e.courseSection?.semester?.registrationOpen ? (
                             <button
@@ -997,6 +1005,17 @@ export default function MyEnrollmentsPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Section Schedule Detail Modal */}
+      {selectedDetailSection && (
+        <SectionScheduleDetailModal
+          section={selectedDetailSection}
+          isOpen={Boolean(selectedDetailSection)}
+          onClose={() => setSelectedDetailSection(null)}
+          isEnrolled={true}
+          enrolledSections={enrollments.map((enr) => enr.courseSection).filter(Boolean)}
+        />
       )}
     </div>
   );

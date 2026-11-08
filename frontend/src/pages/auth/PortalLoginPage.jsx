@@ -118,7 +118,7 @@ const PORTAL_CONFIG = {
     features: [
       'Quản lý hồ sơ sinh viên, khung chương trình đào tạo & khối kiến thức',
       'Mở lớp học phần, phòng thi, phân công giảng viên & xử lý phúc khảo điểm',
-      'Chạy thuật toán xét tốt nghiệp chuẩn hóa & giám sát kiểm toán điểm thi',
+      'Hội đồng thẩm định xét tốt nghiệp chuẩn hóa & giám sát kiểm toán điểm thi',
     ],
     redirectPath: '/academic/dashboard',
     otherLinks: [

@@ -56,6 +56,8 @@ public class TranscriptResponse {
         private String semesterClassification;
         private boolean isSemesterWarning;
         private int semesterCredits;
+        private Boolean isOngoing;
+        private String publishNotice;
         private List<CourseGrade> courses;
     }
 

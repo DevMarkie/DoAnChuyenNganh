@@ -32,6 +32,8 @@ public class AcademicWarningController {
             @RequestParam(required = false) Integer level,
             @RequestParam(required = false) Integer majorId) {
         List<Student> students = studentService.findAll().stream()
+                .filter(student -> student.getAcademicWarningLevel() != null && student.getAcademicWarningLevel() > 0)
+                .filter(student -> level == null || level.equals(student.getAcademicWarningLevel()))
                 .filter(student -> majorId == null
                         || (student.getClassEntity() != null && student.getClassEntity().getMajor() != null
                         && majorId.equals(student.getClassEntity().getMajor().getId())))

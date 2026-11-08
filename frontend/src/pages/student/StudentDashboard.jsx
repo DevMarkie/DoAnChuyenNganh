@@ -53,6 +53,7 @@ export default function StudentDashboard() {
   }, []);
 
   const gpa = transcript?.cumulativeGpa ? Number(transcript.cumulativeGpa).toFixed(2) : '0.00';
+  const currentEnrollments = enrollments.filter(e => e.courseSection?.semester?.isCurrent ?? (e.status !== 'COMPLETED' && e.status !== 'DROPPED'));
 
   return (
     <div>
@@ -103,7 +104,7 @@ export default function StudentDashboard() {
             <CourseSectionsIcon size={22} />
           </div>
           <div>
-            <div className="stat-value">{enrollments.length}</div>
+            <div className="stat-value">{currentEnrollments.length}</div>
             <div className="stat-label">Học phần đang theo học</div>
           </div>
         </div>
@@ -112,7 +113,7 @@ export default function StudentDashboard() {
       {/* Currently Enrolled Courses */}
       <div className="card" style={{ marginTop: '24px' }}>
         <div className="card-header">
-          <h3>Học phần đăng ký trong học kỳ hiện tại</h3>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>Học phần đăng ký trong học kỳ hiện tại</h2>
           <button
             className="btn btn-outline btn-sm"
             onClick={() => navigate('/student/enrollments')}
@@ -136,14 +137,14 @@ export default function StudentDashboard() {
             <tbody>
               {loading ? (
                 <TableRowSkeleton columns={7} />
-              ) : enrollments.length === 0 ? (
+              ) : currentEnrollments.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Bạn chưa đăng ký học phần nào trong học kỳ này. Bấm &quot;Đăng ký môn học&quot; để chọn môn.
                   </td>
                 </tr>
               ) : (
-                enrollments.map((e) => (
+                currentEnrollments.map((e) => (
                   <tr key={e.id}>
                     <td>
                       <span

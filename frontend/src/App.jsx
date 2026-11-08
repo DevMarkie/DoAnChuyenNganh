@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import useAuthStore from './store/authStore';
+import useAuthStore, { getPortalScope, getPortalSession } from './store/authStore';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import LoadingFallback from './components/common/LoadingFallback';
@@ -51,7 +51,10 @@ const StudentProfilePage = lazy(() => import('./pages/student/StudentProfilePage
 const CurriculumRoadmapPage = lazy(() => import('./pages/student/CurriculumRoadmapPage'));
 
 function ProtectedRoute({ children, allowedRoles, fallbackLoginPath }) {
-  const { isAuthenticated, user } = useAuthStore();
+  const location = useLocation();
+  const session = getPortalSession(getPortalScope(location.pathname));
+  const user = session?.user || useAuthStore.getState().user;
+  const isAuthenticated = Boolean(session ? session.token : useAuthStore.getState().isAuthenticated);
 
   if (!isAuthenticated) {
     const loginPath = fallbackLoginPath || (
@@ -104,7 +107,9 @@ export default function App() {
             hasPortalSession('lecturer') ? <Navigate to="/lecturer/dashboard" replace /> : <PortalLoginPage portalType="lecturer" />
           } />
           <Route path="/academic/login" element={
-            hasPortalSession('academic') ? <Navigate to="/academic/dashboard" replace /> : <PortalLoginPage portalType="academic" />
+            hasPortalSession('academic') ? <Navigate to="/academic/dashboard" replace /> :
+            hasPortalSession('exam') ? <Navigate to="/exam/rooms" replace /> :
+            <PortalLoginPage portalType="academic" />
           } />
           <Route path="/admin/login" element={
             hasPortalSession('admin') ? <Navigate to="/admin/dashboard" replace /> : <PortalLoginPage portalType="admin" />

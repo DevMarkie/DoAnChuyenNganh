@@ -262,7 +262,7 @@
               class="text-2xl md:text-3xl font-extrabold text-amber-400 tracking-tight"
               >--</span
             >
-            <span class="text-xs text-amber-500/80 block"
+            <span id="metricRejectedSub" class="text-xs text-amber-500/80 block"
               >Chặn hợp lệ tại RAM</span
             >
           </div>
@@ -617,18 +617,20 @@
           </div>
 
           <div
+            id="auditConclusionBox"
             class="mt-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/60 flex items-center gap-3"
           >
             <div
+              id="auditConclusionIcon"
               class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold"
             >
               ✔
             </div>
             <div class="text-xs">
-              <span class="font-bold text-emerald-400 block"
+              <span id="auditConclusionTitle" class="font-bold text-emerald-400 block"
                 >KẾT LUẬN TIÊU CHUẨN AN TOÀN ĐỒNG THỜI:</span
               >
-              <span class="text-emerald-200"
+              <span id="auditConclusionText" class="text-emerald-200"
                 >Dữ liệu hoàn toàn khớp 100%. Không có sinh viên thứ 41 nào lọt
                 vào lớp. Không có lỗi 500.</span
               >
@@ -821,6 +823,53 @@
             ? data.database.redisSlotsRemaining
             : 0;
 
+        // Update Conclusion & Sub-metrics
+        const conclusionBox = document.getElementById("auditConclusionBox");
+        const conclusionIcon = document.getElementById("auditConclusionIcon");
+        const conclusionTitle = document.getElementById("auditConclusionTitle");
+        const conclusionText = document.getElementById("auditConclusionText");
+        const metricRejectedSub = document.getElementById("metricRejectedSub");
+
+        if (metricRejectedSub) {
+          metricRejectedSub.innerText =
+            data.otherRejectedCount > 0
+              ? `Chặn RAM: ${data.fullRejectedCount} | Khác: ${data.otherRejectedCount}`
+              : "Chặn hợp lệ tại RAM";
+        }
+
+        if (
+          conclusionBox &&
+          conclusionIcon &&
+          conclusionTitle &&
+          conclusionText
+        ) {
+          if (
+            data.successfulCount > 0 &&
+            (!data.verdict ||
+              (data.verdict.zeroOverselling && data.serverErrorCount === 0))
+          ) {
+            conclusionBox.className =
+              "mt-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/60 flex items-center gap-3";
+            conclusionIcon.className =
+              "w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 font-bold";
+            conclusionIcon.innerText = "✔";
+            conclusionTitle.className = "font-bold text-emerald-400 block";
+            conclusionTitle.innerText = "KẾT LUẬN TIÊU CHUẨN AN TOÀN ĐỒNG THỜI:";
+            conclusionText.className = "text-emerald-200";
+            conclusionText.innerText = `Dữ liệu hoàn toàn khớp 100%. Ghi nhận chuẩn ${data.successfulCount}/${data.sectionCapacity} sinh viên. Không có sinh viên thứ ${data.sectionCapacity + 1} nào lọt vào lớp. Không có lỗi 500.`;
+          } else {
+            conclusionBox.className =
+              "mt-4 p-3 rounded-xl bg-rose-950/40 border border-rose-800/60 flex items-center gap-3";
+            conclusionIcon.className =
+              "w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 font-bold";
+            conclusionIcon.innerText = "⚠";
+            conclusionTitle.className = "font-bold text-rose-400 block";
+            conclusionTitle.innerText = "CẢNH BÁO KIỂM THỬ TẢI:";
+            conclusionText.className = "text-rose-200";
+            conclusionText.innerText = `Chưa có sinh viên nào đăng ký thành công (${data.successfulCount}/${data.sectionCapacity}). Vui lòng kiểm tra lại cấu hình học kỳ hoặc trạng thái lớp.`;
+          }
+        }
+
         // Render Donut Chart
         renderDonutChart(
           data.successfulCount,
@@ -908,9 +957,14 @@
           );
 
           const isSuccess = req.httpStatus === 200 || req.httpStatus === 201;
+          const isFull =
+            req.httpStatus === 400 &&
+            String(req.message || "")
+              .toLowerCase()
+              .includes("đầy");
           const barColor = isSuccess
             ? "bg-emerald-500"
-            : req.httpStatus === 400
+            : isFull
               ? "bg-amber-500"
               : "bg-rose-500";
 
@@ -930,9 +984,17 @@
 
           // Status badge
           const statusBadge = document.createElement("div");
-          statusBadge.className = `w-14 text-center text-[9px] py-0.5 rounded font-bold shrink-0 ${isSuccess ? "bg-emerald-950/80 text-emerald-400 border border-emerald-800/40" : "bg-amber-950/80 text-amber-400 border border-amber-800/40"}`;
-          statusBadge.innerText =
-            req.httpStatus === 200 ? "200 OK" : `${req.httpStatus} FULL`;
+          const badgeClass = isSuccess
+            ? "bg-emerald-950/80 text-emerald-400 border border-emerald-800/40"
+            : isFull
+              ? "bg-amber-950/80 text-amber-400 border border-amber-800/40"
+              : "bg-rose-950/80 text-rose-400 border border-rose-800/40";
+          statusBadge.className = `w-14 text-center text-[9px] py-0.5 rounded font-bold shrink-0 ${badgeClass}`;
+          statusBadge.innerText = isSuccess
+            ? "200 OK"
+            : isFull
+              ? "400 FULL"
+              : `${req.httpStatus || 400} LỖI`;
 
           row.appendChild(label);
           row.appendChild(barArea);
@@ -980,9 +1042,16 @@
           tr.className = "hover:bg-slate-800/50 transition";
 
           const isSuccess = r.httpStatus === 200 || r.httpStatus === 201;
+          const isFull =
+            r.httpStatus === 400 &&
+            String(r.message || "")
+              .toLowerCase()
+              .includes("đầy");
           const statusBadge = isSuccess
             ? `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/50 font-bold">200 OK</span>`
-            : `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/50 font-bold">${r.httpStatus} FULL</span>`;
+            : isFull
+              ? `<span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800/50 font-bold">400 FULL</span>`
+              : `<span class="px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800/50 font-bold">${r.httpStatus || 400} TỪ CHỐI</span>`;
 
           tr.innerHTML = `
           <td class="py-2 px-3 text-slate-500">#${r.index}</td>

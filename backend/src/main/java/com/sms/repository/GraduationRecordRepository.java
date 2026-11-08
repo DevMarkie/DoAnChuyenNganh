@@ -14,6 +14,14 @@ import java.util.Optional;
 public interface GraduationRecordRepository extends JpaRepository<GraduationRecord, Long> {
     Optional<GraduationRecord> findByStudentId(Long studentId);
 
+    /**
+     * Recovery lookup for legacy databases that contain duplicate graduation
+     * records.  The database migration enforces one record per student, but
+     * selecting a deterministic record here keeps the assessment flow
+     * available while an existing installation is being repaired.
+     */
+    Optional<GraduationRecord> findFirstByStudentIdOrderByUpdatedAtDescIdDesc(Long studentId);
+
     @Query(value = "SELECT gr FROM GraduationRecord gr " +
                    "LEFT JOIN FETCH gr.student s " +
                    "LEFT JOIN FETCH s.classEntity " +

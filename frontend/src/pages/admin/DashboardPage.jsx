@@ -95,7 +95,7 @@ export default function DashboardPage() {
             fontWeight: 500
           }}>
             <SchedulesIcon size={15} color="var(--primary)" />
-            <span>Học kỳ 1 (2025 - 2026)</span>
+            <span>Học kỳ 1 (2026 - 2027)</span>
           </div>
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
           <div className="card-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <TrendingUpIcon size={18} color="var(--primary)" />
-              <h3>Phân bố sinh viên theo Khoa đào tạo</h3>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>Phân bố sinh viên theo Khoa đào tạo</h2>
             </div>
           </div>
           <div className="card-body" style={{ height: '340px' }}>
@@ -175,7 +175,7 @@ export default function DashboardPage() {
           <div className="card-header">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <GraduationCapIcon size={18} color="#059669" />
-              <h3>Cơ cấu tình trạng học tập của sinh viên</h3>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>Cơ cấu tình trạng học tập của sinh viên</h2>
             </div>
           </div>
           <div className="card-body" style={{ height: '340px' }}>

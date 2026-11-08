@@ -179,6 +179,7 @@ export const academicWarningService = {
 export const scheduleService = {
   getAll: (params) => api.get('/schedules', { params }),
   getById: (id) => api.get(`/schedules/${id}`),
+  getBySection: (sectionId) => api.get('/schedules', { params: { sectionId } }),
   getMySchedule: (params) => api.get('/schedules/my-schedule', { params }),
   getLecturerSchedule: (params) => api.get('/schedules/lecturer-schedule', { params }),
   create: (data) => api.post('/schedules', data),

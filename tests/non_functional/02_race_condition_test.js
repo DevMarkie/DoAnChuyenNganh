@@ -17,8 +17,8 @@ const BASE_URL = process.env.API_URL || 'http://localhost:8080';
 const TOKENS_FILE = path.join(__dirname, '..', 'performance', 'demo_100', 'tokens_100.json');
 
 function runSql(sql) {
-  const cmd = `docker exec student_management_db mysql -u sms_app -psms_dev_pw student_management -N -s -e "${sql.replace(/\r?\n/g, ' ')}"`;
-  return execSync(cmd, { encoding: 'utf8' }).trim();
+  const cmd = `docker exec -i student_management_db mysql -u sms_app -psms_dev_pw --default-character-set=utf8mb4 student_management -N -s`;
+  return execSync(cmd, { input: sql, encoding: 'utf8' }).trim();
 }
 
 function runRedis(cmdStr) {

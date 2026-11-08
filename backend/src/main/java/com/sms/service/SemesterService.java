@@ -103,6 +103,9 @@ public class SemesterService {
             if (registrationEnd.isBefore(registrationStart)) {
                 throw new BadRequestException("Hạn đăng ký không thể trước ngày mở đăng ký");
             }
+            if (registrationEnd.isAfter(startDate)) {
+                throw new BadRequestException("Hạn chót đăng ký môn học không thể sau ngày bắt đầu học kỳ (" + startDate + ")");
+            }
             semester.setRegistrationStart(registrationStart);
             semester.setRegistrationEnd(registrationEnd);
         } else {

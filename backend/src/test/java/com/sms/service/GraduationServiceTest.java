@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -291,6 +292,45 @@ public class GraduationServiceTest {
 
             assertThrows(ResourceNotFoundException.class,
                     () -> graduationService.assessCohortCandidates(999));
+        }
+
+        @Test
+        @DisplayName("Dữ liệu cũ bị trùng hồ sơ -> dùng bản ghi mới nhất, không làm gián đoạn xét cả khóa")
+        void testAssess_DuplicateLegacyRecords_UsesLatestRecord() {
+            when(cohortRepository.findById(1)).thenReturn(Optional.of(cohort));
+            when(studentRepository.findAll()).thenReturn(List.of(student));
+
+            GraduationEligibilityResponse eligibility = GraduationEligibilityResponse.builder()
+                    .studentId(100L)
+                    .eligible(true)
+                    .completedCredits(135)
+                    .requiredCredits(135)
+                    .cumulativeGpa(BigDecimal.valueOf(3.50))
+                    .unsatisfiedReasons(Collections.emptyList())
+                    .build();
+            when(curriculumService.checkGraduationEligibility(100L)).thenReturn(eligibility);
+            when(tuitionService.isTuitionOverdue(100L)).thenReturn(false);
+            when(graduationRecordRepository.findByStudentId(100L))
+                    .thenThrow(new IncorrectResultSizeDataAccessException(2));
+
+            GraduationRecord latestRecord = GraduationRecord.builder()
+                    .id(99L)
+                    .student(student)
+                    .cohort(cohort)
+                    .physicalEducationPassed(true)
+                    .defenseEducationPassed(true)
+                    .englishCertificateStatus(true)
+                    .itCertificateStatus(true)
+                    .build();
+            when(graduationRecordRepository.findFirstByStudentIdOrderByUpdatedAtDescIdDesc(100L))
+                    .thenReturn(Optional.of(latestRecord));
+            when(graduationRecordRepository.save(any(GraduationRecord.class))).thenAnswer(i -> i.getArgument(0));
+
+            List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
+
+            assertThat(results).containsExactly(latestRecord);
+            assertThat(latestRecord.getSystemRecommendation()).isEqualTo("QUALIFIED");
+            verify(graduationRecordRepository).findFirstByStudentIdOrderByUpdatedAtDescIdDesc(100L);
         }
     }
 

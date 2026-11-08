@@ -473,7 +473,7 @@ async function runMasterDevToolsAudit() {
   await page.fill('input[type="text"], input[name="username"]', 'daotao');
   await page.fill('input[type="password"]', '123456');
   await page.click('button[type="submit"]');
-  await page.waitForURL('**/academic/**', { timeout: 10000 });
+  await page.waitForURL('**/academic/dashboard**', { timeout: 10000 });
   await page.waitForTimeout(1000);
 
   const academicA11y = await auditA11y('Academic Dashboard (/academic/dashboard)');

@@ -25,9 +25,14 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
   const sectionId = courseSection?.id;
   const timerRef = useRef(null);
   const manualOverridesRef = useRef({});
-  manualOverridesRef.current = manualOverrides;
   const unsavedCount = Object.keys(manualOverrides).length;
   const todayDisplay = TODAY_VI_VN;
+
+  // Keep the latest manual choices available to polling callbacks without
+  // mutating a ref while React is rendering.
+  useEffect(() => {
+    manualOverridesRef.current = manualOverrides;
+  }, [manualOverrides]);
 
   const loadLiveSession = useCallback(async (isSilent = false) => {
     if (!sectionId) return;
@@ -66,12 +71,8 @@ export default function LecturerAttendanceModal({ courseSection, onClose }) {
   }, [sectionId]);
 
   useEffect(() => {
-    let ignore = false;
     if (!sectionId) return;
     loadLiveSession(false);
-    return () => {
-      ignore = true;
-    };
   }, [sectionId, loadLiveSession]);
 
   // Polling every 3s when session is OPEN

@@ -12,7 +12,8 @@ const getPortalScope = () => {
   if (!targetPath) return '';
   if (targetPath.startsWith('/student')) return 'student';
   if (targetPath.startsWith('/lecturer')) return 'lecturer';
-  if (targetPath.startsWith('/academic') || targetPath.startsWith('/exam')) return 'academic';
+  if (targetPath.startsWith('/academic')) return 'academic';
+  if (targetPath.startsWith('/exam')) return 'exam';
   if (targetPath.startsWith('/admin')) return 'admin';
   return '';
 };
@@ -39,7 +40,8 @@ const fetchApi = async (method, url, config = {}) => {
         params.append(key, value);
       }
     });
-    fullUrl += `?${params.toString()}`;
+    const q = params.toString();
+    if (q) fullUrl += `?${q}`;
   }
 
   const options = { method, headers, ...config };
@@ -62,7 +64,14 @@ const fetchApi = async (method, url, config = {}) => {
       clearTimeout(id);
       
       if (!response.ok) {
-        if (response.status === 401 && (token || localStorage.getItem("token"))) {
+        let errData = null;
+        try { const t = await response.text(); errData = t ? JSON.parse(t) : null; } catch { errData = null; }
+        const errMsg = errData?.message || '';
+
+        const isAuthExpired = response.status === 401 ||
+          (response.status === 403 && (errMsg.includes('hết hạn') || errMsg.includes('expired') || errMsg.includes('Access Denied') || errMsg === 'Forbidden'));
+
+        if (isAuthExpired && (token || localStorage.getItem("token"))) {
           const scope = getPortalScope();
           if (scope) {
             localStorage.removeItem(`token_${scope}`);
@@ -72,10 +81,8 @@ const fetchApi = async (method, url, config = {}) => {
           localStorage.removeItem("user");
           window.dispatchEvent(new CustomEvent("auth:session-expired", { detail: { scope } }));
         }
-        // Đọc body lỗi (JSON) để UI lấy đc err.response.data.message; raw Response không có .data.
-        let errData = null;
-        try { const t = await response.text(); errData = t ? JSON.parse(t) : null; } catch { errData = null; }
-        const err = new Error((errData && errData.message) || response.statusText || 'Error');
+
+        const err = new Error(errMsg || response.statusText || 'Error');
         err.response = { status: response.status, statusText: response.statusText, data: errData };
         throw err;
       }

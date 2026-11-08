@@ -58,7 +58,12 @@ const server = http.createServer(async (req, res) => {
         const totalUsers = Number(options.totalUsers || 100);
 
         console.log(`[API /api/run-test] Nhận yêu cầu chạy tải: ${totalUsers} users, ${capacity} slots`);
-        const result = await runConcurrencyDemo({ capacity, totalUsers });
+        // Xóa require cache để luôn nạp mã nguồn kịch bản test mới nhất
+        try {
+          delete require.cache[require.resolve('./run_concurrency_test')];
+        } catch (e) {}
+        const { runConcurrencyDemo: executeDemo } = require('./run_concurrency_test');
+        const result = await executeDemo({ capacity, totalUsers });
         
         isRunningTest = false;
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });

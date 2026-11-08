@@ -26,10 +26,17 @@ const colors = {
 function runCommand(command, args, cwd = ROOT_DIR, env = process.env) {
   return new Promise((resolve) => {
     const startTime = Date.now();
-    const proc = spawn(command, args, {
+    const isPowershell = command.includes('powershell');
+    const safeArgs = isPowershell ? args : args.map((arg) => {
+      if (typeof arg === 'string' && arg.includes(' ') && !arg.startsWith('"')) {
+        return `"${arg}"`;
+      }
+      return arg;
+    });
+    const proc = spawn(command, safeArgs, {
       cwd,
       env,
-      shell: true,
+      shell: !isPowershell,
       stdio: 'inherit',
     });
 
@@ -68,10 +75,10 @@ const testSuites = [
   {
     tier: 'TẦNG 1: LOGIC & MÃ NGUỒN CỐT LÕI (UNIT TESTS)',
     name: '[02/15] Frontend Vitest Component Tests (React SPA)',
-    cmd: 'npm',
-    args: ['--prefix', 'frontend', 'test'],
+    cmd: process.platform === 'win32' ? 'powershell' : 'npm',
+    args: process.platform === 'win32' ? ['-NoProfile', '-Command', 'npm --prefix frontend test'] : ['--prefix', 'frontend', 'test'],
     cwd: ROOT_DIR,
-    expected: '80 Tests / 18 Test Files',
+    expected: '105 Tests / 21 Test Files',
   },
   {
     tier: 'TẦNG 2: KIỂM TRA SỨC KHỎE API & HẠ TẦNG (SMOKE TEST)',

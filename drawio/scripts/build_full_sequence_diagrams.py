@@ -55,9 +55,9 @@ def add_cell(root, id_val, value="", style="", vertex=False, edge=False, source=
     return cell
 
 def add_message(root, id_val, text, x1, x2, y, is_reply=False, is_self=False):
-    style_call = "html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;"
-    style_reply = "html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=0;"
-    style_self = "html=1;verticalAlign=bottom;endArrow=block;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;"
+    style_call = "html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=11;fontStyle=1;rounded=0;"
+    style_reply = "html=1;verticalAlign=bottom;endArrow=open;dashed=1;dashPattern=1 4;strokeColor=#000000;strokeWidth=1.4;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10.5;fontStyle=2;rounded=0;"
+    style_self = "html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;strokeWidth=1.5;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10.5;fontStyle=1;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;"
 
     if is_self:
         style = style_self
@@ -83,12 +83,24 @@ def add_message(root, id_val, text, x1, x2, y, is_reply=False, is_self=False):
         ET.SubElement(geom, 'mxPoint', {'x': str(x2), 'y': str(y), 'as': 'targetPoint'})
     return cell
 
-# STYLES - MONOCHROME HIGH CONTRAST (OMG UML 2.5)
-STYLE_LIFELINE = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;"
-STYLE_LIFELINE_ACTOR = "shape=umlLifeline;participant=umlActor;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;"
-STYLE_ACTIVATION = "html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;"
-STYLE_SD_FRAME = "shape=umlFrame;whiteSpace=wrap;html=1;width=280;height=30;strokeColor=#000000;strokeWidth=1.5;fillColor=none;fontColor=#000000;fontStyle=1;fontSize=12;"
-STYLE_COMBINED_FRAGMENT = "shape=umlFrame;whiteSpace=wrap;html=1;width=90;height=20;strokeColor=#000000;strokeWidth=1.2;fillColor=none;fontColor=#000000;fontStyle=2;fontSize=11;dashed=1;"
+# =========================================================================
+# STYLES - ACADEMIC MONOCHROME HIGH CONTRAST (OMG UML 2.5)
+# =========================================================================
+STYLE_UI = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;rounded=1;arcSize=10;shadow=0;"
+STYLE_CTRL = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;rounded=1;arcSize=10;shadow=0;"
+STYLE_SRV = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;rounded=1;arcSize=10;shadow=0;"
+STYLE_REDIS = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;rounded=1;arcSize=10;shadow=0;"
+STYLE_REPO = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;rounded=1;arcSize=10;shadow=0;"
+STYLE_DB = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;rounded=1;arcSize=10;shadow=0;"
+
+STYLE_ACTIVATION = "html=1;points=[];perimeter=orthogonalPerimeter;strokeColor=#000000;strokeWidth=1.5;fillColor=#ffffff;shadow=0;"
+STYLE_SD_FRAME = "shape=umlFrame;whiteSpace=wrap;html=1;width=340;height=36;strokeColor=#000000;strokeWidth=1.8;fillColor=none;fontColor=#000000;fontStyle=1;fontSize=13;rounded=1;shadow=0;arcSize=6;"
+STYLE_COMBINED_FRAGMENT = "shape=umlFrame;whiteSpace=wrap;html=1;width=140;height=24;strokeColor=#000000;strokeWidth=1.3;fillColor=none;fontColor=#000000;fontStyle=2;fontSize=11;dashed=1;rounded=1;arcSize=6;"
+
+STYLE_ACTOR = "shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;strokeColor=#000000;strokeWidth=1.8;fillColor=#ffffff;fontColor=#000000;fontStyle=1;fontSize=12;rounded=1;arcSize=14;shadow=0;"
+
+def get_actor_config(actor_name):
+    return f":{actor_name}\n«actor»", STYLE_ACTOR
 
 def create_base_model(page_w=1380, page_h=900):
     model = ET.Element('mxGraphModel', {
@@ -104,21 +116,23 @@ def create_base_model(page_w=1380, page_h=900):
     return model, root
 
 def setup_6_lifelines(root, actor_name, ui_name, ctrl_name, srv_name, repo_name, db_name="Database (MySQL)", height=760):
-    add_cell(root, "ll_act", f":{actor_name}", STYLE_LIFELINE_ACTOR, vertex=True, geometry={'x': 40, 'y': 65, 'width': 80, 'height': height})
-    add_cell(root, "ll_ui", f":{ui_name}\n«boundary»", STYLE_LIFELINE, vertex=True, geometry={'x': 220, 'y': 65, 'width': 180, 'height': height})
-    add_cell(root, "ll_ctrl", f":{ctrl_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 460, 'y': 65, 'width': 180, 'height': height})
-    add_cell(root, "ll_srv", f":{srv_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 700, 'y': 65, 'width': 180, 'height': height})
-    add_cell(root, "ll_repo", f":{repo_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 940, 'y': 65, 'width': 180, 'height': height})
-    add_cell(root, "ll_db", f":{db_name}\n«entity»", STYLE_LIFELINE, vertex=True, geometry={'x': 1170, 'y': 65, 'width': 160, 'height': height})
+    actor_label, actor_style = get_actor_config(actor_name)
+    add_cell(root, "ll_act", actor_label, actor_style, vertex=True, geometry={'x': 30, 'y': 65, 'width': 100, 'height': height})
+    add_cell(root, "ll_ui", f":{ui_name}\n«boundary / React»", STYLE_UI, vertex=True, geometry={'x': 220, 'y': 65, 'width': 180, 'height': height})
+    add_cell(root, "ll_ctrl", f":{ctrl_name}\n«control / Controller»", STYLE_CTRL, vertex=True, geometry={'x': 460, 'y': 65, 'width': 180, 'height': height})
+    add_cell(root, "ll_srv", f":{srv_name}\n«control / Service»", STYLE_SRV, vertex=True, geometry={'x': 700, 'y': 65, 'width': 180, 'height': height})
+    add_cell(root, "ll_repo", f":{repo_name}\n«entity / Repository»", STYLE_REPO, vertex=True, geometry={'x': 940, 'y': 65, 'width': 180, 'height': height})
+    add_cell(root, "ll_db", f":{db_name}\n«persistence»", STYLE_DB, vertex=True, geometry={'x': 1170, 'y': 65, 'width': 160, 'height': height})
 
 def setup_7_lifelines(root, actor_name, ui_name, ctrl_name, srv_name, redis_name, repo_name, db_name="Database (MySQL)", height=780):
-    add_cell(root, "ll_act", f":{actor_name}", STYLE_LIFELINE_ACTOR, vertex=True, geometry={'x': 30, 'y': 65, 'width': 80, 'height': height})
-    add_cell(root, "ll_ui", f":{ui_name}\n«boundary»", STYLE_LIFELINE, vertex=True, geometry={'x': 190, 'y': 65, 'width': 170, 'height': height})
-    add_cell(root, "ll_ctrl", f":{ctrl_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 400, 'y': 65, 'width': 170, 'height': height})
-    add_cell(root, "ll_srv", f":{srv_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 610, 'y': 65, 'width': 170, 'height': height})
-    add_cell(root, "ll_redis", f":{redis_name}\n«service»", STYLE_LIFELINE, vertex=True, geometry={'x': 820, 'y': 65, 'width': 170, 'height': height})
-    add_cell(root, "ll_repo", f":{repo_name}\n«control»", STYLE_LIFELINE, vertex=True, geometry={'x': 1030, 'y': 65, 'width': 170, 'height': height})
-    add_cell(root, "ll_db", f":{db_name}\n«entity»", STYLE_LIFELINE, vertex=True, geometry={'x': 1240, 'y': 65, 'width': 160, 'height': height})
+    actor_label, actor_style = get_actor_config(actor_name)
+    add_cell(root, "ll_act", actor_label, actor_style, vertex=True, geometry={'x': 20, 'y': 65, 'width': 100, 'height': height})
+    add_cell(root, "ll_ui", f":{ui_name}\n«boundary / React»", STYLE_UI, vertex=True, geometry={'x': 190, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_ctrl", f":{ctrl_name}\n«control / Controller»", STYLE_CTRL, vertex=True, geometry={'x': 400, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_srv", f":{srv_name}\n«control / Service»", STYLE_SRV, vertex=True, geometry={'x': 610, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_redis", f":{redis_name}\n«service / Redis Cache»", STYLE_REDIS, vertex=True, geometry={'x': 820, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_repo", f":{repo_name}\n«entity / Repository»", STYLE_REPO, vertex=True, geometry={'x': 1030, 'y': 65, 'width': 170, 'height': height})
+    add_cell(root, "ll_db", f":{db_name}\n«persistence»", STYLE_DB, vertex=True, geometry={'x': 1240, 'y': 65, 'width': 160, 'height': height})
 
 # ==========================================================
 # 23 BIỂU ĐỒ TRÌNH TỰ CHUẨN DỰ ÁN (RÕ NÉT - ĐÚNG CODE - ĐỘC LẬP)

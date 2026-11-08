@@ -1,95 +1,125 @@
 @echo off
+setlocal enabledelayedexpansion
 chcp 65001 >nul
-title Khởi chạy Hệ Thống Quản Lý Sinh Viên
+title Khoi chay He Thong Quan Ly Sinh Vien
 
 echo ======================================================================
-echo    HỆ THỐNG QUẢN LÝ SINH VIÊN (SMS) - KHỞI CHẠY PHÁT TRIỂN & NỘI BỘ
+echo    HE THONG QUAN LY SINH VIEN (SMS) - KHOI CHAY PHAT TRIEN
 echo ======================================================================
 echo.
 
-:: 1. Kiểm tra & xác định MySQL Database
-echo [1/3] Đang kiểm tra kết nối Database MySQL...
+:: -----------------------------------------------------------------------
+:: 1. Kiem tra & xac dinh MySQL Database
+:: -----------------------------------------------------------------------
+echo [1/3] Dang kiem tra ket noi Database MySQL...
+
+set "DB_PORT=3308"
+set "DB_USER=sms_app"
+set "DB_PASS=sms_dev_pw"
+
 netstat -ano | findstr ":3308 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo [MySQL] Phát hiện MySQL Docker Container đang chạy trên cổng 3308.
-    set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3308/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
-    set "SPRING_DATASOURCE_USERNAME=sms_app"
-    set "SPRING_DATASOURCE_PASSWORD=sms_dev_pw"
+    echo [MySQL] Phat hien MySQL Docker Container dang chay tren cong 3308.
+    set "DB_PORT=3308"
+    set "DB_USER=sms_app"
+    set "DB_PASS=sms_dev_pw"
     goto :db_ready
 )
 
 netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo [MySQL] Phát hiện MySQL Database cục bộ đang chạy trên cổng 3306.
-    set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
-    set "SPRING_DATASOURCE_USERNAME=root"
-    set "SPRING_DATASOURCE_PASSWORD="
+    echo [MySQL] Phat hien MySQL cu bo dang chay tren cong 3306.
+    set "DB_PORT=3306"
+    set "DB_USER=root"
+    set "DB_PASS="
     goto :db_ready
 )
 
-:: Nếu chưa có port nào mở, thử bật service MySQL80 cục bộ
-echo [MySQL] Đang kiểm tra khởi động dịch vụ MySQL80...
+:: Thu bat service MySQL80 cuc bo
+echo [MySQL] Dang thu khoi dong dich vu MySQL80...
 net start MySQL80 >nul 2>&1
 netstat -ano | findstr ":3306 " | findstr "LISTENING" >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    echo [MySQL] Khởi động MySQL80 thành công trên cổng 3306.
-    set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
-    set "SPRING_DATASOURCE_USERNAME=root"
-    set "SPRING_DATASOURCE_PASSWORD="
+    echo [MySQL] Khoi dong MySQL80 thanh cong tren cong 3306.
+    set "DB_PORT=3306"
+    set "DB_USER=root"
+    set "DB_PASS="
     goto :db_ready
 )
 
-:: Nếu không có MySQL cục bộ, thử qua Docker
-echo [MySQL] Thử khởi động qua Docker...
+:: Thu qua Docker
+echo [MySQL] Thu khoi dong qua Docker...
 docker start student_management_db >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     docker compose up -d db >nul 2>&1
 )
-set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3308/student_management?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8"
-set "SPRING_DATASOURCE_USERNAME=sms_app"
-set "SPRING_DATASOURCE_PASSWORD=sms_dev_pw"
+set "DB_PORT=3308"
+set "DB_USER=sms_app"
+set "DB_PASS=sms_dev_pw"
 
 :db_ready
-echo [MySQL] Sẵn sàng kết nối cơ sở dữ liệu.
+echo [MySQL] San sang ket noi co so du lieu. (Port: !DB_PORT!, User: !DB_USER!)
 
-:: 2. Khởi chạy Backend trong cửa sổ riêng
-echo.
-echo [2/3] Đang khởi chạy Spring Boot Backend (Cổng 8080)...
-start "SMS Backend (Spring Boot 8080)" cmd /k "cd /d "%~dp0backend" && .\mvnw.cmd spring-boot:run"
+:: Tao file env tam de truyen DB config vao cua so con
+set "ENV_FILE=%~dp0.env_dev_tmp.bat"
+(
+    echo @echo off
+    echo set "SPRING_DATASOURCE_URL=jdbc:mysql://localhost:!DB_PORT!/student_management?useSSL=false^&serverTimezone=Asia/Ho_Chi_Minh^&allowPublicKeyRetrieval=true^&useUnicode=true^&characterEncoding=UTF-8"
+    echo set "SPRING_DATASOURCE_USERNAME=!DB_USER!"
+    echo set "SPRING_DATASOURCE_PASSWORD=!DB_PASS!"
+) > "!ENV_FILE!"
 
-:: 3. Khởi chạy Frontend trong cửa sổ riêng
+:: -----------------------------------------------------------------------
+:: 2. Khoi chay Backend trong cua so rieng
+:: -----------------------------------------------------------------------
 echo.
-echo [3/3] Đang khởi chạy React Frontend (Cổng 5173)...
+echo [2/3] Dang khoi chay Spring Boot Backend (Cong 8080)...
+start "SMS Backend (Spring Boot 8080)" cmd /k "call "%~dp0.env_dev_tmp.bat" && cd /d "%~dp0backend" && mvnw.cmd spring-boot:run"
+
+:: -----------------------------------------------------------------------
+:: 3. Khoi chay Frontend trong cua so rieng
+:: -----------------------------------------------------------------------
+echo.
+echo [3/3] Dang khoi chay React Frontend (Cong 5173)...
 start "SMS Frontend (React Vite 5173)" cmd /k "cd /d "%~dp0frontend" && npm run dev"
 
+:: -----------------------------------------------------------------------
+:: Hien thi thong tin truy cap
+:: -----------------------------------------------------------------------
 echo.
 echo ======================================================================
-echo                     HỆ THỐNG ĐANG ĐƯỢC KHỞI ĐỘNG!
+echo                     HE THONG DANG DUOC KHOI DONG!
 echo ======================================================================
 echo.
-echo [1] TRUY CẬP TRÊN MÁY NÀY:
+echo [1] TRUY CAP TREN MAY NAY:
 echo    - Frontend App:   http://localhost:5173
 echo    - Backend API:    http://localhost:8080/api
 echo    - Swagger Docs:   http://localhost:8080/swagger-ui.html
 echo.
-echo [2] TRUY CẬP TỪ THIẾT BỊ KHÁC TRONG MẠNG LAN / CÙNG WI-FI:
-for /f "tokens=4" %%a in ('route print ^| findstr 0.0.0.0.*0.0.0.0') do (
+echo [2] TRUY CAP TU THIET BI KHAC TRONG MANG LAN / CUNG WI-FI:
+set LOCAL_IP=
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /C:"IPv4" ^| findstr "192.168."') do (
     set LOCAL_IP=%%a
     goto :ip_found
 )
 :ip_found
-echo    - Mở trình duyệt trên điện thoại/laptop khác gõ:
-echo      http://%LOCAL_IP%:5173
+set LOCAL_IP=!LOCAL_IP: =!
+if "!LOCAL_IP!"=="" (
+    echo    - [Luu y] Khong tim thay IP LAN 192.168.x.x. Kiem tra Wi-Fi/LAN.
+) else (
+    echo    - Mo trinh duyet tren dien thoai/laptop khac, go dia chi:
+    echo      http://!LOCAL_IP!:5173
+)
 echo.
-echo [3] TÀI KHOẢN ĐĂNG NHẬP MẪU:
-echo    + Quản trị viên (Admin)       : admin       / 123456
-echo    + Cán bộ Phòng Đào tạo (SMS) : daotao      / Daotao@2026!  (hoặc 123456)
-echo    + Cán bộ Khảo thí             : khaothi     / Khaothi@2026! (hoặc 123456)
-echo    + Giáo vụ Khoa CNTT           : giaovu_cntt / 123456
-echo    + Giảng viên đại diện         : 1000001     / 123456
-echo    + Sinh viên đại diện          : 2500001     / 123456
+echo [3] TAI KHOAN DANG NHAP MAU:
+echo    + Quan tri vien (Admin)        : admin       / 123456
+echo    + Can bo Phong Dao tao (SMS)   : daotao      / Daotao@2026!  (hoac 123456)
+echo    + Can bo Khao thi              : khaothi     / Khaothi@2026! (hoac 123456)
+echo    + Giao vu Khoa CNTT            : giaovu_cntt / 123456
+echo    + Giang vien dai dien          : 1000001     / 123456
+echo    + Sinh vien dai dien           : 2500001     / 123456
 echo.
-echo [4] Để chia sẻ link ra toàn Internet cho mọi người truy cập:
-echo    Chạy file: share_internet.bat
+echo [4] De chia se link ra toan Internet:
+echo    Chay file: share_internet.bat
 echo ======================================================================
 pause

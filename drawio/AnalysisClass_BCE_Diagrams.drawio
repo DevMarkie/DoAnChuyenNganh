@@ -59,7 +59,7 @@
         <mxCell id="bnd_login_2_methods" value="+ login(request: LoginRequest): ResponseEntity&lt;ApiResponse&lt;LoginResponse&gt;&gt;&#10;+ logout(): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_login_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="66"/>
         </mxCell>
-        <mxCell id="act_login" value="Người dùng" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_login" value="Người dùng" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_login" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_login" target="bnd_login_1">
@@ -202,7 +202,7 @@
         <mxCell id="bnd_changepwd_2_methods" value="+ changePassword(user: UserPrincipal, req: ChangePasswordRequest): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_changepwd_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="48"/>
         </mxCell>
-        <mxCell id="act_changepwd" value="Người dùng" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_changepwd" value="Người dùng" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_changepwd" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_changepwd" target="bnd_changepwd_1">
@@ -330,7 +330,7 @@
         <mxCell id="bnd_stu_create_2_methods" value="+ createStudent(request: StudentRequest): ResponseEntity&lt;ApiResponse&lt;Student&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_stu_create_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="48"/>
         </mxCell>
-        <mxCell id="act_stu_create" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_stu_create" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_stu_create" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_stu_create" target="bnd_stu_create_1">
@@ -473,7 +473,7 @@
         <mxCell id="bnd_stu_manage_2_methods" value="+ updateStudent(id: Long, req: StudentRequest): ResponseEntity&lt;ApiResponse&lt;Student&gt;&gt;&#10;+ updateStatus(id: Long, req: UpdateStudentStatusRequest): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_stu_manage_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="114" width="350" height="84"/>
         </mxCell>
-        <mxCell id="act_stu_manage" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_stu_manage" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_stu_manage" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_stu_manage" target="bnd_stu_manage_1">
@@ -604,7 +604,7 @@
         <mxCell id="bnd_academic_2_methods" value="+ getAllDepartments(): ResponseEntity&lt;ApiResponse&lt;List&lt;Department&gt;&gt;&gt;&#10;+ createClass(req: ClassRequest): ResponseEntity&lt;ApiResponse&lt;ClassEntity&gt;&gt;&#10;+ getClassesByDept(deptId: Integer): ResponseEntity&lt;ApiResponse&lt;List&lt;ClassEntity&gt;&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_academic_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="114" width="350" height="120"/>
         </mxCell>
-        <mxCell id="act_academic" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_academic" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_academic" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_academic" target="bnd_academic_1">
@@ -747,7 +747,7 @@
         <mxCell id="bnd_lecturers_2_methods" value="+ getAll(): ResponseEntity&lt;ApiResponse&lt;List&lt;Lecturer&gt;&gt;&gt;&#10;+ create(req: LecturerRequest): ResponseEntity&lt;ApiResponse&lt;Lecturer&gt;&gt;&#10;+ update(id: Long, req: LecturerRequest): ResponseEntity&lt;ApiResponse&lt;Lecturer&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_lecturers_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="120"/>
         </mxCell>
-        <mxCell id="act_lecturers" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_lecturers" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_lecturers" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_lecturers" target="bnd_lecturers_1">
@@ -890,7 +890,7 @@
         <mxCell id="bnd_subjects_2_methods" value="+ getAll(): ResponseEntity&lt;ApiResponse&lt;List&lt;SubjectResponse&gt;&gt;&gt;&#10;+ create(req: SubjectRequest): ResponseEntity&lt;ApiResponse&lt;SubjectResponse&gt;&gt;&#10;+ update(id: Integer, req: SubjectRequest): ResponseEntity&lt;ApiResponse&lt;SubjectResponse&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_subjects_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="120"/>
         </mxCell>
-        <mxCell id="act_subjects" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_subjects" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_subjects" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_subjects" target="bnd_subjects_1">
@@ -1033,7 +1033,7 @@
         <mxCell id="bnd_semesters_2_methods" value="+ getAll(): ResponseEntity&lt;ApiResponse&lt;List&lt;Semester&gt;&gt;&gt;&#10;+ create(req: SemesterRequest): ResponseEntity&lt;ApiResponse&lt;Semester&gt;&gt;&#10;+ setCurrent(id: Integer): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_semesters_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="120"/>
         </mxCell>
-        <mxCell id="act_semesters" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_semesters" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_semesters" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_semesters" target="bnd_semesters_1">
@@ -1161,7 +1161,7 @@
         <mxCell id="bnd_sections_2_methods" value="+ getBySemester(semId: Integer): ResponseEntity&lt;ApiResponse&lt;List&lt;CourseSection&gt;&gt;&gt;&#10;+ create(req: CourseSectionRequest): ResponseEntity&lt;ApiResponse&lt;CourseSection&gt;&gt;&#10;+ updateStatus(id: Long, status: String): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_sections_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="120"/>
         </mxCell>
-        <mxCell id="act_sections" value="Cán bộ Đào tạo / Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_sections" value="Cán bộ Đào tạo / Admin" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_sections" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_sections" target="bnd_sections_1">
@@ -1289,7 +1289,7 @@
         <mxCell id="bnd_scheduling_2_methods" value="+ createSchedule(req: ScheduleRequest): ResponseEntity&lt;ApiResponse&lt;Schedule&gt;&gt;&#10;+ getBySection(sectionId: Long): ResponseEntity&lt;ApiResponse&lt;List&lt;Schedule&gt;&gt;&gt;&#10;+ deleteSchedule(id: Long): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_scheduling_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="120"/>
         </mxCell>
-        <mxCell id="act_scheduling" value="Cán bộ Đào tạo / Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_scheduling" value="Cán bộ Đào tạo / Admin" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_scheduling" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_scheduling" target="bnd_scheduling_1">
@@ -1417,7 +1417,7 @@
         <mxCell id="bnd_enroll_2_methods" value="+ enroll(user: UserPrincipal, req: EnrollmentRequest): ResponseEntity&lt;ApiResponse&lt;Enrollment&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_enroll_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="48"/>
         </mxCell>
-        <mxCell id="act_enroll" value="Sinh viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_enroll" value="Sinh viên" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_enroll" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_enroll" target="bnd_enroll_1">
@@ -1560,7 +1560,7 @@
         <mxCell id="bnd_drop_2_methods" value="+ drop(user: UserPrincipal, id: Long): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_drop_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="48"/>
         </mxCell>
-        <mxCell id="act_drop" value="Sinh viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_drop" value="Sinh viên" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_drop" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_drop" target="bnd_drop_1">
@@ -1691,7 +1691,7 @@
         <mxCell id="bnd_grd_entry_2_methods" value="+ saveGrades(user: UserPrincipal, req: GradeEntryRequest): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;&#10;+ getBySection(sectionId: Long): ResponseEntity&lt;ApiResponse&lt;List&lt;GradeDTO&gt;&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_grd_entry_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="84"/>
         </mxCell>
-        <mxCell id="act_grd_entry" value="Giảng viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_grd_entry" value="Giảng viên" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_grd_entry" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_grd_entry" target="bnd_grd_entry_1">
@@ -1819,7 +1819,7 @@
         <mxCell id="bnd_grd_finalize_2_methods" value="+ finalizeSectionGrades(id: Long, user: UserPrincipal): ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_grd_finalize_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="48"/>
         </mxCell>
-        <mxCell id="act_grd_finalize" value="Giảng viên &amp; Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_grd_finalize" value="Giảng viên &amp; Admin" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_grd_finalize" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_grd_finalize" target="bnd_grd_finalize_1">
@@ -1950,7 +1950,7 @@
         <mxCell id="bnd_transcript_2_methods" value="+ getMyTranscript(user: UserPrincipal): ResponseEntity&lt;ApiResponse&lt;TranscriptResponse&gt;&gt;&#10;+ getStudentTranscript(studentId: Long): ResponseEntity&lt;ApiResponse&lt;TranscriptResponse&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_transcript_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="84"/>
         </mxCell>
-        <mxCell id="act_transcript" value="Sinh viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_transcript" value="Sinh viên" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_transcript" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_transcript" target="bnd_transcript_1">
@@ -2081,7 +2081,7 @@
         <mxCell id="bnd_dashboard_2_methods" value="+ getDashboard(): ResponseEntity&lt;ApiResponse&lt;DashboardResponse&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_dashboard_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="48"/>
         </mxCell>
-        <mxCell id="act_dashboard" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_dashboard" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_dashboard" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_dashboard" target="bnd_dashboard_1">
@@ -2212,7 +2212,7 @@
         <mxCell id="bnd_tuition_2_methods" value="+ getStudentTuition(studentId: Long): ResponseEntity&lt;ApiResponse&lt;TuitionSummaryResponse&gt;&gt;&#10;+ collectCash(req: CashPaymentRequest): ResponseEntity&lt;ApiResponse&lt;ReceiptResponse&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_tuition_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="84"/>
         </mxCell>
-        <mxCell id="act_tuition" value="Thu ngân / Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_tuition" value="Thu ngân / Admin" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_tuition" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_tuition" target="bnd_tuition_1">
@@ -2343,7 +2343,7 @@
         <mxCell id="bnd_attendance_2_methods" value="+ startSession(req: AttendanceStartRequest): ResponseEntity&lt;ApiResponse&lt;AttendanceLiveSessionResponse&gt;&gt;&#10;+ checkIn(req: CheckInRequest): ResponseEntity&lt;ApiResponse&lt;Map&lt;String, Object&gt;&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_attendance_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="114" width="350" height="84"/>
         </mxCell>
-        <mxCell id="act_attendance" value="Giảng viên &amp; Sinh viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_attendance" value="Giảng viên &amp; Sinh viên" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_attendance" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_attendance" target="bnd_attendance_1">
@@ -2474,7 +2474,7 @@
         <mxCell id="bnd_exam_2_methods" value="+ createSession(req: ExamSessionRequest): ResponseEntity&lt;ApiResponse&lt;ExamSessionResponse&gt;&gt;&#10;+ createRoom(sessionId: Long, req: ExamRoomRequest): ResponseEntity&lt;ApiResponse&lt;ExamRoomResponse&gt;&gt;&#10;+ getRoomsBySession(sessionId: Long): ResponseEntity&lt;ApiResponse&lt;List&lt;ExamRoomResponse&gt;&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_exam_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="114" width="350" height="120"/>
         </mxCell>
-        <mxCell id="act_exam" value="Cán bộ Khảo thí / Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_exam" value="Cán bộ Khảo thí / Admin" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_exam" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_exam" target="bnd_exam_1">
@@ -2617,7 +2617,7 @@
         <mxCell id="bnd_amendment_2_methods" value="+ create(req: CreateAmendmentRequest): ResponseEntity&lt;ApiResponse&lt;GradeAmendmentResponse&gt;&gt;&#10;+ deptReview(id: Long, req: DeptReviewRequest): ResponseEntity&lt;ApiResponse&lt;GradeAmendmentResponse&gt;&gt;&#10;+ academicApproval(id: Long, req: AcademicApprovalRequest): ResponseEntity&lt;ApiResponse&lt;GradeAmendmentResponse&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_amendment_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="138"/>
         </mxCell>
-        <mxCell id="act_amendment" value="Giảng viên &amp; Trưởng BM &amp; P.ĐT" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_amendment" value="Giảng viên &amp; Trưởng BM &amp; P.ĐT" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_amendment" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_amendment" target="bnd_amendment_1">
@@ -2760,7 +2760,7 @@
         <mxCell id="bnd_graduation_2_methods" value="+ evaluateCohort(cohortId: Integer): ResponseEntity&lt;ApiResponse&lt;List&lt;GraduationRecord&gt;&gt;&gt;&#10;+ batchApprove(cohortId: Integer): ResponseEntity&lt;ApiResponse&lt;List&lt;GraduationRecord&gt;&gt;&gt;&#10;+ approveRecord(recordId: Long): ResponseEntity&lt;ApiResponse&lt;GraduationRecord&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_graduation_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="114" width="350" height="120"/>
         </mxCell>
-        <mxCell id="act_graduation" value="Cán bộ Đào tạo / Sinh viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_graduation" value="Cán bộ Đào tạo / Sinh viên" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_graduation" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_graduation" target="bnd_graduation_1">
@@ -2903,7 +2903,7 @@
         <mxCell id="bnd_staff_2_methods" value="+ getAllStaffs(): ResponseEntity&lt;ApiResponse&lt;List&lt;StaffResponse&gt;&gt;&gt;&#10;+ createStaff(req: CreateStaffRequest): ResponseEntity&lt;ApiResponse&lt;StaffResponse&gt;&gt;&#10;+ updateStaff(id: Long, req: UpdateStaffRequest): ResponseEntity&lt;ApiResponse&lt;StaffResponse&gt;&gt;&#10;+ resetStaffPassword(id: Long): ResponseEntity&lt;ApiResponse&lt;Map&lt;String, String&gt;&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_staff_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="114" width="350" height="156"/>
         </mxCell>
-        <mxCell id="act_staff" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_staff" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_staff" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_staff" target="bnd_staff_1">
@@ -3046,7 +3046,7 @@
         <mxCell id="bnd_bulkpwd_2_methods" value="+ bulkResetPasswords(req: BulkResetPasswordRequest): ResponseEntity&lt;ApiResponse&lt;BulkResetPasswordResponse&gt;&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;fontSize=11;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;" parent="bnd_bulkpwd_2" vertex="1">
           <mxGeometry as="geometry" x="0" y="96" width="350" height="66"/>
         </mxCell>
-        <mxCell id="act_bulkpwd" value="Quản trị viên (Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;" parent="1" vertex="1">
+        <mxCell id="act_bulkpwd" value="Quản trị viên (Admin)" style="rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;" parent="1" vertex="1">
           <mxGeometry as="geometry" x="40" y="185" width="60" height="90"/>
         </mxCell>
         <mxCell id="e_act_bulkpwd" value="tương tác" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;strokeWidth=1.5;strokeColor=#000000;labelBackgroundColor=#ffffff;labelBorderColor=none;fillColor=none;fontColor=#000000;fontSize=10;fontStyle=1;fontFamily=Helvetica,Arial,sans-serif;" parent="1" edge="1" source="act_bulkpwd" target="bnd_bulkpwd_1">

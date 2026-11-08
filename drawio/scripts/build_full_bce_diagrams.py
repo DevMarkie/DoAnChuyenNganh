@@ -55,7 +55,7 @@ def add_cell(root, cid, value="", style="", vertex=False, edge=False, parent="1"
 # --- ACADEMIC UML BLACK & WHITE STYLES (TRẮNG ĐEN 100%, KHÔNG MÀU) ---
 STYLE_TITLE = "text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontSize=15;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;"
 STYLE_SUBTITLE = "text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=0;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#444444;"
-STYLE_ACTOR = "shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;strokeColor=#000000;fillColor=#ffffff;strokeWidth=1.5;"
+STYLE_ACTOR = "rounded=1;arcSize=14;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.8;fontStyle=1;fontSize=12;fontFamily=Helvetica,Arial,sans-serif;fontColor=#000000;align=center;verticalAlign=middle;html=1;shadow=0;"
 
 # Column Header Cards
 STYLE_HDR_BND = "rounded=1;arcSize=10;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontFamily=Helvetica,Arial,sans-serif;align=center;verticalAlign=middle;html=1;spacingLeft=30;"

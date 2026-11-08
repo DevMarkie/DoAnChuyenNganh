@@ -487,6 +487,12 @@ async function runMasterDevToolsAudit() {
   await page.screenshot({ path: path.join(SHOTS_DIR, '03_academic_graduation_audit.png') });
   console.log(`    🎓 Động cơ Xét Tốt Nghiệp Tự Động (TT08/2021): Sẵn sàng đánh giá tiêu chuẩn`);
 
+  // Trang Sửa điểm sau khóa / Đính chính điểm 3 cấp
+  await page.goto(`${FRONTEND_URL}/academic/grade-amendments`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: path.join(SHOTS_DIR, '03_grade_amendments.png') });
+  console.log(`    📝 Quy trình Thẩm định Đính chính Điểm 3 Cấp: Sẵn sàng phê duyệt`);
+
   masterReport.portalsTested.push({
     portal: 'Academic Affairs',
     path: '/academic/graduation',

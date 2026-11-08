@@ -71,6 +71,7 @@ Desktop.ini
 # Environment variables & secrets
 .env
 .env.*
+.env_*
 !.env.example
 !.env.production
 
@@ -79,6 +80,7 @@ Desktop.ini
 *.temp
 *.tmp
 *.bkp
+scripts/*.json
 
 # Local docker-compose overrides
 docker-compose.override.yml

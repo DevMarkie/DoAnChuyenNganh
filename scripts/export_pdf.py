@@ -6,7 +6,10 @@ và các trường liên kết trước khi xuất sang PDF.
 """
 import os
 import sys
+import io
 import win32com.client
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 def main():
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

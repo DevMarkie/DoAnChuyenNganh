@@ -31,7 +31,7 @@ public class GraduationController {
      * Chỉ Cán bộ Đào tạo (ACADEMIC_AFFAIRS) có quyền thực thi theo Ma trận phân quyền.
      */
     @PostMapping("/evaluate-cohort/{cohortId}")
-    @PreAuthorize("hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<GraduationRecord>>> evaluateCohort(@PathVariable Integer cohortId) {
         List<GraduationRecord> records = graduationService.assessCohortCandidates(cohortId);
         return ResponseEntity.ok(ApiResponse.success(
@@ -42,7 +42,7 @@ public class GraduationController {
      * Tra cứu danh sách hồ sơ tốt nghiệp phân trang, có thể lọc theo Khóa và trạng thái (PENDING, APPROVED, REJECTED).
      */
     @GetMapping("/records")
-    @PreAuthorize("hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Page<GraduationRecord>>> getRecords(
             @RequestParam(required = false) Integer cohortId,
             @RequestParam(required = false) String status,
@@ -57,7 +57,7 @@ public class GraduationController {
      * Phê duyệt tốt nghiệp cho một hồ sơ cá nhân.
      */
     @PostMapping("/records/{recordId}/approve")
-    @PreAuthorize("hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<GraduationRecord>> approveRecord(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Long recordId,
@@ -72,7 +72,7 @@ public class GraduationController {
      * Phê duyệt tốt nghiệp hàng loạt cho toàn bộ sinh viên đủ điều kiện (QUALIFIED) trong khóa.
      */
     @PostMapping("/batch-approve/{cohortId}")
-    @PreAuthorize("hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<GraduationRecord>>> batchApprove(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable Integer cohortId,

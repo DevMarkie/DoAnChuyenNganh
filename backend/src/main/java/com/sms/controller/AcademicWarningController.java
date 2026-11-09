@@ -26,7 +26,7 @@ public class AcademicWarningController {
     private final AcademicWarningService academicWarningService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ACADEMIC_AFFAIRS') or hasRole('ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<AcademicWarningResponse>>> getWarnings(
             @RequestParam(required = false) Integer semesterId,
             @RequestParam(required = false) Integer level,
@@ -50,7 +50,7 @@ public class AcademicWarningController {
     }
 
     @PostMapping("/scan")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('ACADEMIC_AFFAIRS') or hasRole('ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Map<String, Object>>> scanAcademicStanding(
             @RequestParam(required = false) Integer semesterId) {
         Map<String, Object> result = academicWarningService.scanAndApplyAcademicWarnings(semesterId);

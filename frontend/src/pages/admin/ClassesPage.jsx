@@ -3,13 +3,19 @@ import { useState, useEffect } from 'react';
 import { Plus, Edit2, CheckCircle, XCircle, X, Filter, Search, RotateCcw, Sparkles } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { classService, departmentService } from '../../services/dataService';
+import useAuthStore from '../../store/authStore';
 
 export default function ClassesPage() {
+  const user = useAuthStore((state) => state.user);
+  const isAcademicStaff = user?.role === 'ACADEMIC_STAFF';
+  const staffDeptId = user?.departmentId;
+  const staffDeptName = user?.departmentName;
+
   const [classes, setClasses] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedDept, setSelectedDept] = useState('');
+  const [selectedDept, setSelectedDept] = useState(isAcademicStaff && staffDeptId ? String(staffDeptId) : '');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
@@ -32,6 +38,9 @@ export default function ClassesPage() {
       ]);
       setClasses(resCls.data.data || []);
       setDepartments(resDept.data.data || []);
+      if (isAcademicStaff && staffDeptId) {
+        setSelectedDept(String(staffDeptId));
+      }
     } catch {
       toast.error('Lỗi khi tải dữ liệu lớp học');
     } finally {
@@ -50,7 +59,7 @@ export default function ClassesPage() {
       setFormData({
         code: cls.code || '',
         name: cls.name || '',
-        departmentId: cls.department?.id || '',
+        departmentId: cls.department?.id || (isAcademicStaff && staffDeptId ? staffDeptId : ''),
         academicYear: cls.academicYear || 'K18',
       });
     } else {
@@ -58,7 +67,7 @@ export default function ClassesPage() {
       setFormData({
         code: '',
         name: '',
-        departmentId: departments[0]?.id || '',
+        departmentId: isAcademicStaff && staffDeptId ? staffDeptId : (departments[0]?.id || ''),
         academicYear: 'K18',
       });
     }
@@ -68,11 +77,14 @@ export default function ClassesPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = isAcademicStaff && staffDeptId
+        ? { ...formData, departmentId: staffDeptId }
+        : formData;
       if (editingClass) {
-        await classService.update(editingClass.id, formData);
+        await classService.update(editingClass.id, payload);
         toast.success('Cập nhật lớp thành công!');
       } else {
-        await classService.create(formData);
+        await classService.create(payload);
         toast.success('Thêm lớp mới thành công!');
       }
       setIsModalOpen(false);
@@ -96,7 +108,10 @@ export default function ClassesPage() {
     e.preventDefault();
     try {
       setGeneratingBatch(true);
-      const res = await classService.batchGenerate(batchData);
+      const payload = isAcademicStaff && staffDeptId
+        ? { ...batchData, departmentIds: [staffDeptId] }
+        : batchData;
+      const res = await classService.batchGenerate(payload);
       toast.success(res.data?.message || 'Đã tự động khởi tạo danh sách lớp sinh hoạt thành công!');
       setIsBatchModalOpen(false);
       loadData();
@@ -154,26 +169,47 @@ export default function ClassesPage() {
               />
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '220px' }}>
-              <Filter size={15} style={{ color: 'var(--text-muted)' }} />
-              <select
-                value={selectedDept}
-                onChange={(e) => setSelectedDept(e.target.value)}
-                className="form-select"
-                style={{ width: 'auto', minWidth: '190px' }}
-              >
-                <option value="">Tất cả khoa viện</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
-                ))}
-              </select>
-            </div>
+            {isAcademicStaff ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '220px' }}>
+                <Filter size={15} style={{ color: 'var(--primary)' }} />
+                <span
+                  className="badge badge-info"
+                  style={{
+                    padding: '8px 14px',
+                    fontSize: '0.85rem',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontWeight: 600,
+                    borderRadius: '6px'
+                  }}
+                  title="Dữ liệu cố định theo Khoa của bạn"
+                >
+                  <span>Khoa:</span> {staffDeptName || 'Khoa trực thuộc'}
+                </span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '220px' }}>
+                <Filter size={15} style={{ color: 'var(--text-muted)' }} />
+                <select
+                  value={selectedDept}
+                  onChange={(e) => setSelectedDept(e.target.value)}
+                  className="form-select"
+                  style={{ width: 'auto', minWidth: '190px' }}
+                >
+                  <option value="">Tất cả khoa viện</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-            {(search || selectedDept) && (
+            {(search || (!isAcademicStaff && selectedDept)) && (
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={() => { setSearch(''); setSelectedDept(''); }}
+                onClick={() => { setSearch(''); if (!isAcademicStaff) setSelectedDept(''); }}
                 title="Xóa bộ lọc" aria-label="Xóa bộ lọc"
                 style={{ padding: '8px 12px' }}
               >
@@ -302,12 +338,25 @@ export default function ClassesPage() {
                     value={formData.departmentId}
                     onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
                     className="form-select"
+                    disabled={isAcademicStaff}
+                    style={isAcademicStaff ? { backgroundColor: 'var(--bg-subtle)', cursor: 'not-allowed' } : {}}
                   >
-                    <option value="">-- Chọn khoa --</option>
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
-                    ))}
+                    {isAcademicStaff ? (
+                      <option value={staffDeptId}>{staffDeptName || 'Khoa của bạn'}</option>
+                    ) : (
+                      <>
+                        <option value="">-- Chọn khoa --</option>
+                        {departments.map((d) => (
+                          <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
+                        ))}
+                      </>
+                    )}
                   </select>
+                  {isAcademicStaff && (
+                    <small style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: '4px', display: 'block' }}>
+                      Cố định theo Khoa phụ trách của bạn
+                    </small>
+                  )}
                 </div>
                 <div>
                   <label className="form-label">Khoá học (Niên khoá) *</label>
@@ -343,7 +392,11 @@ export default function ClassesPage() {
             <form onSubmit={handleBatchGenerate}>
               <div className="modal-body" style={{ display: 'grid', gap: '16px' }}>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                  Hệ thống sẽ tự động quét toàn bộ các Khoa đang hoạt động ({departments.length} khoa) và sinh mã lớp theo quy tắc:
+                  {isAcademicStaff ? (
+                    <>Hệ thống sẽ tự động sinh mã lớp cho <strong>Khoa {staffDeptName}</strong> theo quy tắc:</>
+                  ) : (
+                    <>Hệ thống sẽ tự động quét toàn bộ các Khoa đang hoạt động ({departments.length} khoa) và sinh mã lớp theo quy tắc:</>
+                  )}
                   <code style={{ display: 'block', margin: '6px 0', padding: '6px 10px', background: 'var(--bg-hover)', borderRadius: '4px', color: 'var(--primary)', fontWeight: 600 }}>
                     [MÃ_KHOA][STT]-[KHÓA] (VD: CNTT01-{batchData.cohort || 'K17'})
                   </code>

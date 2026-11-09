@@ -30,6 +30,9 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Student> findByClassEntityId(Integer classId);
 
     @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
+    List<Student> findByClassEntityDepartmentId(Integer departmentId);
+
+    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
     List<Student> findByStatus(Student.StudentStatus status);
 
     @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})

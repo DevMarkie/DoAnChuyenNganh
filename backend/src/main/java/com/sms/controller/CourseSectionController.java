@@ -30,8 +30,8 @@ public class CourseSectionController {
     private final RedisCourseSectionService redisCourseSectionService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CourseSection>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success(courseSectionService.findAll()));
+    public ResponseEntity<ApiResponse<List<CourseSection>>> getAll(@AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success(courseSectionService.findAll(user)));
     }
 
     /**
@@ -44,7 +44,8 @@ public class CourseSectionController {
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id,desc") String sort) {
+            @RequestParam(defaultValue = "id,desc") String sort,
+            @AuthenticationPrincipal UserPrincipal user) {
 
         String[] sortParts = sort.split(",");
         String sortField = sortParts[0];
@@ -53,12 +54,13 @@ public class CourseSectionController {
 
         PageRequest pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
         return ResponseEntity.ok(ApiResponse.success(
-                courseSectionService.findPaged(keyword, semesterId, status, pageable)));
+                courseSectionService.findPaged(keyword, semesterId, status, pageable, user)));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CourseSection>> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(courseSectionService.findById(id)));
+    public ResponseEntity<ApiResponse<CourseSection>> getById(@PathVariable Long id,
+                                                              @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success(courseSectionService.findById(id, user)));
     }
 
     @GetMapping("/semester/{semesterId}")
@@ -79,28 +81,30 @@ public class CourseSectionController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CourseSection>> create(@Valid @RequestBody CourseSectionRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Mở học phần thành công", courseSectionService.create(request)));
+    public ResponseEntity<ApiResponse<CourseSection>> create(@Valid @RequestBody CourseSectionRequest request,
+                                                             @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success("Mở học phần thành công", courseSectionService.create(request, user)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CourseSection>> update(@PathVariable Long id,
-                                                             @Valid @RequestBody CourseSectionRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật học phần thành công", courseSectionService.update(id, request)));
+                                                             @Valid @RequestBody CourseSectionRequest request,
+                                                             @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật học phần thành công", courseSectionService.update(id, request, user)));
     }
 
     /**
      * Batch Warm-up: Nạp sẵn danh sách lớp của học kỳ vào Redis Cache trước giờ G.
      */
     @PostMapping("/semester/{semesterId}/warmup-cache")
-    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_AFFAIRS','ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<String>> warmUpCache(@PathVariable Integer semesterId) {
         int count = redisCourseSectionService.warmUpSemesterSections(semesterId);
         return ResponseEntity.ok(ApiResponse.success("Đã nạp sẵn " + count + " lớp học phần vào Redis cache", "LOADED_" + count));
     }
 
     @GetMapping("/{id}/export-students")
-    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_AFFAIRS','LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN','ACADEMIC_AFFAIRS','ACADEMIC_STAFF','LECTURER')")
     public ResponseEntity<byte[]> exportStudents(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long id) throws java.io.IOException {

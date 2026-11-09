@@ -7,6 +7,7 @@ import com.sms.exception.*;
 import com.sms.repository.ClassRepository;
 import com.sms.repository.DepartmentRepository;
 import com.sms.repository.LecturerRepository;
+import com.sms.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +24,31 @@ public class ClassService {
     private final com.sms.repository.CohortRepository cohortRepository;
     private final LecturerRepository lecturerRepository;
 
+    private void validateDepartmentAccess(UserPrincipal user, Integer targetDepartmentId, String actionDescription) {
+        if (user == null || !"ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            return;
+        }
+        Integer userDeptId = user.getDepartmentId();
+        if (userDeptId == null) {
+            throw new ForbiddenException("Tài khoản Giáo vụ chưa được phân công Khoa trực thuộc");
+        }
+        if (targetDepartmentId == null || !userDeptId.equals(targetDepartmentId)) {
+            throw new ForbiddenException("Bạn không có quyền " + actionDescription + " thuộc Khoa khác");
+        }
+    }
+
     public List<ClassEntity> findAll() {
         return classRepository.findAll();
+    }
+
+    public List<ClassEntity> findAll(UserPrincipal user) {
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            if (user.getDepartmentId() == null) {
+                throw new ForbiddenException("Tài khoản Giáo vụ chưa được phân công Khoa trực thuộc");
+            }
+            return classRepository.findByDepartmentId(user.getDepartmentId());
+        }
+        return findAll();
     }
 
     public ClassEntity findById(Integer id) {
@@ -32,8 +56,22 @@ public class ClassService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp với ID: " + id));
     }
 
+    public ClassEntity findById(Integer id, UserPrincipal user) {
+        ClassEntity cls = findById(id);
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            Integer deptId = cls.getDepartment() != null ? cls.getDepartment().getId() : null;
+            validateDepartmentAccess(user, deptId, "truy cập lớp");
+        }
+        return cls;
+    }
+
     public List<ClassEntity> findByDepartment(Integer departmentId) {
         return classRepository.findByDepartmentId(departmentId);
+    }
+
+    public List<ClassEntity> findByDepartment(Integer departmentId, UserPrincipal user) {
+        validateDepartmentAccess(user, departmentId, "xem danh sách lớp");
+        return findByDepartment(departmentId);
     }
 
     @Transactional
@@ -69,6 +107,17 @@ public class ClassService {
     }
 
     @Transactional
+    public ClassEntity create(ClassRequest request, UserPrincipal user) {
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            if (user.getDepartmentId() == null) {
+                throw new ForbiddenException("Tài khoản Giáo vụ chưa được phân công Khoa trực thuộc");
+            }
+            request.setDepartmentId(user.getDepartmentId());
+        }
+        return create(request);
+    }
+
+    @Transactional
     public ClassEntity update(Integer id, ClassRequest request) {
         ClassEntity cls = findById(id);
         Department dept = departmentRepository.findById(request.getDepartmentId())
@@ -95,10 +144,32 @@ public class ClassService {
     }
 
     @Transactional
+    public ClassEntity update(Integer id, ClassRequest request, UserPrincipal user) {
+        ClassEntity existing = findById(id);
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            Integer existingDeptId = existing.getDepartment() != null ? existing.getDepartment().getId() : null;
+            validateDepartmentAccess(user, existingDeptId, "cập nhật lớp");
+            validateDepartmentAccess(user, request.getDepartmentId(), "chuyển lớp sang Khoa khác");
+            request.setDepartmentId(user.getDepartmentId());
+        }
+        return update(id, request);
+    }
+
+    @Transactional
     public void toggleActive(Integer id) {
         ClassEntity cls = findById(id);
         cls.setIsActive(!cls.getIsActive());
         classRepository.save(cls);
+    }
+
+    @Transactional
+    public void toggleActive(Integer id, UserPrincipal user) {
+        ClassEntity existing = findById(id);
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            Integer existingDeptId = existing.getDepartment() != null ? existing.getDepartment().getId() : null;
+            validateDepartmentAccess(user, existingDeptId, "thay đổi trạng thái lớp");
+        }
+        toggleActive(id);
     }
 
     /**
@@ -137,5 +208,16 @@ public class ClassService {
             }
         }
         return created;
+    }
+
+    @Transactional
+    public List<ClassEntity> batchGenerate(com.sms.dto.request.BatchClassRequest request, UserPrincipal user) {
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            if (user.getDepartmentId() == null) {
+                throw new ForbiddenException("Tài khoản Giáo vụ chưa được phân công Khoa trực thuộc");
+            }
+            request.setDepartmentIds(List.of(user.getDepartmentId()));
+        }
+        return batchGenerate(request);
     }
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit2, UserX, UserCheck, X, Filter, RotateCcw, Download, KeyRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { studentService, classService, departmentService } from '../../services/dataService';
+import useAuthStore from '../../store/authStore';
 import { genderLabel } from '../../utils/labels';
 import Skeleton from '../../components/common/Skeleton';
 import StudentImportModal from './StudentImportModal';
@@ -16,6 +17,9 @@ const STATUS_OPTIONS = [
 ];
 
 export default function StudentsPage() {
+  const user = useAuthStore((state) => state.user);
+  const isFacultyStaff = user?.role === 'ACADEMIC_STAFF';
+
   const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -23,7 +27,9 @@ export default function StudentsPage() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
-  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState(
+    isFacultyStaff && user?.departmentId ? String(user.departmentId) : ''
+  );
   const [selectedCohort, setSelectedCohort] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -75,7 +81,7 @@ export default function StudentsPage() {
     setSearch('');
     setSearchInput('');
     setSelectedClass('');
-    setSelectedDepartment('');
+    setSelectedDepartment(isFacultyStaff && user?.departmentId ? String(user.departmentId) : '');
     setSelectedCohort('');
     setSelectedStatus('');
   };
@@ -190,6 +196,9 @@ export default function StudentsPage() {
       });
     } else {
       setEditingStudent(null);
+      const defaultClass = isFacultyStaff && user?.departmentId
+        ? (classes.find((c) => c.department?.id === user.departmentId) || classes[0])
+        : classes[0];
       setFormData({
         studentCode: '',
         citizenId: '',
@@ -203,7 +212,7 @@ export default function StudentsPage() {
         emergencyContactName: '',
         emergencyContactPhone: '',
         emergencyContactRelationship: 'Bố/Mẹ',
-        classId: classes[0]?.id || '',
+        classId: defaultClass?.id || '',
         status: 'ACTIVE',
         password: '',
       });
@@ -396,18 +405,36 @@ export default function StudentsPage() {
             </select>
 
             {/* Department Filter */}
-            <select id="student-filter-department" name="studentFilterDepartment"
-              aria-label="Lọc theo Khoa/Viện đào tạo"
-              value={selectedDepartment}
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="form-select"
-              style={{ width: 'auto', minWidth: '180px', fontSize: '0.85rem', padding: '6px 10px' }}
-            >
-              <option value="">Tất cả Khoa/Viện</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
-              ))}
-            </select>
+            {isFacultyStaff ? (
+              <span
+                className="badge badge-info"
+                style={{
+                  padding: '6px 12px',
+                  fontSize: '0.85rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontWeight: 600,
+                  borderRadius: '6px'
+                }}
+                title="Dữ liệu cố định theo Khoa của bạn"
+              >
+                <span>Khoa:</span> {user?.departmentName || 'Khoa trực thuộc'}
+              </span>
+            ) : (
+              <select id="student-filter-department" name="studentFilterDepartment"
+                aria-label="Lọc theo Khoa/Viện đào tạo"
+                value={selectedDepartment}
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+                className="form-select"
+                style={{ width: 'auto', minWidth: '180px', fontSize: '0.85rem', padding: '6px 10px' }}
+              >
+                <option value="">Tất cả Khoa/Viện</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name} ({d.code})</option>
+                ))}
+              </select>
+            )}
 
             {/* Class Filter */}
             <select id="student-filter-class" name="studentFilterClass"

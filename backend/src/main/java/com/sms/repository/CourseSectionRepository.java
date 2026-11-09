@@ -18,6 +18,9 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
     @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
     @NonNull List<CourseSection> findAll();
 
+    @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
+    List<CourseSection> findBySubjectDepartmentId(Integer departmentId);
+
     /**
      * Tìm kiếm học phần phân trang với bộ lọc keyword, học kỳ, trạng thái.
      */
@@ -35,6 +38,25 @@ public interface CourseSectionRepository extends JpaRepository<CourseSection, Lo
             @Param("keyword") String keyword,
             @Param("semesterId") Integer semesterId,
             @Param("status") CourseSection.SectionStatus status,
+            org.springframework.data.domain.Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"subject", "lecturer", "semester"})
+    @Query("""
+        SELECT cs FROM CourseSection cs
+        WHERE (:keyword IS NULL OR :keyword = ''
+               OR LOWER(cs.sectionCode) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(cs.subject.subjectName) LIKE LOWER(CONCAT('%', :keyword, '%'))
+               OR LOWER(cs.lecturer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        AND (:semesterId IS NULL OR cs.semester.id = :semesterId)
+        AND (:status IS NULL OR cs.status = :status)
+        AND (:departmentId IS NULL OR cs.subject.department.id = :departmentId)
+    """)
+    org.springframework.data.domain.Page<CourseSection> findPagedWithDept(
+            @Param("keyword") String keyword,
+            @Param("semesterId") Integer semesterId,
+            @Param("status") CourseSection.SectionStatus status,
+            @Param("departmentId") Integer departmentId,
             org.springframework.data.domain.Pageable pageable
     );
 

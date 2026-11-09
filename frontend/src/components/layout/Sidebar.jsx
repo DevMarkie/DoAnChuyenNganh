@@ -70,12 +70,14 @@ const academicAffairsNavGroups = [
       { path: '/academic/semesters', icon: CalendarDays, label: 'Học kỳ & Đợt ĐK' },
       { path: '/academic/course-sections', icon: Layers, label: 'Mở lớp học phần (CRUD)' },
       { path: '/academic/schedules', icon: Calendar, label: 'Xếp thời khóa biểu' },
+      { path: '/academic/exam-rooms', icon: CalendarDays, label: 'Ca thi & Phòng thi' },
     ]
   },
   {
     group: 'Khảo thí, Điểm & Tốt nghiệp',
     items: [
       { path: '/academic/grades', icon: ClipboardList, label: 'Sổ điểm (Mở/Khóa)' },
+      { path: '/academic/grade-appeals', icon: ClipboardList, label: 'Đơn phúc khảo' },
       { path: '/academic/grade-audit-logs', icon: ShieldCheck, label: 'Nhật ký kiểm toán điểm' },
       { path: '/academic/grade-amendments', icon: ShieldCheck, label: 'Duyệt sửa điểm (Cấp 2)' },
       { path: '/academic/academic-warnings', icon: AlertTriangle, label: 'Cảnh báo học vụ' },
@@ -126,7 +128,6 @@ const examOfficerNavGroups = [
   {
     group: 'Quản lý Thi & Điểm',
     items: [
-      { path: '/exam/rooms', icon: Calendar, label: 'Ca thi & Phòng thi' },
       { path: '/exam/grade-appeals', icon: ClipboardList, label: 'Xử lý đơn phúc khảo' },
       { path: '/exam/audit-logs', icon: ShieldCheck, label: 'Nhật ký kiểm toán điểm' },
     ]
@@ -159,6 +160,7 @@ const studentNavGroups = [
     items: [
       { path: '/student/dashboard', icon: LayoutDashboard, label: 'Cổng sinh viên' },
       { path: '/student/schedule', icon: Calendar, label: 'Thời khóa biểu' },
+      { path: '/student/exam-schedule', icon: CalendarDays, label: 'Lịch thi học kỳ' },
       { path: '/student/enroll', icon: BookMarked, label: 'Đăng ký học phần' },
       { path: '/student/enrollments', icon: Layers, label: 'HP đã đăng ký' },
       { path: '/student/transcript', icon: Award, label: 'Kết quả học tập & Tốt nghiệp' },

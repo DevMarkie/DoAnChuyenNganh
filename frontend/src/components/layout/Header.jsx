@@ -121,7 +121,7 @@ export default function Header({ onToggleMobileMenu }) {
           aria-label={theme === 'light' ? 'Chuyển sang chế độ Dark' : 'Chuyển sang chế độ Light'}
           onClick={toggleTheme}
           title={theme === 'light' ? 'Chuyển sang chế độ Dark' : 'Chuyển sang chế độ Light'}
-          style={{ border: '1px solid var(--border-color)', width: '36px', height: '36px' }}
+          style={{ border: '1px solid var(--border-color)', width: '40px', height: '40px' }}
         >
           {theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}
         </button>
@@ -177,7 +177,7 @@ export default function Header({ onToggleMobileMenu }) {
             backgroundColor: 'var(--danger-bg)',
             borderColor: 'var(--danger-border)',
             padding: '7px 12px',
-            minHeight: '36px'
+            minHeight: '40px'
           }}
           title="Đăng xuất"
         >

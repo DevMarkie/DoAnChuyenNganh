@@ -314,7 +314,7 @@ export default function StudentProfilePage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                 <div>
-                  <label className="form-label">Số CCCD / CMND (Bảo mật PII)</label>
+                  <div className="form-label">Số CCCD / CMND (Bảo mật PII)</div>
                   <div style={{ fontWeight: 600, color: 'var(--text-main)', fontFamily: 'monospace', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>{showCccd ? profile?.citizenId : maskCitizenId(profile?.citizenId)}</span>
                     {profile?.citizenId && (
@@ -331,33 +331,33 @@ export default function StudentProfilePage() {
                   </div>
                 </div>
                 <div>
-                  <label className="form-label">Lớp sinh hoạt</label>
+                  <div className="form-label">Lớp sinh hoạt</div>
                   <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                     {profile?.classEntity?.name || profile?.classEntity?.code || '—'}
                   </div>
                 </div>
                 <div>
-                  <label className="form-label">Khoa đào tạo</label>
+                  <div className="form-label">Khoa đào tạo</div>
                   <div style={{ color: 'var(--text-main)' }}>{profile?.classEntity?.department?.name || '—'}</div>
                 </div>
                 <div>
-                  <label className="form-label">Khóa tuyển sinh</label>
+                  <div className="form-label">Khóa tuyển sinh</div>
                   <div style={{ color: 'var(--text-main)' }}>{profile?.classEntity?.academicYear || 'K18'}</div>
                 </div>
                 <div>
-                  <label className="form-label">Ngày sinh</label>
+                  <div className="form-label">Ngày sinh</div>
                   <div style={{ color: 'var(--text-main)' }}>
                     {profile?.dateOfBirth ? profile.dateOfBirth.substring(0, 10) : '—'}
                   </div>
                 </div>
                 <div>
-                  <label className="form-label">Giới tính</label>
+                  <div className="form-label">Giới tính</div>
                   <div>
                     <span className="badge badge-neutral">{genderLabel(profile?.gender)}</span>
                   </div>
                 </div>
                 <div>
-                  <label className="form-label">Số điện thoại (Bảo mật PII)</label>
+                  {editingContact ? <label htmlFor="contactPhone" className="form-label">Số điện thoại (Bảo mật PII)</label> : <div className="form-label">Số điện thoại (Bảo mật PII)</div>}
                   {!editingContact ? (
                     <div style={{ color: 'var(--text-main)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <span>{showPhone ? profile?.phone : maskPhone(profile?.phone)}</span>
@@ -375,7 +375,9 @@ export default function StudentProfilePage() {
                     </div>
                   ) : (
                     <input
-                      type="text"
+                      id="contactPhone"
+                      name="contactPhone"
+                      type="tel"
                       value={contactForm.phone}
                       onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
                       placeholder="Nhập số điện thoại..."
@@ -384,19 +386,21 @@ export default function StudentProfilePage() {
                   )}
                 </div>
                 <div>
-                  <label className="form-label">Quê quán</label>
+                  <div className="form-label">Quê quán</div>
                   <div style={{ color: 'var(--text-main)' }}>{profile?.hometown || 'Chưa cập nhật'}</div>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label className="form-label">Email học viện</label>
+                  <div className="form-label">Email học viện</div>
                   <div style={{ color: 'var(--text-main)' }}>{profile?.email}</div>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label className="form-label">Địa chỉ liên hệ</label>
+                  {editingContact ? <label htmlFor="contactAddress" className="form-label">Địa chỉ liên hệ</label> : <div className="form-label">Địa chỉ liên hệ</div>}
                   {!editingContact ? (
                     <div style={{ color: 'var(--text-secondary)' }}>{profile?.address || 'Chưa cập nhật địa chỉ cư trú'}</div>
                   ) : (
                     <input
+                      id="contactAddress"
+                      name="contactAddress"
                       type="text"
                       value={contactForm.address}
                       onChange={(e) => setContactForm({ ...contactForm, address: e.target.value })}
@@ -486,15 +490,21 @@ export default function StudentProfilePage() {
             <div className="card-body">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                 <div>
-                  <label className="form-label">
-                    Họ tên người liên hệ {editingEmergency && <span style={{ color: '#ef4444' }}>*</span>}
-                  </label>
+                  {editingEmergency ? (
+                    <label htmlFor="emergencyName" className="form-label">
+                      Họ tên người liên hệ <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                  ) : (
+                    <div className="form-label">Họ tên người liên hệ</div>
+                  )}
                   {!editingEmergency ? (
                     <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
                       {profile?.emergencyContactName || 'Chưa đăng ký'}
                     </div>
                   ) : (
                     <input
+                      id="emergencyName"
+                      name="emergencyName"
                       type="text"
                       value={emergencyForm.name}
                       onChange={(e) => setEmergencyForm({ ...emergencyForm, name: e.target.value })}
@@ -505,9 +515,13 @@ export default function StudentProfilePage() {
                 </div>
 
                 <div>
-                  <label className="form-label">
-                    Mối quan hệ {editingEmergency && <span style={{ color: '#ef4444' }}>*</span>}
-                  </label>
+                  {editingEmergency ? (
+                    <label htmlFor="emergencyRelationship" className="form-label">
+                      Mối quan hệ <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                  ) : (
+                    <div className="form-label">Mối quan hệ</div>
+                  )}
                   {!editingEmergency ? (
                     <div style={{ color: 'var(--text-main)' }}>
                       {profile?.emergencyContactRelationship || 'Chưa cập nhật'}
@@ -515,6 +529,8 @@ export default function StudentProfilePage() {
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <select
+                        id="emergencyRelationship"
+                        name="emergencyRelationship"
                         value={emergencyForm.relationship}
                         onChange={(e) => setEmergencyForm({ ...emergencyForm, relationship: e.target.value })}
                         style={{ width: '100%', padding: '6px 10px', fontSize: '13px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff' }}
@@ -526,6 +542,8 @@ export default function StudentProfilePage() {
                       </select>
                       {emergencyForm.relationship === 'Khác' && (
                         <input
+                          id="emergencyCustomRelationship"
+                          name="emergencyCustomRelationship"
                           type="text"
                           value={emergencyForm.customRelationship}
                           onChange={(e) => setEmergencyForm({ ...emergencyForm, customRelationship: e.target.value })}
@@ -538,9 +556,13 @@ export default function StudentProfilePage() {
                 </div>
 
                 <div>
-                  <label className="form-label">
-                    Số điện thoại khẩn cấp {editingEmergency && <span style={{ color: '#ef4444' }}>*</span>}
-                  </label>
+                  {editingEmergency ? (
+                    <label htmlFor="emergencyPhone" className="form-label">
+                      Số điện thoại khẩn cấp <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                  ) : (
+                    <div className="form-label">Số điện thoại khẩn cấp</div>
+                  )}
                   {!editingEmergency ? (
                     <div style={{ color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -561,6 +583,8 @@ export default function StudentProfilePage() {
                     </div>
                   ) : (
                     <input
+                      id="emergencyPhone"
+                      name="emergencyPhone"
                       type="tel"
                       value={emergencyForm.phone}
                       onChange={(e) => setEmergencyForm({ ...emergencyForm, phone: e.target.value })}
@@ -582,14 +606,29 @@ export default function StudentProfilePage() {
           </div>
           <div className="card-body">
             <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Username field hidden for browser accessibility / autofill compliance */}
+              <input
+                type="text"
+                name="username"
+                id="profile-username"
+                autoComplete="username"
+                value={profile?.studentCode || ''}
+                readOnly
+                style={{ display: 'none' }}
+                tabIndex={-1}
+                aria-hidden="true"
+              />
+
               {/* Mật khẩu hiện tại */}
               <div>
-                <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                <label htmlFor="oldPassword" className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
                   Mật khẩu hiện tại <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                   <input
+                    id="oldPassword"
+                    name="oldPassword"
                     type={showOld ? 'text' : 'password'}
                     required
                     value={passData.oldPassword}
@@ -613,12 +652,14 @@ export default function StudentProfilePage() {
 
               {/* Mật khẩu mới */}
               <div>
-                <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                <label htmlFor="newPassword" className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
                   Mật khẩu mới <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                   <input
+                    id="newPassword"
+                    name="newPassword"
                     type={showNew ? 'text' : 'password'}
                     required
                     value={passData.newPassword}
@@ -662,12 +703,14 @@ export default function StudentProfilePage() {
 
               {/* Xác nhận mật khẩu mới */}
               <div>
-                <label className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                <label htmlFor="confirmPassword" className="form-label" style={{ fontSize: '0.85rem', fontWeight: 600 }}>
                   Xác nhận mật khẩu mới <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
                   <Lock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                   <input
+                    id="confirmPassword"
+                    name="confirmPassword"
                     type={showConfirm ? 'text' : 'password'}
                     required
                     value={passData.confirmPassword}

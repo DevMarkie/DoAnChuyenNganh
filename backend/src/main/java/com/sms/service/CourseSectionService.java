@@ -4,6 +4,7 @@ import com.sms.dto.request.CourseSectionRequest;
 import com.sms.entity.*;
 import com.sms.exception.*;
 import com.sms.repository.*;
+import com.sms.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,10 +28,24 @@ public class CourseSectionService {
         return courseSectionRepository.findAll();
     }
 
+    public List<CourseSection> findAll(UserPrincipal user) {
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            if (user.getDepartmentId() == null) {
+                throw new ForbiddenException("Tài khoản Giáo vụ chưa được phân công Khoa trực thuộc");
+            }
+            return courseSectionRepository.findBySubjectDepartmentId(user.getDepartmentId());
+        }
+        return findAll();
+    }
+
     /**
      * Tìm kiếm lớp học phần phân trang với bộ lọc tùy chọn.
      */
     public Page<CourseSection> findPaged(String keyword, Integer semesterId, String status, Pageable pageable) {
+        return findPaged(keyword, semesterId, status, pageable, null);
+    }
+
+    public Page<CourseSection> findPaged(String keyword, Integer semesterId, String status, Pageable pageable, UserPrincipal user) {
         CourseSection.SectionStatus parsedStatus = null;
         if (status != null && !status.isBlank()) {
             try {
@@ -39,12 +54,30 @@ public class CourseSectionService {
                 throw new BadRequestException("Trạng thái không hợp lệ: " + status);
             }
         }
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            if (user.getDepartmentId() == null) {
+                throw new ForbiddenException("Tài khoản Giáo vụ chưa được phân công Khoa trực thuộc");
+            }
+            return courseSectionRepository.findPagedWithDept(keyword, semesterId, parsedStatus, user.getDepartmentId(), pageable);
+        }
         return courseSectionRepository.findPaged(keyword, semesterId, parsedStatus, pageable);
     }
 
     public CourseSection findById(Long id) {
         return courseSectionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy học phần với ID: " + id));
+    }
+
+    public CourseSection findById(Long id, UserPrincipal user) {
+        CourseSection section = findById(id);
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            Integer deptId = (section.getSubject() != null && section.getSubject().getDepartment() != null)
+                    ? section.getSubject().getDepartment().getId() : null;
+            if (deptId == null || !deptId.equals(user.getDepartmentId())) {
+                throw new ForbiddenException("Bạn không có quyền truy cập học phần thuộc Khoa khác");
+            }
+        }
+        return section;
     }
 
     public List<CourseSection> findBySemester(Integer semesterId) {
@@ -105,6 +138,19 @@ public class CourseSectionService {
     }
 
     @Transactional
+    public CourseSection create(CourseSectionRequest request, UserPrincipal user) {
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            Subject subject = subjectRepository.findById(request.getSubjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy môn học"));
+            Integer deptId = subject.getDepartment() != null ? subject.getDepartment().getId() : null;
+            if (deptId == null || !deptId.equals(user.getDepartmentId())) {
+                throw new ForbiddenException("Bạn không thể mở học phần cho môn học thuộc Khoa khác");
+            }
+        }
+        return create(request);
+    }
+
+    @Transactional
     public CourseSection update(Long id, CourseSectionRequest request) {
         CourseSection section = findById(id);
         if (request.getVersion() != null && section.getVersion() != null && !request.getVersion().equals(section.getVersion())) {
@@ -159,6 +205,20 @@ public class CourseSectionService {
                 .orElse(null);
         saveStructuredSchedule(saved, request, existingScheduleId);
         return saved;
+    }
+
+    @Transactional
+    public CourseSection update(Long id, CourseSectionRequest request, UserPrincipal user) {
+        findById(id, user);
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            Subject subject = subjectRepository.findById(request.getSubjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy môn học"));
+            Integer deptId = subject.getDepartment() != null ? subject.getDepartment().getId() : null;
+            if (deptId == null || !deptId.equals(user.getDepartmentId())) {
+                throw new ForbiddenException("Bạn không thể chuyển học phần sang môn học thuộc Khoa khác");
+            }
+        }
+        return update(id, request);
     }
 
     private void saveStructuredSchedule(CourseSection section, CourseSectionRequest request, Long existingScheduleId) {

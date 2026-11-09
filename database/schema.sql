@@ -26,6 +26,9 @@ DROP TABLE IF EXISTS attendance_records;
 DROP TABLE IF EXISTS attendance_sessions;
 DROP TABLE IF EXISTS student_invoices;
 DROP TABLE IF EXISTS fee_scale_rules;
+DROP TABLE IF EXISTS student_service_requests;
+DROP TABLE IF EXISTS academic_exceptions;
+DROP TABLE IF EXISTS academic_summaries;
 DROP TABLE IF EXISTS class_opening_requests;
 DROP TABLE IF EXISTS grade_appeals;
 DROP TABLE IF EXISTS grades;
@@ -922,6 +925,27 @@ CREATE TABLE IF NOT EXISTS academic_exceptions (
     CONSTRAINT fk_academic_exceptions_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_academic_exceptions_status (status),
     INDEX idx_academic_exceptions_student (student_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS academic_summaries (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT NOT NULL,
+    semester_id INT NOT NULL,
+    semester_gpa DECIMAL(4, 2),
+    cumulative_cpa DECIMAL(4, 2),
+    semester_credits INT DEFAULT 0,
+    accumulated_credits INT DEFAULT 0,
+    debt_credits INT DEFAULT 0,
+    warning_level INT NOT NULL DEFAULT 0,
+    max_allowed_credits INT DEFAULT 24,
+    warning_notice TEXT,
+    calculated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uk_student_semester_summary UNIQUE (student_id, semester_id),
+    CONSTRAINT fk_summary_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    CONSTRAINT fk_summary_semester FOREIGN KEY (semester_id) REFERENCES semesters(id) ON DELETE CASCADE,
+    INDEX idx_academic_summaries_student (student_id),
+    INDEX idx_academic_summaries_semester (semester_id),
+    INDEX idx_academic_summaries_warning (warning_level)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS graduation_records (

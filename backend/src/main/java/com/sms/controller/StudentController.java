@@ -32,17 +32,18 @@ public class StudentController {
     private final ExcelImportService excelImportService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
-    public ResponseEntity<ApiResponse<List<Student>>> getAll() {
-        return ResponseEntity.ok(ApiResponse.success(studentService.findAll()));
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
+    public ResponseEntity<ApiResponse<List<Student>>> getAll(@AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success(studentService.findAll(user)));
     }
 
     /**
      * API phân trang với bộ lọc nâng cao (Khoa + Lớp + Trạng thái + Tìm kiếm)
      */
     @GetMapping("/paged")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Page<Student>>> getPaged(
+            @AuthenticationPrincipal UserPrincipal user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String keyword,
@@ -51,15 +52,20 @@ public class StudentController {
             @RequestParam(required = false) String academicYear,
             @RequestParam(required = false) String status
     ) {
+        Integer effectiveDeptId = departmentId;
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            effectiveDeptId = user.getDepartmentId();
+        }
         PageRequest pageable = PageRequest.of(page, size, Sort.by("studentCode").ascending());
-        Page<Student> result = studentService.findPaged(keyword, departmentId, classId, academicYear, status, pageable);
+        Page<Student> result = studentService.findPaged(keyword, effectiveDeptId, classId, academicYear, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
-    public ResponseEntity<ApiResponse<Student>> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(studentService.findById(id)));
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
+    public ResponseEntity<ApiResponse<Student>> getById(@PathVariable Long id,
+                                                        @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success(studentService.findById(id, user)));
     }
 
     @GetMapping("/me")
@@ -68,7 +74,7 @@ public class StudentController {
     }
 
     @GetMapping("/{id}/graduation-eligibility")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<GraduationEligibilityResponse>> getGraduationEligibility(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.success(studentService.getGraduationEligibility(id)));
     }
@@ -96,35 +102,39 @@ public class StudentController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
     public ResponseEntity<ApiResponse<List<Student>>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(ApiResponse.success(studentService.search(keyword)));
     }
 
     @GetMapping("/class/{classId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'LECTURER')")
-    public ResponseEntity<ApiResponse<List<Student>>> getByClass(@PathVariable Integer classId) {
-        return ResponseEntity.ok(ApiResponse.success(studentService.findByClass(classId)));
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
+    public ResponseEntity<ApiResponse<List<Student>>> getByClass(@PathVariable Integer classId,
+                                                                 @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success(studentService.findByClass(classId, user)));
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ACADEMIC_AFFAIRS')")
-    public ResponseEntity<ApiResponse<Student>> create(@Valid @RequestBody StudentRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Thêm sinh viên thành công", studentService.create(request)));
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
+    public ResponseEntity<ApiResponse<Student>> create(@Valid @RequestBody StudentRequest request,
+                                                       @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success("Thêm sinh viên thành công", studentService.create(request, user)));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Student>> update(@PathVariable Long id,
-                                                       @Valid @RequestBody StudentRequest request) {
-        return ResponseEntity.ok(ApiResponse.success("Cập nhật sinh viên thành công", studentService.update(id, request)));
+                                                       @Valid @RequestBody StudentRequest request,
+                                                       @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success("Cập nhật sinh viên thành công", studentService.update(id, request, user)));
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Void>> updateStatus(@PathVariable Long id,
-                                                          @RequestParam String status) {
-        studentService.updateStatus(id, status);
+                                                          @RequestParam String status,
+                                                          @AuthenticationPrincipal UserPrincipal user) {
+        studentService.updateStatus(id, status, user);
         return ResponseEntity.ok(ApiResponse.success("Cập nhật trạng thái thành công"));
     }
 
@@ -132,7 +142,7 @@ public class StudentController {
      * Tải file Excel mẫu (.xlsx) để nhập danh sách sinh viên hàng loạt.
      */
     @GetMapping("/import-template")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<byte[]> downloadImportTemplate() throws IOException {
         byte[] excelData = excelImportService.generateStudentTemplate();
         return ResponseEntity.ok()
@@ -145,7 +155,7 @@ public class StudentController {
      * Đọc file Excel tải lên, kiểm tra validation đối soát trùng lặp và trả về danh sách Preview. KHÔNG lưu vào DB.
      */
     @PostMapping(value = "/import-preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<StudentImportRow>>> importPreview(@RequestParam("file") MultipartFile file) {
         List<StudentImportRow> preview = excelImportService.parseStudentImport(file);
         return ResponseEntity.ok(ApiResponse.success("Đọc file xem trước thành công", preview));
@@ -155,14 +165,14 @@ public class StudentController {
      * Xác nhận lưu danh sách sinh viên hợp lệ từ kết quả Preview vào hệ thống.
      */
     @PostMapping("/import-commit")
-    @PreAuthorize("hasRole('ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Integer>> importCommit(@RequestBody List<StudentImportRow> requests) {
         int count = studentService.saveImportedStudents(requests);
         return ResponseEntity.ok(ApiResponse.success("Nhập sinh viên thành công, đã tạo " + count + " sinh viên mới", count));
     }
 
     @PostMapping("/{id}/reset-password")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Void>> resetPassword(@PathVariable Long id) {
         studentService.resetPassword(id);
         return ResponseEntity.ok(ApiResponse.success("Cấp lại mật khẩu thành công! Mật khẩu mặc định là 123456"));

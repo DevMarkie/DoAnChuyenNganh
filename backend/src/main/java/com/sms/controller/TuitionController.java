@@ -32,7 +32,7 @@ public class TuitionController {
     private final StudentRepository studentRepository;
 
     @GetMapping("/overview")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<TuitionOverviewResponse>> getOverview(
             @RequestParam(required = false) Integer semesterId) {
         return ResponseEntity.ok(ApiResponse.success(
@@ -40,7 +40,7 @@ public class TuitionController {
     }
 
     @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<TuitionSummaryResponse>> getStudentTuition(
             @PathVariable Long studentId,
             @RequestParam(required = false) Integer semesterId) {
@@ -98,7 +98,7 @@ public class TuitionController {
     }
 
     @GetMapping("/overdue")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<OverdueStudentDto>>> scanOverdue(
             @RequestParam Integer semesterId,
             @RequestParam(required = false) String deadline) {

@@ -40,14 +40,14 @@ public class CurriculumController {
     }
 
     @GetMapping("/student/{studentId}/prerequisite-graph")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<PrerequisiteGraphResponse>> getStudentPrerequisiteGraph(
             @PathVariable Long studentId) {
         return ResponseEntity.ok(ApiResponse.success(curriculumService.getPrerequisiteGraphByStudentId(studentId)));
     }
 
     @GetMapping("/student/{studentId}/degree-audit")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<DegreeAuditResponse>> getStudentDegreeAudit(
             @PathVariable Long studentId) {
         return ResponseEntity.ok(ApiResponse.success(curriculumService.getDegreeAuditByStudentId(studentId)));

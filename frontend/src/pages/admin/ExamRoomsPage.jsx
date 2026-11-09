@@ -16,7 +16,9 @@ import {
   X,
   RefreshCw,
   BookOpen,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { examService, semesterService, subjectService } from "../../services/dataService";
@@ -28,6 +30,8 @@ export default function ExamRoomsPage() {
   const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [selectedSubjectId, setSelectedSubjectId] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -149,6 +153,16 @@ export default function ExamRoomsPage() {
       return true;
     });
   }, [sessions, selectedSubjectId, searchKeyword]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSemesterId, selectedSubjectId, searchKeyword]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredSessions.length / pageSize));
+  const paginatedSessions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredSessions.slice(start, start + pageSize);
+  }, [filteredSessions, currentPage, pageSize]);
 
   // Handlers
   const handleCreateSession = async (e) => {
@@ -387,7 +401,7 @@ export default function ExamRoomsPage() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {filteredSessions.map((session) => (
+          {paginatedSessions.map((session) => (
             <div key={session.id} className="card">
               {/* Session Header */}
               <div
@@ -423,6 +437,9 @@ export default function ExamRoomsPage() {
                       </h3>
                       <span className="badge badge-primary" style={{ fontFamily: "monospace", fontWeight: 700 }}>
                         {session.subjectCode}
+                      </span>
+                      <span className="badge" style={{ backgroundColor: "var(--bg-hover)", color: "var(--text-muted)", fontSize: "0.75rem", border: "1px solid var(--border-color)" }}>
+                        Mã ca: #{session.id}
                       </span>
                     </div>
                     <div style={{ fontSize: "0.84rem", color: "var(--text-muted)", marginTop: "4px" }}>
@@ -674,6 +691,49 @@ export default function ExamRoomsPage() {
               })()}
             </div>
           ))}
+          {totalPages > 1 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 16px",
+                marginTop: "16px",
+                backgroundColor: "var(--bg-card)",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border-color)",
+                flexWrap: "wrap",
+                gap: "10px"
+              }}
+            >
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                Hiển thị <strong>{(currentPage - 1) * pageSize + 1}</strong> - <strong>{Math.min(currentPage * pageSize, filteredSessions.length)}</strong> trên tổng số <strong>{filteredSessions.length}</strong> ca thi
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "4px", minHeight: "36px" }}
+                >
+                  <ChevronLeft size={16} /> Trang trước
+                </button>
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, padding: "0 8px", color: "var(--text-main)" }}>
+                  Trang {currentPage} / {totalPages}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "4px", minHeight: "36px" }}
+                >
+                  Trang sau <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

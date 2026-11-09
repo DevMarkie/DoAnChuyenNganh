@@ -23,7 +23,7 @@ const statusLabel = {
   REJECTED_NO_CHANGE: 'Giữ nguyên điểm (Lệch < 0.5)',
   PENDING_HEAD_APPROVAL: 'Chờ Trưởng BM niêm phong',
   HEAD_APPROVED: 'Trưởng BM đã niêm phong',
-  APPROVED_AND_APPLIED: 'Đã chốt điểm vào hệ thống',
+  APPROVED_AND_APPLIED: 'Đã cập nhật sổ điểm',
   FINAL_APPLIED: 'Đã chốt điểm vào hệ thống',
   REJECTED: 'Đã từ chối',
   // Backward compatibility

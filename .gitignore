@@ -92,6 +92,7 @@ report/_cov/
 report/*.docx.bak
 
 # Test execution runtime results & output dumps
+test-results/
 tests/*_result.json
 tests/*.json
 tests/results/

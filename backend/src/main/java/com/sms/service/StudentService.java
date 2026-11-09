@@ -33,9 +33,31 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
+    public List<Student> findAll(com.sms.security.UserPrincipal user) {
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            if (user.getDepartmentId() == null) {
+                throw new ForbiddenException("Tài khoản Giáo vụ chưa được phân công Khoa trực thuộc");
+            }
+            return studentRepository.findByClassEntityDepartmentId(user.getDepartmentId());
+        }
+        return findAll();
+    }
+
     public Student findById(Long id) {
         return studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên với ID: " + id));
+    }
+
+    public Student findById(Long id, com.sms.security.UserPrincipal user) {
+        Student s = findById(id);
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            Integer deptId = (s.getClassEntity() != null && s.getClassEntity().getDepartment() != null)
+                    ? s.getClassEntity().getDepartment().getId() : null;
+            if (deptId == null || !deptId.equals(user.getDepartmentId())) {
+                throw new ForbiddenException("Bạn không có quyền truy cập thông tin sinh viên thuộc Khoa khác");
+            }
+        }
+        return s;
     }
 
     public Student findByUserId(Long userId) {
@@ -45,6 +67,18 @@ public class StudentService {
 
     public List<Student> findByClass(Integer classId) {
         return studentRepository.findByClassEntityId(classId);
+    }
+
+    public List<Student> findByClass(Integer classId, com.sms.security.UserPrincipal user) {
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            ClassEntity cls = classRepository.findById(classId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp học"));
+            Integer deptId = cls.getDepartment() != null ? cls.getDepartment().getId() : null;
+            if (deptId == null || !deptId.equals(user.getDepartmentId())) {
+                throw new ForbiddenException("Bạn không có quyền xem sinh viên của lớp thuộc Khoa khác");
+            }
+        }
+        return findByClass(classId);
     }
 
     public List<Student> search(String keyword) {
@@ -121,6 +155,22 @@ public class StudentService {
     }
 
     @Transactional
+    public Student create(StudentRequest request, com.sms.security.UserPrincipal user) {
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            if (user.getDepartmentId() == null) {
+                throw new ForbiddenException("Tài khoản Giáo vụ chưa được phân công Khoa trực thuộc");
+            }
+            ClassEntity cls = classRepository.findById(request.getClassId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp"));
+            Integer deptId = cls.getDepartment() != null ? cls.getDepartment().getId() : null;
+            if (deptId == null || !deptId.equals(user.getDepartmentId())) {
+                throw new ForbiddenException("Bạn không thể thêm sinh viên vào lớp thuộc Khoa khác");
+            }
+        }
+        return create(request);
+    }
+
+    @Transactional
     public Student update(Long id, StudentRequest request) {
         Student student = findById(id);
 
@@ -176,6 +226,20 @@ public class StudentService {
     }
 
     @Transactional
+    public Student update(Long id, StudentRequest request, com.sms.security.UserPrincipal user) {
+        findById(id, user);
+        if (user != null && "ACADEMIC_STAFF".equalsIgnoreCase(user.getRole())) {
+            ClassEntity cls = classRepository.findById(request.getClassId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy lớp"));
+            Integer deptId = cls.getDepartment() != null ? cls.getDepartment().getId() : null;
+            if (deptId == null || !deptId.equals(user.getDepartmentId())) {
+                throw new ForbiddenException("Bạn không thể chuyển sinh viên sang lớp thuộc Khoa khác");
+            }
+        }
+        return update(id, request);
+    }
+
+    @Transactional
     public void updateStatus(Long id, String status) {
         Student student = findById(id);
         Student.StudentStatus parsedStatus = parseStatus(status);
@@ -192,6 +256,12 @@ public class StudentService {
             user.setIsActive(shouldBeActive);
             userRepository.save(user);
         }
+    }
+
+    @Transactional
+    public void updateStatus(Long id, String status, com.sms.security.UserPrincipal user) {
+        findById(id, user);
+        updateStatus(id, status);
     }
 
     /**

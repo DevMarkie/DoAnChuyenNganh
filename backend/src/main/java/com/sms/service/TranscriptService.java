@@ -108,6 +108,7 @@ public class TranscriptService {
             return auth.getAuthorities().stream().anyMatch(a ->
                     "ROLE_ADMIN".equals(a.getAuthority())
                     || "ROLE_ACADEMIC_AFFAIRS".equals(a.getAuthority())
+                    || "ROLE_ACADEMIC_STAFF".equals(a.getAuthority())
                     || "ROLE_DEPARTMENT_HEAD".equals(a.getAuthority()));
         } catch (Exception e) {
             return false;

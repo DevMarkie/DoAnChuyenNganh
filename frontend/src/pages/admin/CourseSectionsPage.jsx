@@ -10,6 +10,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "react-toastify";
+import useAuthStore from "../../store/authStore";
 import {
   courseSectionService,
   subjectService,
@@ -18,6 +19,11 @@ import {
 } from "../../services/dataService";
 
 export default function CourseSectionsPage() {
+  const user = useAuthStore((state) => state.user);
+  const isAcademicStaff = user?.role === 'ACADEMIC_STAFF';
+  const staffDeptId = user?.departmentId;
+  const staffDeptName = user?.departmentName;
+
   const [sections, setSections] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [lecturers, setLecturers] = useState([]);
@@ -29,6 +35,10 @@ export default function CourseSectionsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSec, setEditingSec] = useState(null);
+
+  const filteredSubjects = isAcademicStaff && staffDeptId
+    ? subjects.filter((s) => s.department?.id === staffDeptId)
+    : subjects;
 
   const [formData, setFormData] = useState({
     sectionCode: "",
@@ -99,7 +109,7 @@ export default function CourseSectionsPage() {
       setEditingSec(null);
       setFormData({
         sectionCode: "",
-        subjectId: subjects[0]?.id || "",
+        subjectId: filteredSubjects[0]?.id || subjects[0]?.id || "",
         lecturerId: lecturers[0]?.id || "",
         semesterId: selectedSemester || semesters[0]?.id || "",
         minStudents: 15,
@@ -248,6 +258,23 @@ export default function CourseSectionsPage() {
               </select>
             </div>
 
+            {isAcademicStaff && (
+              <span
+                className="badge badge-info"
+                style={{
+                  padding: '8px 14px',
+                  fontSize: '0.85rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontWeight: 600,
+                  borderRadius: '6px'
+                }}
+                title="Dữ liệu cố định theo Khoa của bạn"
+              >
+                <span>Khoa:</span> {staffDeptName || 'Khoa trực thuộc'}
+              </span>
+            )}
             <select
               id="course-section-subject-filter"
               name="courseSectionSubjectFilter"
@@ -258,7 +285,7 @@ export default function CourseSectionsPage() {
               style={{ width: "auto", minWidth: "220px" }}
             >
               <option value="">Tất cả môn học</option>
-              {subjects.map((subject) => (
+              {filteredSubjects.map((subject) => (
                 <option key={subject.id} value={subject.id}>
                   {subject.subjectCode} - {subject.subjectName}
                 </option>
@@ -533,7 +560,7 @@ export default function CourseSectionsPage() {
                     className="form-select"
                   >
                     <option value="">-- Chọn môn học --</option>
-                    {subjects.map((sub) => (
+                    {filteredSubjects.map((sub) => (
                       <option key={sub.id} value={sub.id}>
                         {sub.subjectName} ({sub.subjectCode})
                       </option>

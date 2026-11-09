@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                 // Graduation Assessment Algorithm (Cán bộ Đào tạo thực thi & xuất quyết định, ADMIN Không)
-                .requestMatchers("/api/graduation/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS")
+                .requestMatchers("/api/graduation/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")
 
                 // Academic Staff & Admin (Quản trị Đào tạo, CTĐT, Khoa, Môn học, Lớp SH)
                 .requestMatchers("/api/staff/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF")

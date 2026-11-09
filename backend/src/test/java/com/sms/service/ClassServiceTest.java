@@ -162,4 +162,53 @@ public class ClassServiceTest {
         assertEquals("IT02-K17", result.get(1).getCode());
         verify(classRepository, times(2)).save(any(ClassEntity.class));
     }
+
+    @Test
+    void findAll_AcademicStaff_FiltersByDepartment() {
+        com.sms.security.UserPrincipal staff = new com.sms.security.UserPrincipal(
+                2L, "staff", "pass", "staff@sms.edu", "ACADEMIC_STAFF", true, false, 1, "IT", List.of()
+        );
+        when(classRepository.findByDepartmentId(1)).thenReturn(List.of(classEntity));
+
+        List<ClassEntity> result = classService.findAll(staff);
+
+        assertEquals(1, result.size());
+        verify(classRepository).findByDepartmentId(1);
+        verify(classRepository, never()).findAll();
+    }
+
+    @Test
+    void findById_AcademicStaff_DifferentDepartment_ThrowsForbidden() {
+        com.sms.security.UserPrincipal staff = new com.sms.security.UserPrincipal(
+                2L, "staff", "pass", "staff@sms.edu", "ACADEMIC_STAFF", true, false, 99, "Other", List.of()
+        );
+        when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));
+
+        assertThrows(com.sms.exception.ForbiddenException.class, () -> classService.findById(1, staff));
+    }
+
+    @Test
+    void create_AcademicStaff_ForcesDepartmentId() {
+        com.sms.security.UserPrincipal staff = new com.sms.security.UserPrincipal(
+                2L, "staff", "pass", "staff@sms.edu", "ACADEMIC_STAFF", true, false, 1, "IT", List.of()
+        );
+        request.setDepartmentId(999);
+        when(departmentRepository.findById(1)).thenReturn(Optional.of(department));
+        when(classRepository.save(any(ClassEntity.class))).thenAnswer(i -> i.getArgument(0));
+
+        ClassEntity created = classService.create(request, staff);
+
+        assertEquals(1, request.getDepartmentId());
+        assertEquals(1, created.getDepartment().getId());
+    }
+
+    @Test
+    void update_AcademicStaff_DifferentDepartment_ThrowsForbidden() {
+        com.sms.security.UserPrincipal staff = new com.sms.security.UserPrincipal(
+                2L, "staff", "pass", "staff@sms.edu", "ACADEMIC_STAFF", true, false, 99, "Other", List.of()
+        );
+        when(classRepository.findById(1)).thenReturn(Optional.of(classEntity));
+
+        assertThrows(com.sms.exception.ForbiddenException.class, () -> classService.update(1, request, staff));
+    }
 }

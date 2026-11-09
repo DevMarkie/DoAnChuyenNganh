@@ -69,25 +69,25 @@ public class ExamController {
     }
 
     @PostMapping("/exam-sessions")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<ExamSessionResponse>> createSession(@Valid @RequestBody ExamSessionRequest req) {
         return ResponseEntity.ok(ApiResponse.success("Tạo ca thi thành công", examService.createSession(req)));
     }
 
     @GetMapping("/exam-sessions/semester/{semesterId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
     public ResponseEntity<ApiResponse<List<ExamSessionResponse>>> getSessionsBySemester(@PathVariable Integer semesterId) {
         return ResponseEntity.ok(ApiResponse.success(examService.getSessionsBySemester(semesterId)));
     }
 
     @GetMapping("/exam-sessions/{sessionId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
     public ResponseEntity<ApiResponse<ExamSessionResponse>> getSessionById(@PathVariable Long sessionId) {
         return ResponseEntity.ok(ApiResponse.success(examService.getSessionById(sessionId)));
     }
 
     @DeleteMapping("/exam-sessions/{sessionId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Void>> deleteSession(@PathVariable Long sessionId) {
         examService.deleteSession(sessionId);
         return ResponseEntity.ok(ApiResponse.success("Xóa ca thi thành công"));
@@ -98,7 +98,7 @@ public class ExamController {
     // ==========================================
 
     @PostMapping("/exam-sessions/{sessionId}/rooms")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<ExamRoomResponse>> createRoom(
             @PathVariable Long sessionId,
             @Valid @RequestBody ExamRoomRequest req) {
@@ -106,26 +106,26 @@ public class ExamController {
     }
 
     @GetMapping("/exam-sessions/{sessionId}/rooms")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
     public ResponseEntity<ApiResponse<List<ExamRoomResponse>>> getRoomsBySession(@PathVariable Long sessionId) {
         return ResponseEntity.ok(ApiResponse.success(examService.getRoomsBySession(sessionId)));
     }
 
     @GetMapping("/exam-rooms/{roomId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
     public ResponseEntity<ApiResponse<ExamRoomResponse>> getRoomById(@PathVariable Long roomId) {
         return ResponseEntity.ok(ApiResponse.success(examService.getRoomById(roomId)));
     }
 
     @DeleteMapping("/exam-rooms/{roomId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Void>> deleteRoom(@PathVariable Long roomId) {
         examService.deleteRoom(roomId);
         return ResponseEntity.ok(ApiResponse.success("Xóa phòng thi thành công"));
     }
 
     @PostMapping("/exam-sessions/{sessionId}/auto-assign")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<ExamRoomResponse>>> autoAssign(
             @PathVariable Long sessionId,
             @RequestBody(required = false) AutoAssignExamRoomsRequest req) {
@@ -139,13 +139,13 @@ public class ExamController {
     // ==========================================
 
     @GetMapping("/exam-rooms/{roomId}/roster")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
     public ResponseEntity<ApiResponse<List<ExamRosterResponse>>> getRosterByRoom(@PathVariable Long roomId) {
         return ResponseEntity.ok(ApiResponse.success(examService.getRosterByRoom(roomId)));
     }
 
     @GetMapping("/exam-rooms/{roomId}/export-template")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'LECTURER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
     public ResponseEntity<byte[]> exportTemplate(@PathVariable Long roomId) throws IOException {
         byte[] excelData = excelExportService.exportExamRoomRoster(roomId);
         return ResponseEntity.ok()
@@ -155,7 +155,7 @@ public class ExamController {
     }
 
     @PostMapping(value = "/exam-rooms/{roomId}/import-preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<ExamGradeImportRow>>> importPreview(
             @PathVariable Long roomId,
             @RequestParam("file") MultipartFile file) {
@@ -164,7 +164,7 @@ public class ExamController {
     }
 
     @PostMapping("/exam-rooms/{roomId}/import-commit")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<Void>> importCommit(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable Long roomId,
@@ -174,7 +174,7 @@ public class ExamController {
     }
 
     @GetMapping("/exam-rooms/{roomId}/audit-logs")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
     public ResponseEntity<ApiResponse<List<com.sms.dto.response.GradeAuditLogResponse>>> getAuditLogs(@PathVariable Long roomId) {
         List<com.sms.dto.response.GradeAuditLogResponse> logs = examService.getAuditLogsByRoom(roomId)
                 .stream()

@@ -220,4 +220,42 @@ class AttendanceServiceTest {
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("hết thời gian hiệu lực");
     }
+
+    @Test
+    @DisplayName("TC-ATT-BATCH.1: Batch fetch enrollments using enrollmentRepository.findAllById")
+    void saveSession_batchFetchesEnrollments_usingFindAllById() {
+        CourseSection sectionA = section(100L);
+        AttendanceSession saved = new AttendanceSession();
+        saved.setId(1L);
+        saved.setSection(sectionA);
+
+        when(courseSectionRepository.findById(100L)).thenReturn(Optional.of(sectionA));
+        when(attendanceSessionRepository.findBySectionIdAndSessionDate(100L, LocalDate.now()))
+                .thenReturn(Optional.of(saved));
+        when(attendanceSessionRepository.save(any())).thenReturn(saved);
+        when(attendanceRecordRepository.findBySessionId(1L)).thenReturn(Collections.emptyList());
+
+        Enrollment e1 = enrollment(501L, 100L);
+        Enrollment e2 = enrollment(502L, 100L);
+        when(enrollmentRepository.findAllById(List.of(501L, 502L))).thenReturn(List.of(e1, e2));
+
+        AttendanceRecordRequest rr1 = new AttendanceRecordRequest();
+        rr1.setEnrollmentId(501L);
+        rr1.setIsPresent(true);
+
+        AttendanceRecordRequest rr2 = new AttendanceRecordRequest();
+        rr2.setEnrollmentId(502L);
+        rr2.setIsPresent(false);
+
+        AttendanceSessionRequest req = new AttendanceSessionRequest();
+        req.setSectionId(100L);
+        req.setSessionDate(LocalDate.now());
+        req.setRecords(List.of(rr1, rr2));
+
+        assertDoesNotThrow(() -> attendanceService.createOrUpdateSession(10L, req));
+
+        verify(enrollmentRepository, times(1)).findAllById(List.of(501L, 502L));
+        verify(enrollmentRepository, never()).findById(anyLong());
+        verify(attendanceRecordRepository, times(2)).save(any(AttendanceRecord.class));
+    }
 }

@@ -112,7 +112,6 @@ public class PasswordResetService {
         return SendOtpResponse.builder()
                 .message("Mã OTP xác thực đã được gửi tới email " + maskedEmail)
                 .maskedEmail(maskedEmail)
-                .devOtp(otp)
                 .build();
     }
 
@@ -483,6 +482,7 @@ public class PasswordResetService {
             // Tạo mật khẩu dạng ddmmyyyya@  (ví dụ: 15032002a@)
             String rawPassword = dob.format(fmt) + "a@";
             user.setPassword(passwordEncoder.encode(rawPassword));
+            user.setMustChangePassword(true);
             userRepository.save(user);
             resetCount++;
             log.info("[BULK RESET] Đã reset mật khẩu tài khoản '{}' thành công", user.getUsername());

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Plus, Search, Edit2, UserX, UserCheck, X, Filter, RotateCcw, Download, KeyRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { studentService, classService, departmentService } from '../../services/dataService';
@@ -53,29 +53,76 @@ export default function StudentsPage() {
     password: '',
   });
 
-  const loadData = async () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const PAGE_SIZE = 50;
+
+  // Load classes and departments once on mount
+  useEffect(() => {
+    const loadMetadata = async () => {
+      try {
+        const [resClass, resDept] = await Promise.all([
+          classService.getAll(),
+          departmentService.getAll(),
+        ]);
+        setClasses(resClass.data?.data || []);
+        setDepartments(resDept.data?.data || []);
+      } catch {
+        // ignore
+      }
+    };
+    loadMetadata();
+  }, []);
+
+  const loadData = useCallback(async (customParams) => {
     try {
       setLoading(true);
-      const [resStu, resClass, resDept] = await Promise.all([
-        studentService.getAll(),
-        classService.getAll(),
-        departmentService.getAll(),
-      ]);
-      setStudents(resStu.data?.data || []);
-      setClasses(resClass.data?.data || []);
-      setDepartments(resDept.data?.data || []);
+      const targetPage = customParams?.page !== undefined ? customParams.page : (currentPage - 1);
+      const params = {
+        page: targetPage,
+        size: customParams?.size || PAGE_SIZE,
+        keyword: (customParams?.keyword !== undefined ? customParams.keyword : search.trim()) || undefined,
+        departmentId: (customParams?.departmentId !== undefined ? customParams.departmentId : selectedDepartment) || undefined,
+        classId: (customParams?.classId !== undefined ? customParams.classId : selectedClass) || undefined,
+        academicYear: (customParams?.academicYear !== undefined ? customParams.academicYear : selectedCohort) || undefined,
+        status: (customParams?.status !== undefined ? customParams.status : selectedStatus) || undefined,
+      };
+
+      const resStu = await studentService.getPaged(params);
+      const studentPage = resStu.data?.data;
+      const studentData = studentPage?.content || studentPage || [];
+      setStudents(Array.isArray(studentData) ? studentData : []);
+      setTotalElements(studentPage?.totalElements ?? (Array.isArray(studentData) ? studentData.length : 0));
+      setTotalPages(studentPage?.totalPages ?? 1);
     } catch {
       toast.error('Lỗi khi tải dữ liệu sinh viên');
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, search, selectedDepartment, selectedClass, selectedCohort, selectedStatus]);
 
-  // Load all students, classes, and departments
+  const prevFiltersRef = useRef({ search, selectedDepartment, selectedCohort, selectedClass, selectedStatus });
+
+  // Reset currentPage to 1 when search or filters change, and trigger data fetch
   useEffect(() => {
+    const prev = prevFiltersRef.current;
+    const filterChanged =
+      prev.search !== search ||
+      prev.selectedDepartment !== selectedDepartment ||
+      prev.selectedCohort !== selectedCohort ||
+      prev.selectedClass !== selectedClass ||
+      prev.selectedStatus !== selectedStatus;
+
+    prevFiltersRef.current = { search, selectedDepartment, selectedCohort, selectedClass, selectedStatus };
+
+    if (filterChanged && currentPage !== 1) {
+      setCurrentPage(1);
+      return;
+    }
+
     loadData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentPage, search, selectedDepartment, selectedCohort, selectedClass, selectedStatus, loadData]);
 
   const handleResetFilters = () => {
     setSearch('');
@@ -106,11 +153,14 @@ export default function StudentsPage() {
   // When changing department or cohort, filter class dropdown
   const filteredClasses = useMemo(() => {
     return classes.filter((c) => {
-      if (selectedDepartment && c.department?.id !== parseInt(selectedDepartment)) return false;
+      if (selectedDepartment) {
+        const cDeptId = c.department?.id || (isFacultyStaff && user?.departmentId ? user.departmentId : null);
+        if (cDeptId && cDeptId !== parseInt(selectedDepartment)) return false;
+      }
       if (selectedCohort && c.academicYear !== selectedCohort) return false;
       return true;
     });
-  }, [classes, selectedDepartment, selectedCohort]);
+  }, [classes, selectedDepartment, selectedCohort, isFacultyStaff, user?.departmentId]);
 
   // Reset class filter if current selection is invalid after dept or cohort change
   useEffect(() => {
@@ -120,54 +170,6 @@ export default function StudentsPage() {
     }
   }, [selectedDepartment, selectedCohort, filteredClasses, selectedClass]);
 
-  // Real-time instant filtering of all students
-  const filteredStudents = useMemo(() => {
-    return students.filter((s) => {
-      // 1. Search keyword
-      if (search.trim()) {
-        const q = search.trim().toLowerCase();
-        const matchName = s.fullName?.toLowerCase().includes(q);
-        const matchCode = s.studentCode?.toLowerCase().includes(q);
-        const matchEmail = s.email?.toLowerCase().includes(q);
-        const matchPhone = s.phone?.includes(q);
-        if (!matchName && !matchCode && !matchEmail && !matchPhone) return false;
-      }
-      // 2. Department
-      if (selectedDepartment && s.classEntity?.department?.id !== parseInt(selectedDepartment)) {
-        return false;
-      }
-      // 3. Cohort / Academic Year (K16, K17, K18, K19...)
-      if (selectedCohort && s.classEntity?.academicYear !== selectedCohort) {
-        return false;
-      }
-      // 4. Class
-      if (selectedClass && s.classEntity?.id !== parseInt(selectedClass)) {
-        return false;
-      }
-      // 5. Status
-      if (selectedStatus) {
-        if (selectedStatus === 'ACTIVE') {
-          if (s.status !== 'ACTIVE' && s.status !== 'STUDYING') return false;
-        } else if (s.status !== selectedStatus) {
-          return false;
-        }
-      }
-      return true;
-    });
-  }, [students, search, selectedDepartment, selectedCohort, selectedClass, selectedStatus]);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 50;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, selectedDepartment, selectedCohort, selectedClass, selectedStatus]);
-
-  const totalPages = Math.ceil(filteredStudents.length / PAGE_SIZE) || 1;
-  const pagedStudents = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filteredStudents.slice(start, start + PAGE_SIZE);
-  }, [filteredStudents, currentPage]);
 
   const handleOpenModal = (student = null) => {
     if (student) {
@@ -291,13 +293,13 @@ export default function StudentsPage() {
   const hasActiveFilters = search || selectedCohort || selectedClass || selectedDepartment || selectedStatus;
 
   const handleExportExcel = () => {
-    if (!filteredStudents || filteredStudents.length === 0) {
+    if (!students || students.length === 0) {
       toast.info('Không có dữ liệu để xuất!');
       return;
     }
     
-    const exportData = filteredStudents.map((s, index) => ({
-      'STT': index + 1,
+    const exportData = students.map((s, index) => ({
+      'STT': (currentPage - 1) * PAGE_SIZE + index + 1,
       'Mã SV': s.studentCode,
       'Họ và tên': s.fullName,
       'Khóa': s.classEntity?.academicYear || '—',
@@ -465,7 +467,7 @@ export default function StudentsPage() {
 
             {/* Total Indicator */}
             <div style={{ marginLeft: 'auto', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Hiển thị: <strong>{filteredStudents.length}</strong> / <strong>{students.length}</strong> sinh viên
+              Tổng số: <strong>{totalElements}</strong> sinh viên
             </div>
           </div>
         </div>
@@ -538,14 +540,14 @@ export default function StudentsPage() {
                     <td><Skeleton width="60px" height="32px" /></td>
                   </tr>
                 ))
-              ) : filteredStudents.length === 0 ? (
+              ) : students.length === 0 ? (
                 <tr>
                   <td colSpan="9" style={{ textAlign: 'center', padding: '48px 20px', color: 'var(--text-muted)' }}>
                     Không tìm thấy sinh viên nào phù hợp với điều kiện tìm kiếm.
                   </td>
                 </tr>
               ) : (
-                pagedStudents.map((s) => {
+                students.map((s) => {
                   const isStudying = s.status === 'STUDYING' || s.status === 'ACTIVE';
                   const isGraduated = s.status === 'GRADUATED';
                   const isSuspended = s.status === 'SUSPENDED';
@@ -637,7 +639,7 @@ export default function StudentsPage() {
 
                       {/* Status - Interactive Direct Changer */}
                       <td>
-                        <select id="student-filter-cohort" name="studentFilterCohort"
+                        <select
                           value={s.status === 'STUDYING' ? 'ACTIVE' : s.status}
                           name={`student-status-${s.id}`}
                           id={`student-status-${s.id}`}
@@ -725,8 +727,7 @@ export default function StudentsPage() {
           backgroundColor: 'var(--bg-subtle)', flexWrap: 'wrap', gap: '10px'
         }}>
           <span>
-            Hiển thị <strong>{filteredStudents.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}</strong> - <strong>{Math.min(currentPage * PAGE_SIZE, filteredStudents.length)}</strong> trên <strong>{filteredStudents.length}</strong> sinh viên
-            {filteredStudents.length < students.length && ' (đã lọc)'}
+            Hiển thị <strong>{totalElements > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0}</strong> - <strong>{Math.min(currentPage * PAGE_SIZE, totalElements)}</strong> trên <strong>{totalElements}</strong> sinh viên
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <button

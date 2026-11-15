@@ -191,6 +191,7 @@ export const scheduleService = {
 
 export const dashboardService = {
   getDashboard: () => api.get('/dashboard'),
+  getSummary: () => api.get('/dashboard/summary'),
 };
 
 export const passwordResetService = {

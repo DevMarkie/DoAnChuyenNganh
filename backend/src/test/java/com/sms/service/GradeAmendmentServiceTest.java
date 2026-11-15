@@ -279,4 +279,89 @@ public class GradeAmendmentServiceTest {
         // Kiểm tra thông báo được gửi
         verify(notificationService).createNotification(eq(200L), anyString(), anyString(), eq(Notification.NotificationType.GRADE_UPDATED), eq(500L));
     }
+
+    @Test
+    @DisplayName("findById: Admin hoặc Academic Staff được phép xem mọi ticket")
+    void findById_authorizedStaffOrAdmin_success() {
+        when(ticketRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(ticket));
+        when(userRepository.findById(12L)).thenReturn(Optional.of(academicUser));
+
+        GradeChangeTicket result = gradeAmendmentService.findById(1L, 12L);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+    }
+
+    @Test
+    @DisplayName("findById: Sinh viên chủ sở hữu ticket được phép xem ticket của mình")
+    void findById_authorizedStudentOwner_success() {
+        Role studentRole = new Role();
+        studentRole.setName("STUDENT");
+        User studentUser = new User();
+        studentUser.setId(20L);
+        studentUser.setRole(studentRole);
+
+        student.setUser(studentUser);
+
+        when(ticketRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(ticket));
+        when(userRepository.findById(20L)).thenReturn(Optional.of(studentUser));
+        when(studentRepository.findByUserId(20L)).thenReturn(Optional.of(student));
+
+        GradeChangeTicket result = gradeAmendmentService.findById(1L, 20L);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+    }
+
+    @Test
+    @DisplayName("findById: Giảng viên phụ trách/tạo ticket được phép xem")
+    void findById_authorizedLecturer_success() {
+        when(ticketRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(ticket));
+        when(userRepository.findById(10L)).thenReturn(Optional.of(lecturerUser));
+
+        GradeChangeTicket result = gradeAmendmentService.findById(1L, 10L);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+    }
+
+    @Test
+    @DisplayName("findById: Sinh viên khác cố tình đọc ticket của sinh viên khác bị chặn HTTP 403 Forbidden")
+    void findById_unauthorizedOtherStudent_throwsForbiddenException() {
+        Role studentRole = new Role();
+        studentRole.setName("STUDENT");
+        User otherStudentUser = new User();
+        otherStudentUser.setId(99L);
+        otherStudentUser.setRole(studentRole);
+
+        Student otherStudent = new Student();
+        otherStudent.setId(999L);
+        otherStudent.setUser(otherStudentUser);
+
+        when(ticketRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(ticket));
+        when(userRepository.findById(99L)).thenReturn(Optional.of(otherStudentUser));
+        when(studentRepository.findByUserId(99L)).thenReturn(Optional.of(otherStudent));
+
+        assertThrows(com.sms.exception.ForbiddenException.class,
+                () -> gradeAmendmentService.findById(1L, 99L));
+    }
+
+    @Test
+    @DisplayName("findById: Giảng viên không liên quan cố tình đọc ticket bị chặn HTTP 403 Forbidden")
+    void findById_unauthorizedOtherLecturer_throwsForbiddenException() {
+        Role lecturerRole = new Role();
+        lecturerRole.setName("LECTURER");
+        User otherLecturerUser = new User();
+        otherLecturerUser.setId(88L);
+        otherLecturerUser.setRole(lecturerRole);
+
+        Lecturer otherLecturer = new Lecturer();
+        otherLecturer.setId(888L);
+        otherLecturer.setUser(otherLecturerUser);
+
+        when(ticketRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(ticket));
+        when(userRepository.findById(88L)).thenReturn(Optional.of(otherLecturerUser));
+        when(lecturerRepository.findByUserId(88L)).thenReturn(Optional.of(otherLecturer));
+        when(departmentRepository.findByHeadLecturerId(888L)).thenReturn(List.of());
+
+        assertThrows(com.sms.exception.ForbiddenException.class,
+                () -> gradeAmendmentService.findById(1L, 88L));
+    }
 }

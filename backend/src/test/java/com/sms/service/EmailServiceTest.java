@@ -85,4 +85,41 @@ public class EmailServiceTest {
         
         assertFalse(result);
     }
+
+    @Test
+    void sendAcademicWarningEmail_Success() throws Exception {
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        var future = emailService.sendAcademicWarningEmail(
+                "student@phenikaa.edu.vn", "Tran Van B", "20010001",
+                1, "GPA < 1.0", 14);
+
+        assertNotNull(future);
+        assertTrue(future.get());
+        verify(mailSender).send(mimeMessage);
+    }
+
+    @Test
+    void sendAcademicWarningEmail_MailSenderNull() throws Exception {
+        ReflectionTestUtils.setField(emailService, "mailSender", null);
+
+        var future = emailService.sendAcademicWarningEmail(
+                "student@phenikaa.edu.vn", "Tran Van B", "20010001",
+                1, "GPA < 1.0", 14);
+
+        assertNotNull(future);
+        assertFalse(future.get());
+    }
+
+    @Test
+    void sendAcademicWarningEmail_Exception() throws Exception {
+        when(mailSender.createMimeMessage()).thenThrow(new RuntimeException("SMTP unavailable"));
+
+        var future = emailService.sendAcademicWarningEmail(
+                "student@phenikaa.edu.vn", "Tran Van B", "20010001",
+                2, "GPA < 1.2 liên tiếp", 10);
+
+        assertNotNull(future);
+        assertFalse(future.get());
+    }
 }

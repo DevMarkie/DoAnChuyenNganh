@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +48,7 @@ class EnrollmentServiceTest {
     @BeforeEach
     void setUpRedisMocks() {
         lenient().when(redisLockService.tryConsumeUserRateLimit(any(), anyInt(), anyLong())).thenReturn(true);
-        lenient().when(redisLockService.acquireUserActionLock(any(), any(), anyLong())).thenReturn(true);
+        lenient().when(redisLockService.acquireUserActionLock(any(), any(), anyLong())).thenReturn("mock-lock-token");
         lenient().when(redisCourseSectionService.tryAcquireSlot(anyLong())).thenReturn(true);
         lenient().when(courseSectionRepository.incrementCurrentStudentsAtomic(anyLong())).thenReturn(1);
     }
@@ -519,6 +520,54 @@ class EnrollmentServiceTest {
     }
 
     @Test
+    @DisplayName("LUỒNG 2.1: Đăng ký thất bại khi không thỏa mãn môn tiên quyết đa tầng (DAG Transitive Prerequisite)")
+    void enroll_fails_whenTransitivePrerequisiteNotMet_inDAG() {
+        Long userId = 10L;
+        Long studentId = 1L;
+        Long sectionId = 100L;
+
+        Subject level1Prereq = new Subject();
+        level1Prereq.setId(1);
+        level1Prereq.setSubjectCode("CS101");
+        level1Prereq.setSubjectName("Lập trình C");
+        level1Prereq.setCredits(3);
+        level1Prereq.setPrerequisites(Collections.emptySet());
+
+        Subject level2Prereq = new Subject();
+        level2Prereq.setId(2);
+        level2Prereq.setSubjectCode("CS201");
+        level2Prereq.setSubjectName("Cấu trúc dữ liệu");
+        level2Prereq.setCredits(3);
+        level2Prereq.setPrerequisites(Set.of(level1Prereq));
+
+        Subject targetSubject = new Subject();
+        targetSubject.setId(3);
+        targetSubject.setSubjectCode("CS301");
+        targetSubject.setSubjectName("Thuật toán nâng cao");
+        targetSubject.setCredits(3);
+        targetSubject.setPrerequisites(Set.of(level2Prereq));
+
+        Student student = createStudent(studentId, userId);
+        CourseSection section = createSection(sectionId, targetSubject, 40, 20);
+
+        when(studentRepository.findByUserId(userId)).thenReturn(Optional.of(student));
+        when(courseSectionRepository.findById(sectionId)).thenReturn(Optional.of(section));
+        allowCurriculum(3);
+        // Student passed CS201 but failed prerequisite CS101
+        when(gradeRepository.existsPassedFinalizedByStudentAndSubject(studentId, 2)).thenReturn(true);
+        when(gradeRepository.existsPassedFinalizedByStudentAndSubject(studentId, 1)).thenReturn(false);
+
+        assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
+                .isInstanceOf(com.sms.exception.PrerequisiteNotMetException.class)
+                .satisfies(ex -> {
+                    com.sms.exception.PrerequisiteNotMetException pne = (com.sms.exception.PrerequisiteNotMetException) ex;
+                    assertThat(pne.getTargetSubjectCode()).isEqualTo("CS301");
+                    assertThat(pne.getPrerequisiteSubjectCode()).isEqualTo("CS101");
+                    assertThat(pne.getPrerequisiteSubjectName()).isEqualTo("Lập trình C");
+                });
+    }
+
+    @Test
     @DisplayName("LUỒNG 2: Khi DB atomic update trả về 0 (lớp đầy ở CSDL), ném lỗi và bù slot Redis")
     void enroll_fails_whenDatabaseAtomicUpdateReturnsZero_andCompensatesRedisSlot() {
         Long userId = 10L;
@@ -709,5 +758,42 @@ class EnrollmentServiceTest {
         assertThatThrownBy(() -> enrollmentService.enroll(userId, sectionId))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("Trùng lịch học!");
+    }
+
+    @Test
+    @DisplayName("findBySection: Prefetches schedules once eliminating N+1 query multiplier")
+    void findBySection_PrefetchesSchedulesOnce_EliminatesNPlusOne() {
+        Long sectionId = 100L;
+        Long staffUserId = 999L;
+
+        Subject subj = new Subject();
+        subj.setId(10);
+        subj.setCredits(3);
+        CourseSection section = createSection(sectionId, subj, 50, 50);
+
+        Schedule sch = new Schedule();
+        sch.setStartPeriod(1);
+        sch.setEndPeriod(3);
+        sch.setSection(section);
+
+        List<Enrollment> mockEnrollments = new ArrayList<>();
+        for (long i = 1; i <= 50; i++) {
+            Enrollment e = new Enrollment();
+            e.setId(i);
+            e.setSection(section);
+            e.setStudent(createStudent(i, 1000L + i));
+            mockEnrollments.add(e);
+        }
+
+        when(enrollmentRepository.findActiveBySectionId(sectionId)).thenReturn(mockEnrollments);
+        when(attendanceRecordRepository.countAbsencesBySectionId(sectionId)).thenReturn(Collections.emptyList());
+        when(studentRepository.findByUserId(staffUserId)).thenReturn(Optional.empty());
+        when(scheduleRepository.findBySectionId(sectionId)).thenReturn(List.of(sch));
+
+        List<Enrollment> result = enrollmentService.findBySection(sectionId, staffUserId);
+
+        assertThat(result).hasSize(50);
+        verify(scheduleRepository, times(1)).findBySectionId(sectionId);
+        assertThat(result.get(0).getTotalPeriods()).isEqualTo(45);
     }
 }

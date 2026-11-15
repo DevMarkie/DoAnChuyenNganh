@@ -1,10 +1,10 @@
 # BÁO CÁO KIỂM THỬ QUÁ TẢI VÀ CHỊU ÁP LỰC HỆ THỐNG
 ## (STRESS & OVERLOAD PERFORMANCE BENCHMARK REPORT)
 ### Dự án: DevMarkie/DoAnChuyenNganh - Hệ Thống Quản Lý Đào Tạo & Sinh Viên
-* **Thời gian thực hiện:** 15:50:07 6/11/2026
+* **Thời gian thực hiện:** 03:26:08 15/11/2026
 * **Tổng số requests thử tải:** **1479 requests**
-* **Số requests thành công:** **1054 / 1479**
-* **Tỷ lệ thành công tổng thể:** **71.3%**
+* **Số requests thành công:** **1479 / 1479**
+* **Tỷ lệ thành công tổng thể:** **100%**
 * **Môi trường:** Spring Boot 3.5.6, Tomcat 200 Threads, HikariCP 15 Conns, MySQL 8.0
 
 ---
@@ -13,15 +13,15 @@
 
 | Giai Đoạn Thử Tải | Concurrency | Tổng Reqs | Thành Công | Tỷ Lệ | Throughput (RPS) | Avg Latency | p90 | p95 | p99 |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Baseline Warmup** | - | 5 | 5 | **100%** | **0.8 req/s** | 1358 ms | 6570 ms | 6570 ms | 6570 ms |
-| **Mức 1: Tải Vừa Phải (20 luồng đồng thời, 100 requests)** | 20 | 100 | 100 | **100%** | **24 req/s** | 436 ms | 1110 ms | 1410 ms | 1586 ms |
-| **Mức 2: Tải Nặng (50 luồng đồng thời, 250 requests)** | 50 | 250 | 250 | **100%** | **17.4 req/s** | 1485 ms | 3326 ms | 5270 ms | 7724 ms |
-| **Mức 3: Tải Rất Nặng (100 luồng đồng thời, 500 requests)** | 100 | 500 | 458 | **91.6%** | **3.5 req/s** | 14953 ms | 57219 ms | 65461 ms | 65464 ms |
-| **Mức 4: Tải Cực Đại / Đột Biến (200 luồng đồng thời, 400 requests)** | 200 | 400 | 241 | **60.3%** | **5.6 req/s** | 21175 ms | 65466 ms | 67010 ms | 71278 ms |
-| **BCrypt CPU Login Burst** | - | 60 | 0 | **0%** | **47.2 req/s** | 180 ms | 159 ms | 160 ms | 1252 ms |
-| **HikariCP Pool Saturation** | - | 60 | 0 | **0%** | **986.2 req/s** | 27 ms | 30 ms | 30 ms | 32 ms |
-| **Real-World Peak Rush** | - | 100 | 0 | **0%** | **607.3 req/s** | 69 ms | 121 ms | 122 ms | 124 ms |
-| **Post-Stress Recovery** | - | 4 | 0 | **0%** | **1076.1 req/s** | 2 ms | 3 ms | 3 ms | 3 ms |
+| **Baseline Warmup** | - | 5 | 5 | **100%** | **0.6 req/s** | 1857 ms | 8880 ms | 8880 ms | 8880 ms |
+| **Mức 1: Tải Vừa Phải (20 luồng đồng thời, 100 requests)** | 20 | 100 | 100 | **100%** | **17.2 req/s** | 530 ms | 1310 ms | 1466 ms | 3029 ms |
+| **Mức 2: Tải Nặng (50 luồng đồng thời, 250 requests)** | 50 | 250 | 250 | **100%** | **19.6 req/s** | 801 ms | 2145 ms | 3111 ms | 3583 ms |
+| **Mức 3: Tải Rất Nặng (100 luồng đồng thời, 500 requests)** | 100 | 500 | 500 | **100%** | **18.9 req/s** | 1754 ms | 4636 ms | 5708 ms | 7392 ms |
+| **Mức 4: Tải Cực Đại / Đột Biến (200 luồng đồng thời, 400 requests)** | 200 | 400 | 400 | **100%** | **15.5 req/s** | 4271 ms | 9915 ms | 13016 ms | 15711 ms |
+| **BCrypt CPU Login Burst** | - | 60 | 60 | **100%** | **25.1 req/s** | 1935 ms | 2346 ms | 2354 ms | 2375 ms |
+| **HikariCP Pool Saturation** | - | 60 | 60 | **100%** | **69.6 req/s** | 492 ms | 793 ms | 797 ms | 804 ms |
+| **Real-World Peak Rush** | - | 100 | 100 | **100%** | **28.5 req/s** | 1375 ms | 2538 ms | 2682 ms | 2736 ms |
+| **Post-Stress Recovery** | - | 4 | 4 | **100%** | **0.3 req/s** | 3093 ms | 12229 ms | 12229 ms | 12229 ms |
 
 ---
 

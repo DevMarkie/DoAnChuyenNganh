@@ -23,6 +23,7 @@ const loadStore = async () => (await import('./authStore')).default;
 
 beforeEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
   vi.resetModules();
   vi.clearAllMocks();
 });
@@ -137,5 +138,24 @@ describe('authStore actions', () => {
     expect(localStorage.getItem('token_lecturer')).toBeNull();
     expect(localStorage.getItem('token_student')).toBe(studentToken);
     expect(store.getState().hasPortalSession('student')).toBe(true);
+  });
+
+  it('supports isolated multi-account sessions within the same portal scope concurrently', async () => {
+    const store = await loadStore();
+
+    // 1. Nhân viên 1 (Giáo vụ Khoa Ô tô) đăng nhập
+    const otoToken = makeToken({ exp: futureExp(), role: 'ACADEMIC_STAFF', userId: 91, sub: 'giaovu_oto' });
+    const otoUser = { userId: 91, username: 'giaovu_oto', role: 'ACADEMIC_STAFF', departmentName: 'Khoa Ô tô' };
+    store.getState().login(otoToken, otoUser);
+
+    expect(store.getState().user.username).toBe('giaovu_oto');
+    expect(store.getState().token).toBe(otoToken);
+    expect(sessionStorage.getItem('token_academic')).toBe(otoToken);
+
+    // 2. Giả lập một phiên tab khác trong cùng hệ thống: khi reload, tab hiện tại vẫn giữ đúng tài khoản giaovu_oto
+    const { getPortalSession } = await import('./authStore');
+    const reloadedSession = getPortalSession('academic');
+    expect(reloadedSession.token).toBe(otoToken);
+    expect(reloadedSession.user.username).toBe('giaovu_oto');
   });
 });

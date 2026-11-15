@@ -188,7 +188,6 @@ export default function PortalLoginPage({ portalType = 'student' }) {
   const [forgotNewPassword, setForgotNewPassword] = useState('');
   const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
   const [forgotMaskedEmail, setForgotMaskedEmail] = useState('');
-  const [forgotDevOtp, setForgotDevOtp] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleOpenForgotModal = () => {
@@ -198,7 +197,6 @@ export default function PortalLoginPage({ portalType = 'student' }) {
     setForgotNewPassword('');
     setForgotConfirmPassword('');
     setForgotMaskedEmail('');
-    setForgotDevOtp('');
     setForgotStep(1);
     setIsForgotModalOpen(true);
   };
@@ -214,12 +212,8 @@ export default function PortalLoginPage({ portalType = 'student' }) {
       const res = await authService.sendResetOtp({ username: forgotUsername.trim() });
       const data = res.data?.data || {};
       setForgotMaskedEmail(data.maskedEmail || '');
-      setForgotDevOtp(data.devOtp || '');
       setForgotStep(2);
       toast.success(res.data?.message || 'Mã OTP đã được gửi đến email đăng ký của bạn!');
-      if (data.devOtp) {
-        toast.info(`[Demo/Dev] Mã OTP của bạn là: ${data.devOtp}`, { autoClose: 12000 });
-      }
     } catch (err) {
       const msg = err.response?.data?.message || 'Không thể gửi mã OTP. Vui lòng kiểm tra lại mã tài khoản!';
       toast.error(msg);
@@ -301,6 +295,8 @@ export default function PortalLoginPage({ portalType = 'student' }) {
         email: data.email,
         role: data.role,
         mustChangePassword: data.mustChangePassword,
+        departmentId: data.departmentId,
+        departmentName: data.departmentName,
       });
 
       toast.success(`Đăng nhập thành công! Xin chào ${data.username}`);
@@ -704,21 +700,6 @@ export default function PortalLoginPage({ portalType = 'student' }) {
                     fontSize: '0.85rem',
                   }}>
                     Mã OTP 6 số đã được gửi tới email: <strong>{forgotMaskedEmail || 'email trên hồ sơ'}</strong>
-                    {forgotDevOtp && (
-                      <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ color: 'var(--success)', fontWeight: 600 }}>
-                          [Demo OTP]: {forgotDevOtp}
-                        </span>
-                        <button
-                          type="button"
-                          className="btn btn-xs btn-outline"
-                          onClick={() => setForgotOtp(forgotDevOtp)}
-                          style={{ fontSize: '0.75rem', padding: '2px 8px' }}
-                        >
-                          Dán mã OTP demo
-                        </button>
-                      </div>
-                    )}
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '14px' }}>

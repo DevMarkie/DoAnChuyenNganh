@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  studentService, 
-  courseSectionService, 
-  gradeAppealService 
-} from '../../services/dataService';
+import { dashboardService } from '../../services/dataService';
 import { 
   Users, 
   BookOpen, 
@@ -29,16 +25,13 @@ export default function AcademicDashboardPage() {
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const [studentsRes, sectionsRes, appealsRes] = await Promise.allSettled([
-          studentService.getAll(),
-          courseSectionService.getAll(),
-          gradeAppealService.getAll({ status: 'PENDING' }),
-        ]);
+        const res = await dashboardService.getSummary();
+        const data = res.data?.data || {};
 
         setStats({
-          studentsCount: studentsRes.status === 'fulfilled' ? (studentsRes.value.data?.data?.length || 0) : 0,
-          sectionsCount: sectionsRes.status === 'fulfilled' ? (sectionsRes.value.data?.data?.length || 0) : 0,
-          appealsPending: appealsRes.status === 'fulfilled' ? (appealsRes.value.data?.data?.length || 0) : 0,
+          studentsCount: data.totalStudents || 0,
+          sectionsCount: data.totalSections || 0,
+          appealsPending: data.pendingAppeals || 0,
           gradeOverviewCount: 0,
         });
       } catch (err) {

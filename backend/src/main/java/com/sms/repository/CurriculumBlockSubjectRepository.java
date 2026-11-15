@@ -11,6 +11,10 @@ public interface CurriculumBlockSubjectRepository extends JpaRepository<Curricul
             "WHERE bs.blockId = :blockId ORDER BY s.subjectCode")
     List<CurriculumBlockSubject> findByBlockIdWithSubject(@Param("blockId") Long blockId);
 
+    @Query("SELECT bs FROM CurriculumBlockSubject bs JOIN FETCH bs.subject s " +
+            "WHERE bs.blockId IN :blockIds ORDER BY s.subjectCode")
+    List<CurriculumBlockSubject> findByBlockIdInWithSubject(@Param("blockIds") java.util.Collection<Long> blockIds);
+
     @Query("SELECT CASE WHEN COUNT(bs) > 0 THEN true ELSE false END FROM CurriculumBlockSubject bs " +
             "JOIN bs.block b WHERE b.program.id = :programId AND bs.subjectId = :subjectId")
     boolean existsByProgramIdAndSubjectId(@Param("programId") Long programId, @Param("subjectId") Integer subjectId);

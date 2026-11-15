@@ -62,4 +62,19 @@ class JwtUtilTest {
 
         assertNull(jwt.getValidatedClaims(token));
     }
+
+    @Test
+    void devProfile_generatesEphemeralKeyWhenSecretBlank() {
+        JwtUtil jwt = new JwtUtil("", 3_600_000L, "dev");
+        String token = jwt.generateToken(principal());
+        Claims claims = jwt.getValidatedClaims(token);
+        assertNotNull(claims);
+        assertEquals("testuser", claims.getSubject());
+    }
+
+    @Test
+    void prodProfile_throwsExceptionWhenSecretBlank() {
+        assertThrows(IllegalStateException.class, () -> new JwtUtil("", 3_600_000L, "prod"));
+        assertThrows(IllegalStateException.class, () -> new JwtUtil(null, 3_600_000L, "production"));
+    }
 }

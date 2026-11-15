@@ -29,6 +29,10 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
     List<Student> findByClassEntityId(Integer classId);
 
+    @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "classEntity.major", "classEntity.cohort", "user"})
+    @Query("SELECT s FROM Student s WHERE s.classEntity.cohort.id = :cohortId")
+    List<Student> findByClassEntityCohortId(@Param("cohortId") Integer cohortId);
+
     @EntityGraph(attributePaths = {"classEntity", "classEntity.department", "user"})
     List<Student> findByClassEntityDepartmentId(Integer departmentId);
 
@@ -83,4 +87,16 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
             @Param("status") Student.StudentStatus status,
             Pageable pageable
     );
+
+    /**
+     * Cập nhật số dư ví sinh viên nguyên tử (Atomic Update) chống Lost Update / Race Condition.
+     * Chỉ thực hiện khi số dư sau cập nhật không âm (balance + delta >= 0).
+     *
+     * @param id    ID của sinh viên
+     * @param delta Số tiền thay đổi (dương là cộng thêm/hoàn tiền, âm là khấu trừ học phí)
+     * @return số dòng bị ảnh hưởng (1 nếu thành công, 0 nếu không đủ số dư hoặc sinh viên không tồn tại)
+     */
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true)
+    @Query("UPDATE Student s SET s.balance = s.balance + :delta WHERE s.id = :id AND (s.balance + :delta) >= 0")
+    int updateBalanceAtomic(@Param("id") Long id, @Param("delta") java.math.BigDecimal delta);
 }

@@ -21,9 +21,17 @@ const getPortalScope = () => {
 const getEffectiveToken = () => {
   const scope = getPortalScope();
   if (scope) {
+    try {
+      const scopedSession = sessionStorage.getItem(`token_${scope}`);
+      if (scopedSession) return scopedSession;
+    } catch {}
     const scoped = localStorage.getItem(`token_${scope}`);
     if (scoped) return scoped;
   }
+  try {
+    const sessionToken = sessionStorage.getItem('token');
+    if (sessionToken) return sessionToken;
+  } catch {}
   return localStorage.getItem('token');
 };
 
@@ -71,8 +79,17 @@ const fetchApi = async (method, url, config = {}) => {
         const isAuthExpired = response.status === 401 ||
           (response.status === 403 && (errMsg.includes('hết hạn') || errMsg.includes('expired') || errMsg.includes('Access Denied') || errMsg === 'Forbidden'));
 
-        if (isAuthExpired && (token || localStorage.getItem("token"))) {
+        const hasAnyToken = token || localStorage.getItem("token") || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem("token"));
+        if (isAuthExpired && hasAnyToken) {
           const scope = getPortalScope();
+          try {
+            if (scope) {
+              sessionStorage.removeItem(`token_${scope}`);
+              sessionStorage.removeItem(`user_${scope}`);
+            }
+            sessionStorage.removeItem("token");
+            sessionStorage.removeItem("user");
+          } catch {}
           if (scope) {
             localStorage.removeItem(`token_${scope}`);
             localStorage.removeItem(`user_${scope}`);

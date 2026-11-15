@@ -90,4 +90,6 @@ public interface GradeAppealRepository extends JpaRepository<GradeAppeal, Long> 
 
     long countByStudentIdAndEnrollmentSectionSubjectIdAndStatus(
             Long studentId, Integer subjectId, GradeAppeal.AppealStatus status);
+
+    long countByStatus(GradeAppeal.AppealStatus status);
 }

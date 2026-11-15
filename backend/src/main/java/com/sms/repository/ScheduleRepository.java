@@ -22,6 +22,9 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findBySectionId(Long sectionId);
 
     @EntityGraph(attributePaths = {"section", "section.subject", "section.lecturer", "section.semester", "classEntity"})
+    List<Schedule> findBySectionIdIn(java.util.Collection<Long> sectionIds);
+
+    @EntityGraph(attributePaths = {"section", "section.subject", "section.lecturer", "section.semester", "classEntity"})
     List<Schedule> findBySectionSemesterId(Long semesterId);
 
     @EntityGraph(attributePaths = {"section", "section.subject", "section.lecturer", "section.semester", "classEntity"})

@@ -16,9 +16,9 @@ public class JwtUtil {
 
     /**
      * Khóa ký JWT mặc định dùng chung cho môi trường dev / local cluster.
-     * Tránh tự sinh khóa ngẫu nhiên trong RAM của từng container làm lệch khóa xác thực trên cụm 3 Backend Replicas.
+     * Trong moi truong dev/test, neu chua cau hinh JWT_SECRET se tu dong sinh khoa ngau nhien manh (HS512).
      */
-    public static final String DEFAULT_CLUSTER_SECRET = "KY1L6HPEzkSRZBiJSxXIILsbKUwnCq8hxZ4sl6ZOjbPC1QNLrca/GeEebVpIHUue2zufgB0xddr68/Pjx4v6SA==";
+
 
     private final SecretKey key;
     private final long expiration;
@@ -31,11 +31,12 @@ public class JwtUtil {
             if ("prod".equalsIgnoreCase(activeProfile) || "production".equalsIgnoreCase(activeProfile)) {
                 throw new IllegalStateException("JWT_SECRET must be set in production environment!");
             }
-            log.warn("app.jwt.secret is not set — using shared cluster fallback key so tokens remain consistent across replicas. "
-                    + "Set the JWT_SECRET environment variable for production.");
-            effectiveSecret = DEFAULT_CLUSTER_SECRET;
+            log.warn("app.jwt.secret is not set — generating an ephemeral secure random key for {} profile. "
+                    + "Set the JWT_SECRET environment variable for production.", activeProfile);
+            this.key = Jwts.SIG.HS512.key().build();
+        } else {
+            this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSecret));
         }
-        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSecret));
         this.expiration = expiration;
     }
 

@@ -21,4 +21,10 @@ public class DashboardController {
     public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard() {
         return ResponseEntity.ok(ApiResponse.success(dashboardService.getDashboard()));
     }
+
+    @GetMapping("/summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF')")
+    public ResponseEntity<ApiResponse<com.sms.dto.response.DashboardSummaryResponse>> getSummary() {
+        return ResponseEntity.ok(ApiResponse.success(dashboardService.getSummary()));
+    }
 }

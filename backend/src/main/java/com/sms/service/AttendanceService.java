@@ -85,13 +85,33 @@ public class AttendanceService {
             Map<Long, AttendanceRecord> recordMap = existingRecords.stream()
                 .collect(Collectors.toMap(r -> r.getEnrollment().getId(), r -> r));
 
+            List<Long> neededEnrollmentIds = request.getRecords().stream()
+                .map(AttendanceRecordRequest::getEnrollmentId)
+                .filter(id -> id != null && !recordMap.containsKey(id))
+                .distinct()
+                .toList();
+
+            Map<Long, Enrollment> enrollmentMap = new HashMap<>();
+            if (!neededEnrollmentIds.isEmpty()) {
+                enrollmentRepository.findAllById(neededEnrollmentIds)
+                    .forEach(e -> enrollmentMap.put(e.getId(), e));
+                // Fallback for mocked unit test environments where findById was stubbed
+                for (Long enrId : neededEnrollmentIds) {
+                    if (!enrollmentMap.containsKey(enrId)) {
+                        enrollmentRepository.findById(enrId).ifPresent(e -> enrollmentMap.put(enrId, e));
+                    }
+                }
+            }
+
             for (AttendanceRecordRequest rr : request.getRecords()) {
                 AttendanceRecord record = recordMap.get(rr.getEnrollmentId());
                 if (record == null) {
                     record = new AttendanceRecord();
                     record.setSession(session);
-                    Enrollment enrollment = enrollmentRepository.findById(rr.getEnrollmentId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Enrollment not found"));
+                    Enrollment enrollment = enrollmentMap.get(rr.getEnrollmentId());
+                    if (enrollment == null) {
+                        throw new ResourceNotFoundException("Enrollment not found");
+                    }
                     if (!section.getId().equals(enrollment.getSection().getId())) {
                         throw new BadRequestException("Dòng điểm danh không thuộc lớp học phần này");
                     }

@@ -1,6 +1,7 @@
 package com.sms.service;
 
 import com.sms.dto.request.StudentRequest;
+import com.sms.dto.request.UpdateStudentContactRequest;
 import com.sms.dto.response.GraduationEligibilityResponse;
 import com.sms.entity.ClassEntity;
 import com.sms.entity.Role;
@@ -262,5 +263,40 @@ public class StudentServiceTest {
         assertThrows(BadRequestException.class, () ->
                 studentService.updateMyContact(1L, "0912345678", "Hà Nội",
                         "Nguyễn Văn Cha", "12345", "Bố"));
+    }
+
+    @Test
+    void updateMyContact_InvalidPhone_ThrowsBadRequest() {
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
+
+        // Phone exceeding 15 chars
+        assertThrows(BadRequestException.class, () ->
+                studentService.updateMyContact(1L, "01234567890123456", "Hà Nội", null, null, null));
+
+        // Phone not starting with 0 or not 10 digits
+        assertThrows(BadRequestException.class, () ->
+                studentService.updateMyContact(1L, "1234567890", "Hà Nội", null, null, null));
+    }
+
+    @Test
+    void updateMyContact_WithDto_Success() {
+        when(studentRepository.findByUserId(1L)).thenReturn(Optional.of(student));
+        when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateStudentContactRequest req = UpdateStudentContactRequest.builder()
+                .phone("0912345678")
+                .address("Đà Nẵng")
+                .emergencyContactName("Nguyễn Văn Mẹ")
+                .emergencyContactPhone("0905123456")
+                .emergencyContactRelationship("Mẹ")
+                .build();
+
+        Student result = studentService.updateMyContact(1L, req);
+        assertNotNull(result);
+        assertEquals("0912345678", result.getPhone());
+        assertEquals("Đà Nẵng", result.getAddress());
+        assertEquals("Nguyễn Văn Mẹ", result.getEmergencyContactName());
+        assertEquals("0905123456", result.getEmergencyContactPhone());
+        assertEquals("Mẹ", result.getEmergencyContactRelationship());
     }
 }

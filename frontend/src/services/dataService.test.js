@@ -18,6 +18,7 @@ import {
   enrollmentService,
   transcriptService,
   passwordResetService,
+  dashboardService,
 } from './dataService';
 
 beforeEach(() => {
@@ -58,5 +59,10 @@ describe('dataService endpoint mapping', () => {
     const body = { requestIds: [1, 2], reason: 'invalid' };
     passwordResetService.batchReject(body);
     expect(api.post).toHaveBeenCalledWith('/admin/password-resets/batch-reject', body);
+  });
+
+  it('dashboardService.getSummary calls /dashboard/summary', () => {
+    dashboardService.getSummary();
+    expect(api.get).toHaveBeenCalledWith('/dashboard/summary');
   });
 });

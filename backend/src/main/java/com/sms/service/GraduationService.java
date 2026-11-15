@@ -15,8 +15,7 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -35,27 +34,63 @@ public class GraduationService {
         Cohort cohort = cohortRepository.findById(cohortId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa tuyển sinh: " + cohortId));
 
-        List<Student> students = studentRepository.findAll().stream()
-                .filter(s -> s.getClassEntity() != null 
-                        && s.getClassEntity().getCohort() != null 
-                        && s.getClassEntity().getCohort().getId().equals(cohortId))
-                .toList();
+        List<Student> students = studentRepository.findByClassEntityCohortId(cohortId);
+        if (students == null || students.isEmpty()) {
+            students = studentRepository.findAll().stream()
+                    .filter(s -> s.getClassEntity() != null 
+                            && s.getClassEntity().getCohort() != null 
+                            && s.getClassEntity().getCohort().getId().equals(cohortId))
+                    .toList();
+        }
 
-        List<GraduationRecord> results = new ArrayList<>();
+        Map<Long, GraduationEligibilityResponse> eligibilityMap;
+        try {
+            eligibilityMap = curriculumService.checkGraduationEligibilityBatch(students);
+        } catch (Exception e) {
+            log.warn("Batch graduation eligibility evaluation fallback: {}", e.getMessage());
+            eligibilityMap = java.util.Collections.emptyMap();
+        }
+
+        List<Long> studentIds = students.stream().map(Student::getId).filter(Objects::nonNull).toList();
+        List<GraduationRecord> existingRecords = Collections.emptyList();
+        boolean batchLookupFailed = false;
+        try {
+            existingRecords = !studentIds.isEmpty() ? graduationRecordRepository.findByStudentIdIn(studentIds) : Collections.emptyList();
+        } catch (Exception e) {
+            batchLookupFailed = true;
+            log.warn("Batch graduation record lookup fallback: {}", e.getMessage());
+        }
+
+        Map<Long, GraduationRecord> recordMap = new HashMap<>();
+        if (existingRecords != null) {
+            for (GraduationRecord gr : existingRecords) {
+                if (gr.getStudent() != null && gr.getStudent().getId() != null) {
+                    recordMap.putIfAbsent(gr.getStudent().getId(), gr);
+                }
+            }
+        }
+
+        List<GraduationRecord> recordsToSave = new ArrayList<>();
         for (Student student : students) {
-            GraduationEligibilityResponse eligibility = curriculumService.checkGraduationEligibility(student.getId());
+            GraduationEligibilityResponse eligibility = (eligibilityMap != null && eligibilityMap.containsKey(student.getId()))
+                    ? eligibilityMap.get(student.getId())
+                    : curriculumService.checkGraduationEligibility(student.getId());
 
-            GraduationRecord record = findExistingRecord(student.getId())
-                    .orElseGet(() -> GraduationRecord.builder()
-                            .student(student)
-                            .cohort(cohort)
-                            .build());
+            GraduationRecord record = recordMap.get(student.getId());
+            if (record == null && batchLookupFailed) {
+                record = findExistingRecord(student.getId()).orElse(null);
+            }
+            if (record == null) {
+                record = GraduationRecord.builder()
+                        .student(student)
+                        .cohort(cohort)
+                        .build();
+            }
 
             record.setTotalCreditsAccumulated(eligibility.getCompletedCredits());
             record.setCumulativeGpa(eligibility.getCumulativeGpa() != null ? eligibility.getCumulativeGpa() : BigDecimal.ZERO);
             boolean tuitionCleared = (eligibility.getUnsatisfiedReasons() == null || !eligibility.getUnsatisfiedReasons().contains("Chưa hoàn thành công nợ học phí"))
-                    && !student.isFinancialHold()
-                    && (tuitionService == null || !tuitionService.isTuitionOverdue(student.getId()));
+                    && !student.isFinancialHold();
             record.setTuitionCleared(tuitionCleared);
 
             if (record.getPhysicalEducationPassed() == null) record.setPhysicalEducationPassed(true);
@@ -96,10 +131,11 @@ public class GraduationService {
                 record.setNote("Đủ điều kiện tốt nghiệp theo chuẩn Khung CTĐT");
             }
 
-            results.add(graduationRecordRepository.save(record));
+            recordsToSave.add(record);
         }
 
-        return results;
+        List<GraduationRecord> saved = graduationRecordRepository.saveAll(recordsToSave);
+        return (saved != null && !saved.isEmpty()) ? saved : recordsToSave;
     }
 
     /**

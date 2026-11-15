@@ -77,7 +77,7 @@ public class DataInitializer implements CommandLineRunner {
                 ad.setEmail("admin.tech@sms.edu.vn");
                 ad.setRole(role);
                 ad.setIsActive(true);
-                ad.setMustChangePassword(false);
+                ad.setMustChangePassword(true);
                 userRepository.save(ad);
                 log.info("Khởi tạo Quản trị viên kỹ thuật 'admin_tech' thành công (Password: 123456)");
             }
@@ -114,7 +114,7 @@ public class DataInitializer implements CommandLineRunner {
             user.setDepartment(null);
             user.setDateOfBirth(LocalDate.of(1985, 5, 15));
             user.setIsActive(true);
-            user.setMustChangePassword(false);
+            user.setMustChangePassword(true);
             userRepository.save(user);
             log.info("Khởi tạo tài khoản Cán bộ Đào tạo cấp Trường 'daotao' (DOB: 1985-05-15, Password: 15051985a@)");
         } else {
@@ -138,7 +138,7 @@ public class DataInitializer implements CommandLineRunner {
             staff.setRole(roleStaff);
             departmentRepository.findById(1).ifPresent(staff::setDepartment);
             staff.setIsActive(true);
-            staff.setMustChangePassword(false);
+            staff.setMustChangePassword(true);
             userRepository.save(staff);
             log.info("Khởi tạo Giáo vụ Khoa CNTT 'giaovu_cntt' thành công (DOB: 1994-08-15, Password: 15081994a@)");
         } else {
@@ -164,7 +164,7 @@ public class DataInitializer implements CommandLineRunner {
             nv.setRole(roleStaff);
             departmentRepository.findById(2).ifPresent(nv::setDepartment);
             nv.setIsActive(true);
-            nv.setMustChangePassword(false);
+            nv.setMustChangePassword(true);
             userRepository.save(nv);
             log.info("Khởi tạo Giáo vụ Khoa KT Ô tô 'giaovu_oto' thành công (Password: 123456)");
         } else {
@@ -190,7 +190,7 @@ public class DataInitializer implements CommandLineRunner {
             cb.setRole(roleStaff);
             departmentRepository.findById(3).ifPresent(cb::setDepartment);
             cb.setIsActive(true);
-            cb.setMustChangePassword(false);
+            cb.setMustChangePassword(true);
             userRepository.save(cb);
             log.info("Khởi tạo Giáo vụ Khoa Kinh tế 'giaovu_kt' thành công (Password: 123456)");
         } else {
@@ -221,7 +221,7 @@ public class DataInitializer implements CommandLineRunner {
             user.setRole(role);
             user.setDateOfBirth(LocalDate.of(1988, 10, 20));
             user.setIsActive(true);
-            user.setMustChangePassword(false);
+            user.setMustChangePassword(true);
 
             userRepository.save(user);
             log.info("Khởi tạo tài khoản Cán bộ Khảo thí mẫu 'khaothi' thành công (DOB: 1988-10-20, Password: 20101988a@)");

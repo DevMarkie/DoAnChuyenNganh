@@ -85,8 +85,14 @@ public class FileStorageService {
     }
 
     public Resource loadAsResource(String fileName) {
+        if (fileName == null || fileName.isBlank() || fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            throw new BadRequestException("Tên tệp không hợp lệ: " + fileName);
+        }
         try {
             Path filePath = this.storageLocation.resolve(fileName).normalize();
+            if (!filePath.startsWith(this.storageLocation.normalize())) {
+                throw new BadRequestException("Invalid path: " + fileName);
+            }
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() && resource.isReadable()) {
                 return resource;
@@ -94,7 +100,7 @@ public class FileStorageService {
                 throw new ResourceNotFoundException("Không tìm thấy tệp minh chứng: " + fileName);
             }
         } catch (MalformedURLException ex) {
-            throw new ResourceNotFoundException("Đường dẫn tệp minh chứng không hợp lệ: " + fileName);
+            throw new BadRequestException("Đường dẫn tệp minh chứng không hợp lệ: " + fileName);
         }
     }
 }

@@ -4,8 +4,10 @@ import com.sms.dto.request.*;
 import com.sms.dto.response.*;
 import com.sms.entity.*;
 import com.sms.exception.BadRequestException;
+import com.sms.exception.ForbiddenException;
 import com.sms.exception.ResourceNotFoundException;
 import com.sms.repository.*;
+import com.sms.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,8 +63,40 @@ public class ExamService {
     }
 
     public List<ExamSessionResponse> getSessionsBySemester(Integer semesterId) {
-        return examSessionRepository.findBySemesterId(semesterId).stream()
-                .map(this::mapToSessionResponse)
+        List<ExamSession> sessions = examSessionRepository.findBySemesterId(semesterId);
+        if (sessions.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Long> sessionIds = sessions.stream().map(ExamSession::getId).toList();
+
+        Map<Long, Integer> roomCounts = new HashMap<>();
+        Map<Long, Integer> rosterCounts = new HashMap<>();
+
+        try {
+            List<Object[]> roomCountsList = examRoomRepository.countRoomsBySessionIds(sessionIds);
+            if (roomCountsList != null) {
+                for (Object[] row : roomCountsList) {
+                    if (row != null && row.length >= 2 && row[0] != null && row[1] != null) {
+                        roomCounts.put(((Number) row[0]).longValue(), ((Number) row[1]).intValue());
+                    }
+                }
+            }
+            List<Object[]> rosterCountsList = examRosterRepository.countRostersBySessionIds(sessionIds);
+            if (rosterCountsList != null) {
+                for (Object[] row : rosterCountsList) {
+                    if (row != null && row.length >= 2 && row[0] != null && row[1] != null) {
+                        rosterCounts.put(((Number) row[0]).longValue(), ((Number) row[1]).intValue());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Lỗi khi tải tổng hợp phòng và danh sách ca thi: {}", e.getMessage());
+        }
+
+        return sessions.stream()
+                .map(s -> mapToSessionResponse(s,
+                        roomCounts.getOrDefault(s.getId(), 0),
+                        rosterCounts.getOrDefault(s.getId(), 0)))
                 .collect(Collectors.toList());
     }
 
@@ -215,6 +249,35 @@ public class ExamService {
     // EXAM ROSTER & GRADE COMMIT WITH AUDIT LOG
     // ==========================================
 
+    public void assertCanAccessExamRoom(Long roomId, UserPrincipal userPrincipal) {
+        if (userPrincipal == null) {
+            throw new ForbiddenException("Yêu cầu xác thực tài khoản");
+        }
+        String role = userPrincipal.getRole();
+        if ("ADMIN".equalsIgnoreCase(role) || "EXAMINATION_OFFICER".equalsIgnoreCase(role)
+                || "ACADEMIC_AFFAIRS".equalsIgnoreCase(role) || "ACADEMIC_STAFF".equalsIgnoreCase(role)) {
+            return;
+        }
+        if ("LECTURER".equalsIgnoreCase(role)) {
+            ExamRoom room = examRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phòng thi: " + roomId));
+            Lecturer lecturer = lecturerRepository.findByUserId(userPrincipal.getId())
+                    .orElseThrow(() -> new ForbiddenException("Không tìm thấy thông tin giảng viên"));
+            boolean isProctor = (room.getProctor1() != null && Objects.equals(room.getProctor1().getId(), lecturer.getId()))
+                    || (room.getProctor2() != null && Objects.equals(room.getProctor2().getId(), lecturer.getId()));
+            if (!isProctor) {
+                throw new ForbiddenException("Giảng viên không được phân công coi thi phòng thi này");
+            }
+            return;
+        }
+        throw new ForbiddenException("Bạn không có quyền truy cập thông tin phòng thi này");
+    }
+
+    public List<ExamRosterResponse> getRosterByRoom(Long roomId, UserPrincipal userPrincipal) {
+        assertCanAccessExamRoom(roomId, userPrincipal);
+        return getRosterByRoom(roomId);
+    }
+
     public List<ExamRosterResponse> getRosterByRoom(Long roomId) {
         return examRosterRepository.findByExamRoomIdOrderBySbdAsc(roomId).stream()
                 .map(this::mapToRosterResponse)
@@ -314,27 +377,60 @@ public class ExamService {
     // MAPPERS
     // ==========================================
 
-    private ExamSessionResponse mapToSessionResponse(ExamSession session) {
-        List<ExamRoom> rooms = examRoomRepository.findByExamSessionId(session.getId());
-        int totalStudents = 0;
-        for (ExamRoom r : rooms) {
-            totalStudents += (int) examRosterRepository.countByExamRoomId(r.getId());
-        }
-
+    private ExamSessionResponse mapToSessionResponse(ExamSession session, int totalRooms, int totalStudents) {
         return ExamSessionResponse.builder()
                 .id(session.getId())
-                .semesterId(session.getSemester().getId())
-                .semesterName(session.getSemester().getSemesterName())
-                .subjectId(session.getSubject().getId())
-                .subjectCode(session.getSubject().getSubjectCode())
-                .subjectName(session.getSubject().getSubjectName())
+                .semesterId(session.getSemester() != null ? session.getSemester().getId() : null)
+                .semesterName(session.getSemester() != null ? session.getSemester().getSemesterName() : null)
+                .subjectId(session.getSubject() != null ? session.getSubject().getId() : null)
+                .subjectCode(session.getSubject() != null ? session.getSubject().getSubjectCode() : null)
+                .subjectName(session.getSubject() != null ? session.getSubject().getSubjectName() : null)
                 .sessionName(session.getSessionName())
                 .examDate(session.getExamDate())
                 .startTime(session.getStartTime())
                 .endTime(session.getEndTime())
-                .totalRooms(rooms.size())
+                .totalRooms(totalRooms)
                 .totalStudents(totalStudents)
                 .build();
+    }
+
+    private ExamSessionResponse mapToSessionResponse(ExamSession session) {
+        if (session == null) return null;
+        int totalRooms = 0;
+        int totalStudents = 0;
+        if (session.getId() != null) {
+            try {
+                List<Object[]> roomCountsList = examRoomRepository.countRoomsBySessionIds(List.of(session.getId()));
+                if (roomCountsList != null && !roomCountsList.isEmpty() && roomCountsList.get(0) != null) {
+                    totalRooms = ((Number) roomCountsList.get(0)[1]).intValue();
+                } else {
+                    List<ExamRoom> rooms = examRoomRepository.findByExamSessionId(session.getId());
+                    if (rooms != null) totalRooms = rooms.size();
+                }
+
+                List<Object[]> rosterCountsList = examRosterRepository.countRostersBySessionIds(List.of(session.getId()));
+                if (rosterCountsList != null && !rosterCountsList.isEmpty() && rosterCountsList.get(0) != null) {
+                    totalStudents = ((Number) rosterCountsList.get(0)[1]).intValue();
+                } else {
+                    List<ExamRoom> rooms = examRoomRepository.findByExamSessionId(session.getId());
+                    if (rooms != null) {
+                        for (ExamRoom r : rooms) {
+                            totalStudents += (int) examRosterRepository.countByExamRoomId(r.getId());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                List<ExamRoom> rooms = examRoomRepository.findByExamSessionId(session.getId());
+                if (rooms != null) {
+                    totalRooms = rooms.size();
+                    for (ExamRoom r : rooms) {
+                        totalStudents += (int) examRosterRepository.countByExamRoomId(r.getId());
+                    }
+                }
+            }
+        }
+
+        return mapToSessionResponse(session, totalRooms, totalStudents);
     }
 
     // ==========================================

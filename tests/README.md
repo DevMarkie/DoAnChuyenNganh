@@ -53,7 +53,6 @@ tests/
 │   └── smoke_test.js                # Kiểm tra kết nối DB, Redis, REST API Liveness, xác thực Token
 ├── e2e/                             # 🛡️ Kiểm thử hồi quy chức năng End-to-End
 │   ├── comprehensive_system_test.js # Bộ 65+ ca kiểm thử toàn diện: RBAC, Học phí, Điểm danh, Phúc khảo, Lớp riêng
-│   ├── system_e2e_test.js           # Bộ 39 ca kiểm thử: Khảo sát vòng đời học phần và người dùng
 │   ├── test_admin_coordination_and_tuition.js # Kiểm thử điều phối đào tạo, bàn thu ngân học phí
 │   ├── test_analytics_and_cohort_feature.js   # Kiểm thử báo cáo phân tích khóa học và cảnh báo học vụ
 │   ├── test_grade_amendment_e2e.cjs # Kiểm thử quy trình đề xuất - xét duyệt sửa điểm sau khóa sổ & audit log
@@ -67,7 +66,6 @@ tests/
 │   │   ├── run_concurrency_test.js  # Kịch bản kích hoạt đồng thời 100 luồng sinh viên đăng ký môn
 │   │   ├── prepare_tokens.js        # Tiện ích tiền xử lý sinh trước 100 JWT Tokens để đo tải thuần
 │   │   └── public/index.html        # Giao diện trực quan biểu đồ Waterfall và tỷ lệ thành công
-│   ├── enrollment_load_test.js      # Đo lường thời gian phản hồi ghi danh dưới tải trung bình
 │   ├── overload_stress_test.js      # Benchmark ngưỡng chịu tải kết nối HikariCP Pool & Tomcat threads
 │   ├── simulate_600_enrollment.js   # Mô phỏng áp lực cực hạn: 600 sinh viên cùng ghi danh 1 lớp
 │   ├── stress_test.js               # Kiểm thử tải leo thang qua Nginx Load Balancer (500 ➜ 5.000 requests)

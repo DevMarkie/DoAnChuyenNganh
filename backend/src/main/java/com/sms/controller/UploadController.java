@@ -1,6 +1,7 @@
 package com.sms.controller;
 
 import com.sms.dto.ApiResponse;
+import com.sms.exception.BadRequestException;
 import com.sms.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -36,6 +37,9 @@ public class UploadController {
 
     @GetMapping("/evidence/{fileName:.+}")
     public ResponseEntity<Resource> serveEvidence(@PathVariable String fileName) {
+        if (fileName == null || fileName.isBlank() || fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            throw new BadRequestException("Tên tệp không hợp lệ: " + fileName);
+        }
         Resource resource = fileStorageService.loadAsResource(fileName);
 
         String contentType = "application/octet-stream";

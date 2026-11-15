@@ -1,6 +1,7 @@
 package com.sms.service;
 
 import com.sms.dto.request.StudentRequest;
+import com.sms.dto.request.UpdateStudentContactRequest;
 import com.sms.dto.response.GraduationEligibilityResponse;
 import com.sms.dto.response.StudentImportRow;
 import com.sms.entity.*;
@@ -315,21 +316,46 @@ public class StudentService {
     }
 
     @Transactional
+    public Student updateMyContact(Long userId, UpdateStudentContactRequest req) {
+        if (req == null) {
+            throw new BadRequestException("Dữ liệu cập nhật liên lạc không được để trống");
+        }
+        return updateMyContact(userId, req.getPhone(), req.getAddress(),
+                req.getEmergencyContactName(), req.getEmergencyContactPhone(), req.getEmergencyContactRelationship());
+    }
+
+    @Transactional
     public Student updateMyContact(Long userId, String phone, String address,
                                    String emergencyContactName, String emergencyContactPhone, String emergencyContactRelationship) {
         Student student = studentRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
-        if (phone != null) student.setPhone(phone.trim());
+        if (phone != null) {
+            String cleanPhone = phone.trim();
+            if (!cleanPhone.isEmpty()) {
+                if (cleanPhone.length() > 15) {
+                    throw new BadRequestException("Số điện thoại không được vượt quá 15 ký tự");
+                }
+                if (!cleanPhone.matches("^0\\d{9}$")) {
+                    throw new BadRequestException("Số điện thoại không đúng định dạng Việt Nam (10 chữ số bắt đầu bằng 0)");
+                }
+            }
+            student.setPhone(cleanPhone.isEmpty() ? null : cleanPhone);
+        }
         if (address != null) student.setAddress(address.trim());
         if (emergencyContactName != null) {
             student.setEmergencyContactName(emergencyContactName.trim());
         }
         if (emergencyContactPhone != null) {
             String cleanPhone = emergencyContactPhone.trim();
-            if (!cleanPhone.isEmpty() && !cleanPhone.matches("^0\\d{9}$")) {
-                throw new BadRequestException("Số điện thoại khẩn cấp không đúng định dạng Việt Nam (10 chữ số bắt đầu bằng 0)");
+            if (!cleanPhone.isEmpty()) {
+                if (cleanPhone.length() > 15) {
+                    throw new BadRequestException("Số điện thoại khẩn cấp không được vượt quá 15 ký tự");
+                }
+                if (!cleanPhone.matches("^0\\d{9}$")) {
+                    throw new BadRequestException("Số điện thoại khẩn cấp không đúng định dạng Việt Nam (10 chữ số bắt đầu bằng 0)");
+                }
             }
-            student.setEmergencyContactPhone(cleanPhone);
+            student.setEmergencyContactPhone(cleanPhone.isEmpty() ? null : cleanPhone);
         }
         if (emergencyContactRelationship != null) {
             student.setEmergencyContactRelationship(emergencyContactRelationship.trim());

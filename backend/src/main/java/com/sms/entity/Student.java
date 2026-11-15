@@ -78,6 +78,10 @@ public class Student {
     @Column(name = "academic_warning_level", nullable = false)
     private Integer academicWarningLevel = 0;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     public boolean isFinancialHold() {
         return Boolean.TRUE.equals(financialHold);
     }

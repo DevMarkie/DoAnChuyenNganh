@@ -67,8 +67,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
         // Rate-limit các thao tác ghi enrollment (POST đăng ký, DELETE hủy)
         boolean isEnrollmentWrite = path.startsWith("/api/enrollments")
                 && ("POST".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method));
-        // Rate-limit request quên mật khẩu công khai (POST forgot-password)
-        boolean isForgotPassword = "/api/auth/forgot-password".equals(path)
+        // Rate-limit request quên mật khẩu công khai (POST forgot-password, /send-otp, /verify-otp)
+        boolean isForgotPassword = path.startsWith("/api/auth/forgot-password")
                 && "POST".equalsIgnoreCase(method);
         return !isEnrollmentWrite && !isForgotPassword;
     }
@@ -78,7 +78,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getServletPath();
-        if ("/api/auth/forgot-password".equals(path)) {
+        if (path.startsWith("/api/auth/forgot-password")) {
             String clientIp = getClientIp(request);
             SlidingWindowBucket bucket = forgotPasswordBuckets.computeIfAbsent(
                     clientIp, k -> new SlidingWindowBucket(FORGOT_PASSWORD_MAX_REQUESTS, FORGOT_PASSWORD_WINDOW_MS));

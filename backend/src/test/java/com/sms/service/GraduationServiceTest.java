@@ -27,13 +27,14 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,6 +85,8 @@ public class GraduationServiceTest {
         staffUser = new User();
         staffUser.setId(1L);
         staffUser.setUsername("daotao");
+
+        lenient().when(graduationRecordRepository.saveAll(anyCollection())).thenAnswer(i -> new ArrayList<>((Collection<?>) i.getArgument(0)));
     }
 
     @Nested
@@ -108,7 +111,6 @@ public class GraduationServiceTest {
                     .build();
 
             when(curriculumService.checkGraduationEligibility(100L)).thenReturn(eligibility);
-            when(tuitionService.isTuitionOverdue(100L)).thenReturn(false);
 
             GraduationRecord existingRecord = GraduationRecord.builder()
                     .id(50L)
@@ -120,8 +122,7 @@ public class GraduationServiceTest {
                     .itCertificateStatus(true)
                     .build();
 
-            when(graduationRecordRepository.findByStudentId(100L)).thenReturn(Optional.of(existingRecord));
-            when(graduationRecordRepository.save(any(GraduationRecord.class))).thenAnswer(i -> i.getArgument(0));
+            when(graduationRecordRepository.findByStudentIdIn(List.of(100L))).thenReturn(List.of(existingRecord));
 
             List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
 
@@ -136,6 +137,7 @@ public class GraduationServiceTest {
             assertThat(record.getDefenseEducationPassed()).isTrue();
             assertThat(record.getEnglishCertificateStatus()).isTrue();
             assertThat(record.getItCertificateStatus()).isTrue();
+            verify(graduationRecordRepository, never()).findByStudentId(anyLong());
         }
 
         @Test
@@ -154,9 +156,6 @@ public class GraduationServiceTest {
                     .build();
 
             when(curriculumService.checkGraduationEligibility(100L)).thenReturn(eligibility);
-            lenient().when(tuitionService.isTuitionOverdue(100L)).thenReturn(true);
-            when(graduationRecordRepository.findByStudentId(100L)).thenReturn(Optional.empty());
-            when(graduationRecordRepository.save(any(GraduationRecord.class))).thenAnswer(i -> i.getArgument(0));
 
             List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
 
@@ -165,6 +164,7 @@ public class GraduationServiceTest {
             assertThat(record.getSystemRecommendation()).isEqualTo("DISQUALIFIED");
             assertThat(record.getTuitionCleared()).isFalse();
             assertThat(record.getNote()).contains("Chưa hoàn thành công nợ học phí");
+            verify(graduationRecordRepository, never()).findByStudentId(anyLong());
         }
 
         @Test
@@ -183,7 +183,6 @@ public class GraduationServiceTest {
                     .build();
 
             when(curriculumService.checkGraduationEligibility(100L)).thenReturn(eligibility);
-            when(tuitionService.isTuitionOverdue(100L)).thenReturn(false);
 
             GraduationRecord recordMissingIT = GraduationRecord.builder()
                     .id(51L)
@@ -195,8 +194,7 @@ public class GraduationServiceTest {
                     .itCertificateStatus(false) // Thiếu chứng chỉ tin học
                     .build();
 
-            when(graduationRecordRepository.findByStudentId(100L)).thenReturn(Optional.of(recordMissingIT));
-            when(graduationRecordRepository.save(any(GraduationRecord.class))).thenAnswer(i -> i.getArgument(0));
+            when(graduationRecordRepository.findByStudentIdIn(List.of(100L))).thenReturn(List.of(recordMissingIT));
 
             List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
 
@@ -204,6 +202,7 @@ public class GraduationServiceTest {
             GraduationRecord record = results.get(0);
             assertThat(record.getSystemRecommendation()).isEqualTo("DISQUALIFIED");
             assertThat(record.getNote()).contains("Chứng chỉ Tin học");
+            verify(graduationRecordRepository, never()).findByStudentId(anyLong());
         }
 
         @Test
@@ -222,7 +221,6 @@ public class GraduationServiceTest {
                     .build();
 
             when(curriculumService.checkGraduationEligibility(100L)).thenReturn(eligibility);
-            when(tuitionService.isTuitionOverdue(100L)).thenReturn(false);
 
             GraduationRecord recordMissingEng = GraduationRecord.builder()
                     .id(52L)
@@ -234,8 +232,7 @@ public class GraduationServiceTest {
                     .itCertificateStatus(true)
                     .build();
 
-            when(graduationRecordRepository.findByStudentId(100L)).thenReturn(Optional.of(recordMissingEng));
-            when(graduationRecordRepository.save(any(GraduationRecord.class))).thenAnswer(i -> i.getArgument(0));
+            when(graduationRecordRepository.findByStudentIdIn(List.of(100L))).thenReturn(List.of(recordMissingEng));
 
             List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
 
@@ -243,6 +240,7 @@ public class GraduationServiceTest {
             GraduationRecord record = results.get(0);
             assertThat(record.getSystemRecommendation()).isEqualTo("DISQUALIFIED");
             assertThat(record.getNote()).contains("Chứng chỉ Ngoại ngữ");
+            verify(graduationRecordRepository, never()).findByStudentId(anyLong());
         }
 
         @Test
@@ -261,7 +259,6 @@ public class GraduationServiceTest {
                     .build();
 
             when(curriculumService.checkGraduationEligibility(100L)).thenReturn(eligibility);
-            when(tuitionService.isTuitionOverdue(100L)).thenReturn(false);
 
             GraduationRecord recordMissingPEandDef = GraduationRecord.builder()
                     .id(53L)
@@ -273,8 +270,7 @@ public class GraduationServiceTest {
                     .itCertificateStatus(true)
                     .build();
 
-            when(graduationRecordRepository.findByStudentId(100L)).thenReturn(Optional.of(recordMissingPEandDef));
-            when(graduationRecordRepository.save(any(GraduationRecord.class))).thenAnswer(i -> i.getArgument(0));
+            when(graduationRecordRepository.findByStudentIdIn(List.of(100L))).thenReturn(List.of(recordMissingPEandDef));
 
             List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
 
@@ -283,6 +279,7 @@ public class GraduationServiceTest {
             assertThat(record.getSystemRecommendation()).isEqualTo("DISQUALIFIED");
             assertThat(record.getNote()).contains("GDTC");
             assertThat(record.getNote()).contains("GDQP");
+            verify(graduationRecordRepository, never()).findByStudentId(anyLong());
         }
 
         @Test
@@ -309,7 +306,8 @@ public class GraduationServiceTest {
                     .unsatisfiedReasons(Collections.emptyList())
                     .build();
             when(curriculumService.checkGraduationEligibility(100L)).thenReturn(eligibility);
-            when(tuitionService.isTuitionOverdue(100L)).thenReturn(false);
+            when(graduationRecordRepository.findByStudentIdIn(anyList()))
+                    .thenThrow(new RuntimeException("Simulated batch query failure"));
             when(graduationRecordRepository.findByStudentId(100L))
                     .thenThrow(new IncorrectResultSizeDataAccessException(2));
 
@@ -324,13 +322,134 @@ public class GraduationServiceTest {
                     .build();
             when(graduationRecordRepository.findFirstByStudentIdOrderByUpdatedAtDescIdDesc(100L))
                     .thenReturn(Optional.of(latestRecord));
-            when(graduationRecordRepository.save(any(GraduationRecord.class))).thenAnswer(i -> i.getArgument(0));
 
             List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
 
             assertThat(results).containsExactly(latestRecord);
             assertThat(latestRecord.getSystemRecommendation()).isEqualTo("QUALIFIED");
             verify(graduationRecordRepository).findFirstByStudentIdOrderByUpdatedAtDescIdDesc(100L);
+        }
+
+        @Test
+        @DisplayName("Tối ưu hóa truy vấn: Tìm kiếm theo cohort ID và batch-check graduation eligibility")
+        void testAssess_UsesCohortQueryAndBatchEvaluation() {
+            when(cohortRepository.findById(1)).thenReturn(Optional.of(cohort));
+            when(studentRepository.findByClassEntityCohortId(1)).thenReturn(List.of(student));
+
+            GraduationEligibilityResponse eligibility = GraduationEligibilityResponse.builder()
+                    .studentId(100L)
+                    .studentCode("SV2026-001")
+                    .studentName("Nguyễn Văn A")
+                    .eligible(true)
+                    .completedCredits(135)
+                    .requiredCredits(135)
+                    .cumulativeGpa(BigDecimal.valueOf(3.50))
+                    .unsatisfiedReasons(Collections.emptyList())
+                    .build();
+
+            when(curriculumService.checkGraduationEligibilityBatch(List.of(student)))
+                    .thenReturn(java.util.Map.of(100L, eligibility));
+
+            GraduationRecord existingRecord = GraduationRecord.builder()
+                    .id(50L)
+                    .student(student)
+                    .cohort(cohort)
+                    .physicalEducationPassed(true)
+                    .defenseEducationPassed(true)
+                    .englishCertificateStatus(true)
+                    .itCertificateStatus(true)
+                    .build();
+            when(graduationRecordRepository.findByStudentIdIn(List.of(100L))).thenReturn(List.of(existingRecord));
+
+            List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
+
+            assertThat(results).hasSize(1);
+            assertThat(results.get(0).getSystemRecommendation()).isEqualTo("QUALIFIED");
+            verify(studentRepository, times(1)).findByClassEntityCohortId(1);
+            verify(studentRepository, never()).findAll();
+            verify(curriculumService, times(1)).checkGraduationEligibilityBatch(List.of(student));
+            verify(graduationRecordRepository, times(1)).findByStudentIdIn(List.of(100L));
+            verify(graduationRecordRepository, never()).findByStudentId(anyLong());
+            verify(graduationRecordRepository, times(1)).saveAll(anyCollection());
+            verify(tuitionService, never()).isTuitionOverdue(anyLong());
+        }
+
+        @Test
+        @DisplayName("Batch lookup: Tìm kiếm hồ sơ tốt nghiệp cũ hàng loạt qua findByStudentIdIn và lưu hàng loạt saveAll")
+        void testAssess_BatchLoadsExistingGraduationRecordsAndBatchSaves() {
+            when(cohortRepository.findById(1)).thenReturn(Optional.of(cohort));
+            when(studentRepository.findByClassEntityCohortId(1)).thenReturn(List.of(student));
+
+            GraduationEligibilityResponse eligibility = GraduationEligibilityResponse.builder()
+                    .studentId(100L)
+                    .studentCode("SV2026-001")
+                    .studentName("Nguyễn Văn A")
+                    .eligible(true)
+                    .completedCredits(135)
+                    .requiredCredits(135)
+                    .cumulativeGpa(BigDecimal.valueOf(3.50))
+                    .unsatisfiedReasons(Collections.emptyList())
+                    .build();
+
+            when(curriculumService.checkGraduationEligibilityBatch(List.of(student)))
+                    .thenReturn(java.util.Map.of(100L, eligibility));
+
+            GraduationRecord existingRecord = GraduationRecord.builder()
+                    .id(50L)
+                    .student(student)
+                    .cohort(cohort)
+                    .physicalEducationPassed(true)
+                    .defenseEducationPassed(true)
+                    .englishCertificateStatus(true)
+                    .itCertificateStatus(true)
+                    .build();
+            when(graduationRecordRepository.findByStudentIdIn(List.of(100L))).thenReturn(List.of(existingRecord));
+
+            List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
+
+            assertThat(results).hasSize(1);
+            assertThat(results.get(0).getSystemRecommendation()).isEqualTo("QUALIFIED");
+            verify(graduationRecordRepository, times(1)).findByStudentIdIn(List.of(100L));
+            verify(graduationRecordRepository, never()).findByStudentId(100L);
+            verify(graduationRecordRepository, times(1)).saveAll(anyCollection());
+            verify(tuitionService, never()).isTuitionOverdue(anyLong());
+        }
+
+        @Test
+        @DisplayName("Thí sinh chưa có hồ sơ tốt nghiệp -> findByStudentId không bao giờ được gọi (O(1) bulk check)")
+        void testAssess_CandidatesWithoutPriorRecord_NeverCallsFindByStudentId() {
+            when(cohortRepository.findById(1)).thenReturn(Optional.of(cohort));
+            when(studentRepository.findByClassEntityCohortId(1)).thenReturn(List.of(student));
+
+            GraduationEligibilityResponse eligibility = GraduationEligibilityResponse.builder()
+                    .studentId(100L)
+                    .studentCode("SV2026-001")
+                    .studentName("Nguyễn Văn A")
+                    .eligible(true)
+                    .completedCredits(135)
+                    .requiredCredits(135)
+                    .cumulativeGpa(BigDecimal.valueOf(3.50))
+                    .unsatisfiedReasons(Collections.emptyList())
+                    .build();
+
+            when(curriculumService.checkGraduationEligibilityBatch(List.of(student)))
+                    .thenReturn(java.util.Map.of(100L, eligibility));
+            when(graduationRecordRepository.findByStudentIdIn(List.of(100L)))
+                    .thenReturn(Collections.emptyList());
+
+            List<GraduationRecord> results = graduationService.assessCohortCandidates(1);
+
+            assertThat(results).hasSize(1);
+            GraduationRecord record = results.get(0);
+            assertThat(record.getStudent()).isEqualTo(student);
+            assertThat(record.getCohort()).isEqualTo(cohort);
+            assertThat(record.getId()).isNull();
+            assertThat(record.getSystemRecommendation()).isEqualTo("DISQUALIFIED");
+            assertThat(record.getNote()).contains("Chứng chỉ");
+            verify(graduationRecordRepository, times(1)).findByStudentIdIn(List.of(100L));
+            verify(graduationRecordRepository, never()).findByStudentId(anyLong());
+            verify(graduationRecordRepository, times(1)).saveAll(anyCollection());
+            verify(tuitionService, never()).isTuitionOverdue(anyLong());
         }
     }
 

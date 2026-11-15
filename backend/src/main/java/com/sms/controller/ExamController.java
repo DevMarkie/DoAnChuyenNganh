@@ -140,13 +140,18 @@ public class ExamController {
 
     @GetMapping("/exam-rooms/{roomId}/roster")
     @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
-    public ResponseEntity<ApiResponse<List<ExamRosterResponse>>> getRosterByRoom(@PathVariable Long roomId) {
-        return ResponseEntity.ok(ApiResponse.success(examService.getRosterByRoom(roomId)));
+    public ResponseEntity<ApiResponse<List<ExamRosterResponse>>> getRosterByRoom(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable Long roomId) {
+        return ResponseEntity.ok(ApiResponse.success(examService.getRosterByRoom(roomId, user)));
     }
 
     @GetMapping("/exam-rooms/{roomId}/export-template")
     @PreAuthorize("hasAnyRole('ADMIN', 'EXAMINATION_OFFICER', 'ACADEMIC_AFFAIRS', 'ACADEMIC_STAFF', 'LECTURER')")
-    public ResponseEntity<byte[]> exportTemplate(@PathVariable Long roomId) throws IOException {
+    public ResponseEntity<byte[]> exportTemplate(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable Long roomId) throws IOException {
+        examService.assertCanAccessExamRoom(roomId, user);
         byte[] excelData = excelExportService.exportExamRoomRoster(roomId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=phong_thi_" + roomId + ".xlsx")

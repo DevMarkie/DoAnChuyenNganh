@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -336,14 +339,15 @@ public class EmailService {
     }
 
     /**
-     * Gửi email thông báo Cảnh báo học vụ & điều chỉnh hạn mức tín chỉ.
+     * Gửi email thông báo Cảnh báo học vụ & điều chỉnh hạn mức tín chỉ (Bất đồng bộ - Asynchronous).
      */
-    public boolean sendAcademicWarningEmail(String toEmail, String fullName, String studentCode,
-                                            int warningLevel, String notice, int maxCredits) {
+    @Async("taskExecutor")
+    public CompletableFuture<Boolean> sendAcademicWarningEmail(String toEmail, String fullName, String studentCode,
+                                                               int warningLevel, String notice, int maxCredits) {
         log.info("Chuẩn bị gửi email Cảnh báo học vụ tới: {} (MSSV: {}, Mức: {})", toEmail, studentCode, warningLevel);
         if (mailSender == null) {
             log.warn("JavaMailSender chưa được khởi tạo. Bỏ qua gửi email thực tế.");
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
 
         try {
@@ -391,10 +395,10 @@ public class EmailService {
             helper.setText(htmlContent, true);
             mailSender.send(message);
             log.info("Đã gửi email cảnh báo học vụ thành công tới: {}", toEmail);
-            return true;
+            return CompletableFuture.completedFuture(true);
         } catch (Exception e) {
             log.warn("Lỗi khi gửi email cảnh báo học vụ: {}", e.getMessage());
-            return false;
+            return CompletableFuture.completedFuture(false);
         }
     }
 

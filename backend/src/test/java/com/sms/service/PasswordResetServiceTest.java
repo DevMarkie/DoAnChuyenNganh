@@ -18,6 +18,7 @@ import com.sms.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -263,9 +264,14 @@ public class PasswordResetServiceTest {
         com.sms.dto.response.SendOtpResponse sendRes = passwordResetService.sendOtp(sendReq);
 
         assertNotNull(sendRes);
-        assertNotNull(sendRes.getDevOtp());
-        assertEquals(6, sendRes.getDevOtp().length());
-        verify(emailService, times(1)).sendOtpEmail(anyString(), anyString(), eq("2500001"), eq(sendRes.getDevOtp()));
+        assertNotNull(sendRes.getMaskedEmail());
+        
+        // devOtp is eliminated from API response for security. OTP is only sent via emailService.
+        ArgumentCaptor<String> otpCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService, times(1)).sendOtpEmail(anyString(), anyString(), eq("2500001"), otpCaptor.capture());
+        String generatedOtp = otpCaptor.getValue();
+        assertNotNull(generatedOtp);
+        assertEquals(6, generatedOtp.length());
 
         // Verify with wrong OTP -> throws
         com.sms.dto.request.VerifyOtpResetRequest wrongReq = new com.sms.dto.request.VerifyOtpResetRequest(
@@ -274,7 +280,7 @@ public class PasswordResetServiceTest {
 
         // Verify with correct OTP -> resets password
         com.sms.dto.request.VerifyOtpResetRequest correctReq = new com.sms.dto.request.VerifyOtpResetRequest(
-                "2500001", sendRes.getDevOtp(), "newPassword123");
+                "2500001", generatedOtp, "newPassword123");
         assertDoesNotThrow(() -> passwordResetService.verifyOtpAndReset(correctReq));
         assertEquals("encodedPassword", user.getPassword());
         assertFalse(user.getMustChangePassword());
@@ -347,6 +353,11 @@ public class PasswordResetServiceTest {
         assertEquals("HASH_15032002a@", studentUser.getPassword());
         assertEquals("HASH_05111980a@", lecturerUser.getPassword());
         assertEquals("HASH_01011990a@", adminUser.getPassword());
+
+        // Verify mustChangePassword set to true
+        assertTrue(studentUser.getMustChangePassword());
+        assertTrue(lecturerUser.getMustChangePassword());
+        assertTrue(adminUser.getMustChangePassword());
 
         // Verify DOB synced to User entity
         assertEquals(LocalDate.of(2002, 3, 15), studentUser.getDateOfBirth());

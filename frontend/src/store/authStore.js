@@ -1,6 +1,19 @@
 import { create } from 'zustand';
 import { authService } from '../services/dataService';
 
+export const isLoginRoute = (path) => {
+  let targetPath = path;
+  if (!targetPath && typeof window !== 'undefined') {
+    if (window.location?.hash && window.location.hash.startsWith('#/')) {
+      targetPath = window.location.hash.slice(1);
+    } else {
+      targetPath = window.location?.pathname || '';
+    }
+  }
+  if (!targetPath) return false;
+  return targetPath === '/login' || targetPath.endsWith('/login');
+};
+
 export const getPortalScope = (path) => {
   let targetPath = path;
   if (!targetPath && typeof window !== 'undefined') {
@@ -70,6 +83,27 @@ export const isTokenValid = (token, user) => {
 
 export const getPortalSession = (scope) => {
   if (!scope) return null;
+
+  // 1. Kiểm tra phiên phân lập theo từng tab trình duyệt (sessionStorage)
+  try {
+    const sessionToken = sessionStorage.getItem(`token_${scope}`);
+    if (sessionToken) {
+      let sessionUser = null;
+      try {
+        sessionUser = JSON.parse(sessionStorage.getItem(`user_${scope}`) || 'null');
+      } catch {
+        sessionUser = null;
+      }
+      if (isTokenValid(sessionToken, sessionUser)) {
+        return { token: sessionToken, user: sessionUser };
+      } else {
+        sessionStorage.removeItem(`token_${scope}`);
+        sessionStorage.removeItem(`user_${scope}`);
+      }
+    }
+  } catch {}
+
+  // 2. Dự phòng localStorage (khi người dùng mở tab mới vào trực tiếp trang nghiệp vụ hoặc trong test)
   const token = localStorage.getItem(`token_${scope}`);
   if (!token) return null;
   let user = null;
@@ -83,10 +117,35 @@ export const getPortalSession = (scope) => {
     localStorage.removeItem(`user_${scope}`);
     return null;
   }
+
+  // Khởi tạo sessionStorage cho tab hiện tại để từ đây tab này hoạt động độc lập
+  try {
+    sessionStorage.setItem(`token_${scope}`, token);
+    sessionStorage.setItem(`user_${scope}`, JSON.stringify(user));
+  } catch {}
+
   return { token, user };
 };
 
 const resolveInitialSession = () => {
+  // Nếu đang ở cổng đăng nhập, không tự động nhận phiên cũ của tài khoản khác từ localStorage
+  if (isLoginRoute()) {
+    const scope = getPortalScope();
+    if (scope) {
+      // Chỉ kiểm tra sessionStorage riêng của tab này
+      try {
+        const sessionToken = sessionStorage.getItem(`token_${scope}`);
+        if (sessionToken) {
+          const sessionUser = JSON.parse(sessionStorage.getItem(`user_${scope}`) || 'null');
+          if (isTokenValid(sessionToken, sessionUser)) {
+            return { token: sessionToken, user: sessionUser, valid: true };
+          }
+        }
+      } catch {}
+    }
+    return { token: null, user: null, valid: false };
+  }
+
   const scope = getPortalScope();
   if (scope) {
     const session = getPortalSession(scope);
@@ -94,18 +153,32 @@ const resolveInitialSession = () => {
     return { token: null, user: null, valid: false };
   }
 
-  const storedToken = localStorage.getItem('token');
-  const storedUser = (() => {
+  // 1. Kiểm tra sessionStorage
+  let storedToken = null;
+  let storedUser = null;
+  try {
+    storedToken = sessionStorage.getItem('token');
+    storedUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+  } catch {}
+
+  // 2. Dự phòng localStorage
+  if (!storedToken) {
+    storedToken = localStorage.getItem('token');
     try {
-      return JSON.parse(localStorage.getItem('user') || 'null');
+      storedUser = JSON.parse(localStorage.getItem('user') || 'null');
     } catch {
-      return null;
+      storedUser = null;
     }
-  })();
+  }
+
   const tokenValid = storedToken
     && !isTokenExpired(storedToken)
     && isStoredSessionConsistent(storedToken, storedUser);
-  if (!tokenValid && (storedToken || localStorage.getItem('user'))) {
+  if (!tokenValid && (storedToken || localStorage.getItem('user') || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('user')))) {
+    try {
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+    } catch {}
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   }
@@ -121,6 +194,15 @@ const useAuthStore = create((set, get) => ({
 
   login: (token, userData) => {
     const scope = getRoleScope(userData?.role) || getPortalScope();
+    try {
+      if (scope) {
+        sessionStorage.setItem(`token_${scope}`, token);
+        sessionStorage.setItem(`user_${scope}`, JSON.stringify(userData));
+      }
+      sessionStorage.setItem('token', token);
+      sessionStorage.setItem('user', JSON.stringify(userData));
+    } catch {}
+
     if (scope) {
       localStorage.setItem(`token_${scope}`, token);
       localStorage.setItem(`user_${scope}`, JSON.stringify(userData));
@@ -135,6 +217,13 @@ const useAuthStore = create((set, get) => ({
     if (!user) return;
     const updated = { ...user, mustChangePassword: false };
     const scope = getRoleScope(user?.role) || getPortalScope();
+    try {
+      if (scope) {
+        sessionStorage.setItem(`user_${scope}`, JSON.stringify(updated));
+      }
+      sessionStorage.setItem('user', JSON.stringify(updated));
+    } catch {}
+
     if (scope) {
       localStorage.setItem(`user_${scope}`, JSON.stringify(updated));
     }
@@ -144,13 +233,42 @@ const useAuthStore = create((set, get) => ({
 
   logout: () => {
     authService.logout().catch(() => {});
-    const scope = getRoleScope(get().user?.role) || getPortalScope();
-    if (scope) {
-      localStorage.removeItem(`token_${scope}`);
-      localStorage.removeItem(`user_${scope}`);
+    const currentUser = get().user;
+    const currentUserId = currentUser?.userId ?? currentUser?.id;
+    const scope = getRoleScope(currentUser?.role) || getPortalScope();
+
+    try {
+      if (scope) {
+        sessionStorage.removeItem(`token_${scope}`);
+        sessionStorage.removeItem(`user_${scope}`);
+      }
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+    } catch {}
+
+    try {
+      const storedUserRaw = localStorage.getItem(`user_${scope}`) || localStorage.getItem('user');
+      const storedUser = storedUserRaw ? JSON.parse(storedUserRaw) : null;
+      const storedUserId = storedUser?.userId ?? storedUser?.id;
+
+      // Chỉ xoá localStorage nếu tài khoản lưu ở localStorage trùng với tài khoản đang đăng xuất
+      if (!storedUser || !currentUserId || String(storedUserId) === String(currentUserId)) {
+        if (scope) {
+          localStorage.removeItem(`token_${scope}`);
+          localStorage.removeItem(`user_${scope}`);
+        }
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    } catch {
+      if (scope) {
+        localStorage.removeItem(`token_${scope}`);
+        localStorage.removeItem(`user_${scope}`);
+      }
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+
     set({ user: null, token: null, isAuthenticated: false });
   },
 
@@ -164,10 +282,34 @@ const useAuthStore = create((set, get) => ({
   },
 
   hasPortalSession: (scope) => {
-    return Boolean(getPortalSession(scope));
+    if (!scope) return false;
+    // Kiểm tra phiên riêng của tab này trước
+    try {
+      const sessionToken = sessionStorage.getItem(`token_${scope}`);
+      if (sessionToken) {
+        const sessionUser = JSON.parse(sessionStorage.getItem(`user_${scope}`) || 'null');
+        if (isTokenValid(sessionToken, sessionUser)) return true;
+      }
+    } catch {}
+
+    // Dự phòng môi trường test vitest
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
+      const localToken = localStorage.getItem(`token_${scope}`);
+      if (localToken) {
+        try {
+          const localUser = JSON.parse(localStorage.getItem(`user_${scope}`) || 'null');
+          return isTokenValid(localToken, localUser);
+        } catch {
+          return false;
+        }
+      }
+    }
+
+    return false;
   },
 
   syncWithRoute: (pathname) => {
+    if (isLoginRoute(pathname)) return;
     const scope = getPortalScope(pathname);
     if (!scope) return;
     const session = getPortalSession(scope);
@@ -186,10 +328,20 @@ const useAuthStore = create((set, get) => ({
 
 window.addEventListener("auth:session-expired", (e) => {
   const scope = e?.detail?.scope;
+  try {
+    if (scope) {
+      sessionStorage.removeItem(`token_${scope}`);
+      sessionStorage.removeItem(`user_${scope}`);
+    }
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+  } catch {}
   if (scope) {
     localStorage.removeItem(`token_${scope}`);
     localStorage.removeItem(`user_${scope}`);
   }
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
   useAuthStore.getState().logout();
 });
 

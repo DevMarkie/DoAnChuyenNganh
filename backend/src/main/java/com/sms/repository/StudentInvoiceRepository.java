@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,4 +61,11 @@ public interface StudentInvoiceRepository extends JpaRepository<StudentInvoice, 
            "JOIN FETCH cs.semester sem " +
            "WHERE i.status = :status")
     List<StudentInvoice> findByStatusWithDetails(@Param("status") StudentInvoice.InvoiceStatus status);
+
+    @Query("SELECT i FROM StudentInvoice i " +
+           "JOIN FETCH i.student s " +
+           "LEFT JOIN FETCH i.section cs " +
+           "LEFT JOIN FETCH cs.semester sem " +
+           "WHERE s.id IN :studentIds AND i.status = com.sms.entity.StudentInvoice$InvoiceStatus.UNPAID")
+    List<StudentInvoice> findUnpaidByStudentIdIn(@Param("studentIds") Collection<Long> studentIds);
 }

@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -44,4 +46,11 @@ public interface GraduationRecordRepository extends JpaRepository<GraduationReco
                    "LEFT JOIN FETCH gr.cohort",
            countQuery = "SELECT count(gr) FROM GraduationRecord gr")
     Page<GraduationRecord> findAll(Pageable pageable);
+
+    @Query("SELECT gr FROM GraduationRecord gr " +
+           "LEFT JOIN FETCH gr.student s " +
+           "LEFT JOIN FETCH gr.cohort " +
+           "WHERE s.id IN :studentIds " +
+           "ORDER BY gr.updatedAt DESC, gr.id DESC")
+    List<GraduationRecord> findByStudentIdIn(@Param("studentIds") Collection<Long> studentIds);
 }

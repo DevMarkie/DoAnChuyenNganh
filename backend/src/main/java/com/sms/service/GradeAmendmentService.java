@@ -179,6 +179,79 @@ public class GradeAmendmentService {
     }
 
     /**
+     * Xem chi tiết 1 ticket kèm kiểm tra quyền truy cập (chống IDOR).
+     */
+    @Transactional(readOnly = true)
+    public GradeChangeTicket findById(Long ticketId, Long userId) {
+        GradeChangeTicket ticket = findById(ticketId);
+        assertCanViewTicket(userId, ticket);
+        return ticket;
+    }
+
+    /**
+     * Kiểm tra quyền truy cập đơn sửa điểm:
+     * - ADMIN, ACADEMIC_AFFAIRS, ACADEMIC_STAFF: toàn quyền xem
+     * - STUDENT: phải là sinh viên có điểm được đính chính trong ticket
+     * - LECTURER: phải là giảng viên tạo đơn, giảng viên phụ trách lớp học phần, hoặc trưởng bộ môn phụ trách
+     */
+    public void assertCanViewTicket(Long userId, GradeChangeTicket ticket) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản"));
+
+        String roleName = user.getRole().getName();
+        if ("ADMIN".equalsIgnoreCase(roleName)
+                || "ACADEMIC_AFFAIRS".equalsIgnoreCase(roleName)
+                || "ACADEMIC_STAFF".equalsIgnoreCase(roleName)) {
+            return;
+        }
+
+        if ("STUDENT".equalsIgnoreCase(roleName)) {
+            Student student = studentRepository.findByUserId(userId).orElse(null);
+            boolean isStudentOwner = (ticket.getStudent() != null) &&
+                    ((student != null && Objects.equals(ticket.getStudent().getId(), student.getId()))
+                            || (ticket.getStudent().getUser() != null && Objects.equals(ticket.getStudent().getUser().getId(), userId)));
+            if (!isStudentOwner) {
+                throw new ForbiddenException("Bạn không có quyền xem thông tin đơn sửa điểm của sinh viên khác");
+            }
+            return;
+        }
+
+        if ("LECTURER".equalsIgnoreCase(roleName)) {
+            boolean isCreator = ticket.getCreatedBy() != null && Objects.equals(ticket.getCreatedBy().getId(), userId);
+            if (isCreator) {
+                return;
+            }
+
+            Lecturer lecturer = lecturerRepository.findByUserId(userId).orElse(null);
+            Long lecturerId = lecturer != null ? lecturer.getId() : -1L;
+
+            boolean isSectionLecturer = ticket.getClassSection() != null
+                    && ticket.getClassSection().getLecturer() != null
+                    && (Objects.equals(ticket.getClassSection().getLecturer().getId(), lecturerId)
+                    || (ticket.getClassSection().getLecturer().getUser() != null && Objects.equals(ticket.getClassSection().getLecturer().getUser().getId(), userId)));
+
+            if (isSectionLecturer) {
+                return;
+            }
+
+            // Trưởng bộ môn phụ trách môn học
+            List<Department> headDepts = departmentRepository.findByHeadLecturerId(lecturerId);
+            Set<Integer> headDeptIds = headDepts.stream().map(Department::getId).collect(Collectors.toSet());
+            Integer deptId = (ticket.getClassSection() != null && ticket.getClassSection().getSubject() != null && ticket.getClassSection().getSubject().getDepartment() != null)
+                    ? ticket.getClassSection().getSubject().getDepartment().getId() : null;
+
+            boolean isDeptHead = deptId != null && headDeptIds.contains(deptId);
+            if (isDeptHead) {
+                return;
+            }
+
+            throw new ForbiddenException("Bạn không có quyền truy cập đơn sửa điểm này");
+        }
+
+        throw new ForbiddenException("Bạn không có quyền truy cập đơn sửa điểm này");
+    }
+
+    /**
      * BƯỚC 2: Thẩm định cấp Khoa / Bộ môn
      */
     @Transactional

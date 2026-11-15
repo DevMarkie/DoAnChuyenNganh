@@ -34,6 +34,7 @@ import com.sms.repository.CurriculumBlockSubjectRepository;
 import com.sms.repository.CurriculumProgramRepository;
 import com.sms.repository.AttendanceRecordRepository;
 import com.sms.repository.StudentInvoiceRepository;
+import com.sms.repository.SubjectRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +61,9 @@ public class EnrollmentService {
     private final RedisCourseSectionService redisCourseSectionService;
 
     @Autowired(required = false)
+    private SubjectRepository subjectRepository;
+
+    @Autowired(required = false)
     private TransactionTemplate transactionTemplate;
 
     @Autowired(required = false)
@@ -75,12 +79,14 @@ public class EnrollmentService {
     private static final int MAX_CREDITS_PER_SEMESTER = 24;
 
     private void populateAbsenceStats(Enrollment e, int absentSessions, Long knownSectionId) {
-        Long secId = knownSectionId != null ? knownSectionId : (e.getSection() != null ? e.getSection().getId() : null);
-        CourseSection sec = null;
-        if (secId != null && courseSectionRepository != null) {
+        populateAbsenceStats(e, absentSessions, knownSectionId, null);
+    }
+
+    private void populateAbsenceStats(Enrollment e, int absentSessions, Long knownSectionId, Map<Long, List<Schedule>> schedulesBySection) {
+        CourseSection sec = e.getSection();
+        Long secId = sec != null ? sec.getId() : knownSectionId;
+        if (sec == null && secId != null && courseSectionRepository != null) {
             sec = courseSectionRepository.findById(secId).orElse(null);
-        } else if (e.getSection() != null) {
-            sec = e.getSection();
         }
         Subject subj = sec != null ? sec.getSubject() : null;
         int credits = (subj != null && subj.getCredits() != null && subj.getCredits() > 0) ? subj.getCredits() : 3;
@@ -88,13 +94,16 @@ public class EnrollmentService {
 
         int periodsPerSession = 3;
         try {
-            if (secId != null && scheduleRepository != null) {
-                List<Schedule> schedules = scheduleRepository.findBySectionId(secId);
-                if (schedules != null && !schedules.isEmpty()) {
-                    Schedule s = schedules.get(0);
-                    if (s != null && s.getStartPeriod() != null && s.getEndPeriod() != null) {
-                        periodsPerSession = Math.max(1, s.getEndPeriod() - s.getStartPeriod() + 1);
-                    }
+            List<Schedule> schedules = null;
+            if (schedulesBySection != null && secId != null && schedulesBySection.containsKey(secId)) {
+                schedules = schedulesBySection.get(secId);
+            } else if (secId != null && scheduleRepository != null) {
+                schedules = scheduleRepository.findBySectionId(secId);
+            }
+            if (schedules != null && !schedules.isEmpty()) {
+                Schedule s = schedules.get(0);
+                if (s != null && s.getStartPeriod() != null && s.getEndPeriod() != null) {
+                    periodsPerSession = Math.max(1, s.getEndPeriod() - s.getStartPeriod() + 1);
                 }
             }
         } catch (Exception ignored) {
@@ -115,7 +124,19 @@ public class EnrollmentService {
         if (!enrollments.isEmpty() && attendanceRecordRepository != null) {
             Map<Long, Long> absences = attendanceRecordRepository.countAbsencesByStudentId(studentId).stream()
                     .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
-            enrollments.forEach(e -> populateAbsenceStats(e, absences.getOrDefault(e.getId(), 0L).intValue(), null));
+
+            Set<Long> sectionIds = enrollments.stream()
+                    .map(e -> e.getSection() != null ? e.getSection().getId() : null)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            Map<Long, List<Schedule>> schedulesBySection = scheduleRepository != null && !sectionIds.isEmpty()
+                    ? scheduleRepository.findBySectionIdIn(sectionIds).stream()
+                            .filter(s -> s.getSection() != null && s.getSection().getId() != null)
+                            .collect(Collectors.groupingBy(s -> s.getSection().getId()))
+                    : Collections.emptyMap();
+
+            enrollments.forEach(e -> populateAbsenceStats(e, absences.getOrDefault(e.getId(), 0L).intValue(), null, schedulesBySection));
         }
         return enrollments;
     }
@@ -137,6 +158,13 @@ public class EnrollmentService {
                 ? studentRepository.findByUserId(currentUserId).orElse(null)
                 : null;
 
+        List<Schedule> sectionSchedules = (scheduleRepository != null && sectionId != null)
+                ? scheduleRepository.findBySectionId(sectionId)
+                : Collections.emptyList();
+        Map<Long, List<Schedule>> schedulesBySection = sectionId != null
+                ? Map.of(sectionId, sectionSchedules)
+                : Collections.emptyMap();
+
         for (Enrollment e : enrollments) {
             boolean isSelf = currentStudent != null && e.getStudent() != null
                     && e.getStudent().getId().equals(currentStudent.getId());
@@ -149,7 +177,7 @@ public class EnrollmentService {
                 e.setTotalPeriods(null);
             } else {
                 int absentSessions = absences.getOrDefault(e.getId(), 0L).intValue();
-                populateAbsenceStats(e, absentSessions, sectionId);
+                populateAbsenceStats(e, absentSessions, sectionId, schedulesBySection);
             }
         }
         return enrollments;
@@ -206,8 +234,12 @@ public class EnrollmentService {
         }
 
         // 2. Idempotency Lock theo User để chống spam click / double-click
-        if (redisLockService != null && !redisLockService.acquireUserActionLock(student.getId(), "ENROLL", 2)) {
-            throw new BadRequestException("Yêu cầu đăng ký của bạn đang được xử lý, vui lòng không nhấn liên tục!");
+        String lockToken = null;
+        if (redisLockService != null) {
+            lockToken = redisLockService.acquireUserActionLock(student.getId(), "ENROLL", 2);
+            if (lockToken == null) {
+                throw new BadRequestException("Yêu cầu đăng ký của bạn đang được xử lý, vui lòng không nhấn liên tục!");
+            }
         }
 
         try {
@@ -363,8 +395,8 @@ public class EnrollmentService {
             }
 
         } finally {
-            if (redisLockService != null) {
-                redisLockService.releaseUserActionLock(student.getId(), "ENROLL");
+            if (redisLockService != null && lockToken != null) {
+                redisLockService.releaseUserActionLock(student.getId(), "ENROLL", lockToken);
             }
         }
     }
@@ -428,8 +460,12 @@ public class EnrollmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sinh viên"));
 
         // Idempotency Lock khi hủy môn
-        if (redisLockService != null && !redisLockService.acquireUserActionLock(student.getId(), "CANCEL_" + enrollmentId, 2)) {
-            throw new BadRequestException("Yêu cầu hủy môn đang được xử lý, vui lòng không nhấn liên tục!");
+        String cancelLockToken = null;
+        if (redisLockService != null) {
+            cancelLockToken = redisLockService.acquireUserActionLock(student.getId(), "CANCEL_" + enrollmentId, 2);
+            if (cancelLockToken == null) {
+                throw new BadRequestException("Yêu cầu hủy môn đang được xử lý, vui lòng không nhấn liên tục!");
+            }
         }
 
         try {
@@ -477,9 +513,9 @@ public class EnrollmentService {
                                 studentInvoiceRepository.save(invoice);
                             } else if (invoice.getStatus() == StudentInvoice.InvoiceStatus.PAID) {
                                 java.math.BigDecimal refundAmount = invoice.getAmount() != null ? invoice.getAmount() : java.math.BigDecimal.ZERO;
+                                studentRepository.updateBalanceAtomic(student.getId(), refundAmount);
                                 java.math.BigDecimal currentBalance = student.getBalance() != null ? student.getBalance() : java.math.BigDecimal.ZERO;
                                 student.setBalance(currentBalance.add(refundAmount));
-                                studentRepository.save(student);
                                 invoice.setStatus(StudentInvoice.InvoiceStatus.CANCELLED);
                                 studentInvoiceRepository.save(invoice);
                             }
@@ -491,8 +527,8 @@ public class EnrollmentService {
             }
 
         } finally {
-            if (redisLockService != null) {
-                redisLockService.releaseUserActionLock(student.getId(), "CANCEL_" + enrollmentId);
+            if (redisLockService != null && cancelLockToken != null) {
+                redisLockService.releaseUserActionLock(student.getId(), "CANCEL_" + enrollmentId, cancelLockToken);
             }
         }
     }
@@ -565,9 +601,9 @@ public class EnrollmentService {
                         } else if (invoice.getStatus() == StudentInvoice.InvoiceStatus.PAID) {
                             java.math.BigDecimal refundAmount = invoice.getAmount() != null ? invoice.getAmount() : java.math.BigDecimal.ZERO;
                             Student st = enrollment.getStudent();
+                            studentRepository.updateBalanceAtomic(st.getId(), refundAmount);
                             java.math.BigDecimal currentBalance = st.getBalance() != null ? st.getBalance() : java.math.BigDecimal.ZERO;
                             st.setBalance(currentBalance.add(refundAmount));
-                            studentRepository.save(st);
                             invoice.setStatus(StudentInvoice.InvoiceStatus.CANCELLED);
                             studentInvoiceRepository.save(invoice);
                         }
@@ -600,42 +636,78 @@ public class EnrollmentService {
     }
 
     private void validatePrerequisitesRecursively(Student student, Subject targetSubject) {
+        if (targetSubject == null) {
+            return;
+        }
+        if (transactionTemplate != null) {
+            transactionTemplate.execute(status -> {
+                doValidatePrerequisitesRecursively(student, targetSubject);
+                return null;
+            });
+        } else {
+            doValidatePrerequisitesRecursively(student, targetSubject);
+        }
+    }
+
+    private void doValidatePrerequisitesRecursively(Student student, Subject targetSubject) {
+        Set<Subject> initialPrereqs = getSubjectPrerequisites(targetSubject);
+        if (initialPrereqs == null || initialPrereqs.isEmpty()) {
+            return;
+        }
+
+        Set<Integer> visited = new HashSet<>();
+        Queue<Subject> queue = new LinkedList<>(initialPrereqs);
+        List<Subject> missingPrereqs = new ArrayList<>();
+
+        while (!queue.isEmpty()) {
+            Subject prereq = queue.poll();
+            if (prereq == null || !visited.add(prereq.getId())) {
+                continue;
+            }
+
+            if (!gradeRepository.existsPassedFinalizedByStudentAndSubject(student.getId(), prereq.getId())) {
+                missingPrereqs.add(prereq);
+            }
+
+            Set<Subject> nextPrereqs = getSubjectPrerequisites(prereq);
+            if (nextPrereqs != null && !nextPrereqs.isEmpty()) {
+                queue.addAll(nextPrereqs);
+            }
+        }
+
+        if (!missingPrereqs.isEmpty()) {
+            Subject firstMissing = missingPrereqs.get(0);
+            throw new PrerequisiteNotMetException(
+                    targetSubject.getSubjectCode(),
+                    firstMissing.getSubjectCode(),
+                    firstMissing.getSubjectName());
+        }
+    }
+
+    private Set<Subject> getSubjectPrerequisites(Subject subject) {
+        if (subject == null) {
+            return Collections.emptySet();
+        }
+        if (subjectRepository != null && subject.getId() != null) {
+            try {
+                Set<Subject> dbPrereqs = subjectRepository.findPrerequisitesBySubjectId(subject.getId());
+                if (dbPrereqs != null && !dbPrereqs.isEmpty()) {
+                    return dbPrereqs;
+                }
+            } catch (Exception ex) {
+                log.debug("Fallback to entity prerequisites for subject {}: {}", subject.getSubjectCode(), ex.getMessage());
+            }
+        }
         try {
-            if (targetSubject.getPrerequisites() == null || targetSubject.getPrerequisites().isEmpty()) {
-                return;
-            }
-
-            Set<Integer> visited = new HashSet<>();
-            Queue<Subject> queue = new LinkedList<>(targetSubject.getPrerequisites());
-            List<Subject> missingPrereqs = new ArrayList<>();
-
-            while (!queue.isEmpty()) {
-                Subject prereq = queue.poll();
-                if (prereq == null || !visited.add(prereq.getId())) {
-                    continue;
-                }
-
-                if (!gradeRepository.existsPassedFinalizedByStudentAndSubject(student.getId(), prereq.getId())) {
-                    missingPrereqs.add(prereq);
-                }
-
-                try {
-                    if (prereq.getPrerequisites() != null && !prereq.getPrerequisites().isEmpty()) {
-                        queue.addAll(prereq.getPrerequisites());
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-
-            if (!missingPrereqs.isEmpty()) {
-                Subject firstMissing = missingPrereqs.get(0);
-                throw new PrerequisiteNotMetException(
-                        targetSubject.getSubjectCode(),
-                        firstMissing.getSubjectCode(),
-                        firstMissing.getSubjectName());
+            if (subject.getPrerequisites() != null) {
+                return subject.getPrerequisites();
             }
         } catch (org.hibernate.LazyInitializationException ex) {
-            log.warn("Cannot lazily initialize prerequisites outside session: {}", ex.getMessage());
+            if (subjectRepository != null && subject.getId() != null) {
+                return subjectRepository.findPrerequisitesBySubjectId(subject.getId());
+            }
+            throw ex;
         }
+        return Collections.emptySet();
     }
 }

@@ -9817,14 +9817,14 @@ INSERT INTO subject_prerequisites (subject_id, prerequisite_id) VALUES
 (143, 136);
 
 -- 10. SEMESTERS
-INSERT INTO semesters (id, semester_code, semester_name, start_date, end_date, academic_year, semester_number, is_current, status, registration_start, registration_end) VALUES
-(1, 'HK1-2023', 'Học kỳ 1 (2023-2024)', '2023-09-01', '2024-01-15', '2023-2024', 1, 0, 'COMPLETED', NULL, NULL),
-(2, 'HK2-2023', 'Học kỳ 2 (2023-2024)', '2024-02-01', '2024-06-30', '2023-2024', 2, 0, 'COMPLETED', NULL, NULL),
-(3, 'HK1-2024', 'Học kỳ 1 (2024-2025)', '2024-09-01', '2025-01-15', '2024-2025', 1, 0, 'COMPLETED', NULL, NULL),
-(4, 'HK2-2024', 'Học kỳ 2 (2024-2025)', '2025-02-01', '2025-06-30', '2024-2025', 2, 0, 'COMPLETED', NULL, NULL),
-(5, 'HK1-2025', 'Học kỳ 1 (2025-2026)', '2025-09-01', '2026-01-15', '2025-2026', 1, 0, 'COMPLETED', NULL, NULL),
-(6, 'HK2-2025', 'Học kỳ 2 (2025-2026)', '2026-02-01', '2026-06-30', '2025-2026', 2, 0, 'COMPLETED', NULL, NULL),
-(7, 'HK1-2026', 'Học kỳ 1 (2026-2027)', '2026-09-01', '2027-01-15', '2026-2027', 1, 1, 'ACTIVE', '2026-09-01', '2027-01-15');
+INSERT INTO semesters (id, semester_code, semester_name, start_date, end_date, academic_year, semester_number, is_current, status) VALUES
+(1, 'HK1-2023', 'Học kỳ 1 (2023-2024)', '2023-09-01', '2024-01-15', '2023-2024', 1, 0, 'COMPLETED'),
+(2, 'HK2-2023', 'Học kỳ 2 (2023-2024)', '2024-02-01', '2024-06-30', '2023-2024', 2, 0, 'COMPLETED'),
+(3, 'HK1-2024', 'Học kỳ 1 (2024-2025)', '2024-09-01', '2025-01-15', '2024-2025', 1, 0, 'COMPLETED'),
+(4, 'HK2-2024', 'Học kỳ 2 (2024-2025)', '2025-02-01', '2025-06-30', '2024-2025', 2, 0, 'COMPLETED'),
+(5, 'HK1-2025', 'Học kỳ 1 (2025-2026)', '2025-09-01', '2026-01-15', '2025-2026', 1, 0, 'COMPLETED'),
+(6, 'HK2-2025', 'Học kỳ 2 (2025-2026)', '2026-02-01', '2026-06-30', '2025-2026', 2, 0, 'COMPLETED'),
+(7, 'HK1-2026', 'Học kỳ 1 (2026-2027)', '2026-09-01', '2027-01-15', '2026-2027', 1, 1, 'ACTIVE');
 
 -- 11. FEE SCALE RULES
 INSERT INTO fee_scale_rules (id, min_students, max_students, coefficient) VALUES

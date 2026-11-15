@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,12 +47,20 @@ public class SecurityConfig {
                         .requestMatcher(org.springframework.security.web.util.matcher.AnyRequestMatcher.INSTANCE)
                         .maxAgeInSeconds(31536000))
                 .referrerPolicy(referrer -> referrer
-                        .policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
+                        .policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                .frameOptions(frame -> frame.deny())
+                .contentTypeOptions(Customizer.withDefaults())
+                .contentSecurityPolicy(csp -> csp
+                        .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none';"))
+                .permissionsPolicy(permissions -> permissions
+                        .policy("camera=(), microphone=(), geolocation=(), payment=()")))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/api-docs/**", "/api-docs", "/v3/api-docs/**", "/v3/api-docs", "/swagger-ui.html").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/uploads/**").permitAll()
+
+                // Swagger UI & OpenAPI Spec (Chỉ dành cho ADMIN)
+                .requestMatchers("/swagger-ui/**", "/api-docs/**", "/api-docs", "/v3/api-docs/**", "/v3/api-docs", "/swagger-ui.html").hasRole("ADMIN")
 
                 // Grade Audit Logs (Admin, Cán bộ Đào tạo, Khảo thí tra cứu kiểm toán điểm)
                 .requestMatchers("/api/admin/grade-audit-logs/**").hasAnyRole("ADMIN", "ACADEMIC_AFFAIRS", "ACADEMIC_STAFF", "EXAMINATION_OFFICER")

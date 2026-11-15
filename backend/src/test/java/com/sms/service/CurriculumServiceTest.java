@@ -236,4 +236,44 @@ public class CurriculumServiceTest {
         BadRequestException ex = assertThrows(BadRequestException.class, () -> curriculumService.validateGraduationEligibility(1L));
         assertTrue(ex.getMessage().contains("chưa đủ điều kiện tốt nghiệp"));
     }
+
+    @Test
+    void checkGraduationEligibilityBatch_Success() {
+        program.setTotalCredits(3);
+        when(programRepository.findActiveByCohortId(1)).thenReturn(List.of(program));
+        when(blockRepository.findByProgramIdInOrdered(any())).thenReturn(List.of(block));
+        when(blockSubjectRepository.findByBlockIdInWithSubject(any())).thenReturn(List.of(link));
+        when(gradeRepository.findFinalizedByStudentIdIn(List.of(1L))).thenReturn(List.of(grade));
+
+        java.util.Map<Long, GraduationEligibilityResponse> map = curriculumService.checkGraduationEligibilityBatch(List.of(student));
+
+        assertNotNull(map);
+        assertTrue(map.containsKey(1L));
+        GraduationEligibilityResponse resp = map.get(1L);
+        assertTrue(resp.isEligible());
+        assertEquals(3, resp.getCompletedCredits());
+        verify(programRepository, times(1)).findActiveByCohortId(1);
+        verify(blockRepository, times(1)).findByProgramIdInOrdered(any());
+        verify(blockSubjectRepository, times(1)).findByBlockIdInWithSubject(any());
+        verify(gradeRepository, times(1)).findFinalizedByStudentIdIn(List.of(1L));
+    }
+
+    @Test
+    void checkGraduationEligibilityBatch_TuitionDebt_Ineligible() {
+        program.setTotalCredits(3);
+        when(programRepository.findActiveByCohortId(1)).thenReturn(List.of(program));
+        when(blockRepository.findByProgramIdInOrdered(any())).thenReturn(List.of(block));
+        when(blockSubjectRepository.findByBlockIdInWithSubject(any())).thenReturn(List.of(link));
+        when(gradeRepository.findFinalizedByStudentIdIn(List.of(1L))).thenReturn(List.of(grade));
+        when(tuitionService.findOverdueStudentIds(List.of(1L))).thenReturn(java.util.Set.of(1L));
+
+        java.util.Map<Long, GraduationEligibilityResponse> map = curriculumService.checkGraduationEligibilityBatch(List.of(student));
+
+        assertNotNull(map);
+        assertTrue(map.containsKey(1L));
+        GraduationEligibilityResponse resp = map.get(1L);
+        assertFalse(resp.isEligible());
+        assertTrue(resp.getUnsatisfiedReasons().contains("Chưa hoàn thành công nợ học phí"));
+        verify(tuitionService, times(1)).findOverdueStudentIds(List.of(1L));
+    }
 }

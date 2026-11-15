@@ -10,7 +10,7 @@ export default function StudentDashboard() {
   const { user } = useAuthStore();
   const [profile, setProfile] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('student_profile') || 'null');
+      return JSON.parse(sessionStorage.getItem('student_profile') || localStorage.getItem('student_profile') || 'null');
     } catch {
       return null;
     }
@@ -31,6 +31,7 @@ export default function StudentDashboard() {
         const prof = resProfile.value.data.data;
         setProfile(prof);
         try {
+          sessionStorage.setItem('student_profile', JSON.stringify(prof));
           localStorage.setItem('student_profile', JSON.stringify(prof));
         } catch {}
       }

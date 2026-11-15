@@ -47,5 +47,8 @@ public interface ExamRosterRepository extends JpaRepository<ExamRoster, Long> {
 
     long countByExamRoomId(Long examRoomId);
 
+    @org.springframework.data.jpa.repository.Query("SELECT r.examRoom.examSession.id, COUNT(r) FROM ExamRoster r WHERE r.examRoom.examSession.id IN :sessionIds GROUP BY r.examRoom.examSession.id")
+    List<Object[]> countRostersBySessionIds(@org.springframework.data.repository.query.Param("sessionIds") java.util.Collection<Long> sessionIds);
+
     void deleteByExamRoomId(Long examRoomId);
 }

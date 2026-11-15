@@ -36,6 +36,8 @@ public class DashboardServiceTest {
     private LecturerRepository lecturerRepository;
     @Mock
     private CourseSectionRepository courseSectionRepository;
+    @Mock
+    private com.sms.repository.GradeAppealRepository gradeAppealRepository;
 
     @InjectMocks
     private DashboardService dashboardService;
@@ -73,5 +75,19 @@ public class DashboardServiceTest {
         
         assertEquals(2, response.getStudentsByDepartment().size());
         assertEquals(4, response.getStudentsByStatus().size());
+    }
+
+    @Test
+    void getSummary_Success() {
+        when(studentRepository.count()).thenReturn(1500L);
+        when(courseSectionRepository.count()).thenReturn(120L);
+        when(gradeAppealRepository.countByStatus(com.sms.entity.GradeAppeal.AppealStatus.PENDING)).thenReturn(8L);
+
+        com.sms.dto.response.DashboardSummaryResponse summary = dashboardService.getSummary();
+
+        assertNotNull(summary);
+        assertEquals(1500L, summary.getTotalStudents());
+        assertEquals(120L, summary.getTotalSections());
+        assertEquals(8L, summary.getPendingAppeals());
     }
 }

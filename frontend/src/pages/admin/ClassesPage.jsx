@@ -32,16 +32,27 @@ export default function ClassesPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [resCls, resDept] = await Promise.all([
+      const [resCls, resDept] = await Promise.allSettled([
         classService.getAll(),
         departmentService.getAll(),
       ]);
-      setClasses(resCls.data.data || []);
-      setDepartments(resDept.data.data || []);
+
+      if (resCls.status === 'fulfilled') {
+        setClasses(resCls.value?.data?.data || []);
+      } else {
+        console.error('Lỗi khi tải danh sách lớp:', resCls.reason);
+        toast.error(resCls.reason?.response?.data?.message || 'Lỗi khi tải dữ liệu lớp học');
+      }
+
+      if (resDept.status === 'fulfilled') {
+        setDepartments(resDept.value?.data?.data || []);
+      }
+
       if (isAcademicStaff && staffDeptId) {
         setSelectedDept(String(staffDeptId));
       }
-    } catch {
+    } catch (err) {
+      console.error('Lỗi khi tải dữ liệu lớp học:', err);
       toast.error('Lỗi khi tải dữ liệu lớp học');
     } finally {
       setLoading(false);
@@ -123,11 +134,14 @@ export default function ClassesPage() {
   };
 
   const filtered = classes.filter((c) => {
-    const matchDept = selectedDept ? c.department?.id === parseInt(selectedDept) : true;
+    const matchDept = isAcademicStaff
+      ? true
+      : (selectedDept ? c.department?.id === parseInt(selectedDept) : true);
+    const deptName = c.department?.name || (isAcademicStaff ? staffDeptName : '') || '';
     const matchSearch = search
       ? c.code?.toLowerCase().includes(search.toLowerCase()) ||
         c.name?.toLowerCase().includes(search.toLowerCase()) ||
-        c.department?.name?.toLowerCase().includes(search.toLowerCase())
+        deptName.toLowerCase().includes(search.toLowerCase())
       : true;
     return matchDept && matchSearch;
   });
@@ -267,7 +281,7 @@ export default function ClassesPage() {
                       </span>
                     </td>
                     <td data-label="Tên lớp" style={{ fontWeight: 600, color: 'var(--text-main)' }}>{c.name}</td>
-                    <td data-label="Khoa" style={{ color: 'var(--text-secondary)' }}>{c.department?.name || '—'}</td>
+                    <td data-label="Khoa" style={{ color: 'var(--text-secondary)' }}>{c.department?.name || (isAcademicStaff ? staffDeptName : '—')}</td>
                     <td data-label="Niên khóa"><span className="badge badge-info">{c.academicYear}</span>
                     </td>
                     <td data-label="Trạng thái"><span className={`badge ${c.isActive ? 'badge-success' : 'badge-danger'}`}>

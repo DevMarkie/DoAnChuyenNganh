@@ -1,0 +1,1087 @@
+[
+  {
+    "index": 0,
+    "caption": "Hình 1. Sơ đồ Use Case tổng quan toàn hệ thống (Bốn tác nhân chính và các nhóm chức năng lớn)",
+    "rid": "rId8",
+    "target": "media/image2.png",
+    "file": "scripts/extracted_images\\fig_000_image2.png"
+  },
+  {
+    "index": 1,
+    "caption": "Hình 2. Sơ đồ Use Case phân hệ Quản trị viên hệ thống (System Administrator)",
+    "rid": "rId9",
+    "target": "media/image3.png",
+    "file": "scripts/extracted_images\\fig_001_image3.png"
+  },
+  {
+    "index": 2,
+    "caption": "Hình 3. Sơ đồ Use Case phân hệ Cán bộ Phòng Đào tạo (Academic Affairs Officer)",
+    "rid": "rId10",
+    "target": "media/image4.png",
+    "file": "scripts/extracted_images\\fig_002_image4.png"
+  },
+  {
+    "index": 3,
+    "caption": "Hình 4. Sơ đồ Use Case phân hệ Giảng viên (Lecturer)",
+    "rid": "rId11",
+    "target": "media/image5.png",
+    "file": "scripts/extracted_images\\fig_003_image5.png"
+  },
+  {
+    "index": 4,
+    "caption": "Hình 5. Sơ đồ Use Case phân hệ Sinh viên (Student)",
+    "rid": "rId12",
+    "target": "media/image6.png",
+    "file": "scripts/extracted_images\\fig_004_image6.png"
+  },
+  {
+    "index": 5,
+    "caption": "Hình 6. Sơ đồ Thực thể Quan hệ CSDL Tổng quan (Core Conceptual & Relational ERD - 15 Thực thể Trọng tâm)",
+    "rid": "rId13",
+    "target": "media/image7.png",
+    "file": "scripts/extracted_images\\fig_005_image7.png"
+  },
+  {
+    "index": 6,
+    "caption": "Hình 7. Lược đồ CSDL Phân hệ 1: Hệ thống, Người dùng & Phân quyền (6 Bảng quan hệ)",
+    "rid": "rId14",
+    "target": "media/image8.png",
+    "file": "scripts/extracted_images\\fig_006_image8.png"
+  },
+  {
+    "index": 7,
+    "caption": "Hình 8. Lược đồ CSDL Phân hệ 2: Cơ cấu Học thuật & Khung Chương trình Đào tạo (9 Bảng quan hệ)",
+    "rid": "rId15",
+    "target": "media/image9.png",
+    "file": "scripts/extracted_images\\fig_007_image9.png"
+  },
+  {
+    "index": 8,
+    "caption": "Hình 9. Lược đồ CSDL Phân hệ 3: Hồ sơ Người học, Giảng viên & Rèn luyện (6 Bảng quan hệ)",
+    "rid": "rId16",
+    "target": "media/image10.png",
+    "file": "scripts/extracted_images\\fig_008_image10.png"
+  },
+  {
+    "index": 9,
+    "caption": "Hình 10. Lược đồ CSDL Phân hệ 4: Lớp học phần, Đợt ĐKHP & Xếp lịch Ma trận (5 Bảng quan hệ)",
+    "rid": "rId17",
+    "target": "media/image11.png",
+    "file": "scripts/extracted_images\\fig_009_image11.png"
+  },
+  {
+    "index": 10,
+    "caption": "Hình 11. Lược đồ CSDL Phân hệ 5: Đăng ký Tín chỉ, Sổ điểm & Điểm danh Thời gian thực (5 Bảng quan hệ)",
+    "rid": "rId18",
+    "target": "media/image12.png",
+    "file": "scripts/extracted_images\\fig_010_image12.png"
+  },
+  {
+    "index": 11,
+    "caption": "Hình 12. Lược đồ CSDL Phân hệ 6: Tài chính, Định mức Học phí & Công nợ (4 Bảng quan hệ)",
+    "rid": "rId19",
+    "target": "media/image13.png",
+    "file": "scripts/extracted_images\\fig_011_image13.png"
+  },
+  {
+    "index": 12,
+    "caption": "Hình 13. Lược đồ CSDL Phân hệ 7: Khảo thí, Kiểm toán Điểm & Xét tốt nghiệp TT08 (6 Bảng quan hệ)",
+    "rid": "rId20",
+    "target": "media/image14.png",
+    "file": "scripts/extracted_images\\fig_012_image14.png"
+  },
+  {
+    "index": 13,
+    "caption": "Hình 14. Biểu đồ hoạt động - Đăng nhập hệ thống",
+    "rid": "rId21",
+    "target": "media/image15.png",
+    "file": "scripts/extracted_images\\fig_013_image15.png"
+  },
+  {
+    "index": 14,
+    "caption": "Hình 15. Biểu đồ hoạt động - Đổi mật khẩu",
+    "rid": "rId22",
+    "target": "media/image16.png",
+    "file": "scripts/extracted_images\\fig_014_image16.png"
+  },
+  {
+    "index": 15,
+    "caption": "Hình 16. Biểu đồ hoạt động - Thêm mới Sinh viên",
+    "rid": "rId23",
+    "target": "media/image17.png",
+    "file": "scripts/extracted_images\\fig_015_image17.png"
+  },
+  {
+    "index": 16,
+    "caption": "Hình 17. Biểu đồ hoạt động - Quản lý hồ sơ Sinh viên",
+    "rid": "rId24",
+    "target": "media/image18.png",
+    "file": "scripts/extracted_images\\fig_016_image18.png"
+  },
+  {
+    "index": 17,
+    "caption": "Hình 18. Biểu đồ hoạt động - Khoa & Lớp sinh hoạt",
+    "rid": "rId25",
+    "target": "media/image19.png",
+    "file": "scripts/extracted_images\\fig_017_image19.png"
+  },
+  {
+    "index": 18,
+    "caption": "Hình 19. Biểu đồ hoạt động - Quản lý Giảng viên",
+    "rid": "rId26",
+    "target": "media/image20.png",
+    "file": "scripts/extracted_images\\fig_018_image20.png"
+  },
+  {
+    "index": 19,
+    "caption": "Hình 20. Biểu đồ hoạt động - Quản lý Môn học",
+    "rid": "rId27",
+    "target": "media/image21.png",
+    "file": "scripts/extracted_images\\fig_019_image21.png"
+  },
+  {
+    "index": 20,
+    "caption": "Hình 21. Biểu đồ hoạt động - Cấu hình Học kỳ",
+    "rid": "rId28",
+    "target": "media/image22.png",
+    "file": "scripts/extracted_images\\fig_020_image22.png"
+  },
+  {
+    "index": 21,
+    "caption": "Hình 22. Biểu đồ hoạt động - Mở lớp Học phần",
+    "rid": "rId29",
+    "target": "media/image23.png",
+    "file": "scripts/extracted_images\\fig_021_image23.png"
+  },
+  {
+    "index": 22,
+    "caption": "Hình 23. Biểu đồ hoạt động - Xếp Thời khóa biểu",
+    "rid": "rId30",
+    "target": "media/image24.png",
+    "file": "scripts/extracted_images\\fig_022_image24.png"
+  },
+  {
+    "index": 23,
+    "caption": "Hình 24. Biểu đồ hoạt động - Đăng ký lớp Học phần",
+    "rid": "rId31",
+    "target": "media/image25.png",
+    "file": "scripts/extracted_images\\fig_023_image25.png"
+  },
+  {
+    "index": 24,
+    "caption": "Hình 25. Biểu đồ hoạt động - Hủy đăng ký Học phần",
+    "rid": "rId32",
+    "target": "media/image26.png",
+    "file": "scripts/extracted_images\\fig_024_image26.png"
+  },
+  {
+    "index": 25,
+    "caption": "Hình 26. Biểu đồ hoạt động - Nhập điểm thành phần",
+    "rid": "rId33",
+    "target": "media/image27.png",
+    "file": "scripts/extracted_images\\fig_025_image27.png"
+  },
+  {
+    "index": 26,
+    "caption": "Hình 27. Biểu đồ hoạt động - Chốt bảng điểm & Cửa sổ 7 ngày",
+    "rid": "rId34",
+    "target": "media/image28.png",
+    "file": "scripts/extracted_images\\fig_026_image28.png"
+  },
+  {
+    "index": 27,
+    "caption": "Hình 28. Biểu đồ hoạt động - Bảng điểm & Điểm CPA",
+    "rid": "rId35",
+    "target": "media/image29.png",
+    "file": "scripts/extracted_images\\fig_027_image29.png"
+  },
+  {
+    "index": 28,
+    "caption": "Hình 29. Biểu đồ hoạt động - Báo cáo Thống kê & Dashboard",
+    "rid": "rId36",
+    "target": "media/image30.png",
+    "file": "scripts/extracted_images\\fig_028_image30.png"
+  },
+  {
+    "index": 29,
+    "caption": "Hình 30. Biểu đồ hoạt động - Quản lý & Thu học phí",
+    "rid": "rId37",
+    "target": "media/image31.png",
+    "file": "scripts/extracted_images\\fig_029_image31.png"
+  },
+  {
+    "index": 30,
+    "caption": "Hình 31. Biểu đồ hoạt động - Điểm danh lớp học & Check-in trực tiếp",
+    "rid": "rId38",
+    "target": "media/image32.png",
+    "file": "scripts/extracted_images\\fig_030_image32.png"
+  },
+  {
+    "index": 31,
+    "caption": "Hình 32. Biểu đồ hoạt động - Khảo thí & Quản lý phòng thi",
+    "rid": "rId39",
+    "target": "media/image33.png",
+    "file": "scripts/extracted_images\\fig_031_image33.png"
+  },
+  {
+    "index": 32,
+    "caption": "Hình 33. Biểu đồ hoạt động - Quy trình Đính chính điểm 3 cấp",
+    "rid": "rId40",
+    "target": "media/image34.png",
+    "file": "scripts/extracted_images\\fig_032_image34.png"
+  },
+  {
+    "index": 33,
+    "caption": "Hình 34. Biểu đồ hoạt động - Thẩm định chuẩn tốt nghiệp (Degree Audit)",
+    "rid": "rId41",
+    "target": "media/image35.png",
+    "file": "scripts/extracted_images\\fig_033_image35.png"
+  },
+  {
+    "index": 34,
+    "caption": "Hình 35. Biểu đồ hoạt động - Quản lý Nhân sự Đào tạo",
+    "rid": "rId42",
+    "target": "media/image36.png",
+    "file": "scripts/extracted_images\\fig_034_image36.png"
+  },
+  {
+    "index": 35,
+    "caption": "Hình 36. Biểu đồ hoạt động - Đặt lại Mật khẩu Hàng loạt",
+    "rid": "rId43",
+    "target": "media/image37.png",
+    "file": "scripts/extracted_images\\fig_035_image37.png"
+  },
+  {
+    "index": 36,
+    "caption": "Hình 37. Biểu đồ lớp phân tích (BCE) - Đăng nhập hệ thống & Cấp phát JWT kép",
+    "rid": "rId44",
+    "target": "media/image38.png",
+    "file": "scripts/extracted_images\\fig_036_image38.png"
+  },
+  {
+    "index": 37,
+    "caption": "Hình 38. Biểu đồ lớp phân tích (BCE) - Đổi mật khẩu tài khoản cá nhân",
+    "rid": "rId45",
+    "target": "media/image39.png",
+    "file": "scripts/extracted_images\\fig_037_image39.png"
+  },
+  {
+    "index": 38,
+    "caption": "Hình 39. Biểu đồ lớp phân tích (BCE) - Thêm mới Sinh viên & Cấp tài khoản tự động",
+    "rid": "rId46",
+    "target": "media/image40.png",
+    "file": "scripts/extracted_images\\fig_038_image40.png"
+  },
+  {
+    "index": 39,
+    "caption": "Hình 40. Biểu đồ lớp phân tích (BCE) - Quản lý Hồ sơ Sinh viên & Đình chỉ đào tạo",
+    "rid": "rId47",
+    "target": "media/image41.png",
+    "file": "scripts/extracted_images\\fig_039_image41.png"
+  },
+  {
+    "index": 40,
+    "caption": "Hình 41. Biểu đồ lớp phân tích (BCE) - Cơ cấu Đào tạo (Khoa, Ngành, Lớp sinh hoạt)",
+    "rid": "rId48",
+    "target": "media/image42.png",
+    "file": "scripts/extracted_images\\fig_040_image42.png"
+  },
+  {
+    "index": 41,
+    "caption": "Hình 42. Biểu đồ lớp phân tích (BCE) - Quản lý Giảng viên & Phân công giảng dạy",
+    "rid": "rId49",
+    "target": "media/image43.png",
+    "file": "scripts/extracted_images\\fig_041_image43.png"
+  },
+  {
+    "index": 42,
+    "caption": "Hình 43. Biểu đồ lớp phân tích (BCE) - Quản lý Môn học, Tín chỉ & Môn tiên quyết",
+    "rid": "rId50",
+    "target": "media/image44.png",
+    "file": "scripts/extracted_images\\fig_042_image44.png"
+  },
+  {
+    "index": 43,
+    "caption": "Hình 44. Biểu đồ lớp phân tích (BCE) - Cấu hình Học kỳ & Kích hoạt đợt đào tạo",
+    "rid": "rId51",
+    "target": "media/image45.png",
+    "file": "scripts/extracted_images\\fig_043_image45.png"
+  },
+  {
+    "index": 44,
+    "caption": "Hình 45. Biểu đồ lớp phân tích (BCE) - Mở mới & Điều phối Lớp học phần",
+    "rid": "rId52",
+    "target": "media/image46.png",
+    "file": "scripts/extracted_images\\fig_044_image46.png"
+  },
+  {
+    "index": 45,
+    "caption": "Hình 46. Biểu đồ lớp phân tích (BCE) - Xếp Thời khóa biểu & Chống va chạm phòng/giờ",
+    "rid": "rId53",
+    "target": "media/image47.png",
+    "file": "scripts/extracted_images\\fig_045_image47.png"
+  },
+  {
+    "index": 46,
+    "caption": "Hình 47. Biểu đồ lớp phân tích (BCE) - Sinh viên Đăng ký Tín chỉ (Khóa phân tán Redis)",
+    "rid": "rId54",
+    "target": "media/image48.png",
+    "file": "scripts/extracted_images\\fig_046_image48.png"
+  },
+  {
+    "index": 47,
+    "caption": "Hình 48. Biểu đồ lớp phân tích (BCE) - Hủy Đăng ký Học phần & Hoàn trả sĩ số",
+    "rid": "rId55",
+    "target": "media/image49.png",
+    "file": "scripts/extracted_images\\fig_047_image49.png"
+  },
+  {
+    "index": 48,
+    "caption": "Hình 49. Biểu đồ lớp phân tích (BCE) - Giảng viên Nhập điểm thành phần & Tính GPA",
+    "rid": "rId56",
+    "target": "media/image50.png",
+    "file": "scripts/extracted_images\\fig_048_image50.png"
+  },
+  {
+    "index": 49,
+    "caption": "Hình 50. Biểu đồ lớp phân tích (BCE) - Chốt Sổ điểm & Cửa sổ ân hạn sửa điểm 7 ngày",
+    "rid": "rId57",
+    "target": "media/image51.png",
+    "file": "scripts/extracted_images\\fig_049_image51.png"
+  },
+  {
+    "index": 50,
+    "caption": "Hình 51. Biểu đồ lớp phân tích (BCE) - Tra cứu Bảng điểm, Tiến độ CTĐT & Điểm CPA",
+    "rid": "rId58",
+    "target": "media/image52.png",
+    "file": "scripts/extracted_images\\fig_050_image52.png"
+  },
+  {
+    "index": 51,
+    "caption": "Hình 52. Biểu đồ lớp phân tích (BCE) - Báo cáo Thống kê Toàn trường, Cảnh báo học vụ",
+    "rid": "rId59",
+    "target": "media/image53.png",
+    "file": "scripts/extracted_images\\fig_051_image53.png"
+  },
+  {
+    "index": 52,
+    "caption": "Hình 53. Biểu đồ lớp phân tích (BCE) - Quản lý Tài chính & Thu học phí theo tín chỉ",
+    "rid": "rId60",
+    "target": "media/image54.png",
+    "file": "scripts/extracted_images\\fig_052_image54.png"
+  },
+  {
+    "index": 53,
+    "caption": "Hình 54. Biểu đồ lớp phân tích (BCE) - Điểm danh Lớp học Trực tiếp qua mã PIN 6 số",
+    "rid": "rId61",
+    "target": "media/image55.png",
+    "file": "scripts/extracted_images\\fig_053_image55.png"
+  },
+  {
+    "index": 54,
+    "caption": "Hình 55. Biểu đồ lớp phân tích (BCE) - Khảo thí & Tự động phân bổ phòng thi",
+    "rid": "rId62",
+    "target": "media/image56.png",
+    "file": "scripts/extracted_images\\fig_054_image56.png"
+  },
+  {
+    "index": 55,
+    "caption": "Hình 56. Biểu đồ lớp phân tích (BCE) - Thẩm định Quy trình Đính chính điểm 3 cấp",
+    "rid": "rId63",
+    "target": "media/image57.png",
+    "file": "scripts/extracted_images\\fig_055_image57.png"
+  },
+  {
+    "index": 56,
+    "caption": "Hình 57. Biểu đồ lớp phân tích (BCE) - Thẩm định Chuẩn tốt nghiệp đa tiêu chí TT08",
+    "rid": "rId64",
+    "target": "media/image58.png",
+    "file": "scripts/extracted_images\\fig_056_image58.png"
+  },
+  {
+    "index": 57,
+    "caption": "Hình 58. Biểu đồ lớp phân tích (BCE) - Quản lý Nhân sự Đào tạo & Phân quyền cán bộ",
+    "rid": "rId65",
+    "target": "media/image59.png",
+    "file": "scripts/extracted_images\\fig_057_image59.png"
+  },
+  {
+    "index": 58,
+    "caption": "Hình 59. Biểu đồ lớp phân tích (BCE) - Đặt lại Mật khẩu Hàng loạt (ddmmyyyya@)",
+    "rid": "rId66",
+    "target": "media/image60.png",
+    "file": "scripts/extracted_images\\fig_058_image60.png"
+  },
+  {
+    "index": 59,
+    "caption": "Hình 60. Biểu đồ tuần tự - Đăng nhập hệ thống (Dual-Token JWT & Role Routing)",
+    "rid": "rId67",
+    "target": "media/image61.png",
+    "file": "scripts/extracted_images\\fig_059_image61.png"
+  },
+  {
+    "index": 60,
+    "caption": "Hình 61. Biểu đồ tuần tự - Đổi mật khẩu tài khoản cá nhân",
+    "rid": "rId68",
+    "target": "media/image62.png",
+    "file": "scripts/extracted_images\\fig_060_image62.png"
+  },
+  {
+    "index": 61,
+    "caption": "Hình 62. Biểu đồ tuần tự - Thêm mới Sinh viên & Cấp tài khoản tự động",
+    "rid": "rId69",
+    "target": "media/image63.png",
+    "file": "scripts/extracted_images\\fig_061_image63.png"
+  },
+  {
+    "index": 62,
+    "caption": "Hình 63. Biểu đồ tuần tự - Quản lý hồ sơ Sinh viên & Đình chỉ đào tạo",
+    "rid": "rId70",
+    "target": "media/image64.png",
+    "file": "scripts/extracted_images\\fig_062_image64.png"
+  },
+  {
+    "index": 63,
+    "caption": "Hình 64. Biểu đồ tuần tự - Quản lý Cơ cấu Đào tạo (Khoa, Ngành & Lớp sinh hoạt)",
+    "rid": "rId71",
+    "target": "media/image65.png",
+    "file": "scripts/extracted_images\\fig_063_image65.png"
+  },
+  {
+    "index": 64,
+    "caption": "Hình 65. Biểu đồ tuần tự - Quản lý Giảng viên & Phân công đào tạo",
+    "rid": "rId72",
+    "target": "media/image66.png",
+    "file": "scripts/extracted_images\\fig_064_image66.png"
+  },
+  {
+    "index": 65,
+    "caption": "Hình 66. Biểu đồ tuần tự - Quản lý Môn học, Tín chỉ & Môn tiên quyết DAG",
+    "rid": "rId73",
+    "target": "media/image67.png",
+    "file": "scripts/extracted_images\\fig_065_image67.png"
+  },
+  {
+    "index": 66,
+    "caption": "Hình 67. Biểu đồ tuần tự - Cấu hình Học kỳ & Kích hoạt đợt đào tạo (Redis Evict)",
+    "rid": "rId74",
+    "target": "media/image68.png",
+    "file": "scripts/extracted_images\\fig_066_image68.png"
+  },
+  {
+    "index": 67,
+    "caption": "Hình 68. Biểu đồ tuần tự - Mở mới & Điều phối Lớp học phần",
+    "rid": "rId75",
+    "target": "media/image69.png",
+    "file": "scripts/extracted_images\\fig_067_image69.png"
+  },
+  {
+    "index": 68,
+    "caption": "Hình 69. Biểu đồ tuần tự - Xếp Thời khóa biểu & Chống va chạm phòng/giờ",
+    "rid": "rId76",
+    "target": "media/image70.png",
+    "file": "scripts/extracted_images\\fig_068_image70.png"
+  },
+  {
+    "index": 69,
+    "caption": "Hình 70. Biểu đồ tuần tự - Sinh viên Đăng ký Tín chỉ (Redis Sentinel Lock & Atomic DB)",
+    "rid": "rId77",
+    "target": "media/image71.png",
+    "file": "scripts/extracted_images\\fig_069_image71.png"
+  },
+  {
+    "index": 70,
+    "caption": "Hình 71. Biểu đồ tuần tự - Hủy đăng ký Học phần & Hoàn trả sĩ số lớp",
+    "rid": "rId78",
+    "target": "media/image72.png",
+    "file": "scripts/extracted_images\\fig_070_image72.png"
+  },
+  {
+    "index": 71,
+    "caption": "Hình 72. Biểu đồ tuần tự - Giảng viên Nhập điểm thành phần & Tính GPA (Batch Update)",
+    "rid": "rId79",
+    "target": "media/image73.png",
+    "file": "scripts/extracted_images\\fig_071_image73.png"
+  },
+  {
+    "index": 72,
+    "caption": "Hình 73. Biểu đồ tuần tự - Chốt sổ điểm & Cửa sổ ân hạn sửa điểm 7 ngày",
+    "rid": "rId80",
+    "target": "media/image74.png",
+    "file": "scripts/extracted_images\\fig_072_image74.png"
+  },
+  {
+    "index": 73,
+    "caption": "Hình 74. Biểu đồ tuần tự - Tra cứu Bảng điểm, Tiến độ CTĐT & Điểm CPA Thông tư 08",
+    "rid": "rId81",
+    "target": "media/image75.png",
+    "file": "scripts/extracted_images\\fig_073_image75.png"
+  },
+  {
+    "index": 74,
+    "caption": "Hình 75. Biểu đồ tuần tự - Báo cáo Thống kê Toàn trường & Cảnh báo học vụ",
+    "rid": "rId82",
+    "target": "media/image76.png",
+    "file": "scripts/extracted_images\\fig_074_image76.png"
+  },
+  {
+    "index": 75,
+    "caption": "Hình 76. Biểu đồ tuần tự - Quản lý Tài chính & Thu học phí theo tín chỉ",
+    "rid": "rId83",
+    "target": "media/image77.png",
+    "file": "scripts/extracted_images\\fig_075_image77.png"
+  },
+  {
+    "index": 76,
+    "caption": "Hình 77. Biểu đồ tuần tự - Điểm danh lớp học trực tiếp qua mã PIN 6 số (Live Attendance)",
+    "rid": "rId84",
+    "target": "media/image78.png",
+    "file": "scripts/extracted_images\\fig_076_image78.png"
+  },
+  {
+    "index": 77,
+    "caption": "Hình 78. Biểu đồ tuần tự - Khảo thí & Tự động phân bổ phòng thi (Exam Room Allocation)",
+    "rid": "rId85",
+    "target": "media/image79.png",
+    "file": "scripts/extracted_images\\fig_077_image79.png"
+  },
+  {
+    "index": 78,
+    "caption": "Hình 79. Biểu đồ tuần tự - Thẩm định Quy trình Đính chính điểm 3 cấp (Three-Tier Amendment)",
+    "rid": "rId86",
+    "target": "media/image80.png",
+    "file": "scripts/extracted_images\\fig_078_image80.png"
+  },
+  {
+    "index": 79,
+    "caption": "Hình 80. Biểu đồ tuần tự - Thẩm định chuẩn tốt nghiệp đa tiêu chí TT08 (Degree Audit)",
+    "rid": "rId87",
+    "target": "media/image81.png",
+    "file": "scripts/extracted_images\\fig_079_image81.png"
+  },
+  {
+    "index": 80,
+    "caption": "Hình 81. Biểu đồ tuần tự - Quản lý Nhân sự Đào tạo & Phân quyền cán bộ Scoped RBAC",
+    "rid": "rId88",
+    "target": "media/image82.png",
+    "file": "scripts/extracted_images\\fig_080_image82.png"
+  },
+  {
+    "index": 81,
+    "caption": "Hình 82. Biểu đồ tuần tự - Đặt lại Mật khẩu Hàng loạt (Bulk Password Reset & DOB Normalization)",
+    "rid": "rId89",
+    "target": "media/image83.png",
+    "file": "scripts/extracted_images\\fig_081_image83.png"
+  },
+  {
+    "index": 82,
+    "caption": "Hình 83. Trang cổng lựa chọn phân hệ trung tâm (Portal Hub - Lựa chọn Sinh viên / Giảng viên / Quản trị)",
+    "rid": "rId90",
+    "target": "media/image84.png",
+    "file": "scripts/extracted_images\\fig_082_image84.png"
+  },
+  {
+    "index": 83,
+    "caption": "Hình 84. Màn hình đăng nhập chuyên biệt phân hệ Sinh viên (Form kính mờ kèm nút ẩn/hiện mật khẩu)",
+    "rid": "rId91",
+    "target": "media/image85.png",
+    "file": "scripts/extracted_images\\fig_083_image85.png"
+  },
+  {
+    "index": 84,
+    "caption": "Hình 85. Giao diện đăng nhập phân hệ Chuyên trách (Phòng Đào tạo / Giảng viên / Quản trị)",
+    "rid": "rId92",
+    "target": "media/image86.png",
+    "file": "scripts/extracted_images\\fig_084_image86.png"
+  },
+  {
+    "index": 85,
+    "caption": "Hình 86. Rào chắn giao diện bắt buộc đổi mật khẩu lần đầu (ForcePasswordChangeModal kèm thanh đo độ mạnh)",
+    "rid": "rId93",
+    "target": "media/image87.png",
+    "file": "scripts/extracted_images\\fig_085_image87.png"
+  },
+  {
+    "index": 86,
+    "caption": "Hình 87. Bảng điều khiển Sinh viên - Tổng hợp chỉ số CPA/GPA, tín chỉ tích lũy và lịch học",
+    "rid": "rId94",
+    "target": "media/image88.png",
+    "file": "scripts/extracted_images\\fig_086_image88.png"
+  },
+  {
+    "index": 87,
+    "caption": "Hình 88. Màn hình Đăng ký học phần trực tuyến - Bộ lọc môn học, danh sách lớp mở và giỏ môn",
+    "rid": "rId95",
+    "target": "media/image89.png",
+    "file": "scripts/extracted_images\\fig_087_image89.png"
+  },
+  {
+    "index": 88,
+    "caption": "Hình 89. Thời khóa biểu sinh viên dạng lưới ma trận tuần 7 ngày x 12 tiết",
+    "rid": "rId96",
+    "target": "media/image90.png",
+    "file": "scripts/extracted_images\\fig_088_image90.png"
+  },
+  {
+    "index": 89,
+    "caption": "Hình 90. Bảng điểm chi tiết kết quả học tập và theo dõi điểm CPA tích lũy qua từng học kỳ",
+    "rid": "rId97",
+    "target": "media/image91.png",
+    "file": "scripts/extracted_images\\fig_089_image91.png"
+  },
+  {
+    "index": 90,
+    "caption": "Hình 91. Bản đồ Lộ trình Khung chương trình đào tạo tương tác (Curriculum Roadmap & Prerequisite Tree)",
+    "rid": "rId98",
+    "target": "media/image92.png",
+    "file": "scripts/extracted_images\\fig_090_image92.png"
+  },
+  {
+    "index": 91,
+    "caption": "Hình 92. Danh sách Lớp học phần đã đăng ký và bảng theo dõi nghĩa vụ học phí cá nhân",
+    "rid": "rId99",
+    "target": "media/image93.png",
+    "file": "scripts/extracted_images\\fig_091_image93.png"
+  },
+  {
+    "index": 92,
+    "caption": "Hình 93. Hồ sơ thông tin cá nhân, thẻ sinh viên điện tử và trạng thái học vụ",
+    "rid": "rId100",
+    "target": "media/image94.png",
+    "file": "scripts/extracted_images\\fig_092_image94.png"
+  },
+  {
+    "index": 93,
+    "caption": "Hình 94. Bảng điều khiển Giảng viên - Thống kê lớp phụ trách, sĩ số và lịch dạy sắp tới",
+    "rid": "rId101",
+    "target": "media/image95.png",
+    "file": "scripts/extracted_images\\fig_093_image95.png"
+  },
+  {
+    "index": 94,
+    "caption": "Hình 95. Danh sách Lớp học phần giảng dạy và quản lý sinh viên",
+    "rid": "rId102",
+    "target": "media/image96.png",
+    "file": "scripts/extracted_images\\fig_094_image96.png"
+  },
+  {
+    "index": 95,
+    "caption": "Hình 96. Sổ điểm điện tử - Nhập điểm thành phần, tự động tính tổng kết và quy trình khóa sổ",
+    "rid": "rId103",
+    "target": "media/image97.png",
+    "file": "scripts/extracted_images\\fig_095_image97.png"
+  },
+  {
+    "index": 96,
+    "caption": "Hình 97. Thời khóa biểu giảng dạy cá nhân của Giảng viên dạng lưới tuần",
+    "rid": "rId102",
+    "target": "media/image96.png",
+    "file": "scripts/extracted_images\\fig_096_image96.png"
+  },
+  {
+    "index": 97,
+    "caption": "Hình 98. Hồ sơ thông tin Giảng viên, học vị và bộ môn chuyên môn chủ quản",
+    "rid": "rId101",
+    "target": "media/image95.png",
+    "file": "scripts/extracted_images\\fig_097_image95.png"
+  },
+  {
+    "index": 98,
+    "caption": "Hình 99. Cửa sổ Điểm danh Lớp học Trực tiếp với Mã PIN Động 6 Số (/lecturer/schedule)",
+    "rid": "rId104",
+    "target": "media/image98.png",
+    "file": "scripts/extracted_images\\fig_098_image98.png"
+  },
+  {
+    "index": 99,
+    "caption": "Hình 100. Bảng điều khiển Quản trị viên - Thống kê và biểu đồ số liệu KPI toàn trường",
+    "rid": "rId105",
+    "target": "media/image99.png",
+    "file": "scripts/extracted_images\\fig_099_image99.png"
+  },
+  {
+    "index": 100,
+    "caption": "Hình 101. Bảng điều khiển Chuyên trách Phòng Đào tạo (Academic Dashboard)",
+    "rid": "rId106",
+    "target": "media/image100.png",
+    "file": "scripts/extracted_images\\fig_100_image100.png"
+  },
+  {
+    "index": 101,
+    "caption": "Hình 102. Quản lý Hồ sơ Sinh viên - Tìm kiếm đa tiêu chí, phân trang và thao tác nghiệp vụ",
+    "rid": "rId107",
+    "target": "media/image101.png",
+    "file": "scripts/extracted_images\\fig_101_image101.png"
+  },
+  {
+    "index": 102,
+    "caption": "Hình 103. Quản lý Lớp học phần Đào tạo - Sĩ số đăng ký và trạng thái mở/đóng",
+    "rid": "rId108",
+    "target": "media/image102.png",
+    "file": "scripts/extracted_images\\fig_102_image102.png"
+  },
+  {
+    "index": 103,
+    "caption": "Hình 104. Bộ lọc tìm kiếm nâng cao và điều phối lớp học phần",
+    "rid": "rId108",
+    "target": "media/image102.png",
+    "file": "scripts/extracted_images\\fig_103_image102.png"
+  },
+  {
+    "index": 104,
+    "caption": "Hình 105. Xếp Thời khóa biểu dạng ma trận tuần có cơ chế tự động phát hiện xung đột",
+    "rid": "rId106",
+    "target": "media/image100.png",
+    "file": "scripts/extracted_images\\fig_104_image100.png"
+  },
+  {
+    "index": 105,
+    "caption": "Hình 106. Sổ điểm Quản trị toàn trường và giám sát tiến độ nhập điểm",
+    "rid": "rId109",
+    "target": "media/image103.png",
+    "file": "scripts/extracted_images\\fig_105_image103.png"
+  },
+  {
+    "index": 106,
+    "caption": "Hình 107. Danh sách Cảnh báo học vụ tự động theo 3 mức độ (CPA và quy chế học vụ)",
+    "rid": "rId110",
+    "target": "media/image104.png",
+    "file": "scripts/extracted_images\\fig_106_image104.png"
+  },
+  {
+    "index": 107,
+    "caption": "Hình 108. Quản lý Cơ cấu Tổ chức Khoa / Viện chuyên ngành trong trường đại học",
+    "rid": "rId111",
+    "target": "media/image105.png",
+    "file": "scripts/extracted_images\\fig_107_image105.png"
+  },
+  {
+    "index": 108,
+    "caption": "Hình 109. Quản lý Danh mục Lớp sinh hoạt và Niên khóa đào tạo",
+    "rid": "rId112",
+    "target": "media/image106.png",
+    "file": "scripts/extracted_images\\fig_108_image106.png"
+  },
+  {
+    "index": 109,
+    "caption": "Hình 110. Quản trị Danh mục Môn học, cấu hình số tín chỉ và môn học tiên quyết",
+    "rid": "rId113",
+    "target": "media/image107.png",
+    "file": "scripts/extracted_images\\fig_109_image107.png"
+  },
+  {
+    "index": 110,
+    "caption": "Hình 111. Quản lý Học kỳ và Thiết lập Học kỳ hiện tại toàn trường",
+    "rid": "rId114",
+    "target": "media/image108.png",
+    "file": "scripts/extracted_images\\fig_110_image108.png"
+  },
+  {
+    "index": 111,
+    "caption": "Hình 112. Quản lý Đội ngũ Giảng viên, phân cấp học vị và cấp phát tài khoản tự động",
+    "rid": "rId115",
+    "target": "media/image109.png",
+    "file": "scripts/extracted_images\\fig_111_image109.png"
+  },
+  {
+    "index": 112,
+    "caption": "Hình 113. Giao diện Phân hệ Quản trị Nhân sự & Chuyên viên Đào tạo (/admin/staffs)",
+    "rid": "rId116",
+    "target": "media/image110.png",
+    "file": "scripts/extracted_images\\fig_112_image110.png"
+  },
+  {
+    "index": 113,
+    "caption": "Hình 114. Giao diện Phân hệ Thu ngân & Quản lý Công nợ Học phí (/admin/tuition)",
+    "rid": "rId117",
+    "target": "media/image111.png",
+    "file": "scripts/extracted_images\\fig_113_image111.png"
+  },
+  {
+    "index": 114,
+    "caption": "Hình 115. Giao diện Phân hệ Khảo thí & Tổ chức Phòng thi Tự động (/academic/exam-rooms)",
+    "rid": "rId118",
+    "target": "media/image112.png",
+    "file": "scripts/extracted_images\\fig_114_image112.png"
+  },
+  {
+    "index": 115,
+    "caption": "Hình 116. Giao diện Phân hệ Thẩm định Đính chính Điểm 3 Cấp (/admin/grade-amendments)",
+    "rid": "rId119",
+    "target": "media/image113.png",
+    "file": "scripts/extracted_images\\fig_115_image113.png"
+  },
+  {
+    "index": 116,
+    "caption": "Hình 117. Giao diện Phân hệ Thẩm định Chuẩn Tốt nghiệp Đa Tiêu chí TT08 (/academic/graduation)",
+    "rid": "rId120",
+    "target": "media/image114.png",
+    "file": "scripts/extracted_images\\fig_116_image114.png"
+  },
+  {
+    "index": 117,
+    "caption": "Hình 118. Giao diện Phân hệ Điểm rèn luyện & Khen thưởng Kỷ luật (/admin/student-conduct)",
+    "rid": "rId121",
+    "target": "media/image115.png",
+    "file": "scripts/extracted_images\\fig_117_image115.png"
+  },
+  {
+    "index": 118,
+    "caption": "Hình 119. Quản trị Cấp lại Mật khẩu và Xử lý Yêu cầu An toàn thông tin",
+    "rid": "rId122",
+    "target": "media/image116.png",
+    "file": "scripts/extracted_images\\fig_118_image116.png"
+  },
+  {
+    "index": 119,
+    "caption": "Hình 120. Nhật ký Kiểm toán Điểm số Bất biến (Grade Audit Trail - Lưu vết minh bạch 100%)",
+    "rid": "rId123",
+    "target": "media/image117.png",
+    "file": "scripts/extracted_images\\fig_119_image117.png"
+  },
+  {
+    "index": 120,
+    "caption": "Hình 121. Phân hệ Tiếp nhận & Thẩm định Đơn Phúc khảo Điểm số Sinh viên",
+    "rid": "rId106",
+    "target": "media/image100.png",
+    "file": "scripts/extracted_images\\fig_120_image100.png"
+  },
+  {
+    "index": 121,
+    "caption": "Hình 122. Trợ lý Xếp lịch học thông minh (Smart Schedule Assistant Modal - Tự động đề xuất lịch)",
+    "rid": "rId99",
+    "target": "media/image93.png",
+    "file": "scripts/extracted_images\\fig_121_image93.png"
+  },
+  {
+    "index": 122,
+    "caption": "Hình 123. Modal Danh sách Sinh viên cùng Lớp học phần (Class Roster Modal)",
+    "rid": "rId124",
+    "target": "media/image118.png",
+    "file": "scripts/extracted_images\\fig_122_image118.png"
+  },
+  {
+    "index": 123,
+    "caption": "Hình 124. Wizard Nhập Hồ sơ Sinh viên Hàng loạt qua File Excel 2 Pha (Kiểm thử & Xem trước dữ liệu)",
+    "rid": "rId125",
+    "target": "media/image119.png",
+    "file": "scripts/extracted_images\\fig_123_image119.png"
+  },
+  {
+    "index": 124,
+    "caption": "Hình 125. Cửa sổ Thiết lập Đợt Đăng ký Tín chỉ Theo Khóa/Khoa (Registration Waves Modal)",
+    "rid": "rId126",
+    "target": "media/image120.png",
+    "file": "scripts/extracted_images\\fig_124_image120.png"
+  },
+  {
+    "index": 125,
+    "caption": "Hình 126. Bảng Điều khiển Trực quan Tải Đồng thời 100 Sinh viên Tranh chấp Sĩ số",
+    "rid": "rId127",
+    "target": "media/image121.png",
+    "file": "scripts/extracted_images\\fig_125_image121.png"
+  },
+  {
+    "index": 126,
+    "caption": "Hình 127. Giao diện Bảng điều khiển Quản trị viên ở chế độ Tối (Slate Dark Mode)",
+    "rid": "rId128",
+    "target": "media/image122.png",
+    "file": "scripts/extracted_images\\fig_126_image122.png"
+  },
+  {
+    "index": 127,
+    "caption": "Hình 127a. Giao diện Cổng sinh viên trên Máy tính bảng (Tablet iPad 768x1024 - Bố cục co giãn 2 cột)",
+    "rid": "rId129",
+    "target": "media/image123.png",
+    "file": "scripts/extracted_images\\fig_127_image123.png"
+  },
+  {
+    "index": 128,
+    "caption": "Hình 127b. Giao diện Cổng sinh viên trên Điện thoại di động (Smartphone iPhone 390x844 - Ngăn xếp dọc tối ưu vuốt chạm)",
+    "rid": "rId130",
+    "target": "media/image124.png",
+    "file": "scripts/extracted_images\\fig_128_image124.png"
+  },
+  {
+    "index": 129,
+    "caption": "Hình 127c. Không gian làm việc Giảng viên trên Máy tính bảng (Tablet 768x1024 - Quản lý lớp & Lịch giảng dạy)",
+    "rid": "rId131",
+    "target": "media/image125.png",
+    "file": "scripts/extracted_images\\fig_129_image125.png"
+  },
+  {
+    "index": 130,
+    "caption": "Hình 127d. Thời khóa biểu & Điểm danh PIN trên Điện thoại thông minh (Smartphone 390x844 - Thao tác một tay tại giảng đường)",
+    "rid": "rId132",
+    "target": "media/image126.png",
+    "file": "scripts/extracted_images\\fig_130_image126.png"
+  },
+  {
+    "index": 131,
+    "caption": "Hình 127e. Bảng điều khiển Quản trị viên trên Máy tính bảng (Tablet 768x1024 - Khung nhìn chỉ số KPI co giãn linh hoạt)",
+    "rid": "rId133",
+    "target": "media/image127.png",
+    "file": "scripts/extracted_images\\fig_131_image127.png"
+  },
+  {
+    "index": 132,
+    "caption": "Hình 127f. Bảng điều khiển Quản trị viên Chế độ Tối (Slate Dark Mode) trên Điện thoại di động (Smartphone 390x844)",
+    "rid": "rId134",
+    "target": "media/image128.png",
+    "file": "scripts/extracted_images\\fig_132_image128.png"
+  },
+  {
+    "index": 133,
+    "caption": "Hình 128. Minh chứng thực nghiệm hiển thị giao diện cổng sinh viên trên màn hình Smartphone (iPhone 14 Viewport 390x844)",
+    "rid": "rId135",
+    "target": "media/image129.png",
+    "file": "scripts/extracted_images\\fig_133_image129.png"
+  },
+  {
+    "index": 134,
+    "caption": "Hình 129. Minh chứng Terminal: Kết quả thực thi kiểm thử đơn vị Backend (Maven Surefire Runner - JUnit 5, 409 tests PASS, BUILD SUCCESS)",
+    "rid": "rId136",
+    "target": "media/image130.png",
+    "file": "scripts/extracted_images\\fig_134_image130.png"
+  },
+  {
+    "index": 135,
+    "caption": "Hình 130. Minh chứng Terminal: Kết quả thực thi kiểm thử giao diện Frontend (Vitest Runner - 21 test files, 106 tests PASS 100%)",
+    "rid": "rId137",
+    "target": "media/image131.png",
+    "file": "scripts/extracted_images\\fig_135_image131.png"
+  },
+  {
+    "index": 136,
+    "caption": "Hình 131. Minh chứng: Báo cáo độ phủ mã JaCoCo toàn diện (ảnh chụp index.html đo trên 168 lớp mã nguồn hiện tại, chạy ngày 2026-11-02)",
+    "rid": "rId138",
+    "target": "media/image132.png",
+    "file": "scripts/extracted_images\\fig_136_image132.png"
+  },
+  {
+    "index": 137,
+    "caption": "Hình 132. Minh chứng: Độ phủ hợp nhất Unit + Tích hợp (JaCoCo) - tổng 72% lệnh / 47% nhánh; gói com.sms.controller tăng từ 0% lên 25%",
+    "rid": "rId139",
+    "target": "media/image133.png",
+    "file": "scripts/extracted_images\\fig_137_image133.png"
+  },
+  {
+    "index": 138,
+    "caption": "Hình 133. Minh chứng: Độ phủ chi tiết từng lớp Controller khi chạy E2E (báo cáo gộp Unit + Tích hợp)",
+    "rid": "rId140",
+    "target": "media/image134.png",
+    "file": "scripts/extracted_images\\fig_138_image134.png"
+  },
+  {
+    "index": 139,
+    "caption": "Hình 134. Minh chứng Terminal: Kết quả thực thi bộ kiểm thử toàn diện Master Test Runner (run_tests.bat - Toàn bộ 15 kịch bản 5 tầng kiến trúc, >250 ca kiểm thử PASS 100%)",
+    "rid": "rId141",
+    "target": "media/image135.png",
+    "file": "scripts/extracted_images\\fig_139_image135.png"
+  },
+  {
+    "index": 140,
+    "caption": "Hình 135. Minh chứng Giao diện: Cổng chuyển đổi phân hệ SMS Portal Hub (Giao diện Sáng - Light Mode)",
+    "rid": "rId142",
+    "target": "media/image136.png",
+    "file": "scripts/extracted_images\\fig_140_image136.png"
+  },
+  {
+    "index": 141,
+    "caption": "Hình 136. Minh chứng Giao diện: Phân hệ Quản trị viên - Bảng điều khiển KPI toàn trường (Admin Dashboard)",
+    "rid": "rId143",
+    "target": "media/image137.png",
+    "file": "scripts/extracted_images\\fig_141_image137.png"
+  },
+  {
+    "index": 142,
+    "caption": "Hình 137. Minh chứng Giao diện: Phân hệ Quản trị viên - Danh mục quản trị môn học đào tạo",
+    "rid": "rId144",
+    "target": "media/image138.png",
+    "file": "scripts/extracted_images\\fig_142_image138.png"
+  },
+  {
+    "index": 143,
+    "caption": "Hình 138. Minh chứng Giao diện: Phân hệ Quản trị viên - Danh sách quản lý lớp học phần mở",
+    "rid": "rId145",
+    "target": "media/image139.png",
+    "file": "scripts/extracted_images\\fig_143_image139.png"
+  },
+  {
+    "index": 144,
+    "caption": "Hình 139. Minh chứng Giao diện: Phân hệ Đào tạo - Bảng điều khiển kế hoạch đào tạo toàn trường",
+    "rid": "rId146",
+    "target": "media/image140.png",
+    "file": "scripts/extracted_images\\fig_144_image140.png"
+  },
+  {
+    "index": 145,
+    "caption": "Hình 140. Minh chứng Giao diện: Phân hệ Đào tạo - Động cơ tự động xét tốt nghiệp Thông tư 08 (Degree Audit)",
+    "rid": "rId147",
+    "target": "media/image141.png",
+    "file": "scripts/extracted_images\\fig_145_image141.png"
+  },
+  {
+    "index": 146,
+    "caption": "Hình 141. Minh chứng Giao diện: Phân hệ Đào tạo - Quy trình phê duyệt đính chính điểm 3 cấp",
+    "rid": "rId148",
+    "target": "media/image142.png",
+    "file": "scripts/extracted_images\\fig_146_image142.png"
+  },
+  {
+    "index": 147,
+    "caption": "Hình 142. Minh chứng Giao diện: Phân hệ Giảng viên - Bảng điều khiển & lớp phụ trách (Lecturer Dashboard)",
+    "rid": "rId149",
+    "target": "media/image143.png",
+    "file": "scripts/extracted_images\\fig_147_image143.png"
+  },
+  {
+    "index": 148,
+    "caption": "Hình 143. Minh chứng Giao diện: Phân hệ Giảng viên - Lịch giảng dạy ma trận tuần thời gian thực",
+    "rid": "rId150",
+    "target": "media/image144.png",
+    "file": "scripts/extracted_images\\fig_148_image144.png"
+  },
+  {
+    "index": 149,
+    "caption": "Hình 144. Minh chứng Giao diện: Phân hệ Giảng viên - Sổ điểm điện tử 4 thành phần & cửa sổ khóa sổ 7 ngày",
+    "rid": "rId151",
+    "target": "media/image145.png",
+    "file": "scripts/extracted_images\\fig_149_image145.png"
+  },
+  {
+    "index": 150,
+    "caption": "Hình 145. Minh chứng Giao diện: Phân hệ Sinh viên - Cổng thông tin học tập cá nhân (Student Dashboard)",
+    "rid": "rId152",
+    "target": "media/image146.png",
+    "file": "scripts/extracted_images\\fig_150_image146.png"
+  },
+  {
+    "index": 151,
+    "caption": "Hình 146. Minh chứng Giao diện: Phân hệ Sinh viên - Cổng đăng ký học phần thông minh (Credit Enrollment)",
+    "rid": "rId153",
+    "target": "media/image147.png",
+    "file": "scripts/extracted_images\\fig_151_image147.png"
+  },
+  {
+    "index": 152,
+    "caption": "Hình 147. Minh chứng Giao diện: Phân hệ Sinh viên - Thời khóa biểu tuần cá nhân",
+    "rid": "rId154",
+    "target": "media/image148.png",
+    "file": "scripts/extracted_images\\fig_152_image148.png"
+  },
+  {
+    "index": 153,
+    "caption": "Hình 148. Minh chứng Giao diện: Phân hệ Sinh viên - Tra cứu bảng điểm tích lũy & xếp loại CPA/GPA",
+    "rid": "rId155",
+    "target": "media/image149.png",
+    "file": "scripts/extracted_images\\fig_153_image149.png"
+  },
+  {
+    "index": 154,
+    "caption": "Hình 149. Minh chứng Giao diện: Phân hệ Sinh viên - Bản đồ tiến độ CTĐT & Đồ thị tiên quyết DAG",
+    "rid": "rId156",
+    "target": "media/image150.png",
+    "file": "scripts/extracted_images\\fig_154_image150.png"
+  }
+]

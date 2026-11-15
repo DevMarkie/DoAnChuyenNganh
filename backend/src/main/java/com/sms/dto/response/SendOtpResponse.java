@@ -13,5 +13,4 @@ public class SendOtpResponse {
 
     private String message;
     private String maskedEmail;
-    private String devOtp;
 }

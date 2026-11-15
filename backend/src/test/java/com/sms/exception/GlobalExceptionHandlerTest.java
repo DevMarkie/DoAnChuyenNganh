@@ -22,7 +22,7 @@ class GlobalExceptionHandlerTest {
     @BeforeEach
     void setUp() {
         handler = new GlobalExceptionHandler();
-        ReflectionTestUtils.setField(handler, "maxFileSize", "5MB");
+        ReflectionTestUtils.setField(handler, "maxFileSize", "15MB");
     }
 
     @Test
@@ -118,11 +118,31 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("MaxUploadSizeExceededException ánh xạ thành HTTP 400 kèm thông báo dung lượng")
     void handleUploadTooLarge_Returns400() {
-        MaxUploadSizeExceededException ex = new MaxUploadSizeExceededException(5000000L);
+        MaxUploadSizeExceededException ex = new MaxUploadSizeExceededException(15000000L);
         ResponseEntity<ApiResponse<Void>> response = handler.handleUploadTooLarge(ex);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("File tải lên quá lớn (tối đa 5MB)", response.getBody().getMessage());
+        assertEquals("File tải lên quá lớn (tối đa 15MB)", response.getBody().getMessage());
+    }
+
+    @Test
+    @DisplayName("IllegalArgumentException ánh xạ thành HTTP 400 Bad Request")
+    void handleIllegalArgument_Returns400() {
+        IllegalArgumentException ex = new IllegalArgumentException("Mã học phần không hợp lệ");
+        ResponseEntity<ApiResponse<Void>> response = handler.handleIllegalArgumentOrState(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Mã học phần không hợp lệ", response.getBody().getMessage());
+    }
+
+    @Test
+    @DisplayName("IllegalStateException ánh xạ thành HTTP 400 Bad Request")
+    void handleIllegalState_Returns400() {
+        IllegalStateException ex = new IllegalStateException("Trạng thái học vụ không cho phép thao tác này");
+        ResponseEntity<ApiResponse<Void>> response = handler.handleIllegalArgumentOrState(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Trạng thái học vụ không cho phép thao tác này", response.getBody().getMessage());
     }
 
     @Test

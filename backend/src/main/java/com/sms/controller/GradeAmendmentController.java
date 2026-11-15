@@ -58,8 +58,10 @@ public class GradeAmendmentController {
      */
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<GradeAmendmentResponse>> findById(@PathVariable Long id) {
-        GradeChangeTicket ticket = gradeAmendmentService.findById(id);
+    public ResponseEntity<ApiResponse<GradeAmendmentResponse>> findById(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable Long id) {
+        GradeChangeTicket ticket = gradeAmendmentService.findById(id, user.getId());
         return ResponseEntity.ok(ApiResponse.success(GradeAmendmentResponse.from(ticket)));
     }
 

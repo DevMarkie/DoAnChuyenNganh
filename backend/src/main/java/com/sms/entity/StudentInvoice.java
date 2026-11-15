@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(name = "student_invoices")
+@Table(name = "student_invoices", indexes = {
+    @Index(name = "idx_student_invoices_student_status", columnList = "student_id, status"),
+    @Index(name = "idx_student_invoices_section_status", columnList = "section_id, status")
+})
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 public class StudentInvoice {

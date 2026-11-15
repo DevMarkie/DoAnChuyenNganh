@@ -251,6 +251,141 @@ public class CurriculumService {
     }
 
     /**
+     * Thẩm định điều kiện tốt nghiệp hàng loạt cho danh sách sinh viên theo cơ chế O(1) database roundtrips.
+     * Batch fetch:
+     * 1. Programs cho tất cả các ngành của khóa
+     * 2. Blocks cho tất cả các program
+     * 3. BlockSubjects cho tất cả các block
+     * 4. Finalized Grades cho tất cả sinh viên trong 1 query (gradeRepository.findFinalizedByStudentIdIn)
+     */
+    public Map<Long, GraduationEligibilityResponse> checkGraduationEligibilityBatch(List<Student> students) {
+        if (students == null || students.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // 1. Thu thập program theo (majorId, cohortId)
+        Map<String, CurriculumProgram> programCache = new HashMap<>();
+        Set<Integer> cohortIds = new HashSet<>();
+        for (Student s : students) {
+            if (s.getClassEntity() != null && s.getClassEntity().getCohort() != null) {
+                cohortIds.add(s.getClassEntity().getCohort().getId());
+            }
+        }
+
+        for (Integer cohortId : cohortIds) {
+            List<CurriculumProgram> activePrograms = programRepository.findActiveByCohortId(cohortId);
+            for (CurriculumProgram p : activePrograms) {
+                if (p.getMajor() != null && p.getCohort() != null) {
+                    programCache.put(p.getMajor().getId() + "_" + p.getCohort().getId(), p);
+                }
+            }
+        }
+
+        // Fallback cho program nếu có sinh viên thuộc ngành chưa cache
+        for (Student s : students) {
+            if (s.getClassEntity() != null && s.getClassEntity().getMajor() != null && s.getClassEntity().getCohort() != null) {
+                String key = s.getClassEntity().getMajor().getId() + "_" + s.getClassEntity().getCohort().getId();
+                if (!programCache.containsKey(key)) {
+                    programRepository.findActiveByMajorAndCohort(s.getClassEntity().getMajor().getId(), s.getClassEntity().getCohort().getId())
+                            .ifPresent(p -> programCache.put(key, p));
+                }
+            }
+        }
+
+        // 2. Batch fetch blocks
+        Set<Long> programIds = programCache.values().stream().map(CurriculumProgram::getId).collect(Collectors.toSet());
+        Map<Long, List<CurriculumBlock>> blocksByProgram = new HashMap<>();
+        if (!programIds.isEmpty()) {
+            List<CurriculumBlock> allBlocks = blockRepository.findByProgramIdInOrdered(programIds);
+            blocksByProgram = allBlocks.stream()
+                    .filter(b -> b.getProgram() != null)
+                    .collect(Collectors.groupingBy(b -> b.getProgram().getId()));
+        }
+
+        // 3. Batch fetch block subjects
+        Set<Long> blockIds = blocksByProgram.values().stream()
+                .flatMap(List::stream)
+                .map(CurriculumBlock::getId)
+                .collect(Collectors.toSet());
+        Map<Long, List<CurriculumBlockSubject>> blockSubjectsByBlock = new HashMap<>();
+        if (!blockIds.isEmpty()) {
+            List<CurriculumBlockSubject> allBlockSubjects = blockSubjectRepository.findByBlockIdInWithSubject(blockIds);
+            blockSubjectsByBlock = allBlockSubjects.stream()
+                    .collect(Collectors.groupingBy(CurriculumBlockSubject::getBlockId));
+        }
+
+        // 4. Batch fetch finalized grades
+        List<Long> studentIds = students.stream().map(Student::getId).filter(Objects::nonNull).toList();
+        List<Grade> allGrades = gradeRepository.findFinalizedByStudentIdIn(studentIds);
+        Map<Long, List<Grade>> gradesByStudent = allGrades.stream()
+                .filter(g -> g.getEnrollment() != null && g.getEnrollment().getStudent() != null)
+                .collect(Collectors.groupingBy(g -> g.getEnrollment().getStudent().getId()));
+
+        // 5. Batch check tuition overdue
+        Set<Long> overdueStudentIds = (tuitionService != null && !studentIds.isEmpty())
+                ? tuitionService.findOverdueStudentIds(studentIds)
+                : Collections.emptySet();
+
+        // 6. Thẩm định cho từng sinh viên trong bộ nhớ (O(N) CPU, 0 DB roundtrips)
+        Map<Long, GraduationEligibilityResponse> results = new HashMap<>();
+        for (Student student : students) {
+            ClassEntity classEntity = student.getClassEntity();
+            if (classEntity == null || classEntity.getMajor() == null || classEntity.getCohort() == null) {
+                continue;
+            }
+            String key = classEntity.getMajor().getId() + "_" + classEntity.getCohort().getId();
+            CurriculumProgram program = programCache.get(key);
+            if (program == null) {
+                continue;
+            }
+
+            List<CurriculumBlock> blocks = blocksByProgram.getOrDefault(program.getId(), Collections.emptyList());
+            List<CurriculumBlockSubject> blockSubjects = new ArrayList<>();
+            for (CurriculumBlock b : blocks) {
+                blockSubjects.addAll(blockSubjectsByBlock.getOrDefault(b.getId(), Collections.emptyList()));
+            }
+
+            List<Grade> studentGrades = gradesByStudent.getOrDefault(student.getId(), Collections.emptyList());
+            Map<Integer, Grade> bestGrades = bestGradesBySubject(studentGrades);
+
+            DegreeAuditResponse audit = degreeAuditEngine.auditStudent(student, program, blocks, blockSubjects, bestGrades);
+
+            String className = student.getClassEntity() != null ? student.getClassEntity().getName() : "";
+            String programName = audit.getMajorName() + " - " + audit.getCohortName();
+
+            int completedCredits = audit.getTotalCompletedCredits();
+            int requiredCredits = audit.getTotalRequiredCredits();
+            int remainingCredits = Math.max(0, requiredCredits - completedCredits);
+            BigDecimal completionPercent = requiredCredits == 0 ? BigDecimal.ZERO
+                    : BigDecimal.valueOf(completedCredits * 100.0 / requiredCredits).setScale(1, RoundingMode.HALF_UP);
+
+            List<String> unsatisfiedReasons = new ArrayList<>(audit.getUnsatisfiedReasons() != null ? audit.getUnsatisfiedReasons() : Collections.emptyList());
+            boolean hasTuitionDebt = (student.isFinancialHold()) || overdueStudentIds.contains(student.getId());
+            if (hasTuitionDebt) {
+                unsatisfiedReasons.add("Chưa hoàn thành công nợ học phí");
+            }
+            boolean isEligible = Boolean.TRUE.equals(audit.getIsGraduationEligible()) && !hasTuitionDebt;
+
+            results.put(student.getId(), GraduationEligibilityResponse.builder()
+                    .studentId(student.getId())
+                    .studentCode(student.getStudentCode())
+                    .studentName(student.getFullName())
+                    .className(className)
+                    .programName(programName)
+                    .eligible(isEligible)
+                    .completedCredits(completedCredits)
+                    .requiredCredits(requiredCredits)
+                    .remainingCredits(remainingCredits)
+                    .completionPercent(completionPercent)
+                    .cumulativeGpa(audit.getAuditCpa())
+                    .unsatisfiedReasons(unsatisfiedReasons)
+                    .build());
+        }
+
+        return results;
+    }
+
+    /**
      * Ném ngoại lệ BadRequestException nếu sinh viên không đủ điều kiện tốt nghiệp.
      */
     public void validateGraduationEligibility(Long studentId) {

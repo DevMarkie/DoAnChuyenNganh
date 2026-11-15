@@ -24,7 +24,7 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @Value("${spring.servlet.multipart.max-file-size:5MB}")
+    @Value("${spring.servlet.multipart.max-file-size:15MB}")
     private String maxFileSize;
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -49,6 +49,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBadRequest(BadRequestException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentOrState(RuntimeException ex) {
+        log.warn("Invalid argument or state: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage() != null && !ex.getMessage().isBlank() ? ex.getMessage() : "Yêu cầu không hợp lệ"));
     }
 
     @ExceptionHandler(BadCredentialsException.class)

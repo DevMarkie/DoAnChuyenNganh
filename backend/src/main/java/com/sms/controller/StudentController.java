@@ -2,6 +2,7 @@ package com.sms.controller;
 
 import com.sms.dto.ApiResponse;
 import com.sms.dto.request.StudentRequest;
+import com.sms.dto.request.UpdateStudentContactRequest;
 import com.sms.dto.response.GraduationEligibilityResponse;
 import com.sms.dto.response.StudentImportRow;
 import com.sms.entity.Student;
@@ -90,15 +91,9 @@ public class StudentController {
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<ApiResponse<Student>> updateMyContact(
             @AuthenticationPrincipal UserPrincipal user,
-            @RequestBody java.util.Map<String, String> payload) {
-        String phone = payload.get("phone");
-        String address = payload.get("address");
-        String emergencyContactName = payload.get("emergencyContactName");
-        String emergencyContactPhone = payload.get("emergencyContactPhone");
-        String emergencyContactRelationship = payload.get("emergencyContactRelationship");
+            @Valid @RequestBody UpdateStudentContactRequest request) {
         return ResponseEntity.ok(ApiResponse.success("Cập nhật thông tin liên lạc thành công",
-                studentService.updateMyContact(user.getId(), phone, address,
-                        emergencyContactName, emergencyContactPhone, emergencyContactRelationship)));
+                studentService.updateMyContact(user.getId(), request)));
     }
 
     @GetMapping("/search")

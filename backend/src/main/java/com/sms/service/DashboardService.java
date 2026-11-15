@@ -1,6 +1,8 @@
 package com.sms.service;
 
 import com.sms.dto.response.DashboardResponse;
+import com.sms.dto.response.DashboardSummaryResponse;
+import com.sms.entity.GradeAppeal;
 import com.sms.entity.Student;
 import com.sms.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,21 @@ public class DashboardService {
     private final SubjectRepository subjectRepository;
     private final LecturerRepository lecturerRepository;
     private final CourseSectionRepository courseSectionRepository;
+    private final GradeAppealRepository gradeAppealRepository;
+
+    public DashboardSummaryResponse getSummary() {
+        long totalStudents = studentRepository.count();
+        long totalSections = courseSectionRepository.count();
+        long pendingAppeals = gradeAppealRepository != null
+                ? gradeAppealRepository.countByStatus(GradeAppeal.AppealStatus.PENDING)
+                : 0L;
+
+        return DashboardSummaryResponse.builder()
+                .totalStudents(totalStudents)
+                .totalSections(totalSections)
+                .pendingAppeals(pendingAppeals)
+                .build();
+    }
 
     public DashboardResponse getDashboard() {
         long total = studentRepository.count();

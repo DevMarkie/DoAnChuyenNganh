@@ -9,4 +9,8 @@ public interface CurriculumProgramRepository extends JpaRepository<CurriculumPro
     @Query("SELECT p FROM CurriculumProgram p JOIN FETCH p.major m JOIN FETCH p.cohort c " +
             "WHERE m.id = :majorId AND c.id = :cohortId AND p.isActive = true")
     Optional<CurriculumProgram> findActiveByMajorAndCohort(@Param("majorId") Integer majorId, @Param("cohortId") Integer cohortId);
+
+    @Query("SELECT p FROM CurriculumProgram p JOIN FETCH p.major m JOIN FETCH p.cohort c " +
+            "WHERE c.id = :cohortId AND p.isActive = true")
+    java.util.List<CurriculumProgram> findActiveByCohortId(@Param("cohortId") Integer cohortId);
 }

@@ -218,6 +218,7 @@ CREATE TABLE students (
     status                         ENUM('ACTIVE', 'INACTIVE', 'GRADUATED', 'SUSPENDED', 'RESERVED') NOT NULL DEFAULT 'ACTIVE',
     balance                        DECIMAL(14, 2) NOT NULL DEFAULT 0.00,
     financial_hold                 BOOLEAN        NOT NULL DEFAULT FALSE,
+    version                        INT            NOT NULL DEFAULT 0,
     created_at                     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at                     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT pk_students PRIMARY KEY (id),
@@ -464,7 +465,9 @@ CREATE TABLE student_invoices (
     CONSTRAINT pk_student_invoices PRIMARY KEY (id),
     CONSTRAINT uq_invoice_student_section UNIQUE (student_id, section_id),
     CONSTRAINT fk_invoice_student FOREIGN KEY (student_id) REFERENCES students (id),
-    CONSTRAINT fk_invoice_section FOREIGN KEY (section_id) REFERENCES course_sections (id)
+    CONSTRAINT fk_invoice_section FOREIGN KEY (section_id) REFERENCES course_sections (id),
+    INDEX idx_student_invoices_student_status (student_id, status),
+    INDEX idx_student_invoices_section_status (section_id, status)
 );
 
 CREATE TABLE attendance_sessions (

@@ -534,8 +534,18 @@ public class TuitionService {
         BigDecimal walletDeduction = BigDecimal.ZERO;
         if (walletBalance.compareTo(BigDecimal.ZERO) > 0) {
             walletDeduction = walletBalance.min(totalPaid);
-            student.setBalance(walletBalance.subtract(walletDeduction));
-            studentRepository.save(student);
+            int updated = studentRepository.updateBalanceAtomic(student.getId(), walletDeduction.negate());
+            if (updated > 0) {
+                student.setBalance(walletBalance.subtract(walletDeduction));
+            } else {
+                student = studentRepository.findById(student.getId()).orElse(student);
+                walletBalance = student.getBalance() != null ? student.getBalance() : BigDecimal.ZERO;
+                walletDeduction = walletBalance.min(totalPaid);
+                if (walletDeduction.compareTo(BigDecimal.ZERO) > 0) {
+                    studentRepository.updateBalanceAtomic(student.getId(), walletDeduction.negate());
+                    student.setBalance(walletBalance.subtract(walletDeduction));
+                }
+            }
             log.info("Cấn trừ {} đ từ tài khoản tích lũy của sinh viên {}", walletDeduction, student.getStudentCode());
         }
 
@@ -657,6 +667,34 @@ public class TuitionService {
             }
         }
         return false;
+    }
+
+    /**
+     * Batch check học phí quá hạn cho danh sách sinh viên theo cơ chế O(1) database roundtrip.
+     */
+    public Set<Long> findOverdueStudentIds(Collection<Long> studentIds) {
+        if (studentIds == null || studentIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+        List<StudentInvoice> unpaidInvoices = invoiceRepository.findUnpaidByStudentIdIn(studentIds);
+        if (unpaidInvoices == null || unpaidInvoices.isEmpty()) {
+            return Collections.emptySet();
+        }
+        LocalDate today = LocalDate.now();
+        Set<Long> overdueStudentIds = new HashSet<>();
+        for (StudentInvoice inv : unpaidInvoices) {
+            LocalDate baseDeadline = (inv.getSection() != null && inv.getSection().getSemester() != null)
+                    ? inv.getSection().getSemester().getTuitionDeadline() : null;
+            LocalDate effectiveDeadline = (inv.getExtendedDeadline() != null)
+                    ? inv.getExtendedDeadline() : baseDeadline;
+
+            if (effectiveDeadline != null && today.isAfter(effectiveDeadline)) {
+                if (inv.getStudent() != null && inv.getStudent().getId() != null) {
+                    overdueStudentIds.add(inv.getStudent().getId());
+                }
+            }
+        }
+        return overdueStudentIds;
     }
 
     /**

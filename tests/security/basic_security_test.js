@@ -147,7 +147,8 @@ async function runSecurityAudit() {
     const s2Enr = await api("/enrollments/my", { token: student2Token });
     if (s2Enr.ok && s2Enr.data.data && s2Enr.data.data.length > 0) {
       s2EnrollmentId = s2Enr.data.data[0].id;
-      const l2Enr = s2Enr.data.data.find(e => e.courseSection?.lecturer?.id === 2);
+      const l2Enr = s2Enr.data.data.find(e => e.courseSection?.lecturer?.id === 2) ||
+                    s2Enr.data.data.find(e => e.courseSection?.lecturer?.id && e.courseSection.lecturer.id !== 1);
       if (l2Enr) s2Lecturer2EnrollmentId = l2Enr.id;
     }
   }

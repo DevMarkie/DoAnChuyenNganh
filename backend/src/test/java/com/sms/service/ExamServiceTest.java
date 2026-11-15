@@ -8,6 +8,8 @@ import com.sms.dto.response.ExamRoomResponse;
 import com.sms.dto.response.ExamSessionResponse;
 import com.sms.entity.*;
 import com.sms.exception.BadRequestException;
+import com.sms.exception.ForbiddenException;
+import com.sms.security.UserPrincipal;
 import com.sms.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -338,5 +340,103 @@ public class ExamServiceTest {
         assertTrue(icsContent.contains("BEGIN:VCALENDAR"));
         assertTrue(icsContent.contains("SUMMARY:Thi môn: Lập trình Web"));
         assertTrue(icsContent.contains("END:VCALENDAR"));
+    }
+
+    @Test
+    void getRosterByRoom_AdminOrStaff_allowed() {
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN");
+        User adminUser = new User();
+        adminUser.setId(1L);
+        adminUser.setUsername("admin");
+        adminUser.setEmail("admin@sms.edu.vn");
+        adminUser.setRole(adminRole);
+        adminUser.setIsActive(true);
+        UserPrincipal principal = UserPrincipal.create(adminUser);
+
+        when(examRosterRepository.findByExamRoomIdOrderBySbdAsc(10L)).thenReturn(List.of(roster));
+
+        var list = examService.getRosterByRoom(10L, principal);
+        assertNotNull(list);
+        assertEquals(1, list.size());
+    }
+
+    @Test
+    void getRosterByRoom_AssignedProctor_allowed() {
+        Role lecRole = new Role();
+        lecRole.setName("LECTURER");
+        User lecUser = new User();
+        lecUser.setId(2L);
+        lecUser.setUsername("gv001");
+        lecUser.setEmail("gv@sms.edu.vn");
+        lecUser.setRole(lecRole);
+        lecUser.setIsActive(true);
+        UserPrincipal principal = UserPrincipal.create(lecUser);
+
+        Lecturer proctor = new Lecturer();
+        proctor.setId(55L);
+        proctor.setUser(lecUser);
+
+        ExamRoom room = new ExamRoom();
+        room.setId(10L);
+        room.setProctor1(proctor);
+
+        when(examRoomRepository.findById(10L)).thenReturn(Optional.of(room));
+        when(lecturerRepository.findByUserId(2L)).thenReturn(Optional.of(proctor));
+        when(examRosterRepository.findByExamRoomIdOrderBySbdAsc(10L)).thenReturn(List.of(roster));
+
+        var list = examService.getRosterByRoom(10L, principal);
+        assertNotNull(list);
+        assertEquals(1, list.size());
+    }
+
+    @Test
+    void getRosterByRoom_UnassignedLecturer_throwsForbiddenException() {
+        Role lecRole = new Role();
+        lecRole.setName("LECTURER");
+        User lecUser = new User();
+        lecUser.setId(2L);
+        lecUser.setUsername("gv002");
+        lecUser.setEmail("gv2@sms.edu.vn");
+        lecUser.setRole(lecRole);
+        lecUser.setIsActive(true);
+        UserPrincipal principal = UserPrincipal.create(lecUser);
+
+        Lecturer otherLecturer = new Lecturer();
+        otherLecturer.setId(99L);
+        otherLecturer.setUser(lecUser);
+
+        Lecturer proctor = new Lecturer();
+        proctor.setId(55L);
+
+        ExamRoom room = new ExamRoom();
+        room.setId(10L);
+        room.setProctor1(proctor);
+
+        when(examRoomRepository.findById(10L)).thenReturn(Optional.of(room));
+        when(lecturerRepository.findByUserId(2L)).thenReturn(Optional.of(otherLecturer));
+
+        assertThrows(ForbiddenException.class, () -> examService.getRosterByRoom(10L, principal));
+    }
+
+    @Test
+    void testGetSessionsBySemester_AggregatedCounts() {
+        when(examSessionRepository.findBySemesterId(1)).thenReturn(List.of(session));
+        Object[] roomRow = new Object[]{1L, 3L};
+        Object[] rosterRow = new Object[]{1L, 75L};
+        when(examRoomRepository.countRoomsBySessionIds(List.of(1L))).thenReturn(java.util.Collections.singletonList(roomRow));
+        when(examRosterRepository.countRostersBySessionIds(List.of(1L))).thenReturn(java.util.Collections.singletonList(rosterRow));
+
+        List<ExamSessionResponse> responses = examService.getSessionsBySemester(1);
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        ExamSessionResponse resp = responses.get(0);
+        assertEquals(1L, resp.getId());
+        assertEquals(3, resp.getTotalRooms());
+        assertEquals(75, resp.getTotalStudents());
+        verify(examRoomRepository, times(1)).countRoomsBySessionIds(List.of(1L));
+        verify(examRosterRepository, times(1)).countRostersBySessionIds(List.of(1L));
+        verify(examRoomRepository, never()).findByExamSessionId(anyLong());
     }
 }
